@@ -9,51 +9,65 @@ import { UpdateTenantAccountDto } from './dto/update-tenant-account.dto';
 
 @Injectable()
 export class TenantAccountsService {
-  constructor(
-    @InjectModel(TenantAccount.name)
-    private readonly accountModel: Model<TenantAccountDocument>,
-  ) {}
+    constructor(
+        @InjectModel(TenantAccount.name)
+        private readonly accountModel: Model<TenantAccountDocument>,
+    ) { }
 
-  async create(dto: CreateTenantAccountDto) {
-    const existing = await this.accountModel.findOne({ email: dto.email });
-    if (existing) {
-      throw new BadRequestException('Email already in use');
+    async create(dto: CreateTenantAccountDto) {
+        const existing = await this.accountModel.findOne({ email: dto.email });
+        if (existing) {
+            throw new BadRequestException('Email already in use');
+        }
+
+        const accountsCount = await this.accountModel.countDocuments({
+            tenantId: dto.tenantId,
+        });
+
+        const hashed = await bcrypt.hash(dto.password, 10);
+
+        const created = await this.accountModel.create({
+            ...dto,
+            password: hashed,
+            isMain: accountsCount === 0 ? true : dto.isMain ?? false,
+        });
+
+        return created.toObject();
     }
 
-    const accountsCount = await this.accountModel.countDocuments({
-      tenantId: dto.tenantId,
-    });
-
-    const hashed = await bcrypt.hash(dto.password, 10);
-
-    const created = await this.accountModel.create({
-      ...dto,
-      password: hashed,
-      isMain: accountsCount === 0 ? true : dto.isMain ?? false,
-    });
-
-    return created.toObject();
-  }
-
-  async findByEmail(email: string) {
-    return this.accountModel.findOne({ email }).lean();
-  }
-
-  async update(id: string, dto: UpdateTenantAccountDto) {
-    if (dto.password) {
-      dto.password = await bcrypt.hash(dto.password, 10);
+    async findByEmail(email: string) {
+        return this.accountModel.findOne({ email }).lean();
     }
 
-    return this.accountModel
-      .findByIdAndUpdate(id, { $set: dto }, { new: true })
-      .lean();
-  }
+    async update(id: string, dto: UpdateTenantAccountDto) {
+        if (dto.password) {
+            dto.password = await bcrypt.hash(dto.password, 10);
+        }
 
-  async listByTenant(tenantId: string) {
-  return this.accountModel
-    .find({ tenantId })
-    .select('-password') 
-    .sort({ createdAt: -1 })
-    .lean();
+        return this.accountModel
+            .findByIdAndUpdate(id, { $set: dto }, { new: true })
+            .lean();
+    }
+
+    async listByTenant(tenantId: string) {
+        return this.accountModel
+            .find({ tenantId })
+            .select('-password')
+            .sort({ createdAt: -1 })
+            .lean();
+    }
+
+    async validateCredentials(email: string, password: string) {
+  const account = await this.accountModel.findOne({ email });
+  if (!account) return null;
+
+  if (!account.isActive) return null;
+
+  const ok = await bcrypt.compare(password, account.password);
+  if (!ok) return null;
+
+  const obj = account.toObject();
+  delete (obj as any).password;
+  return obj;
 }
 }
