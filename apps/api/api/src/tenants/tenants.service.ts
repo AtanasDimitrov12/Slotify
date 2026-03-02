@@ -22,7 +22,7 @@ function slugify(input: string): string {
 export class TenantsService {
   constructor(
     @InjectModel(Tenant.name) private readonly tenantModel: Model<TenantDocument>,
-  ) {}
+  ) { }
 
   private async generateUniqueSlug(name: string): Promise<string> {
     const base = slugify(name) || 'tenant';
@@ -56,6 +56,16 @@ export class TenantsService {
 
   async findOne(id: string) {
     const tenant = await this.tenantModel.findById(id).lean();
+    if (!tenant) throw new NotFoundException('Tenant not found');
+    return tenant;
+  }
+
+  async findByName(name: string) {
+    return this.tenantModel.findOne({ name: name.trim() }).lean();
+  }
+
+  async findByNameOrThrow(name: string) {
+    const tenant = await this.findByName(name);
     if (!tenant) throw new NotFoundException('Tenant not found');
     return tenant;
   }

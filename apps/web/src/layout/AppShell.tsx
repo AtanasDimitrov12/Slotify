@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { ArrowForwardIosRounded, CloseRounded, MenuRounded } from '@mui/icons-material';
 import {
   AppBar,
@@ -20,6 +20,7 @@ import {
 } from '@mui/material';
 import { alpha } from '@mui/material/styles';
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
+import { useAuth } from '../auth/AuthProvider';
 
 type NavItem = {
   label: string;
@@ -31,12 +32,11 @@ export default function AppShell() {
   const navigate = useNavigate();
   const location = useLocation();
   const [mobileOpen, setMobileOpen] = useState(false);
+  const { user, logout } = useAuth();
 
   const navItems: NavItem[] = useMemo(
     () => [
       { label: 'Home', to: '/' },
-      { label: 'Explore', to: '/places', kind: 'primary' },
-      { label: 'For partners', to: '/partner' },
       // keep login later if you want:
       // { label: 'Login (later)', to: '/login' },
     ],
@@ -114,46 +114,42 @@ export default function AppShell() {
               </ButtonBase>
             </Stack>
 
-            {/* Desktop nav (ONE pair: Explore + For partners) */}
-            <Stack direction="row" spacing={2} alignItems="center" sx={{ display: { xs: 'none', md: 'flex' } }}>
-              <Button
-                onClick={() => go('/places')}
-                variant="text"
-                sx={{
-                  fontWeight: 800,
-                  color: isActive('/places') ? 'text.primary' : 'text.secondary',
-                }}
-              >
-                Explore
-              </Button>
-
-              <Button
-                onClick={() => go('/partner')}
-                variant="text"
-                sx={{
-                  fontWeight: 800,
-                  color: isActive('/partner') ? 'text.primary' : 'text.secondary',
-                }}
-              >
-                For partners
-              </Button>
-            </Stack>
 
             {/* Desktop action: keep ONLY ONE CTA (Explore) */}
             <Stack direction="row" spacing={1} alignItems="center">
-              <Button
-                variant="contained"
-                onClick={() => go('/places')}
-                sx={{
-                  borderRadius: 999,
-                  height: 40,
-                  px: 2.2,
-                  display: { xs: 'none', md: 'inline-flex' },
-                }}
-                endIcon={<ArrowForwardIosRounded />}
-              >
-                Login
-              </Button>
+              {user ? (
+                <Stack direction="row" spacing={1} alignItems="center">
+                  <Chip
+                    label={user.email}
+                    size="small"
+                    sx={{ display: { xs: 'none', md: 'inline-flex' }, fontWeight: 800 }}
+                  />
+                  <Button
+                    variant="outlined"
+                    onClick={() => {
+                      logout();
+                      go('/');
+                    }}
+                    sx={{ borderRadius: 999, height: 40, px: 2.2, display: { xs: 'none', md: 'inline-flex' } }}
+                  >
+                    Logout
+                  </Button>
+                </Stack>
+              ) : (
+                <Button
+                  variant="contained"
+                  onClick={() => go('/login')}
+                  sx={{
+                    borderRadius: 999,
+                    height: 40,
+                    px: 2.2,
+                    display: { xs: 'none', md: 'inline-flex' },
+                  }}
+                  endIcon={<ArrowForwardIosRounded />}
+                >
+                  Login
+                </Button>
+              )}
 
               {/* Mobile menu */}
               <IconButton
@@ -239,26 +235,28 @@ export default function AppShell() {
             ))}
         </List>
 
-        <Box sx={{ mt: 'auto', p: 2 }}>
-          <Button
-            fullWidth
-            variant="contained"
-            onClick={() => go('/places')}
-            sx={{ borderRadius: 999, height: 44 }}
-            endIcon={<ArrowForwardIosRounded />}
-          >
-            Explore
-          </Button>
-
+        {user ? (
           <Button
             fullWidth
             variant="outlined"
-            onClick={() => go('/partner')}
-            sx={{ borderRadius: 999, height: 44, mt: 1 }}
+            onClick={() => {
+              logout();
+              go('/');
+            }}
+            sx={{ borderRadius: 999, height: 44, mb: 1 }}
           >
-            For partners
+            Logout
           </Button>
-        </Box>
+        ) : (
+          <Button
+            fullWidth
+            variant="contained"
+            onClick={() => go('/login')}
+            sx={{ borderRadius: 999, height: 44, mb: 1 }}
+          >
+            Login
+          </Button>
+        )}
       </Drawer>
 
       <Outlet />

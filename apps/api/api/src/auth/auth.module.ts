@@ -1,23 +1,39 @@
 import { Module } from '@nestjs/common';
 import { JwtModule } from '@nestjs/jwt';
-import { PassportModule } from '@nestjs/passport';
+import { ConfigModule, ConfigService } from '@nestjs/config';
+import type { SignOptions } from 'jsonwebtoken';
 
-import { TenantAccountsModule } from '../tenant-accounts/tenant-accounts.module';
+import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
 import { JwtStrategy } from './jwt.strategy';
-import { AuthController } from './auth.controller';
+import { MembershipsModule } from '../memberships/memberships.module';
+import { UsersModule } from '../users/users.module';
+import { TenantsModule } from '../tenants/tenants.module';
 
 @Module({
   imports: [
-    TenantAccountsModule,
-    PassportModule,
-    JwtModule.register({
-      secret: process.env.JWT_SECRET,
-      signOptions: { expiresIn: (process.env.JWT_EXPIRES_IN || '7d') as any, },
+    ConfigModule,
+    MembershipsModule,
+    UsersModule,
+    TenantsModule,
+    JwtModule.registerAsync({
+      inject: [ConfigService],
+      useFactory: (config: ConfigService) => {
+        const secret = config.get<string>('JWT_SECRET');
+        if (!secret) throw new Error('JWT_SECRET is not set');
+
+        // ✅ typed correctly for jwt signOptions
+        const expiresIn = (config.get<string>('JWT_EXPIRES_IN') ?? '7d') as SignOptions['expiresIn'];
+
+        return {
+          secret,
+          signOptions: { expiresIn },
+        };
+      },
     }),
   ],
-  providers: [AuthService, JwtStrategy],
-  exports: [AuthService],
   controllers: [AuthController],
+  providers: [AuthService, JwtStrategy],
+  exports: [JwtModule],
 })
-export class AuthModule {}
+export class AuthModule { }

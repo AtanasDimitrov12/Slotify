@@ -1,4 +1,4 @@
-import { Box, Button, Card, CardContent, Chip, Stack, Typography } from '@mui/material';
+import { Button, Card, CardContent, Chip, Stack, Typography } from '@mui/material';
 import ArrowForwardRoundedIcon from '@mui/icons-material/ArrowForwardRounded';
 
 import { SoftImage } from './SoftImage';
