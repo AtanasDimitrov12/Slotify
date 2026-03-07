@@ -12,11 +12,47 @@ const seed: StaffService[] = [
 export default function StaffServicesPage() {
   const [open, setOpen] = React.useState(false);
   const [items, setItems] = React.useState<StaffService[]>(seed);
+  const [editingService, setEditingService] = React.useState<StaffService | null>(null);
+
+  function handleAddClick() {
+    setEditingService(null);
+    setOpen(true);
+  }
+
+  function handleEditClick(service: StaffService) {
+    setEditingService(service);
+    setOpen(true);
+  }
+
+  function handleClose() {
+    setOpen(false);
+    setEditingService(null);
+  }
 
   async function handleSave(payload: ServicePayload) {
-    // TODO: PUT /staff/me/services (or add)
+    if (editingService) {
+      // TODO: PUT /staff/me/services/:id
+      setItems((prev) =>
+        prev.map((item) =>
+          item.id === editingService.id
+            ? {
+                ...item,
+                ...payload,
+              }
+            : item
+        )
+      );
+      return;
+    }
+
+    // TODO: POST /staff/me/services
     const next: StaffService = { id: String(Date.now()), ...payload };
-    setItems((p) => [next, ...p]);
+    setItems((prev) => [next, ...prev]);
+  }
+
+  function handleDelete(id: string) {
+    // TODO: DELETE /staff/me/services/:id
+    setItems((prev) => prev.filter((item) => item.id !== id));
   }
 
   return (
@@ -31,7 +67,7 @@ export default function StaffServicesPage() {
           </Typography>
         </Box>
 
-        <Button variant="contained" onClick={() => setOpen(true)}>
+        <Button variant="contained" onClick={handleAddClick}>
           Add service
         </Button>
       </Box>
@@ -41,22 +77,40 @@ export default function StaffServicesPage() {
           <Grid item xs={12} md={6} key={s.id}>
             <Card variant="outlined" sx={{ borderRadius: 3 }}>
               <CardContent>
-                <Typography fontWeight={900}>{s.name}</Typography>
-                <Typography sx={{ opacity: 0.7 }}>
-                  {s.durationMin} min · €{s.priceEUR}
-                </Typography>
-                {s.description ? (
-                  <Typography variant="body2" sx={{ mt: 1, opacity: 0.8 }}>
-                    {s.description}
-                  </Typography>
-                ) : null}
+                <Stack spacing={2}>
+                  <Box>
+                    <Typography fontWeight={900}>{s.name}</Typography>
+                    <Typography sx={{ opacity: 0.7 }}>
+                      {s.durationMin} min · €{s.priceEUR}
+                    </Typography>
+                    {s.description ? (
+                      <Typography variant="body2" sx={{ mt: 1, opacity: 0.8 }}>
+                        {s.description}
+                      </Typography>
+                    ) : null}
+                  </Box>
+
+                  <Stack direction="row" spacing={1}>
+                    <Button variant="outlined" size="small" onClick={() => handleEditClick(s)}>
+                      Edit
+                    </Button>
+                    <Button variant="outlined" color="error" size="small" onClick={() => handleDelete(s.id)}>
+                      Delete
+                    </Button>
+                  </Stack>
+                </Stack>
               </CardContent>
             </Card>
           </Grid>
         ))}
       </Grid>
 
-      <ServiceEditorDialog open={open} onClose={() => setOpen(false)} onSave={handleSave} />
+      <ServiceEditorDialog
+        open={open}
+        onClose={handleClose}
+        onSave={handleSave}
+        initialData={editingService}
+      />
     </Stack>
   );
 }

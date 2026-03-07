@@ -29,3 +29,5 @@ export const MembershipSchema = SchemaFactory.createForClass(Membership);
 
 // One user can have only one role per tenant
 MembershipSchema.index({ userId: 1, tenantId: 1 }, { unique: true });
+MembershipSchema.index({ tenantId: 1, role: 1 });
+MembershipSchema.index({ userId: 1, isActive: 1 });

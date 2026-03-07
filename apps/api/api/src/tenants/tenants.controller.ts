@@ -1,8 +1,17 @@
-import { Body, Controller, Delete, ForbiddenException, Get, Param, Patch, Post } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  ForbiddenException,
+  Get,
+  Param,
+  Patch,
+  Post,
+  UseGuards,
+} from '@nestjs/common';
 import { CreateTenantDto } from './dto/create-tenant.dto';
 import { UpdateTenantDto } from './dto/update-tenant.dto';
 import { TenantsService } from './tenants.service';
-import { UseGuards } from '@nestjs/common';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { CurrentUser } from '../auth/current-user.decorator';
 import type { JwtPayload } from '../auth/jwt.strategy';
@@ -10,7 +19,7 @@ import type { JwtPayload } from '../auth/jwt.strategy';
 @UseGuards(JwtAuthGuard)
 @Controller('tenants')
 export class TenantsController {
-  constructor(private readonly tenantsService: TenantsService) { }
+  constructor(private readonly tenantsService: TenantsService) {}
 
   @Post()
   create(@Body() dto: CreateTenantDto) {
@@ -22,29 +31,35 @@ export class TenantsController {
     return this.tenantsService.findAll();
   }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.tenantsService.findOne(id);
+  @Get('me')
+  getMyTenant(@CurrentUser() user: JwtPayload) {
+    return this.tenantsService.findOne(user.tenantId);
   }
 
   @Get(':id')
-getTenant(@Param('id') id: string, @CurrentUser() user: JwtPayload) {
-  if (id !== user.tenantId) throw new ForbiddenException('Cross-tenant access denied');
-  return this.tenantsService.findOne(id);
-}
+  getTenant(@Param('id') id: string, @CurrentUser() user: JwtPayload) {
+    if (id !== user.tenantId) {
+      throw new ForbiddenException('Cross-tenant access denied');
+    }
 
-  @Get('me')
-getMyTenant(@CurrentUser() user: JwtPayload) {
-  return this.tenantsService.findOne(user.tenantId);
-}
+    return this.tenantsService.findOne(id);
+  }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() dto: UpdateTenantDto) {
+  update(@Param('id') id: string, @Body() dto: UpdateTenantDto, @CurrentUser() user: JwtPayload) {
+    if (id !== user.tenantId) {
+      throw new ForbiddenException('Cross-tenant access denied');
+    }
+
     return this.tenantsService.update(id, dto);
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
+  remove(@Param('id') id: string, @CurrentUser() user: JwtPayload) {
+    if (id !== user.tenantId) {
+      throw new ForbiddenException('Cross-tenant access denied');
+    }
+
     return this.tenantsService.remove(id);
   }
 }
