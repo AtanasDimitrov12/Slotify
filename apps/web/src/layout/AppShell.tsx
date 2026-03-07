@@ -37,8 +37,6 @@ export default function AppShell() {
   const navItems: NavItem[] = useMemo(
     () => [
       { label: 'Home', to: '/' },
-      // keep login later if you want:
-      // { label: 'Login (later)', to: '/login' },
     ],
     [],
   );
@@ -46,6 +44,12 @@ export default function AppShell() {
   const go = (to: string) => {
     navigate(to);
     setMobileOpen(false);
+  };
+
+  const handleLogout = () => {
+    logout();
+    setMobileOpen(false);
+    navigate('/', { replace: true });
   };
 
   const isActive = (to: string) => {
@@ -67,7 +71,6 @@ export default function AppShell() {
       >
         <Toolbar sx={{ minHeight: 68 }}>
           <Container maxWidth="lg" sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-            {/* Brand -> Home */}
             <Stack direction="row" spacing={1} alignItems="center" sx={{ flex: 1, minWidth: 0 }}>
               <ButtonBase
                 onClick={() => go('/')}
@@ -114,8 +117,6 @@ export default function AppShell() {
               </ButtonBase>
             </Stack>
 
-
-            {/* Desktop action: keep ONLY ONE CTA (Explore) */}
             <Stack direction="row" spacing={1} alignItems="center">
               {user ? (
                 <Stack direction="row" spacing={1} alignItems="center">
@@ -126,10 +127,7 @@ export default function AppShell() {
                   />
                   <Button
                     variant="outlined"
-                    onClick={() => {
-                      logout();
-                      go('/');
-                    }}
+                    onClick={handleLogout}
                     sx={{ borderRadius: 999, height: 40, px: 2.2, display: { xs: 'none', md: 'inline-flex' } }}
                   >
                     Logout
@@ -151,7 +149,6 @@ export default function AppShell() {
                 </Button>
               )}
 
-              {/* Mobile menu */}
               <IconButton
                 sx={{ display: { xs: 'inline-flex', md: 'none' } }}
                 aria-label="open menu"
@@ -164,7 +161,6 @@ export default function AppShell() {
         </Toolbar>
       </AppBar>
 
-      {/* Mobile Drawer */}
       <Drawer
         anchor="right"
         open={mobileOpen}
@@ -192,7 +188,7 @@ export default function AppShell() {
                 letterSpacing: -0.8,
               }}
             >
-              T
+              S
             </Box>
             <Typography noWrap sx={{ fontWeight: 1000, letterSpacing: -0.8 }}>
               Slotify
@@ -207,56 +203,52 @@ export default function AppShell() {
         <Divider />
 
         <List sx={{ p: 1 }}>
-          {navItems
-            .filter((x) => x.label !== 'Explore') // we’ll show Explore as primary at the bottom
-            .map((item) => (
-              <ListItemButton
-                key={item.to}
-                selected={isActive(item.to)}
-                onClick={() => go(item.to)}
-                sx={{ borderRadius: 2 }}
-              >
-                <ListItemIcon sx={{ minWidth: 36 }}>
-                  {/* simple dot indicator */}
-                  <Box
-                    sx={{
-                      width: 10,
-                      height: 10,
-                      borderRadius: 999,
-                      bgcolor: isActive(item.to) ? 'primary.main' : 'divider',
-                    }}
-                  />
-                </ListItemIcon>
-                <ListItemText
-                  primary={item.label}
-                  primaryTypographyProps={{ fontWeight: 800 }}
+          {navItems.map((item) => (
+            <ListItemButton
+              key={item.to}
+              selected={isActive(item.to)}
+              onClick={() => go(item.to)}
+              sx={{ borderRadius: 2 }}
+            >
+              <ListItemIcon sx={{ minWidth: 36 }}>
+                <Box
+                  sx={{
+                    width: 10,
+                    height: 10,
+                    borderRadius: 999,
+                    bgcolor: isActive(item.to) ? 'primary.main' : 'divider',
+                  }}
                 />
-              </ListItemButton>
-            ))}
+              </ListItemIcon>
+              <ListItemText
+                primary={item.label}
+                primaryTypographyProps={{ fontWeight: 800 }}
+              />
+            </ListItemButton>
+          ))}
         </List>
 
-        {user ? (
-          <Button
-            fullWidth
-            variant="outlined"
-            onClick={() => {
-              logout();
-              go('/');
-            }}
-            sx={{ borderRadius: 999, height: 44, mb: 1 }}
-          >
-            Logout
-          </Button>
-        ) : (
-          <Button
-            fullWidth
-            variant="contained"
-            onClick={() => go('/login')}
-            sx={{ borderRadius: 999, height: 44, mb: 1 }}
-          >
-            Login
-          </Button>
-        )}
+        <Box sx={{ p: 2, pt: 0 }}>
+          {user ? (
+            <Button
+              fullWidth
+              variant="outlined"
+              onClick={handleLogout}
+              sx={{ borderRadius: 999, height: 44, mb: 1 }}
+            >
+              Logout
+            </Button>
+          ) : (
+            <Button
+              fullWidth
+              variant="contained"
+              onClick={() => go('/login')}
+              sx={{ borderRadius: 999, height: 44, mb: 1 }}
+            >
+              Login
+            </Button>
+          )}
+        </Box>
       </Drawer>
 
       <Outlet />

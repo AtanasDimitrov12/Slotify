@@ -5,6 +5,12 @@ import { TenantsModule } from './tenants/tenants.module';
 import { TenantDetailsModule } from './tenant-details/tenant-details.module';
 import { AuthModule } from './auth/auth.module';
 import { MembershipsModule } from './memberships/memberships.module';
+import { StaffProfilesModule } from './staff-profiles/staff-profiles.module';
+import { StaffAvailabilityModule } from './staff-availability/staff-availability.module';
+import { StaffTimeOffModule } from './staff-time-off/staff-time-off.module';
+import { ServicesModule } from './services/services.module';
+import { StaffServiceAssignmentsModule } from './staff-service-assignments/staff-service-assignments.module';
+import { StaffModule } from './staff/staff.module';
 
 @Module({
   imports: [
@@ -22,6 +28,12 @@ import { MembershipsModule } from './memberships/memberships.module';
     TenantsModule,
     TenantDetailsModule,
     MembershipsModule,
+    StaffModule,
+    StaffProfilesModule,
+    StaffAvailabilityModule,
+    StaffTimeOffModule,
+    ServicesModule,
+    StaffServiceAssignmentsModule,
   ],
 })
 export class AppModule { }

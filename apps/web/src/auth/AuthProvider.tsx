@@ -21,15 +21,29 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     const token = localStorage.getItem('accessToken');
+    const storedAccount = localStorage.getItem('account');
+
+    if (storedAccount) {
+      try {
+        setUser(JSON.parse(storedAccount));
+      } catch {
+        localStorage.removeItem('account');
+      }
+    }
+
     if (!token) {
       setLoading(false);
       return;
     }
 
     AuthApi.me()
-      .then(setUser)
+      .then((me) => {
+        setUser(me);
+        localStorage.setItem('account', JSON.stringify(me));
+      })
       .catch(() => {
         localStorage.removeItem('accessToken');
+        localStorage.removeItem('account');
         setUser(null);
       })
       .finally(() => setLoading(false));
@@ -42,26 +56,29 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       login: async (email, password, tenantId) => {
         const res = await AuthApi.login(email, password, tenantId);
 
-        // multi-tenant -> choose
         if (res?.tenants?.length) {
           return {
             kind: 'pickTenant',
-            tenants: res.tenants.map((t: any) => ({ _id: String(t._id), name: t.name })),
+            tenants: res.tenants.map((t: any) => ({
+              _id: String(t._id),
+              name: t.name,
+            })),
           };
         }
 
-        // normal login
         if (!res?.accessToken || !res?.account) {
           throw new Error('Login failed: Invalid response from server.');
         }
 
         localStorage.setItem('accessToken', res.accessToken);
+        localStorage.setItem('account', JSON.stringify(res.account));
         setUser(res.account);
 
         return { kind: 'loggedIn', account: res.account };
       },
       logout: () => {
         localStorage.removeItem('accessToken');
+        localStorage.removeItem('account');
         setUser(null);
       },
     }),

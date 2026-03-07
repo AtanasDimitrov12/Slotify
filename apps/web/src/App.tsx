@@ -29,24 +29,24 @@ export default function App() {
         <Route path="/partner" element={<PartnerPage />} />
         <Route path="/login" element={<LoginPage />} />
 
-        {/* <Route element={<RequireRole role="admin" />}> */}
+        <Route element={<RequireRole role="admin" />}>
           <Route path="/admin" element={<AdminLayout />}>
             <Route index element={<AdminOverviewPage />} />
             <Route path="overview" element={<AdminOverviewPage />} />
             <Route path="tenants" element={<AdminTenantsPage />} />
           </Route>
-        {/* </Route> */}
+        </Route>
 
-        {/* <Route element={<RequireRole role="owner" />}> */}
+        <Route element={<RequireRole role="owner" />}>
           <Route path="/owner" element={<OwnerLayout />}>
             <Route index element={<OwnerOverviewPage />} />
             <Route path="overview" element={<OwnerOverviewPage />} />
             <Route path="team" element={<OwnerTeamPage />} />
             <Route path="settings" element={<OwnerSettingsPage />} />
           </Route>
-        {/* </Route> */}
+        </Route>
 
-        {/*<Route element={<RequireRole role="staff" />}>*/}
+        <Route element={<RequireRole role="staff" />}>
           <Route path="/staff" element={<StaffLayout />}>
             <Route index element={<StaffDashboardPage />} />
             <Route path="dashboard" element={<StaffDashboardPage />} />
@@ -55,7 +55,7 @@ export default function App() {
             <Route path="time-off" element={<StaffTimeOffPage />} />
             <Route path="services" element={<StaffServicesPage />} />
           </Route>
-        {/*</Route>*/}
+        </Route>
 
         {/* 404 fallback */}
         <Route path="*" element={<NotFoundPage />} />

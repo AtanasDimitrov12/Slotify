@@ -1,7 +1,6 @@
 import * as React from 'react';
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 import {
-  AppBar,
   Box,
   Drawer,
   IconButton,
@@ -54,7 +53,9 @@ export default function OwnerLayout() {
       <List sx={{ px: 1 }}>
         {items.map((it) => {
           const active =
-            location.pathname === it.to || (it.to.endsWith('/overview') && location.pathname === '/owner');
+            location.pathname === it.to ||
+            (it.to.endsWith('/overview') && location.pathname === '/owner');
+
           return (
             <ListItemButton
               key={it.to}
@@ -73,6 +74,7 @@ export default function OwnerLayout() {
       </List>
 
       <Box sx={{ flex: 1 }} />
+
       <Box sx={{ p: 2, opacity: 0.7 }}>
         <Typography variant="caption">Tip</Typography>
         <Typography variant="body2">
@@ -83,40 +85,31 @@ export default function OwnerLayout() {
   );
 
   return (
-    <Box sx={{ display: 'flex' }}>
-      <AppBar position="fixed" elevation={0} color="transparent">
-        <Toolbar sx={{ gap: 1 }}>
-          {!isDesktop && (
-            <IconButton onClick={() => setOpen(true)}>
-              <MenuRoundedIcon />
-            </IconButton>
-          )}
-          <Typography variant="h6" fontWeight={800}>
-            Slotify
-          </Typography>
-          <Box sx={{ flex: 1 }} />
-          {/* put tenant switcher / profile chip here later */}
-        </Toolbar>
-      </AppBar>
-
-      {/* spacer for AppBar */}
-      <Toolbar />
-
+    <Box sx={{ display: 'flex', minHeight: 'calc(100vh - 68px)' }}>
       {isDesktop ? (
-        <Drawer
-          variant="permanent"
+        <Box
           sx={{
             width: drawerWidth,
             flexShrink: 0,
-            '& .MuiDrawer-paper': { width: drawerWidth, boxSizing: 'border-box' },
+            borderRight: '1px solid',
+            borderColor: 'divider',
+            bgcolor: 'background.paper',
           }}
         >
           {drawer}
-        </Drawer>
+        </Box>
       ) : (
-        <Drawer open={open} onClose={() => setOpen(false)}>
-          <Box sx={{ width: drawerWidth }}>{drawer}</Box>
-        </Drawer>
+        <>
+          <Box sx={{ p: 2, pb: 0 }}>
+            <IconButton onClick={() => setOpen(true)}>
+              <MenuRoundedIcon />
+            </IconButton>
+          </Box>
+
+          <Drawer open={open} onClose={() => setOpen(false)}>
+            <Box sx={{ width: drawerWidth }}>{drawer}</Box>
+          </Drawer>
+        </>
       )}
 
       <Box sx={{ flex: 1, p: { xs: 2, md: 3 } }}>
