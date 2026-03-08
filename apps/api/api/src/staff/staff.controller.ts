@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Post, Put, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Post, Put, UseGuards } from '@nestjs/common';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { CurrentUser } from '../auth/current-user.decorator';
 import { StaffService } from './staff.service';
@@ -8,7 +8,7 @@ import { UpdateStaffAvailabilityDto } from 'src/staff-availability/dto/update-st
 
 @Controller('staff')
 export class StaffController {
-  constructor(private readonly staffService: StaffService) {}
+  constructor(private readonly staffService: StaffService) { }
 
   @Get('me/profile')
   @UseGuards(JwtAuthGuard)
@@ -38,6 +38,30 @@ export class StaffController {
     @Body() dto: UpdateStaffAvailabilityDto,
   ) {
     return this.staffService.updateMyAvailability(currentUser, dto);
+  }
+
+  @Get('me/time-off')
+  @UseGuards(JwtAuthGuard)
+  getMyTimeOff(@CurrentUser() currentUser: any) {
+    return this.staffService.getMyTimeOff(currentUser);
+  }
+
+  @Post('me/time-off')
+  @UseGuards(JwtAuthGuard)
+  createMyTimeOff(
+    @CurrentUser() currentUser: any,
+    @Body() dto: { startDate: string; endDate: string; reason?: string },
+  ) {
+    return this.staffService.createMyTimeOff(currentUser, dto);
+  }
+
+  @Delete('me/time-off/:id')
+  @UseGuards(JwtAuthGuard)
+  removeMyTimeOff(
+    @CurrentUser() currentUser: any,
+    @Param('id') id: string,
+  ) {
+    return this.staffService.removeMyTimeOff(currentUser, id);
   }
 
   @Post('onboard')

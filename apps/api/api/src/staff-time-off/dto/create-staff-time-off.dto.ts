@@ -1,4 +1,4 @@
-import { IsDateString, IsMongoId, IsOptional, IsString, IsIn } from 'class-validator';
+import { IsMongoId, IsOptional, IsString, Matches } from 'class-validator';
 
 export class CreateStaffTimeOffDto {
   @IsMongoId()
@@ -7,17 +7,15 @@ export class CreateStaffTimeOffDto {
   @IsMongoId()
   userId!: string;
 
-  @IsDateString()
+  @IsString()
+  @Matches(/^\d{4}-\d{2}-\d{2}$/)
   startDate!: string;
 
-  @IsDateString()
+  @IsString()
+  @Matches(/^\d{4}-\d{2}-\d{2}$/)
   endDate!: string;
 
   @IsOptional()
   @IsString()
   reason?: string;
-
-  @IsOptional()
-  @IsIn(['requested', 'approved', 'denied'])
-  status?: 'requested' | 'approved' | 'denied';
 }

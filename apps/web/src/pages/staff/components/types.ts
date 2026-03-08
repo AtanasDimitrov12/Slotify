@@ -17,15 +17,12 @@ export type DaySchedule = {
   breakEnd?: string;
 };
 
-export type TimeOffStatus = 'pending' | 'approved' | 'rejected';
-
 export type TimeOffRequest = {
   id: string;
-  startDate: string; // YYYY-MM-DD
-  endDate: string;   // YYYY-MM-DD
+  startDate: string;
+  endDate: string;
   reason?: string;
-  status: TimeOffStatus;
-  createdAt: string; // ISO string
+  status: 'requested' | 'approved' | 'denied';
 };
 
 export type StaffService = {

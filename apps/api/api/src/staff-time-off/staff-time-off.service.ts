@@ -24,8 +24,11 @@ export class StaffTimeOffService {
 
   findAllByStaff(tenantId: string, userId: string) {
     return this.timeOffModel
-      .find({ tenantId, userId })
-      .sort({ startDate: -1 })
+      .find({
+        tenantId: new Types.ObjectId(tenantId),
+        userId: new Types.ObjectId(userId),
+      })
+      .sort({ startDate: -1, createdAt: -1 })
       .lean();
   }
 
@@ -37,7 +40,7 @@ export class StaffTimeOffService {
     };
 
     const updated = await this.timeOffModel
-      .findByIdAndUpdate(id, payload, { new: true })
+      .findByIdAndUpdate(id, { $set: payload }, { new: true })
       .lean();
 
     if (!updated) throw new NotFoundException('Staff time off not found');
