@@ -1,6 +1,7 @@
 import {
   BadRequestException,
   Injectable,
+  NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
 import * as bcrypt from 'bcryptjs';
@@ -11,6 +12,8 @@ import { StaffAvailabilityService } from '../staff-availability/staff-availabili
 import { StaffProfilesService } from '../staff-profiles/staff-profiles.service';
 import { UsersService } from '../users/users.service';
 import { CreateStaffAccountDto } from './dto/create-staff-account.dto';
+import { UpdateStaffProfileDto } from '../staff-profiles/dto/update-staff-profile.dto';
+import { UpdateStaffAvailabilityDto } from '../staff-availability/dto/update-staff-availability.dto';
 
 @Injectable()
 export class StaffService {
@@ -20,6 +23,75 @@ export class StaffService {
     private readonly staffProfilesService: StaffProfilesService,
     private readonly staffAvailabilityService: StaffAvailabilityService,
   ) { }
+
+  async getMyProfile(currentUser: any) {
+    const tenantId = currentUser?.tenantId;
+    const userId = currentUser?.sub || currentUser?.userId || currentUser?._id;
+
+    if (!tenantId || !Types.ObjectId.isValid(tenantId)) {
+      throw new UnauthorizedException('Invalid tenant context');
+    }
+
+    if (!userId || !Types.ObjectId.isValid(userId)) {
+      throw new UnauthorizedException('Invalid user context');
+    }
+
+    const user = await this.usersService.findById(userId);
+    const profile = await this.staffProfilesService.findByTenantAndUser(tenantId, userId);
+
+    if (!profile) {
+      throw new NotFoundException('Staff profile not found');
+    }
+
+    return {
+      id: profile._id.toString(),
+      tenantId: profile.tenantId.toString(),
+      userId: profile.userId.toString(),
+      name: profile.displayName || user?.name || '',
+      email: user?.email || '',
+      photoUrl: profile.avatarUrl || '',
+      bio: profile.bio || '',
+      experienceYears: profile.experienceYears || 0,
+      expertiseTags: profile.expertise || [],
+      isBookable: profile.isBookable,
+      isActive: profile.isActive,
+    };
+  }
+
+  async updateMyProfile(currentUser: any, dto: UpdateStaffProfileDto) {
+    const tenantId = currentUser?.tenantId;
+    const userId = currentUser?.sub || currentUser?.userId || currentUser?._id;
+
+    if (!tenantId || !Types.ObjectId.isValid(tenantId)) {
+      throw new UnauthorizedException('Invalid tenant context');
+    }
+
+    if (!userId || !Types.ObjectId.isValid(userId)) {
+      throw new UnauthorizedException('Invalid user context');
+    }
+
+    const updated = await this.staffProfilesService.updateByTenantAndUser(
+      tenantId,
+      userId,
+      dto,
+    );
+
+    const user = await this.usersService.findById(userId);
+
+    return {
+      id: updated._id.toString(),
+      tenantId: updated.tenantId.toString(),
+      userId: updated.userId.toString(),
+      name: updated.displayName || user?.name || '',
+      email: user?.email || '',
+      photoUrl: updated.avatarUrl || '',
+      bio: updated.bio || '',
+      experienceYears: updated.experienceYears || 0,
+      expertiseTags: updated.expertise || [],
+      isBookable: updated.isBookable,
+      isActive: updated.isActive,
+    };
+  }
 
   async onboard(currentUser: any, dto: CreateStaffAccountDto) {
     const tenantId = currentUser?.tenantId;
@@ -58,7 +130,7 @@ export class StaffService {
     const staffProfile = await this.staffProfilesService.create({
       tenantId,
       userId,
-      displayName: '',
+      displayName: dto.name.trim(),
       bio: '',
       experienceYears: 0,
       expertise: [],
@@ -101,34 +173,51 @@ export class StaffService {
     };
   }
 
-  async findAllForTenant(currentUser: any) {
+  async getMyAvailability(currentUser: any) {
     const tenantId = currentUser?.tenantId;
+    const userId = currentUser?.sub || currentUser?.userId || currentUser?._id || currentUser?.id;
 
     if (!tenantId || !Types.ObjectId.isValid(tenantId)) {
       throw new UnauthorizedException('Invalid tenant context');
     }
 
-    if (!['owner'].includes(currentUser?.role)) {
-      throw new UnauthorizedException('You are not allowed to view staff members');
+    if (!userId || !Types.ObjectId.isValid(userId)) {
+      throw new UnauthorizedException('Invalid user context');
     }
 
-    const memberships = await this.membershipsService.findByTenantAndRole(tenantId, 'staff');
+    const availability = await this.staffAvailabilityService.findByStaff(tenantId, userId);
 
-    const staff = await Promise.all(
-      memberships.map(async (membership: any) => {
-        const user = await this.usersService.findById(membership.userId);
+    if (!availability) {
+      throw new NotFoundException('Staff availability not found');
+    }
 
-        return {
-          userId: membership.userId,
-          membershipId: membership._id.toString(),
-          tenantId: membership.tenantId,
-          role: membership.role,
-          name: user?.name ?? '',
-          email: user?.email ?? '',
-        };
-      }),
-    );
+    return {
+      id: availability._id.toString(),
+      tenantId: availability.tenantId.toString(),
+      userId: availability.userId.toString(),
+      weeklyAvailability: availability.weeklyAvailability ?? [],
+    };
+  }
 
-    return staff;
+  async updateMyAvailability(currentUser: any, dto: UpdateStaffAvailabilityDto) {
+    const tenantId = currentUser?.tenantId;
+    const userId = currentUser?.sub || currentUser?.userId || currentUser?._id || currentUser?.id;
+
+    if (!tenantId || !Types.ObjectId.isValid(tenantId)) {
+      throw new UnauthorizedException('Invalid tenant context');
+    }
+
+    if (!userId || !Types.ObjectId.isValid(userId)) {
+      throw new UnauthorizedException('Invalid user context');
+    }
+
+    const updated = await this.staffAvailabilityService.upsertByStaff(tenantId, userId, dto);
+
+    return {
+      id: updated!._id.toString(),
+      tenantId: updated!.tenantId.toString(),
+      userId: updated!.userId.toString(),
+      weeklyAvailability: updated!.weeklyAvailability ?? [],
+    };
   }
 }

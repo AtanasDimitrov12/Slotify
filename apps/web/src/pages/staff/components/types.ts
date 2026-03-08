@@ -7,13 +7,12 @@ export type StaffProfile = {
   expertiseTags: string[];
 };
 
-export type DayKey = 'Mon' | 'Tue' | 'Wed' | 'Thu' | 'Fri' | 'Sat' | 'Sun';
-
 export type DaySchedule = {
-  day: DayKey;
+  dayOfWeek: number;
+  label: string;
   enabled: boolean;
-  start: string; // "09:00"
-  end: string;   // "18:00"
+  start: string;
+  end: string;
   breakStart?: string;
   breakEnd?: string;
 };

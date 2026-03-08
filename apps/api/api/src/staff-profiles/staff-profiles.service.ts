@@ -10,7 +10,7 @@ export class StaffProfilesService {
   constructor(
     @InjectModel(StaffProfile.name)
     private readonly staffProfileModel: Model<StaffProfileDocument>,
-  ) {}
+  ) { }
 
   create(dto: CreateStaffProfileDto) {
     if (!Types.ObjectId.isValid(dto.tenantId)) {
@@ -36,12 +36,44 @@ export class StaffProfilesService {
     return this.staffProfileModel.findById(id).lean();
   }
 
+  findByTenantAndUser(tenantId: string, userId: string) {
+    if (!Types.ObjectId.isValid(tenantId) || !Types.ObjectId.isValid(userId)) {
+      throw new BadRequestException('Invalid tenantId or userId');
+    }
+
+    return this.staffProfileModel.findOne({
+      tenantId: new Types.ObjectId(tenantId),
+      userId: new Types.ObjectId(userId),
+      isActive: true,
+    }).lean();
+  }
+
   async update(id: string, dto: UpdateStaffProfileDto) {
     const updated = await this.staffProfileModel
-      .findByIdAndUpdate(id, dto, { new: true })
+      .findByIdAndUpdate(id, { $set: dto }, { new: true })
       .lean();
 
     if (!updated) throw new NotFoundException('Staff profile not found');
+    return updated;
+  }
+
+  async updateByTenantAndUser(
+    tenantId: string,
+    userId: string,
+    dto: UpdateStaffProfileDto,
+  ) {
+    const updated = await this.staffProfileModel.findOneAndUpdate(
+      {
+        tenantId: new Types.ObjectId(tenantId),
+        userId: new Types.ObjectId(userId),
+        isActive: true,
+      },
+      { $set: dto },
+      { new: true },
+    ).lean();
+
+    if (!updated) throw new NotFoundException('Staff profile not found');
+
     return updated;
   }
 

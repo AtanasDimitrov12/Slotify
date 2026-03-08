@@ -10,8 +10,10 @@ import {
   Typography,
 } from '@mui/material';
 
+export type OpeningDayKey = 'mon' | 'tue' | 'wed' | 'thu' | 'fri' | 'sat' | 'sun';
+
 export type OpeningDay = {
-  key: string;
+  key: OpeningDayKey;
   label: string;
   enabled: boolean;
   start: string;
@@ -24,7 +26,7 @@ type Props = {
 };
 
 export default function OpeningHoursEditor({ value, onChange }: Props) {
-  function updateOpeningDay(dayKey: string, patch: Partial<OpeningDay>) {
+  function updateOpeningDay(dayKey: OpeningDayKey, patch: Partial<OpeningDay>) {
     onChange(value.map((day) => (day.key === dayKey ? { ...day, ...patch } : day)));
   }
 
@@ -62,9 +64,7 @@ export default function OpeningHoursEditor({ value, onChange }: Props) {
                   label="Start time"
                   type="time"
                   value={day.start}
-                  onChange={(e) =>
-                    updateOpeningDay(day.key, { start: e.target.value })
-                  }
+                  onChange={(e) => updateOpeningDay(day.key, { start: e.target.value })}
                   disabled={!day.enabled}
                   InputLabelProps={{ shrink: true }}
                   inputProps={{ step: 300 }}
@@ -77,9 +77,7 @@ export default function OpeningHoursEditor({ value, onChange }: Props) {
                   label="End time"
                   type="time"
                   value={day.end}
-                  onChange={(e) =>
-                    updateOpeningDay(day.key, { end: e.target.value })
-                  }
+                  onChange={(e) => updateOpeningDay(day.key, { end: e.target.value })}
                   disabled={!day.enabled}
                   InputLabelProps={{ shrink: true }}
                   inputProps={{ step: 300 }}

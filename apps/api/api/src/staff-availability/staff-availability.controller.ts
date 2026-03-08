@@ -12,14 +12,6 @@ export class StaffAvailabilityController {
     return this.staffAvailabilityService.create(dto);
   }
 
-  @Get()
-  findAllByStaff(
-    @Query('tenantId') tenantId: string,
-    @Query('userId') userId: string,
-  ) {
-    return this.staffAvailabilityService.findAllByStaff(tenantId, userId);
-  }
-
   @Patch(':id')
   update(@Param('id') id: string, @Body() dto: UpdateStaffAvailabilityDto) {
     return this.staffAvailabilityService.update(id, dto);

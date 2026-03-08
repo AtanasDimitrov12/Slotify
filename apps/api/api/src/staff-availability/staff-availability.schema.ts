@@ -5,7 +5,8 @@ import { User } from '../users/user.schema';
 
 export type StaffAvailabilityDocument = HydratedDocument<StaffAvailability>;
 
-class DayAvailability {
+@Schema({ _id: false })
+export class DayAvailability {
   @Prop({ required: true, min: 0, max: 6 })
   dayOfWeek!: number;
 
@@ -25,23 +26,20 @@ class DayAvailability {
   isAvailable!: boolean;
 }
 
+export const DayAvailabilitySchema = SchemaFactory.createForClass(DayAvailability);
+
 @Schema({ timestamps: true })
 export class StaffAvailability {
-
   @Prop({ type: Types.ObjectId, ref: Tenant.name, required: true, index: true })
   tenantId!: Types.ObjectId;
 
   @Prop({ type: Types.ObjectId, ref: User.name, required: true, index: true })
   userId!: Types.ObjectId;
 
-  @Prop({ type: [DayAvailability], default: [] })
+  @Prop({ type: [DayAvailabilitySchema], default: [] })
   weeklyAvailability!: DayAvailability[];
 }
 
-export const StaffAvailabilitySchema =
-  SchemaFactory.createForClass(StaffAvailability);
+export const StaffAvailabilitySchema = SchemaFactory.createForClass(StaffAvailability);
 
-StaffAvailabilitySchema.index(
-  { tenantId: 1, userId: 1 },
-  { unique: true }
-);
+StaffAvailabilitySchema.index({ tenantId: 1, userId: 1 }, { unique: true });

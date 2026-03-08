@@ -11,6 +11,7 @@ import { StaffTimeOffModule } from './staff-time-off/staff-time-off.module';
 import { ServicesModule } from './services/services.module';
 import { StaffServiceAssignmentsModule } from './staff-service-assignments/staff-service-assignments.module';
 import { StaffModule } from './staff/staff.module';
+import { OwnerModule } from './owner/owner.module';
 
 @Module({
   imports: [
@@ -26,6 +27,7 @@ import { StaffModule } from './staff/staff.module';
     }),
     AuthModule,
     TenantsModule,
+    OwnerModule,
     TenantDetailsModule,
     MembershipsModule,
     StaffModule,

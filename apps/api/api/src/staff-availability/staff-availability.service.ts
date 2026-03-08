@@ -10,7 +10,7 @@ export class StaffAvailabilityService {
   constructor(
     @InjectModel(StaffAvailability.name)
     private readonly availabilityModel: Model<StaffAvailabilityDocument>,
-  ) { }
+  ) {}
 
   create(dto: CreateStaffAvailabilityDto) {
     return this.availabilityModel.create({
@@ -21,33 +21,36 @@ export class StaffAvailabilityService {
   }
 
   findByStaff(tenantId: string, userId: string) {
-    return this.availabilityModel
-      .findOne({ tenantId, userId })
-      .lean();
+    return this.availabilityModel.findOne({
+      tenantId: new Types.ObjectId(tenantId),
+      userId: new Types.ObjectId(userId),
+    }).lean();
   }
 
-  findAllByStaff(tenantId: string, userId: string) {
-    return this.availabilityModel
-      .find({ tenantId, userId })
-      .sort({ dayOfWeek: 1 })
-      .lean();
+  async upsertByStaff(
+    tenantId: string,
+    userId: string,
+    dto: UpdateStaffAvailabilityDto,
+  ) {
+    return this.availabilityModel.findOneAndUpdate(
+      {
+        tenantId: new Types.ObjectId(tenantId),
+        userId: new Types.ObjectId(userId),
+      },
+      {
+        $set: {
+          tenantId: new Types.ObjectId(tenantId),
+          userId: new Types.ObjectId(userId),
+          weeklyAvailability: dto.weeklyAvailability,
+        },
+      },
+      { new: true, upsert: true },
+    ).lean();
   }
-
-  async updateDay(userId: string, dayOfWeek: number, data: any) {
-
-  return this.availabilityModel.updateOne(
-    { userId, "weeklyAvailability.dayOfWeek": dayOfWeek },
-    {
-      $set: {
-        "weeklyAvailability.$": data
-      }
-    }
-  );
-}
 
   async update(id: string, dto: UpdateStaffAvailabilityDto) {
     const updated = await this.availabilityModel
-      .findByIdAndUpdate(id, dto, { new: true })
+      .findByIdAndUpdate(id, { $set: dto }, { new: true })
       .lean();
 
     if (!updated) throw new NotFoundException('Staff availability not found');

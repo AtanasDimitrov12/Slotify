@@ -1,45 +1,152 @@
 import * as React from 'react';
-import { Box, Button, Stack, Typography } from '@mui/material';
+import {
+  Alert,
+  Box,
+  Button,
+  CircularProgress,
+  Snackbar,
+  Stack,
+  Typography,
+} from '@mui/material';
 import WeeklyScheduleEditor from './components/WeeklyScheduleEditor';
 import type { DaySchedule } from './components/types';
+import {
+  getMyStaffAvailability,
+  updateMyStaffAvailability,
+} from '../../api/staffAvailability';
 
-const initial: DaySchedule[] = [
-  { day: 'Mon', enabled: true, start: '09:00', end: '18:00', breakStart: '13:00', breakEnd: '13:30' },
-  { day: 'Tue', enabled: true, start: '09:00', end: '18:00', breakStart: '13:00', breakEnd: '13:30' },
-  { day: 'Wed', enabled: true, start: '09:00', end: '18:00', breakStart: '13:00', breakEnd: '13:30' },
-  { day: 'Thu', enabled: true, start: '09:00', end: '18:00', breakStart: '13:00', breakEnd: '13:30' },
-  { day: 'Fri', enabled: true, start: '09:00', end: '18:00', breakStart: '13:00', breakEnd: '13:30' },
-  { day: 'Sat', enabled: true, start: '10:00', end: '16:00' },
-  { day: 'Sun', enabled: false, start: '09:00', end: '18:00' },
+const defaultSchedule: DaySchedule[] = [
+  { dayOfWeek: 1, label: 'Mon', enabled: true, start: '09:00', end: '18:00', breakStart: '13:00', breakEnd: '13:30' },
+  { dayOfWeek: 2, label: 'Tue', enabled: true, start: '09:00', end: '18:00', breakStart: '13:00', breakEnd: '13:30' },
+  { dayOfWeek: 3, label: 'Wed', enabled: true, start: '09:00', end: '18:00', breakStart: '13:00', breakEnd: '13:30' },
+  { dayOfWeek: 4, label: 'Thu', enabled: true, start: '09:00', end: '18:00', breakStart: '13:00', breakEnd: '13:30' },
+  { dayOfWeek: 5, label: 'Fri', enabled: true, start: '09:00', end: '18:00', breakStart: '13:00', breakEnd: '13:30' },
+  { dayOfWeek: 6, label: 'Sat', enabled: true, start: '10:00', end: '16:00' },
+  { dayOfWeek: 0, label: 'Sun', enabled: false, start: '09:00', end: '18:00' },
 ];
 
-export default function StaffAvailabilityPage() {
-  const [schedule, setSchedule] = React.useState<DaySchedule[]>(initial);
+function mapApiToUi(
+  weeklyAvailability?: {
+    dayOfWeek: number;
+    startTime: string;
+    endTime: string;
+    breakStartTime?: string;
+    breakEndTime?: string;
+    isAvailable: boolean;
+  }[],
+): DaySchedule[] {
+  return [...defaultSchedule]
+    .sort((a, b) => a.dayOfWeek - b.dayOfWeek)
+    .map((defaultDay) => {
+      const found = weeklyAvailability?.find((d) => d.dayOfWeek === defaultDay.dayOfWeek);
 
-  function handleSave() {
-    // TODO: PUT /staff/me/availability
-    // eslint-disable-next-line no-console
-    console.log('Save availability:', schedule);
+      if (!found) return defaultDay;
+
+      return {
+        dayOfWeek: found.dayOfWeek,
+        label: defaultDay.label,
+        enabled: found.isAvailable,
+        start: found.startTime,
+        end: found.endTime,
+        breakStart: found.breakStartTime,
+        breakEnd: found.breakEndTime,
+      };
+    })
+    .sort((a, b) => {
+      const order = [1, 2, 3, 4, 5, 6, 0];
+      return order.indexOf(a.dayOfWeek) - order.indexOf(b.dayOfWeek);
+    });
+}
+
+export default function StaffAvailabilityPage() {
+  const [schedule, setSchedule] = React.useState<DaySchedule[]>(defaultSchedule);
+  const [loading, setLoading] = React.useState(true);
+  const [saving, setSaving] = React.useState(false);
+  const [error, setError] = React.useState('');
+  const [success, setSuccess] = React.useState('');
+
+  const loadAvailability = React.useCallback(async () => {
+    setLoading(true);
+    setError('');
+
+    try {
+      const data = await getMyStaffAvailability();
+      setSchedule(mapApiToUi(data.weeklyAvailability));
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to load availability');
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  React.useEffect(() => {
+    void loadAvailability();
+  }, [loadAvailability]);
+
+  async function handleSave() {
+    setSaving(true);
+    setError('');
+
+    try {
+      await updateMyStaffAvailability({
+        weeklyAvailability: schedule.map((day) => ({
+          dayOfWeek: day.dayOfWeek,
+          startTime: day.start,
+          endTime: day.end,
+          breakStartTime: day.breakStart || undefined,
+          breakEndTime: day.breakEnd || undefined,
+          isAvailable: day.enabled,
+        })),
+      });
+
+      setSuccess('Availability updated successfully.');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to save availability');
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  if (loading) {
+    return (
+      <Box sx={{ minHeight: 320, display: 'grid', placeItems: 'center' }}>
+        <CircularProgress />
+      </Box>
+    );
   }
 
   return (
-    <Stack spacing={2.5}>
-      <Box>
-        <Typography variant="h4" fontWeight={900}>
-          Availability
-        </Typography>
-        <Typography sx={{ opacity: 0.7 }}>
-          Set your default weekly working hours and breaks.
-        </Typography>
-      </Box>
+    <>
+      <Stack spacing={2.5}>
+        <Box>
+          <Typography variant="h4" fontWeight={900}>
+            Availability
+          </Typography>
+          <Typography sx={{ opacity: 0.7 }}>
+            Set your default weekly working hours and breaks.
+          </Typography>
+        </Box>
 
-      <WeeklyScheduleEditor value={schedule} onChange={setSchedule} />
+        {error ? <Alert severity="error">{error}</Alert> : null}
 
-      <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
-        <Button variant="contained" onClick={handleSave}>
-          Save schedule
-        </Button>
-      </Box>
-    </Stack>
+        <WeeklyScheduleEditor value={schedule} onChange={setSchedule} />
+
+        <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
+          <Button variant="contained" onClick={handleSave} disabled={saving}>
+            Save schedule
+          </Button>
+        </Box>
+      </Stack>
+
+      <Snackbar
+        open={Boolean(success)}
+        autoHideDuration={3000}
+        onClose={() => setSuccess('')}
+      >
+        <Alert onClose={() => setSuccess('')} severity="success" variant="filled">
+          {success}
+        </Alert>
+      </Snackbar>
+    </>
   );
 }
