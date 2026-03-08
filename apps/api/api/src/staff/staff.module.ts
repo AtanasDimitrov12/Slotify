@@ -6,6 +6,8 @@ import { MembershipsModule } from '../memberships/memberships.module';
 import { StaffProfilesModule } from '../staff-profiles/staff-profiles.module';
 import { StaffAvailabilityModule } from '../staff-availability/staff-availability.module';
 import { StaffTimeOffModule } from 'src/staff-time-off/staff-time-off.module';
+import { StaffServiceAssignmentsModule } from '../staff-service-assignments/staff-service-assignments.module';
+import { ServicesModule } from 'src/services/services.module';
 
 @Module({
   imports: [
@@ -13,7 +15,9 @@ import { StaffTimeOffModule } from 'src/staff-time-off/staff-time-off.module';
     MembershipsModule,
     StaffProfilesModule,
     StaffAvailabilityModule,
-    StaffTimeOffModule
+    StaffTimeOffModule,
+    StaffServiceAssignmentsModule,
+    ServicesModule,
   ],
   controllers: [StaffController],
   providers: [StaffService],

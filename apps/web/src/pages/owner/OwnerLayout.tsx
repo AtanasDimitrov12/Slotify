@@ -18,6 +18,7 @@ import MenuRoundedIcon from '@mui/icons-material/MenuRounded';
 import DashboardRoundedIcon from '@mui/icons-material/DashboardRounded';
 import GroupsRoundedIcon from '@mui/icons-material/GroupsRounded';
 import SettingsRoundedIcon from '@mui/icons-material/SettingsRounded';
+import ContentCutRoundedIcon from '@mui/icons-material/ContentCutRounded';
 
 const drawerWidth = 264;
 
@@ -31,10 +32,11 @@ export default function OwnerLayout() {
   const location = useLocation();
 
   const items: NavItem[] = [
-    { label: 'Overview', to: '/owner/overview', icon: <DashboardRoundedIcon /> },
-    { label: 'Team', to: '/owner/team', icon: <GroupsRoundedIcon /> },
-    { label: 'Business settings', to: '/owner/settings', icon: <SettingsRoundedIcon /> },
-  ];
+  { label: 'Overview', to: '/owner/overview', icon: <DashboardRoundedIcon /> },
+  { label: 'Team', to: '/owner/team', icon: <GroupsRoundedIcon /> },
+  { label: 'Services', to: '/owner/services', icon: <ContentCutRoundedIcon /> },
+  { label: 'Business settings', to: '/owner/settings', icon: <SettingsRoundedIcon /> },
+];
 
   const drawer = (
     <Stack sx={{ height: '100%' }}>

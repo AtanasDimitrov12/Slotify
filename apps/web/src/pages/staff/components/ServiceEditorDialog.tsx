@@ -5,60 +5,79 @@ import {
   DialogActions,
   DialogContent,
   DialogTitle,
+  MenuItem,
   Stack,
   TextField,
   Typography,
 } from '@mui/material';
-import type { StaffService } from '../components/types';
+import type { CatalogServiceOption, StaffService } from './types';
 
-export type ServicePayload = Omit<StaffService, 'id'>;
+export type ServicePayload = {
+  serviceId: string;
+  durationMin: number;
+  priceEUR: number;
+};
 
 type Props = {
   open: boolean;
   onClose: () => void;
   onSave: (payload: ServicePayload) => void | Promise<void>;
   initialData?: StaffService | null;
+  catalogOptions?: CatalogServiceOption[];
 };
 
-export default function ServiceEditorDialog({ open, onClose, onSave, initialData }: Props) {
-  const [name, setName] = React.useState('');
+export default function ServiceEditorDialog({
+  open,
+  onClose,
+  onSave,
+  initialData,
+  catalogOptions = [],
+}: Props) {
+  const [serviceId, setServiceId] = React.useState('');
   const [durationMin, setDurationMin] = React.useState('30');
   const [priceEUR, setPriceEUR] = React.useState('25');
-  const [description, setDescription] = React.useState('');
 
   React.useEffect(() => {
     if (!open) return;
 
     if (initialData) {
-      setName(initialData.name);
+      setServiceId(initialData.serviceId);
       setDurationMin(String(initialData.durationMin));
       setPriceEUR(String(initialData.priceEUR));
-      setDescription(initialData.description ?? '');
       return;
     }
 
-    setName('');
+    setServiceId('');
     setDurationMin('30');
     setPriceEUR('25');
-    setDescription('');
   }, [open, initialData]);
 
+  React.useEffect(() => {
+    if (!open || initialData || !serviceId) return;
+
+    const selected = catalogOptions.find((item) => item.id === serviceId);
+    if (!selected) return;
+
+    setDurationMin(String(selected.durationMin));
+    setPriceEUR(String(selected.priceEUR));
+  }, [serviceId, open, initialData, catalogOptions]);
+
+  const selectedCatalogService = catalogOptions.find((item) => item.id === serviceId);
+  const isEditing = Boolean(initialData);
+
   const canSubmit =
-    name.trim().length > 1 &&
+    serviceId.trim().length > 0 &&
     Number(durationMin) > 0 &&
     Number(priceEUR) >= 0;
 
   async function handleSave() {
     await onSave({
-      name: name.trim(),
+      serviceId,
       durationMin: Number(durationMin),
       priceEUR: Number(priceEUR),
-      description: description.trim() || undefined,
     });
     onClose();
   }
-
-  const isEditing = Boolean(initialData);
 
   return (
     <Dialog open={open} onClose={onClose} fullWidth maxWidth="sm">
@@ -67,32 +86,41 @@ export default function ServiceEditorDialog({ open, onClose, onSave, initialData
       <DialogContent>
         <Stack spacing={2} sx={{ mt: 1 }}>
           <TextField
-            label="Service name"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            autoFocus
-          />
+            select
+            label="Service"
+            value={serviceId}
+            onChange={(e) => setServiceId(e.target.value)}
+            disabled={isEditing}
+          >
+            {catalogOptions.map((service) => (
+              <MenuItem key={service.id} value={service.id}>
+                {service.name}
+              </MenuItem>
+            ))}
+          </TextField>
+
+          {selectedCatalogService?.description ? (
+            <Typography variant="body2" sx={{ opacity: 0.7 }}>
+              {selectedCatalogService.description}
+            </Typography>
+          ) : null}
+
           <TextField
-            label="Duration (min)"
+            label="Duration override (min)"
             type="number"
             value={durationMin}
             onChange={(e) => setDurationMin(e.target.value)}
           />
+
           <TextField
-            label="Price (€)"
+            label="Price override (€)"
             type="number"
             value={priceEUR}
             onChange={(e) => setPriceEUR(e.target.value)}
           />
-          <TextField
-            label="Description (optional)"
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-            multiline
-            minRows={3}
-          />
+
           <Typography variant="body2" sx={{ opacity: 0.7 }}>
-            Later this can be connected to the salon catalog (owner-approved services).
+            The service name and description come from the salon catalog. You can only adjust the duration and price for your own offering.
           </Typography>
         </Stack>
       </DialogContent>

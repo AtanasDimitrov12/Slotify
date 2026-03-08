@@ -11,10 +11,14 @@ import { MembershipsService } from '../memberships/memberships.service';
 import { StaffAvailabilityService } from '../staff-availability/staff-availability.service';
 import { UpdateStaffAvailabilityDto } from '../staff-availability/dto/update-staff-availability.dto';
 import { StaffProfilesService } from '../staff-profiles/staff-profiles.service';
+import { StaffServiceAssignmentsService } from '../staff-service-assignments/staff-service-assignments.service';
 import { UpdateStaffProfileDto } from '../staff-profiles/dto/update-staff-profile.dto';
 import { StaffTimeOffService } from '../staff-time-off/staff-time-off.service';
 import { CreateStaffAccountDto } from './dto/create-staff-account.dto';
 import { UsersService } from '../users/users.service';
+import { ServicesService } from 'src/services/services.service';
+
+
 
 type AuthUser = {
   sub?: string;
@@ -40,6 +44,43 @@ type CreateMyTimeOffDto = {
   reason?: string;
 };
 
+type StaffServiceResponseItem = {
+  id: string;
+  serviceId: string;
+  name: string;
+  durationMin: number;
+  priceEUR: number;
+  description?: string;
+};
+
+type PopulatedServiceRef = {
+  _id: Types.ObjectId;
+  name?: string;
+  durationMin?: number;
+  priceEUR?: number;
+  description?: string;
+};
+
+type StaffServiceAssignmentView = {
+  _id: Types.ObjectId;
+  serviceId: Types.ObjectId | PopulatedServiceRef;
+  customDurationMinutes?: number;
+  customPrice?: number;
+};
+
+type CreateMyStaffServiceDto = {
+  serviceId: string;
+  durationMin?: number;
+  priceEUR?: number;
+};
+
+type UpdateMyStaffServiceDto = {
+  durationMin?: number;
+  priceEUR?: number;
+  isOffered?: boolean;
+};
+
+
 @Injectable()
 export class StaffService {
   constructor(
@@ -48,7 +89,9 @@ export class StaffService {
     private readonly staffProfilesService: StaffProfilesService,
     private readonly staffAvailabilityService: StaffAvailabilityService,
     private readonly staffTimeOffService: StaffTimeOffService,
-  ) {}
+    private readonly staffServiceAssignmentsService: StaffServiceAssignmentsService,
+    private readonly servicesService: ServicesService,
+  ) { }
 
   private getTenantIdOrThrow(currentUser: AuthUser): string {
     const tenantId = currentUser?.tenantId;
@@ -348,5 +391,128 @@ export class StaffService {
     await this.staffTimeOffService.remove(id);
 
     return { message: 'Time off request removed successfully' };
+  }
+
+  private mapStaffServiceAssignment(
+    item: StaffServiceAssignmentView,
+  ): StaffServiceResponseItem {
+    const service = this.isPopulatedServiceRef(item.serviceId)
+      ? item.serviceId
+      : null;
+
+    return {
+      id: item._id.toString(),
+      serviceId: service?._id.toString() ?? item.serviceId.toString(),
+      name: service?.name ?? '',
+      durationMin: item.customDurationMinutes ?? service?.durationMin ?? 0,
+      priceEUR: item.customPrice ?? service?.priceEUR ?? 0,
+      description: service?.description ?? '',
+    };
+  }
+
+  private isPopulatedServiceRef(
+    value: Types.ObjectId | PopulatedServiceRef,
+  ): value is PopulatedServiceRef {
+    return (
+      typeof value === 'object' &&
+      value !== null &&
+      'name' in value
+    );
+  }
+
+  async getMyServices(currentUser: AuthUser): Promise<StaffServiceResponseItem[]> {
+    const tenantId = this.getTenantIdOrThrow(currentUser);
+    const userId = this.getUserIdOrThrow(currentUser);
+
+    const items = await this.staffServiceAssignmentsService.findAllByStaff(
+      tenantId,
+      userId,
+    );
+
+    return items.map((item) =>
+      this.mapStaffServiceAssignment(item as StaffServiceAssignmentView),
+    );
+  }
+
+  async createMyService(
+    currentUser: AuthUser,
+    dto: CreateMyStaffServiceDto,
+  ): Promise<StaffServiceResponseItem> {
+    const tenantId = this.getTenantIdOrThrow(currentUser);
+    const userId = this.getUserIdOrThrow(currentUser);
+
+    if (!dto.serviceId || !Types.ObjectId.isValid(dto.serviceId)) {
+      throw new BadRequestException('Invalid serviceId');
+    }
+
+    await this.servicesService.findOneForTenant(tenantId, dto.serviceId);
+
+    const created = await this.staffServiceAssignmentsService.create({
+      tenantId,
+      userId,
+      serviceId: dto.serviceId,
+      customDurationMinutes: dto.durationMin,
+      customPrice: dto.priceEUR,
+      isOffered: true,
+    });
+
+    const hydrated = await this.staffServiceAssignmentsService.update(
+      created._id.toString(),
+      {},
+    );
+
+    return this.mapStaffServiceAssignment(
+      hydrated as StaffServiceAssignmentView,
+    );
+  }
+
+  async updateMyService(
+    currentUser: AuthUser,
+    id: string,
+    dto: UpdateMyStaffServiceDto,
+  ): Promise<StaffServiceResponseItem> {
+    const tenantId = this.getTenantIdOrThrow(currentUser);
+    const userId = this.getUserIdOrThrow(currentUser);
+
+    const existing = await this.staffServiceAssignmentsService.findAllByStaff(
+      tenantId,
+      userId,
+    );
+
+    const ownAssignment = existing.find((item) => item._id.toString() === id);
+
+    if (!ownAssignment) {
+      throw new NotFoundException('Staff service assignment not found');
+    }
+
+    const updated = await this.staffServiceAssignmentsService.update(id, {
+      customDurationMinutes: dto.durationMin,
+      customPrice: dto.priceEUR,
+      isOffered: dto.isOffered,
+    });
+
+    return this.mapStaffServiceAssignment(
+      updated as StaffServiceAssignmentView,
+    );
+  }
+
+  async removeMyService(currentUser: AuthUser, id: string) {
+    const tenantId = this.getTenantIdOrThrow(currentUser);
+    const userId = this.getUserIdOrThrow(currentUser);
+
+    const existing = await this.staffServiceAssignmentsService.findAllByStaff(
+      tenantId,
+      userId,
+    );
+
+    const ownAssignment = existing.find((item) => item._id.toString() === id);
+
+    if (!ownAssignment) {
+      throw new NotFoundException('Staff service assignment not found');
+    }
+
+    await this.staffServiceAssignmentsService.remove(id);
+
+    return { message: 'Service removed successfully' };
   }
 }

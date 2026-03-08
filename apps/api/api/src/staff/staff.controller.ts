@@ -64,6 +64,40 @@ export class StaffController {
     return this.staffService.removeMyTimeOff(currentUser, id);
   }
 
+  @Get('me/services')
+  @UseGuards(JwtAuthGuard)
+  getMyServices(@CurrentUser() currentUser: any) {
+    return this.staffService.getMyServices(currentUser);
+  }
+
+  @Post('me/services')
+  @UseGuards(JwtAuthGuard)
+  createMyService(
+    @CurrentUser() currentUser: any,
+    @Body() dto: { serviceId: string; durationMin?: number; priceEUR?: number },
+  ) {
+    return this.staffService.createMyService(currentUser, dto);
+  }
+
+  @Put('me/services/:id')
+  @UseGuards(JwtAuthGuard)
+  updateMyService(
+    @CurrentUser() currentUser: any,
+    @Param('id') id: string,
+    @Body() dto: { durationMin?: number; priceEUR?: number; isOffered?: boolean },
+  ) {
+    return this.staffService.updateMyService(currentUser, id, dto);
+  }
+
+  @Delete('me/services/:id')
+  @UseGuards(JwtAuthGuard)
+  removeMyService(
+    @CurrentUser() currentUser: any,
+    @Param('id') id: string,
+  ) {
+    return this.staffService.removeMyService(currentUser, id);
+  }
+
   @Post('onboard')
   @UseGuards(JwtAuthGuard)
   onboard(@CurrentUser() currentUser: any, @Body() dto: CreateStaffAccountDto) {

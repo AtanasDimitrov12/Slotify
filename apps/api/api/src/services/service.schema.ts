@@ -13,10 +13,10 @@ export class Service {
   name!: string;
 
   @Prop({ required: true, min: 1 })
-  durationMinutes!: number;
+  durationMin!: number;
 
   @Prop({ required: true, min: 0 })
-  price!: number;
+  priceEUR!: number;
 
   @Prop({ trim: true, default: '' })
   description?: string;

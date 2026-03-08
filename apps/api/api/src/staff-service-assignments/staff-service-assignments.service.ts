@@ -26,23 +26,35 @@ export class StaffServiceAssignmentsService {
 
   findAllByStaff(tenantId: string, userId: string) {
     return this.assignmentModel
-      .find({ tenantId, userId, isOffered: true })
+      .find({
+        tenantId: new Types.ObjectId(tenantId),
+        userId: new Types.ObjectId(userId),
+        isOffered: true,
+      })
       .populate('serviceId')
       .lean();
   }
 
   async update(id: string, dto: UpdateStaffServiceAssignmentDto) {
     const updated = await this.assignmentModel
-      .findByIdAndUpdate(id, dto, { new: true })
+      .findByIdAndUpdate(id, { $set: dto }, { new: true })
+      .populate('serviceId')
       .lean();
 
-    if (!updated) throw new NotFoundException('Staff service assignment not found');
+    if (!updated) {
+      throw new NotFoundException('Staff service assignment not found');
+    }
+
     return updated;
   }
 
   async remove(id: string) {
     const deleted = await this.assignmentModel.findByIdAndDelete(id).lean();
-    if (!deleted) throw new NotFoundException('Staff service assignment not found');
+
+    if (!deleted) {
+      throw new NotFoundException('Staff service assignment not found');
+    }
+
     return deleted;
   }
 }

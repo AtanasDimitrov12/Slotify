@@ -26,6 +26,15 @@ export type TimeOffRequest = {
 };
 
 export type StaffService = {
+  id: string; // assignment id
+  serviceId: string; // catalog service id
+  name: string;
+  durationMin: number;
+  priceEUR: number;
+  description?: string;
+};
+
+export type CatalogServiceOption = {
   id: string;
   name: string;
   durationMin: number;

@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import { Service, ServiceDocument } from './service.schema';
@@ -12,36 +16,103 @@ export class ServicesService {
     private readonly serviceModel: Model<ServiceDocument>,
   ) {}
 
-  create(dto: CreateServiceDto) {
+  async createForTenant(tenantId: string, dto: CreateServiceDto) {
+    const trimmedName = dto.name?.trim();
+
+    if (!trimmedName) {
+      throw new BadRequestException('Service name is required');
+    }
+
     return this.serviceModel.create({
-      ...dto,
-      tenantId: new Types.ObjectId(dto.tenantId),
+      name: trimmedName,
+      durationMin: dto.durationMin,
+      priceEUR: dto.priceEUR,
+      description: dto.description?.trim() || '',
+      tenantId: new Types.ObjectId(tenantId),
+      isActive: true,
     });
   }
 
   findAllByTenant(tenantId: string) {
-    return this.serviceModel.find({ tenantId, isActive: true }).lean();
+    return this.serviceModel
+      .find({
+        tenantId: new Types.ObjectId(tenantId),
+        isActive: true,
+      })
+      .sort({ name: 1 })
+      .lean();
   }
 
-  findOne(id: string) {
-    return this.serviceModel.findById(id).lean();
-  }
-
-  async update(id: string, dto: UpdateServiceDto) {
-    const updated = await this.serviceModel
-      .findByIdAndUpdate(id, dto, { new: true })
+  async findOneForTenant(tenantId: string, id: string) {
+    const item = await this.serviceModel
+      .findOne({
+        _id: new Types.ObjectId(id),
+        tenantId: new Types.ObjectId(tenantId),
+      })
       .lean();
 
-    if (!updated) throw new NotFoundException('Service not found');
+    if (!item) {
+      throw new NotFoundException('Service not found');
+    }
+
+    return item;
+  }
+
+  async updateForTenant(tenantId: string, id: string, dto: UpdateServiceDto) {
+    const payload: Record<string, unknown> = {};
+
+    if (typeof dto.name === 'string') {
+      payload.name = dto.name.trim();
+    }
+
+    if (typeof dto.durationMin === 'number') {
+      payload.durationMin = dto.durationMin;
+    }
+
+    if (typeof dto.priceEUR === 'number') {
+      payload.priceEUR = dto.priceEUR;
+    }
+
+    if (typeof dto.description === 'string') {
+      payload.description = dto.description.trim();
+    }
+
+    const updated = await this.serviceModel
+      .findOneAndUpdate(
+        {
+          _id: new Types.ObjectId(id),
+          tenantId: new Types.ObjectId(tenantId),
+          isActive: true,
+        },
+        { $set: payload },
+        { new: true },
+      )
+      .lean();
+
+    if (!updated) {
+      throw new NotFoundException('Service not found');
+    }
+
     return updated;
   }
 
-  async remove(id: string) {
+  async removeForTenant(tenantId: string, id: string) {
     const deleted = await this.serviceModel
-      .findByIdAndUpdate(id, { isActive: false }, { new: true })
+      .findOneAndUpdate(
+        {
+          _id: new Types.ObjectId(id),
+          tenantId: new Types.ObjectId(tenantId),
+          isActive: true,
+        },
+        { $set: { isActive: false } },
+        { new: true },
+      )
       .lean();
 
-    if (!deleted) throw new NotFoundException('Service not found');
-    return deleted;
+    if (!deleted) {
+      throw new NotFoundException('Service not found');
+    }
+
+    return { message: 'Service removed successfully' };
   }
 }

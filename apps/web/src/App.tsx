@@ -19,6 +19,7 @@ import StaffProfilePage from './pages/staff/StaffProfilePage';
 import StaffAvailabilityPage from './pages/staff/StaffAvailabilityPage';
 import StaffTimeOffPage from './pages/staff/StaffTimeOffPage';
 import StaffServicesPage from './pages/staff/StaffServicesPage';
+import OwnerServicesPage from './pages/owner/OwnerServicesPage';
 
 export default function App() {
   return (
@@ -42,6 +43,7 @@ export default function App() {
             <Route index element={<OwnerOverviewPage />} />
             <Route path="overview" element={<OwnerOverviewPage />} />
             <Route path="team" element={<OwnerTeamPage />} />
+            <Route path="services" element={<OwnerServicesPage />} />
             <Route path="settings" element={<OwnerSettingsPage />} />
           </Route>
         </Route>
