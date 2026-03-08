@@ -3,16 +3,13 @@ import { Alert, Box, Button, Card, CardContent, Container, Stack, TextField, Typ
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../auth/AuthProvider';
 import type { Tenant } from '../api/tenants';
-import type { Membership } from '../api/memberships';
 
 function routeForRole(role?: string) {
   switch (role) {
     case 'owner':
-      return '/partner/dashboard';
-    case 'manager':
-      return '/partner/dashboard';
+      return '/owner';
     case 'staff':
-      return '/partner/dashboard';
+      return '/staff';
     case 'admin':
       return '/admin';
     default:
@@ -20,9 +17,6 @@ function routeForRole(role?: string) {
   }
 }
 
-type LoginResult =
-  | { accessToken: string; account: { role?: string } }
-  | { tenants: Array<Partial<Tenant> & { _id: string; name?: string }> };
 
 function isTenantPickResult(result: any): result is { tenants: Array<any> } {
   return result && Array.isArray(result.tenants);

@@ -1,4 +1,5 @@
 import {
+  IsArray,
   IsBoolean,
   IsInt,
   IsMongoId,
@@ -7,15 +8,12 @@ import {
   Matches,
   Max,
   Min,
+  ValidateNested,
+  ArrayMinSize,
 } from 'class-validator';
+import { Type } from 'class-transformer';
 
-export class CreateStaffAvailabilityDto {
-  @IsMongoId()
-  tenantId!: string;
-
-  @IsMongoId()
-  userId!: string;
-
+export class DayAvailabilityDto {
   @IsInt()
   @Min(0)
   @Max(6)
@@ -42,4 +40,18 @@ export class CreateStaffAvailabilityDto {
   @IsOptional()
   @IsBoolean()
   isAvailable?: boolean;
+}
+
+export class CreateStaffAvailabilityDto {
+  @IsMongoId()
+  tenantId!: string;
+
+  @IsMongoId()
+  userId!: string;
+
+  @IsArray()
+  @ArrayMinSize(1)
+  @ValidateNested({ each: true })
+  @Type(() => DayAvailabilityDto)
+  weeklyAvailability!: DayAvailabilityDto[];
 }

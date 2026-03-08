@@ -10,14 +10,20 @@ export class StaffAvailabilityService {
   constructor(
     @InjectModel(StaffAvailability.name)
     private readonly availabilityModel: Model<StaffAvailabilityDocument>,
-  ) {}
+  ) { }
 
   create(dto: CreateStaffAvailabilityDto) {
     return this.availabilityModel.create({
-      ...dto,
       tenantId: new Types.ObjectId(dto.tenantId),
       userId: new Types.ObjectId(dto.userId),
+      weeklyAvailability: dto.weeklyAvailability,
     });
+  }
+
+  findByStaff(tenantId: string, userId: string) {
+    return this.availabilityModel
+      .findOne({ tenantId, userId })
+      .lean();
   }
 
   findAllByStaff(tenantId: string, userId: string) {
@@ -26,6 +32,18 @@ export class StaffAvailabilityService {
       .sort({ dayOfWeek: 1 })
       .lean();
   }
+
+  async updateDay(userId: string, dayOfWeek: number, data: any) {
+
+  return this.availabilityModel.updateOne(
+    { userId, "weeklyAvailability.dayOfWeek": dayOfWeek },
+    {
+      $set: {
+        "weeklyAvailability.$": data
+      }
+    }
+  );
+}
 
   async update(id: string, dto: UpdateStaffAvailabilityDto) {
     const updated = await this.availabilityModel

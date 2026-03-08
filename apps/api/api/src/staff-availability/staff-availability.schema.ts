@@ -5,22 +5,15 @@ import { User } from '../users/user.schema';
 
 export type StaffAvailabilityDocument = HydratedDocument<StaffAvailability>;
 
-@Schema({ timestamps: true })
-export class StaffAvailability {
-  @Prop({ type: Types.ObjectId, ref: Tenant.name, required: true, index: true })
-  tenantId!: Types.ObjectId;
-
-  @Prop({ type: Types.ObjectId, ref: User.name, required: true, index: true })
-  userId!: Types.ObjectId;
-
-  @Prop({ required: true, min: 0, max: 6, index: true })
-  dayOfWeek!: number; // 0 = Sunday, 6 = Saturday
+class DayAvailability {
+  @Prop({ required: true, min: 0, max: 6 })
+  dayOfWeek!: number;
 
   @Prop({ required: true })
-  startTime!: string; // "09:00"
+  startTime!: string;
 
   @Prop({ required: true })
-  endTime!: string; // "18:00"
+  endTime!: string;
 
   @Prop()
   breakStartTime?: string;
@@ -32,6 +25,23 @@ export class StaffAvailability {
   isAvailable!: boolean;
 }
 
-export const StaffAvailabilitySchema = SchemaFactory.createForClass(StaffAvailability);
+@Schema({ timestamps: true })
+export class StaffAvailability {
 
-StaffAvailabilitySchema.index({ tenantId: 1, userId: 1, dayOfWeek: 1 }, { unique: true });
+  @Prop({ type: Types.ObjectId, ref: Tenant.name, required: true, index: true })
+  tenantId!: Types.ObjectId;
+
+  @Prop({ type: Types.ObjectId, ref: User.name, required: true, index: true })
+  userId!: Types.ObjectId;
+
+  @Prop({ type: [DayAvailability], default: [] })
+  weeklyAvailability!: DayAvailability[];
+}
+
+export const StaffAvailabilitySchema =
+  SchemaFactory.createForClass(StaffAvailability);
+
+StaffAvailabilitySchema.index(
+  { tenantId: 1, userId: 1 },
+  { unique: true }
+);

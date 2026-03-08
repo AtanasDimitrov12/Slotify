@@ -1,6 +1,6 @@
 import { Injectable, BadRequestException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import { Model, Types } from 'mongoose';
 
 import { Membership, MembershipDocument } from './membership.schema';
 import { CreateMembershipDto } from './dto/create-membership.dto';
@@ -8,87 +8,86 @@ import { UpdateMembershipDto } from './dto/update-membership.dto';
 
 @Injectable()
 export class MembershipsService {
-    constructor(
-        @InjectModel(Membership.name)
-        private readonly membershipModel: Model<MembershipDocument>,
-    ) { }
+  constructor(
+    @InjectModel(Membership.name)
+    private readonly membershipModel: Model<MembershipDocument>,
+  ) { }
 
-    async create(dto: CreateMembershipDto) {
-        const existing = await this.membershipModel.findOne({
-            tenantId: dto.tenantId,
-            userId: dto.userId,
-        });
+  async create(dto: CreateMembershipDto) {
+    const existing = await this.membershipModel.findOne({
+      tenantId: dto.tenantId,
+      userId: dto.userId,
+    });
 
-        if (existing) {
-            throw new BadRequestException('User is already a member of this tenant');
-        }
-
-        const created = await this.membershipModel.create(dto);
-        return created.toObject();
+    if (existing) {
+      throw new BadRequestException('User is already a member of this tenant');
     }
 
-    async update(id: string, dto: UpdateMembershipDto) {
-        return this.membershipModel
-            .findByIdAndUpdate(id, { $set: dto }, { new: true })
-            .lean();
-    }
+    const created = await this.membershipModel.create(dto);
+    return created.toObject();
+  }
 
-      async findByUserId(userId: string) {
+  async update(id: string, dto: UpdateMembershipDto) {
+    return this.membershipModel
+      .findByIdAndUpdate(id, { $set: dto }, { new: true })
+      .lean();
+  }
 
-        return this.membershipModel.findOne({ userId, isActive: true }).exec();
+  async findByUserId(userId: string) {
 
-      }
+    return this.membershipModel.findOne({ userId, isActive: true }).exec();
 
-    
+  }
 
-      async findAllByUserId(userId: string) {
+  async findByTenantAndRole(tenantId: string, role: string) {
+    return this.membershipModel
+      .find({ tenantId, role, isActive: true })
+      .lean();
+  }
 
-        return this.membershipModel
+  async findAllByUserId(userId: string) {
 
-          .find({ userId, isActive: true })
+    return this.membershipModel
+      .find({ userId, isActive: true })
+      .populate('tenantId', 'name slug')
+      .lean();
+  }
 
-          .populate('tenantId', 'name slug')
 
-          .lean();
 
-      }
+  async findByUserIdAndTenantId(userId: string, tenantId: string) {
 
-    
+    return this.membershipModel.findOne({ userId, tenantId }).exec();
 
-      async findByUserIdAndTenantId(userId: string, tenantId: string) {
+  }
 
-        return this.membershipModel.findOne({ userId, tenantId }).exec();
 
-      }
 
-    
+  async findActiveByUserIdAndTenantId(userId: string, tenantId: string) {
 
-      async findActiveByUserIdAndTenantId(userId: string, tenantId: string) {
+    return this.membershipModel
 
-        return this.membershipModel
+      .findOne({ userId, tenantId, isActive: true })
 
-          .findOne({ userId, tenantId, isActive: true })
+      .exec();
 
-          .exec();
+  }
 
-      }
 
-    
 
-      async listByTenant(tenantId: string) {
+  async listByTenant(tenantId: string) {
 
-        return this.membershipModel
+    return this.membershipModel
 
-          .find({ tenantId })
+      .find({ tenantId })
 
-          .populate('userId', 'name email')
+      .populate('userId', 'name email')
 
-          .sort({ createdAt: -1 })
+      .sort({ createdAt: -1 })
 
-          .lean();
+      .lean();
 
-      }
+  }
 
-    }
+}
 
-    

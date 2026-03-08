@@ -12,7 +12,7 @@ import {
     Typography,
 } from '@mui/material';
 import AddStaffDialog, { type AddStaffPayload } from './components/AddStaffDialog';
-import { createStaff } from '../../api/staff';
+import { createStaff, listStaff } from '../../api/staff';
 import { useAuth } from '../../auth/AuthProvider';
 
 type StaffMember = {
@@ -61,6 +61,29 @@ export default function OwnerTeamPage() {
             setCreating(false);
         }
     }
+
+    React.useEffect(() => {
+        async function loadStaff() {
+            try {
+                const data = await listStaff();
+
+                const mapped: StaffMember[] = data.map((m: any) => ({
+                    id: m.userId,
+                    name: m.name,
+                    email: m.email,
+                    role: m.role === 'manager' ? 'manager' : 'staff',
+                }));
+
+                setItems(mapped);
+            } catch (err) {
+                const message =
+                    err instanceof Error ? err.message : 'Failed to load staff members';
+                setError(message);
+            }
+        }
+
+        loadStaff();
+    }, []);
 
     return (
         <>

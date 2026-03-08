@@ -1,22 +1,16 @@
 import * as React from 'react';
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 import {
-  AppBar,
   Box,
   Drawer,
-  IconButton,
   List,
   ListItemButton,
   ListItemIcon,
   ListItemText,
   Stack,
-  Toolbar,
   Typography,
-  useMediaQuery,
-  useTheme,
 } from '@mui/material';
 
-import MenuRoundedIcon from '@mui/icons-material/MenuRounded';
 import DashboardRoundedIcon from '@mui/icons-material/DashboardRounded';
 import PersonRoundedIcon from '@mui/icons-material/PersonRounded';
 import ScheduleRoundedIcon from '@mui/icons-material/ScheduleRounded';
@@ -28,10 +22,6 @@ const drawerWidth = 264;
 type NavItem = { label: string; to: string; icon: React.ReactNode };
 
 export default function StaffLayout() {
-  const theme = useTheme();
-  const isDesktop = useMediaQuery(theme.breakpoints.up('md'));
-  const [open, setOpen] = React.useState(false);
-
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -43,7 +33,7 @@ export default function StaffLayout() {
     { label: 'Services & prices', to: '/staff/services', icon: <LocalOfferRoundedIcon /> },
   ];
 
-  const drawer = (
+  const sidebar = (
     <Stack sx={{ height: '100%' }}>
       <Box sx={{ px: 2, py: 2 }}>
         <Typography variant="subtitle2" sx={{ opacity: 0.7 }}>
@@ -59,15 +49,15 @@ export default function StaffLayout() {
 
       <List sx={{ px: 1 }}>
         {items.map((it) => {
-          const active = location.pathname === it.to || (it.to.endsWith('/dashboard') && location.pathname === '/staff');
+          const active =
+            location.pathname === it.to ||
+            (it.to.endsWith('/dashboard') && location.pathname === '/staff');
+
           return (
             <ListItemButton
               key={it.to}
               selected={active}
-              onClick={() => {
-                navigate(it.to);
-                setOpen(false);
-              }}
+              onClick={() => navigate(it.to)}
               sx={{ borderRadius: 2, mx: 1 }}
             >
               <ListItemIcon sx={{ minWidth: 40 }}>{it.icon}</ListItemIcon>
@@ -89,40 +79,23 @@ export default function StaffLayout() {
   );
 
   return (
-    <Box sx={{ display: 'flex' }}>
-      <AppBar position="fixed" elevation={0} color="transparent">
-        <Toolbar sx={{ gap: 1 }}>
-          {!isDesktop && (
-            <IconButton onClick={() => setOpen(true)}>
-              <MenuRoundedIcon />
-            </IconButton>
-          )}
-          <Typography variant="h6" fontWeight={900}>
-            Slotify
-          </Typography>
-          <Box sx={{ flex: 1 }} />
-          {/* Later: profile chip / salon name */}
-        </Toolbar>
-      </AppBar>
-
-      <Toolbar />
-
-      {isDesktop ? (
-        <Drawer
-          variant="permanent"
-          sx={{
+    <Box sx={{ display: 'flex', minHeight: '100%' }}>
+      <Drawer
+        variant="permanent"
+        open
+        sx={{
+          width: drawerWidth,
+          flexShrink: 0,
+          '& .MuiDrawer-paper': {
             width: drawerWidth,
-            flexShrink: 0,
-            '& .MuiDrawer-paper': { width: drawerWidth, boxSizing: 'border-box' },
-          }}
-        >
-          {drawer}
-        </Drawer>
-      ) : (
-        <Drawer open={open} onClose={() => setOpen(false)}>
-          <Box sx={{ width: drawerWidth }}>{drawer}</Box>
-        </Drawer>
-      )}
+            boxSizing: 'border-box',
+            position: 'relative',
+            height: 'auto',
+          },
+        }}
+      >
+        {sidebar}
+      </Drawer>
 
       <Box sx={{ flex: 1, p: { xs: 2, md: 3 } }}>
         <Outlet />
