@@ -81,14 +81,7 @@ export default function StaffDashboardPage() {
               </CardContent>
             </Card>
 
-            <Card variant="outlined" sx={{ borderRadius: 3 }}>
-              <CardContent>
-                <Typography fontWeight={900}>Quick tips</Typography>
-                <Typography variant="body2" sx={{ opacity: 0.7 }}>
-                  Keep your availability accurate so customers can book only when you’re available.
-                </Typography>
-              </CardContent>
-            </Card>
+            
           </Stack>
         </Grid>
       </Grid>

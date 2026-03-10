@@ -77,12 +77,7 @@ export default function OwnerLayout() {
 
       <Box sx={{ flex: 1 }} />
 
-      <Box sx={{ p: 2, opacity: 0.7 }}>
-        <Typography variant="caption">Tip</Typography>
-        <Typography variant="body2">
-          Later: services catalog, staff permissions, deposits, analytics exports.
-        </Typography>
-      </Box>
+      
     </Stack>
   );
 

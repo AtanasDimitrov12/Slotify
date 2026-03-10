@@ -98,24 +98,7 @@ export function AdminSidebar({ items, isActive, onNavigate }: Props) {
 
       <Box sx={{ flex: 1 }} />
 
-      <Box sx={{ p: 1.5 }}>
-        <Box
-          sx={(theme) => ({
-            p: 1.5,
-            borderRadius: 3,
-            border: '1px solid',
-            borderColor: alpha('#000', 0.08),
-            bgcolor: alpha(theme.palette.primary.main, 0.06),
-          })}
-        >
-          <Typography variant="body2" fontWeight={900}>
-            Tip
-          </Typography>
-          <Typography variant="body2" color="text.secondary" fontWeight={650}>
-            Later: audits, billing, support tools, tenant impersonation.
-          </Typography>
-        </Box>
-      </Box>
+      
     </Box>
   );
 }

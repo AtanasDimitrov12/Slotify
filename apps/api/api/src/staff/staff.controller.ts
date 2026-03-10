@@ -64,6 +64,12 @@ export class StaffController {
     return this.staffService.removeMyTimeOff(currentUser, id);
   }
 
+  @Get()
+@UseGuards(JwtAuthGuard)
+list(@CurrentUser() currentUser: any) {
+  return this.staffService.listStaff(currentUser);
+}
+
   @Get('me/services')
   @UseGuards(JwtAuthGuard)
   getMyServices(@CurrentUser() currentUser: any) {

@@ -69,12 +69,6 @@ export default function StaffLayout() {
 
       <Box sx={{ flex: 1 }} />
 
-      <Box sx={{ p: 2, opacity: 0.75 }}>
-        <Typography variant="caption">Tip</Typography>
-        <Typography variant="body2">
-          Keep your availability updated so Slotify can generate accurate booking slots.
-        </Typography>
-      </Box>
     </Stack>
   );
 

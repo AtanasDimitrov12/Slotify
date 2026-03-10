@@ -289,6 +289,46 @@ export class StaffService {
     };
   }
 
+  async listStaff(currentUser: AuthUser) {
+    const tenantId = this.getTenantIdOrThrow(currentUser);
+
+    if (!['owner'].includes(currentUser?.role ?? '')) {
+      throw new UnauthorizedException('You are not allowed to view staff members');
+    }
+
+    const memberships = await this.membershipsService.findByTenantAndRole(tenantId, 'staff');
+
+    const staffMemberships = memberships.filter((m) => m.role === 'staff');
+
+    const result = await Promise.all(
+      staffMemberships.map(async (membership) => {
+        const userId = membership.userId.toString();
+
+        const user = await this.usersService.findById(userId);
+        const profile = await this.staffProfilesService.findByTenantAndUser(
+          tenantId,
+          userId,
+        );
+
+        return {
+          id: profile?._id?.toString() ?? userId,
+          tenantId,
+          userId,
+          name: profile?.displayName || user?.name || '',
+          email: user?.email || '',
+          photoUrl: profile?.avatarUrl || '',
+          bio: profile?.bio || '',
+          experienceYears: profile?.experienceYears || 0,
+          expertiseTags: profile?.expertise || [],
+          isBookable: profile?.isBookable ?? true,
+          isActive: profile?.isActive ?? true,
+        };
+      }),
+    );
+
+    return result;
+  }
+
   async getMyAvailability(currentUser: AuthUser) {
     const tenantId = this.getTenantIdOrThrow(currentUser);
     const userId = this.getUserIdOrThrow(currentUser);
