@@ -17,6 +17,7 @@ import { StaffTimeOffService } from '../staff-time-off/staff-time-off.service';
 import { CreateStaffAccountDto } from './dto/create-staff-account.dto';
 import { UsersService } from '../users/users.service';
 import { ServicesService } from 'src/services/services.service';
+import { StaffBookingSettingsService } from '../staff-booking-settings/staff-booking-settings.service';
 
 
 
@@ -91,6 +92,7 @@ export class StaffService {
     private readonly staffTimeOffService: StaffTimeOffService,
     private readonly staffServiceAssignmentsService: StaffServiceAssignmentsService,
     private readonly servicesService: ServicesService,
+    private readonly staffBookingSettingsService: StaffBookingSettingsService,
   ) { }
 
   private getTenantIdOrThrow(currentUser: AuthUser): string {
@@ -274,6 +276,11 @@ export class StaffService {
         isAvailable: true,
       })),
     });
+
+    await this.staffBookingSettingsService.createDefaultForStaff(
+      tenantId,
+      userId,
+    );
 
     return {
       message: 'Staff member created successfully',

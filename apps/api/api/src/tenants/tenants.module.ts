@@ -4,10 +4,12 @@ import { TenantsController } from './tenants.controller';
 import { TenantsService } from './tenants.service';
 import { Tenant, TenantSchema } from './tenant.schema';
 import { AdminTenantsController } from './admin-tenants.controller';
+import { BookingSettingsModule } from '../booking-settings/booking-settings.module';
 
 @Module({
   imports: [
     MongooseModule.forFeature([{ name: Tenant.name, schema: TenantSchema }]),
+    BookingSettingsModule,
   ],
   controllers: [TenantsController, AdminTenantsController],
   providers: [TenantsService],

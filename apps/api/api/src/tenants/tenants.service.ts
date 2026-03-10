@@ -4,6 +4,7 @@ import { Model } from 'mongoose';
 import { CreateTenantDto } from './dto/create-tenant.dto';
 import { UpdateTenantDto } from './dto/update-tenant.dto';
 import { Tenant, TenantDocument } from './tenant.schema';
+import { BookingSettingsService } from '../booking-settings/booking-settings.service';
 
 function slugify(input: string): string {
   return input
@@ -22,6 +23,7 @@ function slugify(input: string): string {
 export class TenantsService {
   constructor(
     @InjectModel(Tenant.name) private readonly tenantModel: Model<TenantDocument>,
+    private readonly bookingSettingsService: BookingSettingsService,
   ) { }
 
   private async generateUniqueSlug(name: string): Promise<string> {
@@ -46,6 +48,8 @@ export class TenantsService {
       ...dto,
       slug,
     });
+
+    await this.bookingSettingsService.createDefaultsForTenant(created._id.toString());
 
     return created.toObject();
   }

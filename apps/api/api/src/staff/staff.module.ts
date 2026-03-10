@@ -8,6 +8,7 @@ import { StaffAvailabilityModule } from '../staff-availability/staff-availabilit
 import { StaffTimeOffModule } from 'src/staff-time-off/staff-time-off.module';
 import { StaffServiceAssignmentsModule } from '../staff-service-assignments/staff-service-assignments.module';
 import { ServicesModule } from 'src/services/services.module';
+import { StaffBookingSettingsModule } from 'src/staff-booking-settings/staff-booking-settings.module';
 
 @Module({
   imports: [
@@ -18,6 +19,7 @@ import { ServicesModule } from 'src/services/services.module';
     StaffTimeOffModule,
     StaffServiceAssignmentsModule,
     ServicesModule,
+    StaffBookingSettingsModule,
   ],
   controllers: [StaffController],
   providers: [StaffService],

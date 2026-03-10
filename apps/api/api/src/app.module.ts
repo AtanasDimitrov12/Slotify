@@ -12,6 +12,8 @@ import { ServicesModule } from './services/services.module';
 import { StaffServiceAssignmentsModule } from './staff-service-assignments/staff-service-assignments.module';
 import { StaffModule } from './staff/staff.module';
 import { OwnerModule } from './owner/owner.module';
+import { BookingSettingsModule } from './booking-settings/booking-settings.module';
+import { StaffBookingSettingsModule } from './staff-booking-settings/staff-booking-settings.module';
 
 @Module({
   imports: [
@@ -36,6 +38,8 @@ import { OwnerModule } from './owner/owner.module';
     StaffTimeOffModule,
     ServicesModule,
     StaffServiceAssignmentsModule,
+    BookingSettingsModule,
+    StaffBookingSettingsModule,
   ],
 })
 export class AppModule { }
