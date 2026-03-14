@@ -72,6 +72,24 @@ export class TenantsService {
     return tenant;
   }
 
+  async findPublished() {
+    return this.tenantModel
+      .find({
+        isPublished: true,
+        status: 'active',
+      })
+      .sort({ createdAt: -1 })
+      .lean();
+  }
+
+  async findPublishedBySlug(slug: string) {
+    return this.tenantModel.findOne({
+      slug,
+      isPublished: true,
+      status: 'active',
+    }).lean();
+  }
+
   async update(id: string, dto: UpdateTenantDto) {
     const updated = await this.tenantModel
       .findByIdAndUpdate(id, { $set: dto }, { new: true })

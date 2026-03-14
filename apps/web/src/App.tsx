@@ -22,6 +22,8 @@ import StaffServicesPage from './pages/staff/StaffServicesPage';
 import OwnerServicesPage from './pages/owner/OwnerServicesPage';
 import OwnerBookingRulesPage from './pages/owner/OwnerBookingRulesPage';
 import StaffBookingRulesPage from './pages/staff/StaffBookingRulesPage';
+import SalonsListPage from './pages/public/SalonsListPage';
+import SalonPublicPage from './pages/public/SalonPublicPage';
 
 export default function App() {
   return (
@@ -62,6 +64,9 @@ export default function App() {
             <Route path="booking-rules" element={<StaffBookingRulesPage />} />
           </Route>
         </Route>
+
+        <Route path="/salons" element={<SalonsListPage />} />
+        <Route path="/salons/:slug" element={<SalonPublicPage />} />
 
         {/* 404 fallback */}
         <Route path="*" element={<NotFoundPage />} />

@@ -22,7 +22,7 @@ export function ChoosePath() {
             desc="Find barbers in a new city, compare services & prices, and book instantly."
             chips={['Search by city', 'Live slots', 'Guest booking']}
             cta="Explore salons"
-            onClick={() => navigate('/places')}
+            onClick={() => navigate('/salons')}
             imageLabel="Customer marketplace"
             imageSrc="/landing/2.png"
           />

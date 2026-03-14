@@ -9,7 +9,7 @@ import { TenantDetails, TenantDetailsDocument } from './tenant-details.schema';
 export class TenantDetailsService {
   constructor(
     @InjectModel(TenantDetails.name) private readonly model: Model<TenantDetailsDocument>,
-  ) {}
+  ) { }
 
   async create(dto: CreateTenantDetailsDto) {
     const existing = await this.model.findOne({ tenantId: dto.tenantId }).lean();
@@ -23,6 +23,10 @@ export class TenantDetailsService {
     const details = await this.model.findOne({ tenantId }).lean();
     if (!details) throw new NotFoundException('TenantDetails not found');
     return details;
+  }
+
+  async findOptionalByTenantId(tenantId: string) {
+    return this.model.findOne({ tenantId }).lean();
   }
 
   async updateByTenantId(tenantId: string, dto: UpdateTenantDetailsDto) {

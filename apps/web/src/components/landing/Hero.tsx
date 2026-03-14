@@ -239,7 +239,7 @@ export function Hero() {
               >
                 <Button
                   variant="contained"
-                  onClick={() => navigate('/places')}
+                  onClick={() => navigate('/salons')}
                   endIcon={<ArrowForwardRoundedIcon />}
                   sx={{ ...premium.btn, '& .MuiButton-endIcon': { ml: 1 } }}
                 >

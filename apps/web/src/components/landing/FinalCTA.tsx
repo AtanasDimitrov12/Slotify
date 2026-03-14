@@ -39,7 +39,7 @@ export function FinalCTA() {
           >
             <Button
               variant="contained"
-              onClick={() => navigate('/places')}
+              onClick={() => navigate('/salons')}
               sx={{ ...premium.btn, width: { xs: '100%', sm: 'auto', md: 'fit-content' } }}
               endIcon={<ArrowForwardRoundedIcon />}
             >

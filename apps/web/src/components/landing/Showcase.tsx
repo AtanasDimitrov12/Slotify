@@ -54,7 +54,7 @@ export function Showcase() {
             </Stack>
 
             <Button
-              onClick={() => navigate('/places')}
+              onClick={() => navigate('/salons')}
               variant="contained"
               endIcon={<ArrowForwardRoundedIcon />}
               sx={{ ...premium.btn, mt: 2.4, '& .MuiButton-endIcon': { ml: 1 } }}
