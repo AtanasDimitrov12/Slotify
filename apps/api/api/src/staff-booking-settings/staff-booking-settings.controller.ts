@@ -11,16 +11,29 @@ import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { CurrentUser } from '../auth/current-user.decorator';
 import { StaffBookingSettingsService } from './staff-booking-settings.service';
 import { UpdateStaffBookingSettingsDto } from './dto/update-staff-booking-settings.dto';
+import { Types } from 'mongoose';
 
 @Controller('staff-booking-settings')
 @UseGuards(JwtAuthGuard)
 export class StaffBookingSettingsController {
   constructor(
     private readonly staffBookingSettingsService: StaffBookingSettingsService,
-  ) {}
+  ) { }
 
   private getTenantId(currentUser: any): string {
-    return currentUser?.tenantId;
+    const tenantId = currentUser?.tenantId;
+
+    if (!tenantId || !Types.ObjectId.isValid(tenantId)) {
+      throw new UnauthorizedException('Invalid tenant context');
+    }
+
+    return tenantId;
+  }
+
+  private validateUserId(userId: string) {
+    if (!userId || !Types.ObjectId.isValid(userId)) {
+      throw new UnauthorizedException('Invalid user id');
+    }
   }
 
   private ensureOwnerOrManager(currentUser: any) {
@@ -31,12 +44,53 @@ export class StaffBookingSettingsController {
     }
   }
 
+  @Get('me/current')
+  async getMyCurrentSettings(@CurrentUser() currentUser: any) {
+    const tenantId = this.getTenantId(currentUser);
+    const userId =
+      currentUser?.sub ?? currentUser?.userId ?? currentUser?._id ?? currentUser?.id;
+
+    this.validateUserId(userId);
+
+    return this.staffBookingSettingsService.getEffectiveSettings(tenantId, userId);
+  }
+
+  @Put('me/current')
+  async updateMyCurrentSettings(
+    @CurrentUser() currentUser: any,
+    @Body() dto: UpdateStaffBookingSettingsDto,
+  ) {
+    const tenantId = this.getTenantId(currentUser);
+    const userId =
+      currentUser?.sub ?? currentUser?.userId ?? currentUser?._id ?? currentUser?.id;
+
+    this.validateUserId(userId);
+
+    const updated = await this.staffBookingSettingsService.updateByStaff(
+      tenantId,
+      userId,
+      dto,
+    );
+
+    const effective = await this.staffBookingSettingsService.getEffectiveSettings(
+      tenantId,
+      userId,
+    );
+
+    return {
+      message: 'Your booking settings updated successfully',
+      settings: updated,
+      effectiveSettings: effective.effectiveSettings,
+    };
+  }
+
   @Get(':userId')
   async getForStaff(
     @CurrentUser() currentUser: any,
     @Param('userId') userId: string,
   ) {
     this.ensureOwnerOrManager(currentUser);
+    this.validateUserId(userId);
 
     return this.staffBookingSettingsService.getEffectiveSettings(
       this.getTenantId(currentUser),
@@ -51,6 +105,7 @@ export class StaffBookingSettingsController {
     @Body() dto: UpdateStaffBookingSettingsDto,
   ) {
     this.ensureOwnerOrManager(currentUser);
+    this.validateUserId(userId);
 
     const updated = await this.staffBookingSettingsService.updateByStaff(
       this.getTenantId(currentUser),
@@ -69,14 +124,5 @@ export class StaffBookingSettingsController {
       settings: updated,
       effectiveSettings: effective.effectiveSettings,
     };
-  }
-
-  @Get('me/current')
-  async getMyCurrentSettings(@CurrentUser() currentUser: any) {
-    const tenantId = this.getTenantId(currentUser);
-    const userId =
-      currentUser?.sub ?? currentUser?.userId ?? currentUser?._id ?? currentUser?.id;
-
-    return this.staffBookingSettingsService.getEffectiveSettings(tenantId, userId);
   }
 }

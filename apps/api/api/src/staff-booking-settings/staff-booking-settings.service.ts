@@ -14,40 +14,9 @@ export class StaffBookingSettingsService {
     @InjectModel(StaffBookingSettings.name)
     private readonly staffBookingSettingsModel: Model<StaffBookingSettingsDocument>,
     private readonly bookingSettingsService: BookingSettingsService,
-  ) {}
-
-  async createDefaultForStaff(tenantId: string, userId: string) {
-    const existing = await this.staffBookingSettingsModel
-      .findOne({ tenantId, userId })
-      .lean();
-
-    if (existing) return existing;
-
-    const created = await this.staffBookingSettingsModel.create({
-      tenantId: new Types.ObjectId(tenantId),
-      userId: new Types.ObjectId(userId),
-      useGlobalSettings: true,
-      overrides: {},
-    });
-
-    return created.toObject();
-  }
+  ) { }
 
   async getOrCreateByStaff(tenantId: string, userId: string) {
-    const existing = await this.staffBookingSettingsModel
-      .findOne({ tenantId, userId })
-      .lean();
-
-    if (existing) return existing;
-
-    return this.createDefaultForStaff(tenantId, userId);
-  }
-
-  async updateByStaff(
-    tenantId: string,
-    userId: string,
-    dto: UpdateStaffBookingSettingsDto,
-  ) {
     return this.staffBookingSettingsModel
       .findOneAndUpdate(
         {
@@ -55,20 +24,83 @@ export class StaffBookingSettingsService {
           userId: new Types.ObjectId(userId),
         },
         {
-          $set: {
-            ...(dto.useGlobalSettings !== undefined
-              ? { useGlobalSettings: dto.useGlobalSettings }
-              : {}),
-            ...(dto.overrides ? { overrides: dto.overrides } : {}),
+          $setOnInsert: {
+            tenantId: new Types.ObjectId(tenantId),
+            userId: new Types.ObjectId(userId),
+            useGlobalSettings: true,
+            overrides: {},
           },
+        },
+        {
+          upsert: true,
+          returnDocument: 'after',
+          setDefaultsOnInsert: true,
+        },
+      )
+      .lean();
+  }
+
+  async updateByStaff(
+    tenantId: string,
+    userId: string,
+    dto: UpdateStaffBookingSettingsDto,
+  ) {
+    const setPayload: Record<string, unknown> = {};
+
+    if (dto.useGlobalSettings !== undefined) {
+      setPayload.useGlobalSettings = dto.useGlobalSettings;
+    }
+
+    if (dto.overrides !== undefined) {
+      const hasOverrides = Object.keys(dto.overrides).length > 0;
+
+      if (hasOverrides) {
+        setPayload.overrides = dto.overrides;
+      }
+    }
+
+    return this.staffBookingSettingsModel
+      .findOneAndUpdate(
+        {
+          tenantId: new Types.ObjectId(tenantId),
+          userId: new Types.ObjectId(userId),
+        },
+        {
+          $set: setPayload,
           $setOnInsert: {
             tenantId: new Types.ObjectId(tenantId),
             userId: new Types.ObjectId(userId),
           },
         },
-        { new: true, upsert: true },
+        {
+          upsert: true,
+          returnDocument: 'after',
+          setDefaultsOnInsert: true,
+        },
       )
       .lean();
+  }
+
+  //TODO: When useGlobalSettings is true, overrides remain stored
+  //TODO: so staff can later switch back to custom settings without losing them.
+
+  private mergeWithGlobalSettings(globalSettings: any, overrides: any) {
+    if (!overrides) return globalSettings;
+
+    return {
+      ...globalSettings,
+      ...overrides,
+
+      bufferBefore: {
+        ...globalSettings.bufferBefore,
+        ...(overrides.bufferBefore ?? {}),
+      },
+
+      bufferAfter: {
+        ...globalSettings.bufferAfter,
+        ...(overrides.bufferAfter ?? {}),
+      },
+    };
   }
 
   async getEffectiveSettings(tenantId: string, userId: string) {
@@ -90,10 +122,10 @@ export class StaffBookingSettingsService {
       source: 'custom',
       globalSettings,
       staffSettings,
-      effectiveSettings: {
-        ...globalSettings,
-        ...(staffSettings.overrides ?? {}),
-      },
+      effectiveSettings: this.mergeWithGlobalSettings(
+        globalSettings,
+        staffSettings.overrides,
+      ),
     };
   }
 

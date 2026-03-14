@@ -49,8 +49,6 @@ export class TenantsService {
       slug,
     });
 
-    await this.bookingSettingsService.createDefaultsForTenant(created._id.toString());
-
     return created.toObject();
   }
 

@@ -8,7 +8,7 @@ import { UpsertTenantBookingSettingsDto } from './dto/upsert-tenant-booking-sett
 @Controller('owner/settings/booking')
 @UseGuards(JwtAuthGuard)
 export class BookingSettingsController {
-  constructor(private readonly bookingSettingsService: BookingSettingsService) {}
+  constructor(private readonly bookingSettingsService: BookingSettingsService) { }
 
   private getTenantId(currentUser: any): string {
     const tenantId = currentUser?.tenantId;
@@ -27,7 +27,7 @@ export class BookingSettingsController {
   @Get()
   getSettings(@CurrentUser() currentUser: any) {
     const tenantId = this.getTenantId(currentUser);
-    return this.bookingSettingsService.findByTenantId(tenantId);
+    return this.bookingSettingsService.getOrCreateByTenantId(tenantId);
   }
 
   @Put()

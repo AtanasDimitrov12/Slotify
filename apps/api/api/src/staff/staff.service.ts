@@ -277,11 +277,6 @@ export class StaffService {
       })),
     });
 
-    await this.staffBookingSettingsService.createDefaultForStaff(
-      tenantId,
-      userId,
-    );
-
     return {
       message: 'Staff member created successfully',
       account: {

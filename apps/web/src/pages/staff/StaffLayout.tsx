@@ -16,6 +16,7 @@ import PersonRoundedIcon from '@mui/icons-material/PersonRounded';
 import ScheduleRoundedIcon from '@mui/icons-material/ScheduleRounded';
 import BeachAccessRoundedIcon from '@mui/icons-material/BeachAccessRounded';
 import LocalOfferRoundedIcon from '@mui/icons-material/LocalOfferRounded';
+import TuneRoundedIcon from '@mui/icons-material/TuneRounded';
 
 const drawerWidth = 264;
 
@@ -31,6 +32,7 @@ export default function StaffLayout() {
     { label: 'Availability', to: '/staff/availability', icon: <ScheduleRoundedIcon /> },
     { label: 'Time off', to: '/staff/time-off', icon: <BeachAccessRoundedIcon /> },
     { label: 'Services & prices', to: '/staff/services', icon: <LocalOfferRoundedIcon /> },
+    {label: 'Booking rules', to: '/staff/booking-rules', icon: <TuneRoundedIcon /> },
   ];
 
   const sidebar = (

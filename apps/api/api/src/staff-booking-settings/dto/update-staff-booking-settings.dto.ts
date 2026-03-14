@@ -1,36 +1,38 @@
 import {
   IsBoolean,
   IsInt,
-  IsObject,
   IsOptional,
   Min,
   ValidateNested,
 } from 'class-validator';
 import { Type } from 'class-transformer';
 
+class BufferOverrideDto {
+  @IsOptional()
+  @IsBoolean()
+  enabled?: boolean;
+
+  @IsOptional()
+  @IsInt()
+  @Min(0)
+  minutes?: number;
+}
+
 class StaffBookingSettingsOverridesDto {
   @IsOptional()
-  @IsBoolean()
-  bufferBeforeEnabled?: boolean;
+  @ValidateNested()
+  @Type(() => BufferOverrideDto)
+  bufferBefore?: BufferOverrideDto;
+
+  @IsOptional()
+  @ValidateNested()
+  @Type(() => BufferOverrideDto)
+  bufferAfter?: BufferOverrideDto;
 
   @IsOptional()
   @IsInt()
   @Min(0)
-  bufferBeforeMin?: number;
-
-  @IsOptional()
-  @IsBoolean()
-  bufferAfterEnabled?: boolean;
-
-  @IsOptional()
-  @IsInt()
-  @Min(0)
-  bufferAfterMin?: number;
-
-  @IsOptional()
-  @IsInt()
-  @Min(0)
-  minimumNoticeMin?: number;
+  minimumNoticeMinutes?: number;
 
   @IsOptional()
   @IsInt()
@@ -56,7 +58,6 @@ export class UpdateStaffBookingSettingsDto {
   useGlobalSettings?: boolean;
 
   @IsOptional()
-  @IsObject()
   @ValidateNested()
   @Type(() => StaffBookingSettingsOverridesDto)
   overrides?: StaffBookingSettingsOverridesDto;

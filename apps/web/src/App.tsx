@@ -20,6 +20,8 @@ import StaffAvailabilityPage from './pages/staff/StaffAvailabilityPage';
 import StaffTimeOffPage from './pages/staff/StaffTimeOffPage';
 import StaffServicesPage from './pages/staff/StaffServicesPage';
 import OwnerServicesPage from './pages/owner/OwnerServicesPage';
+import OwnerBookingRulesPage from './pages/owner/OwnerBookingRulesPage';
+import StaffBookingRulesPage from './pages/staff/StaffBookingRulesPage';
 
 export default function App() {
   return (
@@ -45,6 +47,7 @@ export default function App() {
             <Route path="team" element={<OwnerTeamPage />} />
             <Route path="services" element={<OwnerServicesPage />} />
             <Route path="settings" element={<OwnerSettingsPage />} />
+            <Route path="booking-rules" element={<OwnerBookingRulesPage />} />
           </Route>
         </Route>
 
@@ -56,6 +59,7 @@ export default function App() {
             <Route path="availability" element={<StaffAvailabilityPage />} />
             <Route path="time-off" element={<StaffTimeOffPage />} />
             <Route path="services" element={<StaffServicesPage />} />
+            <Route path="booking-rules" element={<StaffBookingRulesPage />} />
           </Route>
         </Route>
 
