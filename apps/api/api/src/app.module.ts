@@ -14,6 +14,9 @@ import { StaffModule } from './staff/staff.module';
 import { OwnerModule } from './owner/owner.module';
 import { BookingSettingsModule } from './booking-settings/booking-settings.module';
 import { StaffBookingSettingsModule } from './staff-booking-settings/staff-booking-settings.module';
+import { PublicBookingModule } from './public-booking/public-booking.module';
+import { ReservationsModule } from './reservations/reservations.module';
+import { StaffAppointmentsModule } from './staff-appointments/staff-appointments.module';
 
 @Module({
   imports: [
@@ -40,6 +43,9 @@ import { StaffBookingSettingsModule } from './staff-booking-settings/staff-booki
     StaffServiceAssignmentsModule,
     BookingSettingsModule,
     StaffBookingSettingsModule,
+    ReservationsModule,
+    PublicBookingModule,
+    StaffAppointmentsModule,
   ],
 })
 export class AppModule { }

@@ -17,14 +17,7 @@ export type TenantAddress = {
   country?: string;
 };
 
-export type SocialLinks = {
-  instagram?: string;
-  facebook?: string;
-  tiktok?: string;
-};
-
-export type TenantDetails = {
-  _id: string;
+export type PublicTenantDetails = {
   tenantId: string;
   address?: TenantAddress;
   openingHours?: WeeklyOpeningHours;
@@ -34,68 +27,170 @@ export type TenantDetails = {
   timezone?: string;
   locale?: string;
   websiteUrl?: string;
-  socialLinks?: SocialLinks;
+  socialLinks?: {
+    instagram?: string;
+    facebook?: string;
+    tiktok?: string;
+  };
   logoUrl?: string;
   coverImageUrl?: string;
-  geo?: {
-    lat?: number;
-    lng?: number;
-  };
-  isPublished?: boolean;
   notes?: string;
-  createdAt?: string;
-  updatedAt?: string;
 };
 
-export type Tenant = {
+export type PublicTenant = {
   _id: string;
   name: string;
   slug: string;
-  status: 'active' | 'inactive' | 'suspended';
-  isPublished: boolean;
-  timezone: string;
-  ownerEmail?: string;
-  plan?: string;
-  createdAt: string;
-  updatedAt: string;
+  timezone?: string;
+};
+
+export type PublicTenantBySlugResponse = {
+  tenant: PublicTenant;
+  details?: PublicTenantDetails;
 };
 
 export type PublicTenantListItem = {
   _id: string;
   name: string;
   slug: string;
-  timezone: string;
-  details?: TenantDetails | null;
+  timezone?: string;
+  details?: PublicTenantDetails;
 };
 
-export type PublicTenantResponse = {
-  tenant: Tenant;
-  details: TenantDetails | null;
+export type BookingOptionService = {
+  _id: string;
+  name: string;
+  durationMin: number;
+  priceEUR: number;
+  description?: string;
 };
 
-async function handleResponse<T>(res: Response): Promise<T> {
+export type BookingOptionStaff = {
+  _id: string;
+  displayName: string;
+  bio?: string;
+  avatarUrl?: string;
+  expertise?: string[];
+};
+
+export type BookingOptionsResponse = {
+  tenant: {
+    _id: string;
+    name: string;
+    slug: string;
+  };
+  details?: PublicTenantDetails;
+  services: BookingOptionService[];
+  staff: BookingOptionStaff[];
+};
+
+export type AvailabilitySlot = {
+  staffId: string;
+  startTime: string;
+  endTime: string;
+  score: number;
+};
+
+export type AvailabilityResponse = {
+  slots: AvailabilitySlot[];
+  nextAvailableDate: string | null;
+};
+
+export type CreateReservationPayload = {
+  serviceId: string;
+  staffId: string;
+  startTime: string;
+  customerName: string;
+  customerPhone: string;
+  customerEmail?: string;
+  notes?: string;
+};
+
+export type CreatedReservationResponse = {
+  _id: string;
+  status: 'pending' | 'confirmed' | 'cancelled' | 'completed' | 'no-show';
+  startTime: string;
+  endTime: string;
+  tenant: {
+    _id: string;
+    name: string;
+    slug: string;
+  };
+  staff: {
+    _id: string;
+    displayName: string;
+  };
+  service: {
+    _id: string;
+    name: string;
+    durationMin: number;
+    priceEUR: number;
+  };
+};
+
+async function parseJson<T>(res: Response): Promise<T> {
   if (!res.ok) {
     let message = 'Request failed';
-
     try {
       const body = await res.json();
-      message = body?.message ?? message;
+      message = body.message || message;
     } catch {
-      // ignore
+      //
     }
-
-    throw new Error(Array.isArray(message) ? message.join(', ') : message);
+    throw new Error(message);
   }
 
-  return res.json();
+  return res.json() as Promise<T>;
 }
 
 export async function listPublicTenants(): Promise<PublicTenantListItem[]> {
   const res = await fetch(`${API_BASE_URL}/public/tenants`);
-  return handleResponse<PublicTenantListItem[]>(res);
+  return parseJson<PublicTenantListItem[]>(res);
 }
 
-export async function getPublicTenantBySlug(slug: string): Promise<PublicTenantResponse> {
+export async function getPublicTenantBySlug(slug: string): Promise<PublicTenantBySlugResponse> {
   const res = await fetch(`${API_BASE_URL}/public/tenants/${slug}`);
-  return handleResponse<PublicTenantResponse>(res);
+  return parseJson<PublicTenantBySlugResponse>(res);
+}
+
+export async function getBookingOptions(slug: string): Promise<BookingOptionsResponse> {
+  const res = await fetch(`${API_BASE_URL}/public/tenants/${slug}/booking-options`);
+  return parseJson<BookingOptionsResponse>(res);
+}
+
+export async function getAvailability(params: {
+  slug: string;
+  serviceId: string;
+  date: string;
+  staffId?: string;
+}): Promise<AvailabilityResponse> {
+  const search = new URLSearchParams({
+    serviceId: params.serviceId,
+    date: params.date,
+  });
+
+  if (params.staffId) {
+    search.set('staffId', params.staffId);
+  }
+
+  const res = await fetch(
+    `${API_BASE_URL}/public/tenants/${params.slug}/availability?${search.toString()}`,
+  );
+
+  return parseJson<AvailabilityResponse>(res);
+}
+
+export async function createReservation(
+  slug: string,
+  payload: CreateReservationPayload,
+): Promise<CreatedReservationResponse> {
+  const res = await fetch(`${API_BASE_URL}/public/tenants/${slug}/reservations`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(payload),
+  });
+
+  return parseJson<CreatedReservationResponse>(res);
 }

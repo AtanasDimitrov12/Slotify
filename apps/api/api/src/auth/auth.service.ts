@@ -10,6 +10,7 @@ import { LoginDto } from './dto/login.dto';
 
 type JwtPayload = {
   sub: string;
+  userId: string;
   tenantId: string;
   role: 'owner' | 'manager' | 'staff';
   email: string;
@@ -93,6 +94,7 @@ export class AuthService {
 
     const payload: JwtPayload = {
       sub: userId,
+      userId: userId,
       tenantId,
       role: membership.role,
       email: user.email,
@@ -151,6 +153,7 @@ export class AuthService {
 
     const payload: JwtPayload = {
       sub: userId,
+      userId: userId,
       tenantId,
       role: membership.role,
       email: user.email,
