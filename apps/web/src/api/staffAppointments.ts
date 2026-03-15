@@ -5,6 +5,7 @@ export type StaffAppointment = {
   startTime: string;
   endTime: string;
   durationMin: number;
+  priceEUR: number;
   customerName: string;
   customerPhone: string;
   customerEmail?: string;

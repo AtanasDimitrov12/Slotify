@@ -82,6 +82,7 @@ export class StaffAppointmentsService {
       startTime: reservation.startTime,
       endTime: reservation.endTime,
       durationMin: reservation.durationMin,
+      priceEUR: reservation.priceEUR,
       customerName: reservation.customerName,
       customerPhone: reservation.customerPhone,
       customerEmail: reservation.customerEmail,
