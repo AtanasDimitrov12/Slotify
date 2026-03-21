@@ -1,9 +1,10 @@
 import * as React from 'react';
-import { Box, Button, Stack, Typography } from '@mui/material';
+import { Box, Button, Stack, Typography, alpha } from '@mui/material';
 import AddRoundedIcon from '@mui/icons-material/AddRounded';
 import TenantFormDialog, { type TenantFormValues } from './components/TenantFormDialog';
 import TenantsTable from './components/TenantsTable';
 import { register } from '../../api/auth';
+import { landingColors } from '../../components/landing/constants';
 import {
   listTenants,
   updateTenant,
@@ -95,24 +96,35 @@ export default function AdminTenantsPage() {
     <Box>
       <Stack
         direction={{ xs: 'column', md: 'row' }}
-        alignItems={{ xs: 'stretch', md: 'center' }}
-        spacing={1.5}
-        sx={{ mb: 2 }}
+        alignItems={{ xs: 'stretch', md: 'flex-start' }}
+        justifyContent="space-between"
+        spacing={2}
+        sx={{ mb: 5 }}
       >
-        <Box sx={{ flex: 1 }}>
-          <Typography variant="h5" fontWeight={1000} letterSpacing={-0.6}>
+        <Box>
+          <Typography sx={{ fontWeight: 1000, fontSize: 36, letterSpacing: -1.5, color: '#0F172A' }}>
             Tenants
           </Typography>
-          <Typography color="text.secondary" fontWeight={650}>
-            Manage salons and tenant status.
+          <Typography sx={{ color: '#64748B', fontWeight: 600, fontSize: 18 }}>
+            Onboard and manage salon environments.
           </Typography>
         </Box>
 
         <Button
           variant="contained"
+          size="large"
           startIcon={<AddRoundedIcon />}
           onClick={handleOpenCreate}
-          sx={{ borderRadius: 999, height: 44, fontWeight: 950 }}
+          sx={{
+            minHeight: 54,
+            px: 3.5,
+            borderRadius: 999,
+            fontWeight: 900,
+            fontSize: 15,
+            bgcolor: landingColors.purple,
+            boxShadow: `0 12px 30px ${alpha(landingColors.purple, 0.24)}`,
+            '&:hover': { bgcolor: landingColors.purple, filter: 'brightness(1.05)' },
+          }}
         >
           Add new tenant
         </Button>

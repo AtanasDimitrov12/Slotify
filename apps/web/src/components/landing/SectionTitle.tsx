@@ -1,52 +1,60 @@
 import { Stack, Typography } from '@mui/material';
+import { landingColors } from './constants';
 
-export function SectionTitle({
-  kicker,
-  title,
-  desc,
-  align = 'center',
-}: {
-  kicker?: string;
+type Props = {
+  eyebrow?: string;
   title: string;
   desc?: string;
   align?: 'left' | 'center';
-}) {
-  const isCenter = align === 'center';
+  light?: boolean;
+};
+
+export function SectionTitle({
+  eyebrow,
+  title,
+  desc,
+  align = 'left',
+  light = false,
+}: Props) {
+  const centered = align === 'center';
 
   return (
     <Stack
       data-reveal="1"
-      spacing={1}
+      spacing={1.2}
       sx={{
         textAlign: align,
-        alignItems: isCenter ? 'center' : 'flex-start', // ✅ centers the children block-wise
-        width: '100%',
+        alignItems: centered ? 'center' : 'flex-start',
       }}
     >
-      {kicker ? (
+      {eyebrow ? (
         <Typography
           sx={{
-            fontWeight: 950,
-            color: 'primary.main',
+            px: 1.6,
+            py: 0.7,
+            borderRadius: 999,
+            border: '1px solid',
+            borderColor: light ? 'rgba(124,108,255,0.28)' : 'divider',
+            bgcolor: light ? 'rgba(124,108,255,0.08)' : 'rgba(124,108,255,0.05)',
+            color: light ? landingColors.purpleSoft : 'primary.main',
+            fontSize: 11.5,
+            fontWeight: 900,
+            letterSpacing: 1.8,
             textTransform: 'uppercase',
-            letterSpacing: 1.6,
-            fontSize: 12,
           }}
         >
-          {kicker}
+          {eyebrow}
         </Typography>
       ) : null}
 
       <Typography
         sx={{
-          fontWeight: 1200,
-          letterSpacing: -1.2,
-          fontSize: { xs: 28, md: 40 },
-          lineHeight: 1.05,
-
-          // ✅ make the title a centered block with a max width
-          maxWidth: isCenter ? 900 : 760,
-          width: '100%',
+          maxWidth: centered ? 980 : 780,
+          fontSize: { xs: 34, md: 62 },
+          lineHeight: { xs: 0.98, md: 0.94 },
+          letterSpacing: { xs: -1.6, md: -2.6 },
+          fontWeight: 1000,
+          color: light ? landingColors.text : 'text.primary',
         }}
       >
         {title}
@@ -55,13 +63,10 @@ export function SectionTitle({
       {desc ? (
         <Typography
           sx={{
-            color: 'text.secondary',
-            fontSize: { xs: 15.5, md: 16.5 },
-            lineHeight: 1.75,
-
-            // ✅ same logic for subtitle
-            maxWidth: isCenter ? 720 : 760,
-            width: '100%',
+            maxWidth: centered ? 760 : 680,
+            fontSize: { xs: 16, md: 18 },
+            lineHeight: 1.72,
+            color: light ? landingColors.mutedSoft : 'text.secondary',
           }}
         >
           {desc}

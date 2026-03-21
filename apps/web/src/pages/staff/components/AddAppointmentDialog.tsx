@@ -8,7 +8,10 @@ import {
   MenuItem,
   Stack,
   TextField,
+  Typography,
+  alpha,
 } from '@mui/material';
+import { landingColors } from '../../../components/landing/constants';
 
 type ServiceOption = {
   id: string;
@@ -70,69 +73,108 @@ export default function AddAppointmentDialog({
   }
 
   return (
-    <Dialog open={open} onClose={onClose} fullWidth maxWidth="sm">
-      <DialogTitle>Add appointment</DialogTitle>
-      <DialogContent>
-        <Stack spacing={2} sx={{ pt: 1 }}>
-          <TextField
-            select
-            label="Service"
-            value={staffServiceAssignmentId}
-            onChange={(e) => setStaffServiceAssignmentId(e.target.value)}
-            fullWidth
-          >
-            {services.map((service) => (
-              <MenuItem key={service.id} value={service.id}>
-                {service.name} · {service.durationMin} min · €{service.priceEUR}
-              </MenuItem>
-            ))}
-          </TextField>
+    <Dialog
+      open={open}
+      onClose={onClose}
+      fullWidth
+      maxWidth="sm"
+      PaperProps={{
+        sx: { borderRadius: 8, p: 1 }
+      }}
+    >
+      <DialogTitle sx={{ fontWeight: 1000, fontSize: 24, letterSpacing: -0.5, py: 3, px: 4 }}>
+        New Appointment
+      </DialogTitle>
 
-          <TextField
-            type="time"
-            label="Start time"
-            value={startTime}
-            onChange={(e) => setStartTime(e.target.value)}
-            InputLabelProps={{ shrink: true }}
-            fullWidth
-          />
+      <DialogContent sx={{ px: 4, pb: 2 }}>
+        <Stack spacing={3}>
+          <Typography sx={{ color: '#64748B', fontWeight: 600, fontSize: 15 }}>
+            Fill in the customer details and select a service to book a slot manually.
+          </Typography>
 
-          <TextField
-            label="Customer name"
-            value={customerName}
-            onChange={(e) => setCustomerName(e.target.value)}
-            fullWidth
-          />
+          <Stack spacing={2.5}>
+            <TextField
+              select
+              label="Select Service"
+              value={staffServiceAssignmentId}
+              onChange={(e) => setStaffServiceAssignmentId(e.target.value)}
+              fullWidth
+            >
+              {services.map((service) => (
+                <MenuItem key={service.id} value={service.id}>
+                  {service.name} · {service.durationMin} min · €{service.priceEUR}
+                </MenuItem>
+              ))}
+            </TextField>
 
-          <TextField
-            label="Customer phone"
-            value={customerPhone}
-            onChange={(e) => setCustomerPhone(e.target.value)}
-            fullWidth
-          />
+            <TextField
+              type="time"
+              label="Start Time"
+              value={startTime}
+              onChange={(e) => setStartTime(e.target.value)}
+              InputLabelProps={{ shrink: true }}
+              fullWidth
+            />
 
-          <TextField
-            label="Customer email"
-            value={customerEmail}
-            onChange={(e) => setCustomerEmail(e.target.value)}
-            fullWidth
-          />
+            <TextField
+              label="Customer Name"
+              placeholder="e.g. John Doe"
+              value={customerName}
+              onChange={(e) => setCustomerName(e.target.value)}
+              fullWidth
+            />
 
-          <TextField
-            label="Notes"
-            value={notes}
-            onChange={(e) => setNotes(e.target.value)}
-            fullWidth
-            multiline
-            minRows={3}
-          />
+            <Stack direction="row" spacing={2}>
+              <TextField
+                label="Phone Number"
+                value={customerPhone}
+                onChange={(e) => setCustomerPhone(e.target.value)}
+                fullWidth
+              />
+
+              <TextField
+                label="Email (optional)"
+                value={customerEmail}
+                onChange={(e) => setCustomerEmail(e.target.value)}
+                fullWidth
+              />
+            </Stack>
+
+            <TextField
+              label="Appointment Notes"
+              placeholder="Any special requests or instructions..."
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+              fullWidth
+              multiline
+              minRows={3}
+            />
+          </Stack>
         </Stack>
       </DialogContent>
 
-      <DialogActions>
-        <Button onClick={onClose}>Close</Button>
-        <Button variant="contained" onClick={handleSubmit} disabled={creating}>
-          {creating ? 'Saving...' : 'Save'}
+      <DialogActions sx={{ p: 4, pt: 2 }}>
+        <Button
+          onClick={onClose}
+          sx={{ fontWeight: 800, color: '#64748B', borderRadius: 999, px: 3 }}
+        >
+          Cancel
+        </Button>
+        <Button
+          variant="contained"
+          onClick={handleSubmit}
+          disabled={creating}
+          sx={{
+            borderRadius: 999,
+            px: 4,
+            fontWeight: 900,
+            minHeight: 48,
+            bgcolor: landingColors.purple,
+            boxShadow: `0 12px 30px ${alpha(landingColors.purple, 0.24)}`,
+            '&:hover': { bgcolor: landingColors.purple, filter: 'brightness(1.05)' },
+          }}
+        >
+          {creating ? 'Saving Appointment...' : 'Book Appointment'}
         </Button>
       </DialogActions>
     </Dialog>

@@ -10,6 +10,7 @@ import {
   Snackbar,
   Stack,
   Typography,
+  alpha,
 } from '@mui/material';
 import TimeOffRequestDialog, { type TimeOffPayload } from './components/TimeOffRequestDialog';
 import type { TimeOffRequest } from './components/types';
@@ -18,16 +19,34 @@ import {
   deleteMyStaffTimeOff,
   getMyStaffTimeOff,
 } from '../../api/staffTimeOff';
+import { landingColors, premium } from '../../components/landing/constants';
+import AddRoundedIcon from '@mui/icons-material/AddRounded';
+import CalendarMonthRoundedIcon from '@mui/icons-material/CalendarMonthRounded';
 
 function StatusChip({ status }: { status: TimeOffRequest['status'] }) {
-  const label =
-    status === 'requested'
-      ? 'Requested'
-      : status === 'approved'
-      ? 'Approved'
-      : 'Denied';
+  const map: Record<TimeOffRequest['status'], { label: string; color: string }> = {
+    requested: { label: 'Requested', color: landingColors.blue },
+    approved: { label: 'Approved', color: landingColors.success },
+    denied: { label: 'Denied', color: '#F43F5E' },
+  };
 
-  return <Chip label={label} size="small" />;
+  const meta = map[status];
+
+  return (
+    <Chip
+      label={meta.label.toUpperCase()}
+      size="small"
+      sx={{
+        fontWeight: 1000,
+        fontSize: 10,
+        letterSpacing: 0.8,
+        bgcolor: alpha(meta.color, 0.1),
+        color: meta.color,
+        border: `1px solid ${alpha(meta.color, 0.2)}`,
+        height: 24,
+      }}
+    />
+  );
 }
 
 export default function StaffTimeOffPage() {
@@ -94,66 +113,117 @@ export default function StaffTimeOffPage() {
 
   if (loading) {
     return (
-      <Box sx={{ minHeight: 320, display: 'grid', placeItems: 'center' }}>
-        <CircularProgress />
+      <Box sx={{ minHeight: 400, display: 'grid', placeItems: 'center' }}>
+        <CircularProgress sx={{ color: landingColors.purple }} />
       </Box>
     );
   }
 
   return (
     <>
-      <Stack spacing={2.5}>
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-          <Box sx={{ flex: 1 }}>
-            <Typography variant="h4" fontWeight={900}>
-              Time off
+      <Stack spacing={4}>
+        <Stack direction="row" justifyContent="space-between" alignItems="flex-start" spacing={2}>
+          <Box>
+            <Typography sx={{ fontWeight: 1000, fontSize: 36, letterSpacing: -1.5, color: '#0F172A' }}>
+              Time Off
             </Typography>
-            <Typography sx={{ opacity: 0.7 }}>
-              Request time off. The owner will approve or reject it.
+            <Typography sx={{ color: '#64748B', fontWeight: 600, fontSize: 18 }}>
+              Request leave and track your history.
             </Typography>
           </Box>
 
-          <Button variant="contained" onClick={() => setOpen(true)}>
-            Request time off
+          <Button
+            variant="contained"
+            startIcon={<AddRoundedIcon />}
+            onClick={() => setOpen(true)}
+            sx={{
+              minHeight: 52,
+              px: 3,
+              borderRadius: 999,
+              fontWeight: 900,
+              bgcolor: landingColors.purple,
+              boxShadow: `0 12px 30px ${alpha(landingColors.purple, 0.24)}`,
+            }}
+          >
+            New Request
           </Button>
-        </Box>
+        </Stack>
 
-        {error ? <Alert severity="error">{error}</Alert> : null}
+        {error ? <Alert severity="error" sx={{ borderRadius: 3 }}>{error}</Alert> : null}
 
         <Stack spacing={2}>
           {items.length === 0 ? (
-            <Card variant="outlined" sx={{ borderRadius: 3 }}>
-              <CardContent>
-                <Typography fontWeight={900}>No time off requests yet</Typography>
-                <Typography variant="body2" sx={{ opacity: 0.7 }}>
-                  Create your first request when you need days off.
+            <Card sx={{ borderRadius: `${premium.rLg * 4}px`, border: '1px dashed', borderColor: '#CBD5E1', bgcolor: 'transparent', py: 6 }}>
+              <CardContent sx={{ textAlign: 'center' }}>
+                <Box
+                  sx={{
+                    width: 64,
+                    height: 64,
+                    borderRadius: 3,
+                    bgcolor: alpha(landingColors.purple, 0.06),
+                    display: 'grid',
+                    placeItems: 'center',
+                    color: landingColors.purple,
+                    mx: 'auto',
+                    mb: 2,
+                  }}
+                >
+                  <CalendarMonthRoundedIcon />
+                </Box>
+                <Typography sx={{ fontWeight: 800, color: '#64748B' }}>No requests yet</Typography>
+                <Typography sx={{ color: '#94A3B8', mt: 1 }}>
+                  Create a request when you need to take some days off.
                 </Typography>
               </CardContent>
             </Card>
           ) : (
             items.map((r) => (
-              <Card key={r.id} variant="outlined" sx={{ borderRadius: 3 }}>
-                <CardContent sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+              <Card
+                key={r.id}
+                sx={{
+                  borderRadius: `${premium.rMd * 4}px`,
+                  border: '1px solid',
+                  borderColor: 'rgba(15,23,42,0.06)',
+                  bgcolor: '#FFFFFF',
+                  boxShadow: '0 4px 20px rgba(15,23,42,0.03)',
+                  transition: 'all 0.2s ease',
+                  '&:hover': { boxShadow: '0 10px 30px rgba(15,23,42,0.06)' },
+                }}
+              >
+                <CardContent sx={{ p: 3, display: 'flex', alignItems: 'center', gap: 3 }}>
+                  <Box
+                    sx={{
+                      width: 48,
+                      height: 48,
+                      borderRadius: 2.5,
+                      bgcolor: alpha(landingColors.purple, 0.06),
+                      display: 'grid',
+                      placeItems: 'center',
+                      color: landingColors.purple,
+                      flexShrink: 0,
+                    }}
+                  >
+                    <CalendarMonthRoundedIcon fontSize="small" />
+                  </Box>
+
                   <Box sx={{ flex: 1 }}>
-                    <Typography fontWeight={900}>
-                      {r.startDate} → {r.endDate}
+                    <Typography sx={{ fontWeight: 900, color: '#0F172A', fontSize: 17 }}>
+                      {new Date(r.startDate).toLocaleDateString([], { day: '2-digit', month: 'short' })} → {new Date(r.endDate).toLocaleDateString([], { day: '2-digit', month: 'short', year: 'numeric' })}
                     </Typography>
 
-                    {r.reason ? (
-                      <Typography variant="body2" sx={{ opacity: 0.7 }}>
-                        {r.reason}
-                      </Typography>
-                    ) : (
-                      <Typography variant="body2" sx={{ opacity: 0.7 }}>
-                        No reason provided
-                      </Typography>
-                    )}
+                    <Typography sx={{ color: '#64748B', fontWeight: 600, fontSize: 14, mt: 0.5 }}>
+                      {r.reason || 'No reason provided'}
+                    </Typography>
                   </Box>
 
                   <StatusChip status={r.status} />
 
                   {r.status === 'requested' ? (
-                    <Button color="inherit" onClick={() => handleDelete(r.id)}>
+                    <Button
+                      color="error"
+                      onClick={() => handleDelete(r.id)}
+                      sx={{ fontWeight: 900, borderRadius: 999, ml: 1 }}
+                    >
                       Cancel
                     </Button>
                   ) : null}
@@ -177,7 +247,7 @@ export default function StaffTimeOffPage() {
         autoHideDuration={3000}
         onClose={() => setSuccess('')}
       >
-        <Alert onClose={() => setSuccess('')} severity="success" variant="filled">
+        <Alert onClose={() => setSuccess('')} severity="success" variant="filled" sx={{ borderRadius: 3, fontWeight: 800 }}>
           {success}
         </Alert>
       </Snackbar>

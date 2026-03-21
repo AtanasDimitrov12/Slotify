@@ -1,4 +1,4 @@
-import { Box, Card, CardContent, Grid, Stack, Typography } from '@mui/material';
+import { alpha, Box, Card, CardContent, Grid, Stack, Typography } from '@mui/material';
 import {
   CartesianGrid,
   Line,
@@ -8,12 +8,13 @@ import {
   XAxis,
   YAxis,
 } from 'recharts';
+import { landingColors, premium } from '../../components/landing/constants';
 
 const kpis = [
-  { label: 'Bookings (7d)', value: '128' },
-  { label: 'Revenue (7d)', value: '€2,840' },
-  { label: 'No-shows', value: '6' },
-  { label: 'Avg. occupancy', value: '74%' },
+  { label: 'Bookings (7d)', value: '128', color: landingColors.purple },
+  { label: 'Revenue (7d)', value: '€2,840', color: landingColors.success },
+  { label: 'No-shows', value: '6', color: '#F43F5E' },
+  { label: 'Avg. occupancy', value: '74%', color: landingColors.blue },
 ];
 
 const data = [
@@ -26,49 +27,104 @@ const data = [
   { day: 'Sun', bookings: 6 },
 ];
 
+function StatCard({ label, value, color }: { label: string; value: string; color: string }) {
+  return (
+    <Card
+      sx={{
+        borderRadius: `${premium.rLg * 4}px`,
+        height: '100%',
+        border: '1px solid',
+        borderColor: 'rgba(15,23,42,0.06)',
+        bgcolor: '#FFFFFF',
+        boxShadow: '0 12px 40px rgba(15,23,42,0.04)',
+        transition: 'transform 0.2s ease',
+        '&:hover': { transform: 'translateY(-4px)', borderColor: alpha(color, 0.2) },
+      }}
+    >
+      <CardContent sx={{ p: 3.5 }}>
+        <Typography sx={{ color: '#64748B', fontWeight: 800, fontSize: 13, letterSpacing: 0.5, textTransform: 'uppercase' }}>
+          {label}
+        </Typography>
+        <Typography sx={{ fontWeight: 1000, fontSize: 36, letterSpacing: -1, color: '#0F172A', mt: 1 }}>
+          {value}
+        </Typography>
+      </CardContent>
+    </Card>
+  );
+}
+
 export default function OwnerOverviewPage() {
   return (
-    <Stack spacing={2.5}>
+    <Stack spacing={4}>
       <Box>
-        <Typography variant="h4" fontWeight={900}>
+        <Typography sx={{ fontWeight: 1000, fontSize: 36, letterSpacing: -1.5, color: '#0F172A' }}>
           Overview
         </Typography>
-        <Typography sx={{ opacity: 0.7 }}>
-          Your salon performance at a glance.
+        <Typography sx={{ color: '#64748B', fontWeight: 600, fontSize: 18 }}>
+          Real-time performance of your salon.
         </Typography>
       </Box>
 
-      <Grid container spacing={2}>
+      <Grid container spacing={3}>
         {kpis.map((k) => (
           <Grid item xs={12} sm={6} md={3} key={k.label}>
-            <Card variant="outlined" sx={{ borderRadius: 3 }}>
-              <CardContent>
-                <Typography variant="body2" sx={{ opacity: 0.7 }}>
-                  {k.label}
-                </Typography>
-                <Typography variant="h5" fontWeight={900}>
-                  {k.value}
-                </Typography>
-              </CardContent>
-            </Card>
+            <StatCard {...k} />
           </Grid>
         ))}
       </Grid>
 
-      <Card variant="outlined" sx={{ borderRadius: 3 }}>
-        <CardContent>
-          <Stack spacing={1}>
-            <Typography variant="h6" fontWeight={800}>
-              Bookings trend (last 7 days)
+      <Card
+        sx={{
+          borderRadius: `${premium.rLg * 4}px`,
+          border: '1px solid',
+          borderColor: 'rgba(15,23,42,0.06)',
+          bgcolor: '#FFFFFF',
+          boxShadow: '0 12px 40px rgba(15,23,42,0.04)',
+        }}
+      >
+        <CardContent sx={{ p: 4 }}>
+          <Stack spacing={3}>
+            <Typography sx={{ fontWeight: 1000, fontSize: 22, color: '#0F172A' }}>
+              Booking Trends
             </Typography>
-            <Box sx={{ height: 280 }}>
+            <Box sx={{ height: 320, width: '100%', ml: -2 }}>
               <ResponsiveContainer width="100%" height="100%">
                 <LineChart data={data}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="day" />
-                  <YAxis />
-                  <Tooltip />
-                  <Line type="monotone" dataKey="bookings" strokeWidth={3} dot={false} />
+                  <defs>
+                    <linearGradient id="lineGradient" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor={landingColors.purple} stopOpacity={0.1}/>
+                      <stop offset="95%" stopColor={landingColors.purple} stopOpacity={0}/>
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(15,23,42,0.04)" />
+                  <XAxis
+                    dataKey="day"
+                    axisLine={false}
+                    tickLine={false}
+                    tick={{ fill: '#64748B', fontWeight: 700, fontSize: 12 }}
+                    dy={10}
+                  />
+                  <YAxis
+                    axisLine={false}
+                    tickLine={false}
+                    tick={{ fill: '#64748B', fontWeight: 700, fontSize: 12 }}
+                  />
+                  <Tooltip
+                    contentStyle={{
+                      borderRadius: 16,
+                      border: 'none',
+                      boxShadow: '0 10px 30px rgba(0,0,0,0.1)',
+                      fontWeight: 800,
+                    }}
+                  />
+                  <Line
+                    type="monotone"
+                    dataKey="bookings"
+                    stroke={landingColors.purple}
+                    strokeWidth={4}
+                    dot={{ r: 6, fill: landingColors.purple, strokeWidth: 3, stroke: '#FFF' }}
+                    activeDot={{ r: 8, strokeWidth: 0 }}
+                  />
                 </LineChart>
               </ResponsiveContainer>
             </Box>
@@ -76,28 +132,41 @@ export default function OwnerOverviewPage() {
         </CardContent>
       </Card>
 
-      {/* Later cards */}
-      <Grid container spacing={2}>
+      <Grid container spacing={3}>
         <Grid item xs={12} md={6}>
-          <Card variant="outlined" sx={{ borderRadius: 3 }}>
-            <CardContent>
-              <Typography variant="h6" fontWeight={800}>
-                Upcoming appointments
+          <Card
+            sx={{
+              borderRadius: `${premium.rLg * 4}px`,
+              border: '1px solid',
+              borderColor: 'rgba(15,23,42,0.06)',
+              height: '100%',
+            }}
+          >
+            <CardContent sx={{ p: 4 }}>
+              <Typography sx={{ fontWeight: 1000, fontSize: 20, mb: 2 }}>
+                Upcoming Appointments
               </Typography>
-              <Typography sx={{ opacity: 0.7 }}>
-                Placeholder: list next 5 bookings.
+              <Typography sx={{ color: '#64748B', fontWeight: 600 }}>
+                Feature coming soon: Live view of your next 5 bookings.
               </Typography>
             </CardContent>
           </Card>
         </Grid>
         <Grid item xs={12} md={6}>
-          <Card variant="outlined" sx={{ borderRadius: 3 }}>
-            <CardContent>
-              <Typography variant="h6" fontWeight={800}>
-                Staff performance
+          <Card
+            sx={{
+              borderRadius: `${premium.rLg * 4}px`,
+              border: '1px solid',
+              borderColor: 'rgba(15,23,42,0.06)',
+              height: '100%',
+            }}
+          >
+            <CardContent sx={{ p: 4 }}>
+              <Typography sx={{ fontWeight: 1000, fontSize: 20, mb: 2 }}>
+                Staff Performance
               </Typography>
-              <Typography sx={{ opacity: 0.7 }}>
-                Placeholder: bookings per staff member.
+              <Typography sx={{ color: '#64748B', fontWeight: 600 }}>
+                Feature coming soon: Booking distribution across your team.
               </Typography>
             </CardContent>
           </Card>

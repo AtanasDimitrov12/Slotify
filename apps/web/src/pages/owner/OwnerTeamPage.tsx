@@ -2,7 +2,6 @@ import * as React from 'react';
 import {
     Alert,
     Avatar,
-    Badge,
     Box,
     Button,
     Card,
@@ -16,10 +15,12 @@ import {
     alpha,
 } from '@mui/material';
 import EastRoundedIcon from '@mui/icons-material/EastRounded';
+import AddRoundedIcon from '@mui/icons-material/AddRounded';
 import AddStaffDialog, { type AddStaffPayload } from './components/AddStaffDialog';
 import ManageStaffTimeOffDialog from './components/ManageStaffTimeOffDialog';
 import { createStaff, listStaff } from '../../api/staff';
 import { getOwnerPendingTimeOffCounts } from '../../api/staffTimeOff';
+import { landingColors, premium } from '../../components/landing/constants';
 
 type StaffMember = {
     id: string;
@@ -111,182 +112,158 @@ export default function OwnerTeamPage() {
 
     return (
         <>
-            <Stack spacing={3}>
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                    <Box sx={{ flex: 1 }}>
-                        <Typography variant="h4" fontWeight={900}>
+            <Stack spacing={4}>
+                <Stack direction="row" justifyContent="space-between" alignItems="flex-start" spacing={2}>
+                    <Box>
+                        <Typography sx={{ fontWeight: 1000, fontSize: 36, letterSpacing: -1.5, color: '#0F172A' }}>
                             Team
                         </Typography>
-                        <Typography sx={{ opacity: 0.7 }}>
-                            Add staff accounts and manage roles.
+                        <Typography sx={{ color: '#64748B', fontWeight: 600, fontSize: 18 }}>
+                            Manage your barbers and roles.
                         </Typography>
                     </Box>
 
-                    <Button variant="contained" onClick={() => setOpen(true)}>
-                        Add staff
+                    <Button
+                        variant="contained"
+                        startIcon={<AddRoundedIcon />}
+                        onClick={() => setOpen(true)}
+                        sx={{
+                            minHeight: 52,
+                            px: 3,
+                            borderRadius: 999,
+                            fontWeight: 900,
+                            bgcolor: landingColors.purple,
+                            boxShadow: `0 12px 30px ${alpha(landingColors.purple, 0.24)}`,
+                        }}
+                    >
+                        Add Staff
                     </Button>
-                </Box>
+                </Stack>
 
-                {error ? <Alert severity="error">{error}</Alert> : null}
+                {error ? <Alert severity="error" sx={{ borderRadius: 3 }}>{error}</Alert> : null}
 
-                <Box sx={{ maxWidth: 1100 }}>
-                    <Grid container spacing={2.5}>
-                        {items.length === 0 ? (
-                            <Grid item xs={12}>
-                                <Card variant="outlined" sx={{ borderRadius: 4, maxWidth: 720 }}>
-                                    <CardContent>
-                                        <Typography fontWeight={800}>No staff members yet</Typography>
-                                        <Typography sx={{ opacity: 0.7, mt: 0.5 }}>
-                                            Create your first team member to start managing bookings and schedules.
-                                        </Typography>
+                <Grid container spacing={3}>
+                    {items.length === 0 ? (
+                        <Grid item xs={12}>
+                            <Card sx={{ borderRadius: `${premium.rLg * 4}px`, border: '1px dashed', borderColor: '#CBD5E1', bgcolor: 'transparent' }}>
+                                <CardContent sx={{ py: 6, textAlign: 'center' }}>
+                                    <Typography sx={{ fontWeight: 800, color: '#64748B' }}>No staff members yet</Typography>
+                                    <Typography sx={{ color: '#94A3B8', mt: 1 }}>
+                                        Start by adding your first team member to manage their schedule.
+                                    </Typography>
+                                </CardContent>
+                            </Card>
+                        </Grid>
+                    ) : (
+                        items.map((m) => (
+                            <Grid item xs={12} lg={6} key={m.id}>
+                                <Card
+                                    sx={{
+                                        borderRadius: `${premium.rLg * 4}px`,
+                                        border: '1px solid',
+                                        borderColor: 'rgba(15,23,42,0.06)',
+                                        bgcolor: '#FFFFFF',
+                                        boxShadow: '0 10px 40px rgba(15,23,42,0.04)',
+                                        transition: 'all 0.2s ease',
+                                        '&:hover': {
+                                            transform: 'translateY(-2px)',
+                                            boxShadow: '0 16px 48px rgba(15,23,42,0.08)',
+                                            borderColor: alpha(landingColors.purple, 0.1),
+                                        },
+                                    }}
+                                >
+                                    <CardContent sx={{ p: 0 }}>
+                                        <Box sx={{ display: 'flex', flexDirection: { xs: 'column', sm: 'row' } }}>
+                                            <Box sx={{ p: 3, flex: 1, display: 'flex', alignItems: 'center', gap: 2.5 }}>
+                                                <Avatar
+                                                    sx={{
+                                                        width: 64,
+                                                        height: 64,
+                                                        fontWeight: 1000,
+                                                        fontSize: 24,
+                                                        bgcolor: alpha(landingColors.purple, 0.08),
+                                                        color: landingColors.purple,
+                                                        border: `1px solid ${alpha(landingColors.purple, 0.15)}`,
+                                                    }}
+                                                >
+                                                    {m.name.charAt(0).toUpperCase()}
+                                                </Avatar>
+
+                                                <Box sx={{ minWidth: 0 }}>
+                                                    <Typography sx={{ fontWeight: 1000, fontSize: 18, color: '#0F172A', lineHeight: 1.2 }}>
+                                                        {m.name}
+                                                    </Typography>
+                                                    <Typography sx={{ color: '#64748B', fontWeight: 600, fontSize: 14, mt: 0.5 }}>
+                                                        {m.email}
+                                                    </Typography>
+                                                    <Chip
+                                                        label={m.role.toUpperCase()}
+                                                        size="small"
+                                                        sx={{
+                                                            mt: 1.5,
+                                                            height: 22,
+                                                            fontSize: 10,
+                                                            fontWeight: 1000,
+                                                            letterSpacing: 0.8,
+                                                            bgcolor: alpha(landingColors.blue, 0.1),
+                                                            color: '#0369A1',
+                                                            border: `1px solid ${alpha(landingColors.blue, 0.2)}`,
+                                                        }}
+                                                    />
+                                                </Box>
+                                            </Box>
+
+                                            <Box
+                                                sx={{
+                                                    p: 3,
+                                                    bgcolor: alpha(landingColors.purple, 0.02),
+                                                    borderLeft: { sm: '1px solid rgba(15,23,42,0.04)' },
+                                                    borderTop: { xs: '1px solid rgba(15,23,42,0.04)', sm: 'none' },
+                                                    display: 'flex',
+                                                    flexDirection: 'column',
+                                                    justifyContent: 'center',
+                                                    alignItems: 'center',
+                                                    minWidth: 200,
+                                                }}
+                                            >
+                                                <Button
+                                                    variant="outlined"
+                                                    endIcon={<EastRoundedIcon />}
+                                                    onClick={() => handleOpenTimeOffDialog(m)}
+                                                    sx={{
+                                                        borderRadius: 999,
+                                                        fontWeight: 900,
+                                                        borderColor: 'rgba(15,23,42,0.12)',
+                                                        color: '#475569',
+                                                        px: 3,
+                                                        '&:hover': { bgcolor: '#FFF', borderColor: landingColors.purple },
+                                                    }}
+                                                >
+                                                    Requests
+                                                </Button>
+
+                                                <Typography
+                                                    sx={{
+                                                        mt: 1.5,
+                                                        fontWeight: 800,
+                                                        fontSize: 12,
+                                                        color: m.pendingTimeOffCount > 0 ? landingColors.warning : '#94A3B8',
+                                                        textTransform: 'uppercase',
+                                                        letterSpacing: 0.5,
+                                                    }}
+                                                >
+                                                    {m.pendingTimeOffCount > 0
+                                                        ? `${m.pendingTimeOffCount} pending`
+                                                        : 'No pending'}
+                                                </Typography>
+                                            </Box>
+                                        </Box>
                                     </CardContent>
                                 </Card>
                             </Grid>
-                        ) : (
-                            items.map((m) => (
-                                <Grid item xs={12} lg={6} key={m.id}>
-                                    <Card
-                                        variant="outlined"
-                                        sx={(theme) => ({
-                                            borderRadius: 5,
-                                            overflow: 'hidden',
-                                            border: `1px solid ${alpha(theme.palette.primary.main, 0.14)}`,
-                                            backgroundColor: theme.palette.background.paper,
-                                            boxShadow: '0 8px 24px rgba(15, 23, 42, 0.04)',
-                                            transition: 'all 0.2s ease',
-                                            '&:hover': {
-                                                transform: 'translateY(-2px)',
-                                                boxShadow: '0 12px 28px rgba(15, 23, 42, 0.08)',
-                                                borderColor: alpha(theme.palette.primary.main, 0.24),
-                                            },
-                                            '&:hover .request-btn': {
-                                                borderColor: alpha(theme.palette.primary.main, 0.45),
-                                                backgroundColor: alpha(theme.palette.primary.main, 0.04),
-                                            },
-                                        })}
-                                    >
-                                        <CardContent sx={{ p: 0 }}>
-                                            <Box
-                                                sx={{
-                                                    display: 'grid',
-                                                    gridTemplateColumns: { xs: '1fr', sm: '1fr 220px' },
-                                                    alignItems: 'stretch',
-                                                }}
-                                            >
-                                                <Box sx={{ p: 2.5 }}>
-                                                    <Stack direction="row" spacing={1.75} alignItems="center">
-                                                        <Avatar
-                                                            sx={{
-                                                                width: 56,
-                                                                height: 56,
-                                                                fontWeight: 900,
-                                                                fontSize: 28,
-                                                                bgcolor: alpha('#000', 0.08),
-                                                                color: 'text.primary',
-                                                            }}
-                                                        >
-                                                            {m.name.charAt(0).toUpperCase()}
-                                                        </Avatar>
-
-                                                        <Box sx={{ minWidth: 0 }}>
-                                                            <Typography
-                                                                fontWeight={900}
-                                                                sx={{
-                                                                    lineHeight: 1.15,
-                                                                    whiteSpace: 'nowrap',
-                                                                    overflow: 'hidden',
-                                                                    textOverflow: 'ellipsis',
-                                                                }}
-                                                            >
-                                                                {m.name}
-                                                            </Typography>
-
-                                                            <Typography
-                                                                variant="body2"
-                                                                sx={{
-                                                                    mt: 0.4,
-                                                                    color: 'text.secondary',
-                                                                    whiteSpace: 'nowrap',
-                                                                    overflow: 'hidden',
-                                                                    textOverflow: 'ellipsis',
-                                                                }}
-                                                            >
-                                                                {m.email}
-                                                            </Typography>
-
-                                                            <Chip
-                                                                label={m.role === 'manager' ? 'Manager' : 'Staff'}
-                                                                size="small"
-                                                                variant="outlined"
-                                                                sx={{
-                                                                    mt: 1.1,
-                                                                    borderRadius: 2,
-                                                                    fontWeight: 600,
-                                                                }}
-                                                            />
-                                                        </Box>
-                                                    </Stack>
-                                                </Box>
-
-                                                <Box
-                                                    sx={(theme) => ({
-                                                        display: 'flex',
-                                                        flexDirection: 'column',
-                                                        alignItems: 'center',
-                                                        justifyContent: 'center',
-                                                        px: 2.5,
-                                                        py: 2.5,
-                                                        borderLeft: {
-                                                            xs: 'none',
-                                                            sm: `1px solid ${alpha(theme.palette.divider, 0.9)}`,
-                                                        },
-                                                        borderTop: {
-                                                            xs: `1px solid ${alpha(theme.palette.divider, 0.9)}`,
-                                                            sm: 'none',
-                                                        },
-                                                        backgroundColor: alpha(theme.palette.primary.main, 0.015),
-                                                    })}
-                                                >
-                                                    <Button
-                                                        className="request-btn"
-                                                        variant="outlined"
-                                                        endIcon={<EastRoundedIcon />}
-                                                        onClick={() => handleOpenTimeOffDialog(m)}
-                                                        sx={{
-                                                            minWidth: 190,
-                                                            borderRadius: 3,
-                                                            px: 2.25,
-                                                            py: 1.1,
-                                                            fontWeight: 800,
-                                                            textTransform: 'none',
-                                                            transition: 'all 0.18s ease',
-                                                        }}
-                                                    >
-                                                        Review requests
-                                                    </Button>
-
-                                                    <Typography
-                                                        variant="body2"
-                                                        sx={{
-                                                            mt: 1,
-                                                            fontWeight: 600,
-                                                            color: m.pendingTimeOffCount > 0 ? 'warning.main' : 'text.secondary',
-                                                            textAlign: 'center',
-                                                        }}
-                                                    >
-                                                        {m.pendingTimeOffCount > 0
-                                                            ? `${m.pendingTimeOffCount} pending ${m.pendingTimeOffCount === 1 ? 'request' : 'requests'}`
-                                                            : 'No pending requests'}
-                                                    </Typography>
-                                                </Box>
-                                            </Box>
-                                        </CardContent>
-                                    </Card>
-                                </Grid>
-                            ))
-                        )}
-                    </Grid>
-                </Box>
+                        ))
+                    )}
+                </Grid>
 
                 <AddStaffDialog
                     open={open}
@@ -324,9 +301,10 @@ export default function OwnerTeamPage() {
                         placeItems: 'center',
                         bgcolor: 'rgba(0,0,0,0.18)',
                         zIndex: 1400,
+                        backdropFilter: 'blur(4px)',
                     }}
                 >
-                    <CircularProgress />
+                    <CircularProgress sx={{ color: landingColors.purple }} />
                 </Box>
             ) : null}
         </>

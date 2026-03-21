@@ -11,6 +11,7 @@ import {
     Stack,
     Switch,
     Typography,
+    alpha,
 } from '@mui/material';
 import StaffBookingRulesForm, {
     type StaffBookingRulesValues,
@@ -19,6 +20,7 @@ import {
     getMyStaffBookingRules,
     updateMyStaffBookingRules,
 } from '../../api/bookingRules';
+import { landingColors, premium } from '../../components/landing/constants';
 
 const defaultRules: StaffBookingRulesValues = {
     bufferBefore: { enabled: false, minutes: 0 },
@@ -97,42 +99,56 @@ export default function StaffBookingRulesPage() {
 
     if (loading) {
         return (
-            <Box sx={{ minHeight: 320, display: 'grid', placeItems: 'center' }}>
-                <CircularProgress />
+            <Box sx={{ minHeight: 400, display: 'grid', placeItems: 'center' }}>
+                <CircularProgress sx={{ color: landingColors.purple }} />
             </Box>
         );
     }
 
     return (
         <>
-            <Stack spacing={2.5}>
+            <Stack spacing={4}>
                 <Box>
-                    <Typography variant="h4" fontWeight={900}>
-                        Booking rules
+                    <Typography sx={{ fontWeight: 1000, fontSize: 36, letterSpacing: -1.5, color: '#0F172A' }}>
+                        Booking Rules
                     </Typography>
-                    <Typography sx={{ opacity: 0.7 }}>
-                        Choose whether to use the salon booking rules or apply your own custom ones.
+                    <Typography sx={{ color: '#64748B', fontWeight: 600, fontSize: 18 }}>
+                        Use salon-wide rules or define your own personal schedule behavior.
                     </Typography>
                 </Box>
 
-                {error ? <Alert severity="error">{error}</Alert> : null}
+                {error ? <Alert severity="error" sx={{ borderRadius: 3 }}>{error}</Alert> : null}
 
-                <Card variant="outlined" sx={{ borderRadius: 3 }}>
-                    <CardContent>
-                        <Stack spacing={3}>
-                            <FormControlLabel
-                                control={
-                                    <Switch
-                                        checked={useGlobalSettings}
-                                        onChange={(e) => handleToggleUseGlobal(e.target.checked)}
-                                    />
-                                }
-                                label="Use salon default booking rules"
-                            />
+                <Card
+                    sx={{
+                        borderRadius: `${premium.rLg * 4}px`,
+                        border: '1px solid',
+                        borderColor: 'rgba(15,23,42,0.06)',
+                        bgcolor: '#FFFFFF',
+                        boxShadow: '0 10px 40px rgba(15,23,42,0.04)',
+                    }}
+                >
+                    <CardContent sx={{ p: 4 }}>
+                        <Stack spacing={4}>
+                            <Box sx={{ p: 2.5, borderRadius: 4, bgcolor: alpha(landingColors.purple, 0.04), border: `1px solid ${alpha(landingColors.purple, 0.1)}` }}>
+                                <FormControlLabel
+                                    control={
+                                        <Switch
+                                            checked={useGlobalSettings}
+                                            onChange={(e) => handleToggleUseGlobal(e.target.checked)}
+                                            sx={{
+                                                '& .MuiSwitch-switchBase.Mui-checked': { color: landingColors.purple },
+                                                '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': { bgcolor: landingColors.purple },
+                                            }}
+                                        />
+                                    }
+                                    label={<Typography sx={{ fontWeight: 800, color: '#0F172A' }}>Follow salon default rules</Typography>}
+                                />
+                            </Box>
 
                             {useGlobalSettings ? (
-                                <Alert severity="info">
-                                    Your current schedule follows the salon-wide booking rules.
+                                <Alert severity="info" sx={{ borderRadius: 3, fontWeight: 600 }}>
+                                    Your personal schedule currently inherits all rules from the salon owner.
                                 </Alert>
                             ) : null}
 
@@ -143,8 +159,21 @@ export default function StaffBookingRulesPage() {
                             />
 
                             <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
-                                <Button variant="contained" onClick={handleSave} disabled={saving}>
-                                    Save changes
+                                <Button
+                                    variant="contained"
+                                    size="large"
+                                    onClick={handleSave}
+                                    disabled={saving}
+                                    sx={{
+                                        minHeight: 52,
+                                        px: 4,
+                                        borderRadius: 999,
+                                        fontWeight: 900,
+                                        bgcolor: landingColors.purple,
+                                        boxShadow: `0 12px 30px ${alpha(landingColors.purple, 0.24)}`,
+                                    }}
+                                >
+                                    {saving ? 'Saving...' : 'Save Rules'}
                                 </Button>
                             </Box>
                         </Stack>
@@ -157,7 +186,7 @@ export default function StaffBookingRulesPage() {
                 autoHideDuration={3000}
                 onClose={() => setSuccess('')}
             >
-                <Alert onClose={() => setSuccess('')} severity="success" variant="filled">
+                <Alert onClose={() => setSuccess('')} severity="success" variant="filled" sx={{ borderRadius: 3, fontWeight: 800 }}>
                     {success}
                 </Alert>
             </Snackbar>

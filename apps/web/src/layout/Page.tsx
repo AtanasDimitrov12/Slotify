@@ -1,10 +1,18 @@
-import { Box, Container, Stack } from '@mui/material';
-import { alpha } from '@mui/material/styles';
+import { Box } from '@mui/material';
 import type { SxProps } from '@mui/material/styles';
-import React from 'react';
+import type { ReactNode } from 'react';
 import { useScrollMotion } from '../hooks/useScrollMotion';
 import { useRevealOnScroll } from '../hooks/useRevealOnScroll';
 import { Footer } from '../components/landing/Footer';
+
+const pageColors = {
+  bg: '#F7F8FC',
+  bgSoft: '#EEF2FF',
+  line: 'rgba(12, 18, 38, 0.06)',
+  purple: '#7C6CFF',
+  blue: '#7DD3FC',
+  text: '#0F172A',
+};
 
 export function Page({
   children,
@@ -12,16 +20,15 @@ export function Page({
   sx,
   showFooter,
 }: {
-  children: React.ReactNode;
-  hero?: React.ReactNode;
+  children: ReactNode;
+  hero?: ReactNode;
   sx?: SxProps;
   showFooter?: boolean;
 }) {
   useRevealOnScroll();
   const scrollY = useScrollMotion();
 
-  // scroll-reactive barber pole position (very subtle)
-  const poleShift = Math.round(scrollY * 0.15);
+  const glowShift = Math.round(scrollY * 0.08);
 
   return (
     <Box
@@ -29,15 +36,12 @@ export function Page({
         minHeight: '100vh',
         position: 'relative',
         overflowX: 'hidden',
-        background: (t) =>
-          `linear-gradient(180deg, ${alpha(t.palette.background.paper, 0)} 0%, ${alpha(
-            t.palette.background.paper,
-            1,
-          )} 60%)`,
+        bgcolor: pageColors.bg,
+        color: pageColors.text,
         ...sx,
       }}
     >
-      {/* PREMIUM BACKGROUND LAYER */}
+      {/* GLOBAL SOFT BACKGROUND */}
       <Box
         aria-hidden
         sx={{
@@ -45,69 +49,69 @@ export function Page({
           inset: 0,
           pointerEvents: 'none',
           zIndex: 0,
-
-          // 7.png is your subtle texture background
-          backgroundImage: `url('/landing/7.png')`,
-          backgroundSize: 'cover',
-          backgroundPosition: `center calc(50% + ${poleShift}px)`,
-          backgroundRepeat: 'no-repeat',
-          opacity: 0.55,
-
-          // barber pole overlay (extremely subtle)
-          '&::after': {
-            content: '""',
-            position: 'absolute',
-            inset: 0,
-            backgroundImage:
-              'repeating-linear-gradient(135deg, rgba(255,0,0,0.25) 0 10px, rgba(255,255,255,0.25) 10px 20px, rgba(0,80,255,0.22) 20px 30px, rgba(255,255,255,0.25) 30px 40px)',
-            backgroundSize: '200% 200%',
-            backgroundPosition: `${poleShift}px ${poleShift}px`,
-            mixBlendMode: 'normal',
-            opacity: 0.0,
-          },
-
-          // vignette
-          '&::before': {
-            content: '""',
-            position: 'absolute',
-            inset: 0,
-            background:
-              'radial-gradient(1200px circle at 50% 20%, rgba(255,255,255,0.0), rgba(0,0,0,0.04) 70%, rgba(0,0,0,0.06) 100%)',
-          },
+          background: `
+            radial-gradient(circle at 12% ${18 + glowShift * 0.02}%, rgba(124,108,255,0.07), transparent 24%),
+            radial-gradient(circle at 88% ${8 + glowShift * 0.015}%, rgba(125,211,252,0.08), transparent 18%),
+            linear-gradient(180deg, #F8FAFF 0%, #F5F7FC 45%, #F7F8FC 100%)
+          `,
         }}
       />
 
-      {/* CONTENT WRAPPER */}
+      {/* VERY SOFT DEPTH */}
+      <Box
+        aria-hidden
+        sx={{
+          position: 'fixed',
+          inset: 0,
+          pointerEvents: 'none',
+          zIndex: 0,
+          opacity: 0.22,
+          backgroundImage: `
+            linear-gradient(rgba(15,23,42,0.025) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(15,23,42,0.025) 1px, transparent 1px)
+          `,
+          backgroundSize: '56px 56px',
+          maskImage: 'radial-gradient(circle at center, black 38%, transparent 88%)',
+          WebkitMaskImage: 'radial-gradient(circle at center, black 38%, transparent 88%)',
+        }}
+      />
+
+      {/* CONTENT */}
       <Box sx={{ position: 'relative', zIndex: 1 }}>
-        {/* HERO BAND (full width) */}
         {hero}
 
-        {/* MAIN CONTENT */}
-        <Container maxWidth="lg" sx={{ pb: { xs: 6, md: 10 } }}>
-          <Stack spacing={{ xs: 6, md: 9 }}>
-            {children}
-            {showFooter && <Footer />}
-          </Stack>
-        </Container>
+        {/* IMPORTANT: no Container here */}
+        <Box>
+          {children}
+          {showFooter ? <Footer /> : null}
+        </Box>
 
         {/* Reveal animation styles */}
         <Box
           sx={{
             '[data-reveal="1"]': {
               opacity: 0,
-              transform: 'translateY(14px)',
-              filter: 'blur(6px)',
-              transition: 'opacity 520ms ease, transform 520ms ease, filter 520ms ease',
+              transform: 'translateY(18px)',
+              filter: 'blur(8px)',
+              transition: 'opacity 560ms ease, transform 560ms ease, filter 560ms ease',
+              willChange: 'opacity, transform, filter',
             },
             '[data-reveal-state="in"]': {
               opacity: 1,
               transform: 'translateY(0px)',
               filter: 'blur(0px)',
             },
+            '@media (prefers-reduced-motion: reduce)': {
+              '[data-reveal="1"]': {
+                opacity: 1,
+                transform: 'none',
+                filter: 'none',
+                transition: 'none',
+              },
+            },
           }}
         />
       </Box>
-      .
     </Box>
   );
 }

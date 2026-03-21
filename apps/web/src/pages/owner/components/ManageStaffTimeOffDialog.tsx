@@ -10,12 +10,14 @@ import {
   DialogTitle,
   Stack,
   Typography,
+  alpha,
 } from '@mui/material';
 import {
   getOwnerStaffTimeOffRequests,
   reviewOwnerStaffTimeOffRequest,
   type OwnerStaffTimeOffItem,
 } from '../../../api/staffTimeOff';
+import { landingColors } from '../../../components/landing/constants';
 
 type Props = {
   open: boolean;
@@ -26,7 +28,9 @@ type Props = {
 };
 
 function formatDateRange(startDate: string, endDate: string) {
-  return `${startDate.slice(0, 10)} → ${endDate.slice(0, 10)}`;
+  const start = new Date(startDate).toLocaleDateString([], { day: '2-digit', month: 'short' });
+  const end = new Date(endDate).toLocaleDateString([], { day: '2-digit', month: 'short', year: 'numeric' });
+  return `${start} → ${end}`;
 }
 
 export default function ManageStaffTimeOffDialog({
@@ -84,25 +88,35 @@ export default function ManageStaffTimeOffDialog({
   const history = items.filter((item) => item.status !== 'requested');
 
   return (
-    <Dialog open={open} onClose={onClose} fullWidth maxWidth="md">
-      <DialogTitle>Manage Time Off — {staffName}</DialogTitle>
+    <Dialog
+      open={open}
+      onClose={onClose}
+      fullWidth
+      maxWidth="md"
+      PaperProps={{
+        sx: { borderRadius: 8, p: 1 }
+      }}
+    >
+      <DialogTitle sx={{ fontWeight: 1000, fontSize: 24, letterSpacing: -0.5, py: 3, px: 4 }}>
+        Time Off Requests — {staffName}
+      </DialogTitle>
 
-      <DialogContent dividers>
-        <Stack spacing={3}>
-          {error ? <Alert severity="error">{error}</Alert> : null}
+      <DialogContent sx={{ px: 4 }}>
+        <Stack spacing={4} sx={{ mt: 1 }}>
+          {error ? <Alert severity="error" sx={{ borderRadius: 3 }}>{error}</Alert> : null}
 
           {loading ? (
-            <Typography sx={{ opacity: 0.7 }}>Loading requests...</Typography>
+            <Typography sx={{ color: '#64748B', fontWeight: 600 }}>Loading requests...</Typography>
           ) : (
             <>
               <Box>
-                <Typography fontWeight={800} sx={{ mb: 1.5 }}>
-                  Pending requests
+                <Typography sx={{ fontWeight: 900, fontSize: 14, textTransform: 'uppercase', letterSpacing: 1, color: landingColors.purple, mb: 2 }}>
+                  Pending Requests
                 </Typography>
 
                 {pending.length === 0 ? (
-                  <Typography sx={{ opacity: 0.7 }}>
-                    No pending requests.
+                  <Typography sx={{ color: '#94A3B8', fontWeight: 600, py: 2 }}>
+                    No pending requests at this time.
                   </Typography>
                 ) : (
                   <Stack spacing={2}>
@@ -111,38 +125,44 @@ export default function ManageStaffTimeOffDialog({
                         key={item._id}
                         sx={{
                           border: '1px solid',
-                          borderColor: 'divider',
-                          borderRadius: 2,
-                          p: 2,
+                          borderColor: 'rgba(15,23,42,0.06)',
+                          borderRadius: 4,
+                          p: 3,
+                          bgcolor: alpha(landingColors.purple, 0.02),
                         }}
                       >
-                        <Stack spacing={1.25}>
-                          <Box
-                            sx={{
-                              display: 'flex',
-                              justifyContent: 'space-between',
-                              alignItems: 'flex-start',
-                              gap: 2,
-                            }}
-                          >
+                        <Stack spacing={2}>
+                          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 2 }}>
                             <Box>
-                              <Typography fontWeight={800}>
+                              <Typography sx={{ fontWeight: 900, fontSize: 17, color: '#0F172A' }}>
                                 {formatDateRange(item.startDate, item.endDate)}
                               </Typography>
-                              <Typography sx={{ opacity: 0.75 }}>
+                              <Typography sx={{ color: '#64748B', fontWeight: 600, mt: 0.5 }}>
                                 {item.reason || 'No reason provided'}
                               </Typography>
                             </Box>
 
-                            <Chip label="requested" size="small" />
+                            <Chip
+                              label="PENDING"
+                              size="small"
+                              sx={{
+                                fontWeight: 1000,
+                                fontSize: 10,
+                                letterSpacing: 0.8,
+                                bgcolor: alpha(landingColors.blue, 0.1),
+                                color: landingColors.blue,
+                                border: `1px solid ${alpha(landingColors.blue, 0.2)}`,
+                              }}
+                            />
                           </Box>
 
-                          <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 1 }}>
+                          <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 1.5 }}>
                             <Button
                               variant="outlined"
                               color="error"
                               disabled={actionLoadingId === item._id}
                               onClick={() => handleReview(item._id, 'denied')}
+                              sx={{ borderRadius: 999, fontWeight: 900, px: 3 }}
                             >
                               Deny
                             </Button>
@@ -151,6 +171,13 @@ export default function ManageStaffTimeOffDialog({
                               variant="contained"
                               disabled={actionLoadingId === item._id}
                               onClick={() => handleReview(item._id, 'approved')}
+                              sx={{
+                                borderRadius: 999,
+                                fontWeight: 900,
+                                px: 3,
+                                bgcolor: landingColors.purple,
+                                '&:hover': { bgcolor: landingColors.purple, filter: 'brightness(1.05)' },
+                              }}
                             >
                               Approve
                             </Button>
@@ -163,47 +190,48 @@ export default function ManageStaffTimeOffDialog({
               </Box>
 
               <Box>
-                <Typography fontWeight={800} sx={{ mb: 1.5 }}>
+                <Typography sx={{ fontWeight: 900, fontSize: 14, textTransform: 'uppercase', letterSpacing: 1, color: '#64748B', mb: 2 }}>
                   History
                 </Typography>
 
                 {history.length === 0 ? (
-                  <Typography sx={{ opacity: 0.7 }}>
+                  <Typography sx={{ color: '#94A3B8', fontWeight: 600, py: 2 }}>
                     No reviewed requests yet.
                   </Typography>
                 ) : (
-                  <Stack spacing={2}>
+                  <Stack spacing={1.5}>
                     {history.map((item) => (
                       <Box
                         key={item._id}
                         sx={{
                           border: '1px solid',
-                          borderColor: 'divider',
-                          borderRadius: 2,
-                          p: 2,
+                          borderColor: 'rgba(15,23,42,0.04)',
+                          borderRadius: 3,
+                          p: 2.5,
+                          bgcolor: alpha('#F8FAFC', 0.5),
                         }}
                       >
-                        <Box
-                          sx={{
-                            display: 'flex',
-                            justifyContent: 'space-between',
-                            alignItems: 'flex-start',
-                            gap: 2,
-                          }}
-                        >
+                        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 2 }}>
                           <Box>
-                            <Typography fontWeight={800}>
+                            <Typography sx={{ fontWeight: 800, fontSize: 15, color: '#475569' }}>
                               {formatDateRange(item.startDate, item.endDate)}
                             </Typography>
-                            <Typography sx={{ opacity: 0.75 }}>
-                              {item.reason || 'No reason provided'}
+                            <Typography sx={{ color: '#94A3B8', fontSize: 13, fontWeight: 600 }}>
+                              {item.reason || 'No reason'}
                             </Typography>
                           </Box>
 
                           <Chip
-                            label={item.status}
+                            label={item.status.toUpperCase()}
                             size="small"
-                            color={item.status === 'approved' ? 'success' : 'error'}
+                            sx={{
+                              fontWeight: 1000,
+                              fontSize: 10,
+                              letterSpacing: 0.8,
+                              bgcolor: item.status === 'approved' ? alpha(landingColors.success, 0.1) : alpha('#F43F5E', 0.1),
+                              color: item.status === 'approved' ? landingColors.success : '#F43F5E',
+                              border: `1px solid ${item.status === 'approved' ? alpha(landingColors.success, 0.2) : alpha('#F43F5E', 0.2)}`,
+                            }}
                           />
                         </Box>
                       </Box>
@@ -216,8 +244,13 @@ export default function ManageStaffTimeOffDialog({
         </Stack>
       </DialogContent>
 
-      <DialogActions>
-        <Button onClick={onClose}>Close</Button>
+      <DialogActions sx={{ p: 4, pt: 2 }}>
+        <Button
+          onClick={onClose}
+          sx={{ fontWeight: 900, color: '#64748B', borderRadius: 999, px: 4 }}
+        >
+          Close
+        </Button>
       </DialogActions>
     </Dialog>
   );

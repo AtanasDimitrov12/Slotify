@@ -7,6 +7,7 @@ import {
   Snackbar,
   Stack,
   Typography,
+  alpha,
 } from '@mui/material';
 import WeeklyScheduleEditor from './components/WeeklyScheduleEditor';
 import type { DaySchedule } from './components/types';
@@ -14,6 +15,7 @@ import {
   getMyStaffAvailability,
   updateMyStaffAvailability,
 } from '../../api/staffAvailability';
+import { landingColors } from '../../components/landing/constants';
 
 const defaultSchedule: DaySchedule[] = [
   { dayOfWeek: 1, label: 'Mon', enabled: true, start: '09:00', end: '18:00', breakStart: '13:00', breakEnd: '13:30' },
@@ -109,31 +111,44 @@ export default function StaffAvailabilityPage() {
 
   if (loading) {
     return (
-      <Box sx={{ minHeight: 320, display: 'grid', placeItems: 'center' }}>
-        <CircularProgress />
+      <Box sx={{ minHeight: 400, display: 'grid', placeItems: 'center' }}>
+        <CircularProgress sx={{ color: landingColors.purple }} />
       </Box>
     );
   }
 
   return (
     <>
-      <Stack spacing={2.5}>
+      <Stack spacing={4}>
         <Box>
-          <Typography variant="h4" fontWeight={900}>
+          <Typography sx={{ fontWeight: 1000, fontSize: 36, letterSpacing: -1.5, color: '#0F172A' }}>
             Availability
           </Typography>
-          <Typography sx={{ opacity: 0.7 }}>
-            Set your default weekly working hours and breaks.
+          <Typography sx={{ color: '#64748B', fontWeight: 600, fontSize: 18 }}>
+            Set your weekly working hours and break times.
           </Typography>
         </Box>
 
-        {error ? <Alert severity="error">{error}</Alert> : null}
+        {error ? <Alert severity="error" sx={{ borderRadius: 3 }}>{error}</Alert> : null}
 
         <WeeklyScheduleEditor value={schedule} onChange={setSchedule} />
 
         <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
-          <Button variant="contained" onClick={handleSave} disabled={saving}>
-            Save schedule
+          <Button
+            variant="contained"
+            size="large"
+            onClick={handleSave}
+            disabled={saving}
+            sx={{
+              minHeight: 52,
+              px: 4,
+              borderRadius: 999,
+              fontWeight: 900,
+              bgcolor: landingColors.purple,
+              boxShadow: `0 12px 30px ${alpha(landingColors.purple, 0.24)}`,
+            }}
+          >
+            {saving ? 'Saving...' : 'Save Schedule'}
           </Button>
         </Box>
       </Stack>
@@ -143,7 +158,7 @@ export default function StaffAvailabilityPage() {
         autoHideDuration={3000}
         onClose={() => setSuccess('')}
       >
-        <Alert onClose={() => setSuccess('')} severity="success" variant="filled">
+        <Alert onClose={() => setSuccess('')} severity="success" variant="filled" sx={{ borderRadius: 3, fontWeight: 800 }}>
           {success}
         </Alert>
       </Snackbar>

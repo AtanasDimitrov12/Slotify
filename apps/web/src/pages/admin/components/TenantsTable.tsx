@@ -16,6 +16,7 @@ import {
 } from '@mui/material';
 import type { Tenant } from '../../../api/tenants';
 import StatusChip from './StatusChip';
+import { landingColors, premium } from '../../../components/landing/constants';
 
 type Props = {
   rows: Tenant[];
@@ -30,33 +31,36 @@ function formatDate(value: string) {
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return value;
 
-  return date.toLocaleDateString();
+  return date.toLocaleDateString([], {
+    day: '2-digit',
+    month: 'short',
+    year: 'numeric',
+  });
 }
 
 export default function TenantsTable({ rows, loading, onEdit, onToggleStatus }: Props) {
   return (
     <Card
       sx={{
-        borderRadius: 4,
+        borderRadius: `${premium.rLg * 4}px`,
         border: '1px solid',
-        borderColor: alpha('#000', 0.08),
-        bgcolor: alpha('#FFFFFF', 0.85),
-        backdropFilter: 'blur(10px)',
-        boxShadow: '0 8px 30px rgba(16, 24, 40, 0.06)',
+        borderColor: 'rgba(15,23,42,0.06)',
+        bgcolor: '#FFFFFF',
+        boxShadow: '0 12px 40px rgba(15,23,42,0.04)',
         overflow: 'hidden',
       }}
     >
       <CardContent sx={{ p: 0 }}>
         <TableContainer>
           <Table>
-            <TableHead sx={{ bgcolor: alpha('#000', 0.02) }}>
+            <TableHead sx={{ bgcolor: alpha(landingColors.purple, 0.03) }}>
               <TableRow>
-                <TableCell sx={{ fontWeight: 1000 }}>Tenant</TableCell>
-                <TableCell sx={{ fontWeight: 1000 }}>Plan</TableCell>
-                <TableCell sx={{ fontWeight: 1000, width: 130 }}>Published</TableCell>
-                <TableCell sx={{ fontWeight: 1000, width: 130 }}>Status</TableCell>
-                <TableCell sx={{ fontWeight: 1000, width: 140 }}>Created</TableCell>
-                <TableCell sx={{ fontWeight: 1000, width: 220 }}>Actions</TableCell>
+                <TableCell sx={{ fontWeight: 1000, fontSize: 13, textTransform: 'uppercase', letterSpacing: 1, color: '#64748B', py: 2.5 }}>Tenant</TableCell>
+                <TableCell sx={{ fontWeight: 1000, fontSize: 13, textTransform: 'uppercase', letterSpacing: 1, color: '#64748B' }}>Plan</TableCell>
+                <TableCell sx={{ fontWeight: 1000, fontSize: 13, textTransform: 'uppercase', letterSpacing: 1, color: '#64748B', width: 130 }}>Published</TableCell>
+                <TableCell sx={{ fontWeight: 1000, fontSize: 13, textTransform: 'uppercase', letterSpacing: 1, color: '#64748B', width: 130 }}>Status</TableCell>
+                <TableCell sx={{ fontWeight: 1000, fontSize: 13, textTransform: 'uppercase', letterSpacing: 1, color: '#64748B', width: 140 }}>Created</TableCell>
+                <TableCell sx={{ fontWeight: 1000, fontSize: 13, textTransform: 'uppercase', letterSpacing: 1, color: '#64748B', width: 220, textAlign: 'right', pr: 4 }}>Actions</TableCell>
               </TableRow>
             </TableHead>
 
@@ -64,9 +68,9 @@ export default function TenantsTable({ rows, loading, onEdit, onToggleStatus }: 
               {loading ? (
                 <TableRow>
                   <TableCell colSpan={8}>
-                    <Box sx={{ p: 2 }}>
-                      <Typography color="text.secondary" fontWeight={650}>
-                        Loading…
+                    <Box sx={{ p: 4, textAlign: 'center' }}>
+                      <Typography sx={{ color: '#94A3B8', fontWeight: 600 }}>
+                        Fetching tenants...
                       </Typography>
                     </Box>
                   </TableCell>
@@ -74,9 +78,9 @@ export default function TenantsTable({ rows, loading, onEdit, onToggleStatus }: 
               ) : rows.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={8}>
-                    <Box sx={{ p: 2 }}>
-                      <Typography color="text.secondary" fontWeight={650}>
-                        No tenants yet.
+                    <Box sx={{ p: 8, textAlign: 'center' }}>
+                      <Typography sx={{ color: '#94A3B8', fontWeight: 700, fontSize: 18 }}>
+                        No tenants found.
                       </Typography>
                     </Box>
                   </TableCell>
@@ -86,33 +90,72 @@ export default function TenantsTable({ rows, loading, onEdit, onToggleStatus }: 
                   const isActive = row.status === 'active';
 
                   return (
-                    <TableRow key={row._id} hover>
-                      <TableCell sx={{ fontWeight: 950 }}>{row.name}</TableCell>
-                      <TableCell>{row.plan || '-'}</TableCell>
-                      <TableCell>{row.isPublished ? 'Yes' : 'No'}</TableCell>
+                    <TableRow key={row._id} hover sx={{ '&:last-child td': { borderBottom: 0 } }}>
+                      <TableCell sx={{ py: 3 }}>
+                        <Typography sx={{ fontWeight: 900, color: '#0F172A', fontSize: 15.5 }}>
+                          {row.name}
+                        </Typography>
+                        <Typography variant="caption" sx={{ color: '#94A3B8', fontWeight: 600 }}>
+                          {row.slug || 'no-slug'}
+                        </Typography>
+                      </TableCell>
+                      <TableCell>
+                        <Typography sx={{ fontWeight: 800, fontSize: 14, color: '#475569' }}>
+                          {row.plan ? row.plan.toUpperCase() : 'BASIC'}
+                        </Typography>
+                      </TableCell>
+                      <TableCell>
+                        <Typography sx={{ fontWeight: 800, fontSize: 14, color: row.isPublished ? landingColors.success : '#94A3B8' }}>
+                          {row.isPublished ? 'YES' : 'NO'}
+                        </Typography>
+                      </TableCell>
                       <TableCell>
                         <StatusChip status={row.status} />
                       </TableCell>
-                      <TableCell>{formatDate(row.createdAt)}</TableCell>
                       <TableCell>
-                        <Stack direction="row" spacing={1}>
+                        <Typography sx={{ fontWeight: 700, fontSize: 14, color: '#64748B' }}>
+                          {formatDate(row.createdAt)}
+                        </Typography>
+                      </TableCell>
+                      <TableCell sx={{ pr: 4 }}>
+                        <Stack direction="row" spacing={1} justifyContent="flex-end">
                           <Button
                             size="small"
                             variant="outlined"
                             onClick={() => onEdit(row)}
-                            sx={{ borderRadius: 999, fontWeight: 800 }}
+                            sx={{
+                              borderRadius: 999,
+                              fontWeight: 900,
+                              px: 2,
+                              borderColor: 'rgba(15,23,42,0.12)',
+                              color: '#475569',
+                              '&:hover': { bgcolor: alpha(landingColors.purple, 0.04), borderColor: landingColors.purple },
+                            }}
                           >
                             Edit
                           </Button>
 
                           <Button
                             size="small"
-                            variant="outlined"
+                            variant="contained"
                             color={isActive ? 'error' : 'success'}
                             onClick={() => onToggleStatus(row)}
-                            sx={{ borderRadius: 999, fontWeight: 800 }}
+                            sx={{
+                              borderRadius: 999,
+                              fontWeight: 900,
+                              px: 2,
+                              bgcolor: isActive ? alpha('#F43F5E', 0.1) : alpha(landingColors.success, 0.1),
+                              color: isActive ? '#F43F5E' : landingColors.success,
+                              border: '1px solid',
+                              borderColor: isActive ? alpha('#F43F5E', 0.2) : alpha(landingColors.success, 0.2),
+                              boxShadow: 'none',
+                              '&:hover': {
+                                bgcolor: isActive ? alpha('#F43F5E', 0.2) : alpha(landingColors.success, 0.2),
+                                boxShadow: 'none',
+                              },
+                            }}
                           >
-                            {isActive ? 'Deactivate' : 'Activate'}
+                            {isActive ? 'Suspend' : 'Activate'}
                           </Button>
                         </Stack>
                       </TableCell>

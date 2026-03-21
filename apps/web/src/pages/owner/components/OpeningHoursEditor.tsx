@@ -8,7 +8,10 @@ import {
   Switch,
   TextField,
   Typography,
+  alpha,
+  Box,
 } from '@mui/material';
+import { landingColors } from '../../../components/landing/constants';
 
 export type OpeningDayKey = 'mon' | 'tue' | 'wed' | 'thu' | 'fri' | 'sat' | 'sun';
 
@@ -31,62 +34,88 @@ export default function OpeningHoursEditor({ value, onChange }: Props) {
   }
 
   return (
-    <Stack spacing={2}>
-      <Typography sx={{ opacity: 0.7 }}>
-        Set working days and start/end time for each day.
-      </Typography>
+    <Stack spacing={3}>
+      <Box sx={{ p: 2.5, borderRadius: 3, bgcolor: alpha(landingColors.purple, 0.04), border: `1px solid ${alpha(landingColors.purple, 0.1)}` }}>
+        <Typography sx={{ color: landingColors.purple, fontWeight: 700, fontSize: 15 }}>
+          Specify your salon's weekly schedule. These hours determine when customers can book appointments.
+        </Typography>
+      </Box>
 
-      {value.map((day) => (
-        <Card key={day.key} variant="outlined" sx={{ borderRadius: 3 }}>
-          <CardContent>
-            <Grid container spacing={2} alignItems="center">
-              <Grid item xs={12} md={3}>
-                <Typography fontWeight={800}>{day.label}</Typography>
-              </Grid>
+      <Stack spacing={2}>
+        {value.map((day) => (
+          <Card
+            key={day.key}
+            sx={{
+              borderRadius: 4,
+              border: '1px solid',
+              borderColor: day.enabled ? 'rgba(15,23,42,0.08)' : 'rgba(15,23,42,0.04)',
+              bgcolor: day.enabled ? '#FFFFFF' : alpha('#F8FAFC', 0.5),
+              boxShadow: day.enabled ? '0 4px 20px rgba(15,23,42,0.03)' : 'none',
+              transition: 'all 0.2s ease',
+            }}
+          >
+            <CardContent sx={{ p: '16px 24px !important' }}>
+              <Grid container spacing={2} alignItems="center">
+                <Grid item xs={12} md={3}>
+                  <Typography sx={{ fontWeight: 900, fontSize: 16, color: day.enabled ? '#0F172A' : '#94A3B8' }}>
+                    {day.label}
+                  </Typography>
+                </Grid>
 
-              <Grid item xs={12} md={3}>
-                <FormControlLabel
-                  control={
-                    <Switch
-                      checked={day.enabled}
-                      onChange={(e) =>
-                        updateOpeningDay(day.key, { enabled: e.target.checked })
-                      }
-                    />
-                  }
-                  label={day.enabled ? 'Open' : 'Closed'}
-                />
-              </Grid>
+                <Grid item xs={12} md={3}>
+                  <FormControlLabel
+                    control={
+                      <Switch
+                        checked={day.enabled}
+                        onChange={(e) =>
+                          updateOpeningDay(day.key, { enabled: e.target.checked })
+                        }
+                        sx={{
+                          '& .MuiSwitch-switchBase.Mui-checked': { color: landingColors.purple },
+                          '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': { bgcolor: landingColors.purple },
+                        }}
+                      />
+                    }
+                    label={
+                      <Typography sx={{ fontWeight: 800, fontSize: 14, color: day.enabled ? landingColors.success : '#64748B' }}>
+                        {day.enabled ? 'OPEN' : 'CLOSED'}
+                      </Typography>
+                    }
+                  />
+                </Grid>
 
-              <Grid item xs={12} md={3}>
-                <TextField
-                  fullWidth
-                  label="Start time"
-                  type="time"
-                  value={day.start}
-                  onChange={(e) => updateOpeningDay(day.key, { start: e.target.value })}
-                  disabled={!day.enabled}
-                  InputLabelProps={{ shrink: true }}
-                  inputProps={{ step: 300 }}
-                />
-              </Grid>
+                <Grid item xs={6} md={3}>
+                  <TextField
+                    fullWidth
+                    label="Start Time"
+                    type="time"
+                    value={day.start}
+                    onChange={(e) => updateOpeningDay(day.key, { start: e.target.value })}
+                    disabled={!day.enabled}
+                    InputLabelProps={{ shrink: true }}
+                    inputProps={{ step: 300 }}
+                    size="small"
+                  />
+                </Grid>
 
-              <Grid item xs={12} md={3}>
-                <TextField
-                  fullWidth
-                  label="End time"
-                  type="time"
-                  value={day.end}
-                  onChange={(e) => updateOpeningDay(day.key, { end: e.target.value })}
-                  disabled={!day.enabled}
-                  InputLabelProps={{ shrink: true }}
-                  inputProps={{ step: 300 }}
-                />
+                <Grid item xs={6} md={3}>
+                  <TextField
+                    fullWidth
+                    label="End Time"
+                    type="time"
+                    value={day.end}
+                    onChange={(e) => updateOpeningDay(day.key, { end: e.target.value })}
+                    disabled={!day.enabled}
+                    InputLabelProps={{ shrink: true }}
+                    inputProps={{ step: 300 }}
+                    size="small"
+                  />
+                </Grid>
               </Grid>
-            </Grid>
-          </CardContent>
-        </Card>
-      ))}
+            </CardContent>
+          </Card>
+        ))}
+      </Stack>
     </Stack>
   );
 }

@@ -1,5 +1,6 @@
 import * as React from 'react';
 import { alpha, Box, Card, CardContent, Grid, Stack, Typography } from '@mui/material';
+import { landingColors, premium } from '../../components/landing/constants';
 
 type OverviewStats = {
   tenantsTotal: number;
@@ -11,34 +12,34 @@ type OverviewStats = {
   last24hLogins: number;
 };
 
-function StatCard({ label, value, hint }: { label: string; value: string | number; hint?: string }) {
+function StatCard({ label, value, hint, accent = landingColors.purple }: { label: string; value: string | number; hint?: string; accent?: string }) {
   return (
     <Card
       sx={{
-        borderRadius: 4,
+        borderRadius: `${premium.rLg * 4}px`,
         height: '100%',
         border: '1px solid',
-        borderColor: alpha('#000', 0.08),
-        bgcolor: alpha('#FFFFFF', 0.85),
-        backdropFilter: 'blur(10px)',
-        boxShadow: '0 8px 30px rgba(16, 24, 40, 0.06)',
-        transition: 'transform .15s ease, box-shadow .15s ease',
+        borderColor: 'rgba(15,23,42,0.06)',
+        bgcolor: '#FFFFFF',
+        boxShadow: '0 12px 40px rgba(15,23,42,0.04)',
+        transition: 'all 0.2s ease',
         '&:hover': {
-          transform: 'translateY(-2px)',
-          boxShadow: '0 12px 40px rgba(16, 24, 40, 0.10)',
+          transform: 'translateY(-4px)',
+          boxShadow: '0 20px 50px rgba(15,23,42,0.08)',
+          borderColor: alpha(accent, 0.2),
         },
       }}
     >
-      <CardContent sx={{ p: 2.5 }}>
-        <Stack spacing={0.6}>
-          <Typography color="text.secondary" fontWeight={800}>
+      <CardContent sx={{ p: 3.5 }}>
+        <Stack spacing={1.5}>
+          <Typography sx={{ color: '#64748B', fontWeight: 800, fontSize: 13, letterSpacing: 0.5, textTransform: 'uppercase' }}>
             {label}
           </Typography>
-          <Typography variant="h4" fontWeight={1000} letterSpacing={-1}>
+          <Typography sx={{ fontWeight: 1000, fontSize: 44, letterSpacing: -1.5, color: '#0F172A', lineHeight: 1 }}>
             {value}
           </Typography>
           {hint ? (
-            <Typography variant="body2" color="text.secondary" fontWeight={650}>
+            <Typography variant="body2" sx={{ color: '#94A3B8', fontWeight: 600 }}>
               {hint}
             </Typography>
           ) : null}
@@ -49,7 +50,6 @@ function StatCard({ label, value, hint }: { label: string; value: string | numbe
 }
 
 export default function AdminOverviewPage() {
-  // TODO: replace with API call: GET /admin/overview
   const stats: OverviewStats = React.useMemo(
     () => ({
       tenantsTotal: 12,
@@ -65,60 +65,77 @@ export default function AdminOverviewPage() {
 
   return (
     <Box>
-      <Stack spacing={0.8} sx={{ mb: 2 }}>
-        <Typography variant="h5" fontWeight={1000} letterSpacing={-0.6}>
-          System overview
+      <Stack spacing={1} sx={{ mb: 5 }}>
+        <Typography sx={{ fontWeight: 1000, fontSize: 36, letterSpacing: -1.5, color: '#0F172A' }}>
+          System Overview
         </Typography>
-        <Typography color="text.secondary" fontWeight={650}>
-          Platform-level stats for Slotify (multi-tenant).
+        <Typography sx={{ color: '#64748B', fontWeight: 600, fontSize: 18 }}>
+          Platform-level analytics and tenant operations.
         </Typography>
       </Stack>
 
-      <Grid container spacing={2}>
+      <Grid container spacing={3}>
         <Grid item xs={12} sm={6} lg={3}>
-          <StatCard label="Tenants registered" value={stats.tenantsTotal} hint="All salons created in the system." />
+          <StatCard label="Tenants registered" value={stats.tenantsTotal} hint="All salons created in the system" accent={landingColors.purple} />
         </Grid>
         <Grid item xs={12} sm={6} lg={3}>
-          <StatCard label="Active tenants" value={stats.tenantsActive} hint="Enabled & operational." />
+          <StatCard label="Active tenants" value={stats.tenantsActive} hint="Operational & public" accent={landingColors.success} />
         </Grid>
         <Grid item xs={12} sm={6} lg={3}>
-          <StatCard label="Pending tenants" value={stats.tenantsPending} hint="Awaiting activation / setup." />
+          <StatCard label="Pending tenants" value={stats.tenantsPending} hint="Awaiting activation" accent={landingColors.blue} />
         </Grid>
         <Grid item xs={12} sm={6} lg={3}>
-          <StatCard label="Logins (24h)" value={stats.last24hLogins} hint="Across all tenant accounts." />
+          <StatCard label="Logins (24h)" value={stats.last24hLogins} hint="Across all tenant accounts" accent={landingColors.purple} />
         </Grid>
 
         <Grid item xs={12} sm={6} lg={4}>
-          <StatCard label="Total users" value={stats.usersTotal} hint="All accounts (owners + employees)." />
+          <StatCard label="Total users" value={stats.usersTotal} hint="Owners + Employees" />
         </Grid>
         <Grid item xs={12} sm={6} lg={4}>
-          <StatCard label="Owners" value={stats.ownersTotal} hint="Tenant owners/admins." />
+          <StatCard label="Owners" value={stats.ownersTotal} hint="Tenant administrators" />
         </Grid>
         <Grid item xs={12} sm={6} lg={4}>
-          <StatCard label="Employees" value={stats.employeesTotal} hint="Barbers / staff accounts." />
+          <StatCard label="Employees" value={stats.employeesTotal} hint="Barbers and staff" />
+        </Grid>
+
+        <Grid item xs={12}>
+          <Card
+            sx={{
+              borderRadius: `${premium.rLg * 4}px`,
+              border: '1px solid',
+              borderColor: alpha(landingColors.purple, 0.12),
+              bgcolor: alpha(landingColors.purple, 0.04),
+              p: 1,
+            }}
+          >
+            <CardContent sx={{ p: 3 }}>
+              <Stack direction="row" spacing={2} alignItems="center">
+                <Box
+                  sx={{
+                    width: 48,
+                    height: 48,
+                    borderRadius: 3,
+                    bgcolor: alpha(landingColors.purple, 0.1),
+                    display: 'grid',
+                    placeItems: 'center',
+                    color: landingColors.purple,
+                  }}
+                >
+                  <Typography sx={{ fontWeight: 1000 }}>🚀</Typography>
+                </Box>
+                <Box>
+                  <Typography sx={{ fontWeight: 1000, fontSize: 18, color: '#0F172A' }}>
+                    What's next?
+                  </Typography>
+                  <Typography sx={{ color: '#64748B', fontWeight: 600 }}>
+                    We'll soon add revenue tracking, busiest salons analysis, and detailed audit logs.
+                  </Typography>
+                </Box>
+              </Stack>
+            </CardContent>
+          </Card>
         </Grid>
       </Grid>
-
-      <Card
-        sx={{
-          borderRadius: 4,
-          height: '100%',
-          border: '1px solid',
-          borderColor: 'divider',
-          bgcolor: (t) => alpha(t.palette.background.paper, 0.7),
-          backdropFilter: 'blur(8px)',
-        }}
-      >
-        <CardContent sx={{ p: 2.5 }}>
-          <Typography fontWeight={1000} sx={{ mb: 0.8 }}>
-            What we can add next
-          </Typography>
-          <Typography color="text.secondary" fontWeight={650}>
-            Revenue/billing (if applicable), failed logins, booking volume, busiest tenants, churn, audit logs,
-            and “impersonate tenant” for support.
-          </Typography>
-        </CardContent>
-      </Card>
     </Box>
   );
 }

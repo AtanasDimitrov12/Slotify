@@ -7,7 +7,10 @@ import {
   DialogTitle,
   Stack,
   TextField,
+  Typography,
+  alpha,
 } from '@mui/material';
+import { landingColors } from '../../../components/landing/constants';
 
 export type CatalogServicePayload = {
   name: string;
@@ -75,45 +78,89 @@ export default function ServiceCatalogDialog({
   }
 
   return (
-    <Dialog open={open} onClose={onClose} fullWidth maxWidth="sm">
-      <DialogTitle>{initialData ? 'Edit service' : 'Create service'}</DialogTitle>
+    <Dialog
+      open={open}
+      onClose={onClose}
+      fullWidth
+      maxWidth="sm"
+      PaperProps={{
+        sx: { borderRadius: 8, p: 1 }
+      }}
+    >
+      <DialogTitle sx={{ fontWeight: 1000, fontSize: 24, letterSpacing: -0.5, py: 3, px: 4 }}>
+        {initialData ? 'Edit Catalog Service' : 'Add Catalog Service'}
+      </DialogTitle>
 
-      <DialogContent>
-        <Stack spacing={2} sx={{ mt: 1 }}>
-          <TextField
-            label="Service name"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-          />
+      <DialogContent sx={{ px: 4, pb: 2 }}>
+        <Stack spacing={3}>
+          <Typography sx={{ color: '#64748B', fontWeight: 600, fontSize: 15 }}>
+            {initialData 
+              ? 'Update the details for this global service offering.' 
+              : 'Define a new service that will be available for barbers to choose.'}
+          </Typography>
 
-          <TextField
-            label="Default duration (min)"
-            type="number"
-            value={durationMin}
-            onChange={(e) => setDurationMin(e.target.value)}
-          />
+          <Stack spacing={2.5}>
+            <TextField
+              label="Service Name"
+              placeholder="e.g. Premium Haircut"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              fullWidth
+            />
 
-          <TextField
-            label="Default price (€)"
-            type="number"
-            value={priceEUR}
-            onChange={(e) => setPriceEUR(e.target.value)}
-          />
+            <Stack direction="row" spacing={2}>
+              <TextField
+                label="Duration (min)"
+                type="number"
+                value={durationMin}
+                onChange={(e) => setDurationMin(e.target.value)}
+                fullWidth
+              />
 
-          <TextField
-            label="Description"
-            multiline
-            minRows={3}
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-          />
+              <TextField
+                label="Price (€)"
+                type="number"
+                value={priceEUR}
+                onChange={(e) => setPriceEUR(e.target.value)}
+                fullWidth
+              />
+            </Stack>
+
+            <TextField
+              label="Description (optional)"
+              placeholder="Describe the service details..."
+              multiline
+              minRows={4}
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              fullWidth
+            />
+          </Stack>
         </Stack>
       </DialogContent>
 
-      <DialogActions>
-        <Button onClick={onClose}>Cancel</Button>
-        <Button variant="contained" disabled={!canSubmit} onClick={handleSave}>
-          {initialData ? 'Update' : 'Create'}
+      <DialogActions sx={{ p: 4, pt: 2 }}>
+        <Button
+          onClick={onClose}
+          sx={{ fontWeight: 800, color: '#64748B', borderRadius: 999, px: 3 }}
+        >
+          Cancel
+        </Button>
+        <Button
+          variant="contained"
+          disabled={!canSubmit}
+          onClick={handleSave}
+          sx={{
+            borderRadius: 999,
+            px: 4,
+            fontWeight: 900,
+            minHeight: 48,
+            bgcolor: landingColors.purple,
+            boxShadow: `0 12px 30px ${alpha(landingColors.purple, 0.24)}`,
+            '&:hover': { bgcolor: landingColors.purple, filter: 'brightness(1.05)' },
+          }}
+        >
+          {initialData ? 'Update Service' : 'Create Service'}
         </Button>
       </DialogActions>
     </Dialog>

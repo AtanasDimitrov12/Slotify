@@ -14,10 +14,11 @@ import DashboardRoundedIcon from '@mui/icons-material/DashboardRounded';
 import StorefrontRoundedIcon from '@mui/icons-material/StorefrontRounded';
 import MenuRoundedIcon from '@mui/icons-material/MenuRounded';
 import { alpha } from '@mui/material/styles';
+import { landingColors, premium } from '../../components/landing/constants';
 
 import { AdminSidebar, type AdminNavItem } from './AdminSidebar';
 
-const drawerWidth = 264;
+const drawerWidth = 280;
 
 export default function AdminLayout() {
   const theme = useTheme();
@@ -42,12 +43,11 @@ export default function AdminLayout() {
   return (
     <Box
       sx={{
-        minHeight: 'calc(100vh - 68px)',
-        bgcolor: '#F6F8FC',
+        minHeight: '100vh',
+        bgcolor: '#F8FAFC',
         backgroundImage: `
-          radial-gradient(900px 480px at 18% -10%, ${alpha(theme.palette.primary.main, 0.18)} 0%, transparent 60%),
-          radial-gradient(900px 520px at 110% 0%, ${alpha('#7C3AED', 0.12)} 0%, transparent 55%),
-          linear-gradient(180deg, ${alpha('#FFFFFF', 1)} 0%, ${alpha('#F6F8FC', 1)} 60%)
+          radial-gradient(900px 480px at 18% -10%, ${alpha(landingColors.purple, 0.06)} 0%, transparent 60%),
+          radial-gradient(900px 520px at 110% 0%, ${alpha(landingColors.blue, 0.05)} 0%, transparent 55%)
         `,
       }}
     >
@@ -55,23 +55,22 @@ export default function AdminLayout() {
         position="sticky"
         elevation={0}
         sx={{
-          bgcolor: alpha('#FFFFFF', 0.75),
-          backdropFilter: 'blur(14px)',
+          bgcolor: alpha('#FFFFFF', 0.8),
+          backdropFilter: 'blur(20px)',
           borderBottom: '1px solid',
-          borderColor: alpha('#000', 0.08),
+          borderColor: 'rgba(15,23,42,0.06)',
           color: 'text.primary',
         }}
       >
-        <Toolbar sx={{ minHeight: 64, px: { xs: 2, md: 3 } }}>
+        <Toolbar sx={{ minHeight: 74, px: { xs: 2, md: 4 } }}>
           {!isDesktop && (
             <IconButton
               onClick={() => setOpen(true)}
               sx={{
-                mr: 1.2,
-                border: '1px solid',
-                borderColor: alpha('#000', 0.10),
-                bgcolor: alpha('#FFF', 0.8),
-                '&:hover': { bgcolor: '#FFF' },
+                mr: 2,
+                bgcolor: alpha(landingColors.purple, 0.08),
+                color: landingColors.purple,
+                '&:hover': { bgcolor: alpha(landingColors.purple, 0.12) },
               }}
               aria-label="Open admin menu"
             >
@@ -80,11 +79,11 @@ export default function AdminLayout() {
           )}
 
           <Box sx={{ flex: 1 }}>
-            <Typography fontWeight={1000} letterSpacing={-0.4}>
+            <Typography sx={{ fontWeight: 1000, fontSize: 20, letterSpacing: -0.8, color: '#0F172A' }}>
               Admin Console
             </Typography>
-            <Typography variant="body2" color="text.secondary" fontWeight={650}>
-              Platform operations & tenants
+            <Typography variant="body2" sx={{ color: '#64748B', fontWeight: 700 }}>
+              Slotify Platform Operations
             </Typography>
           </Box>
         </Toolbar>
@@ -95,12 +94,12 @@ export default function AdminLayout() {
           <Box
             sx={{
               position: 'sticky',
-              top: 64,
-              height: 'calc(100vh - 64px - 68px)',
+              top: 74,
+              height: 'calc(100vh - 74px)',
               borderRight: '1px solid',
-              borderColor: alpha('#000', 0.08),
-              bgcolor: alpha('#FFFFFF', 0.55),
-              backdropFilter: 'blur(14px)',
+              borderColor: 'rgba(15,23,42,0.06)',
+              bgcolor: alpha('#FFFFFF', 0.4),
+              backdropFilter: 'blur(10px)',
             }}
           >
             <AdminSidebar items={items} isActive={isActive} onNavigate={onNavigate} />
@@ -113,10 +112,11 @@ export default function AdminLayout() {
             PaperProps={{
               sx: {
                 width: drawerWidth,
-                borderTopRightRadius: 16,
-                borderBottomRightRadius: 16,
+                borderTopRightRadius: 32,
+                borderBottomRightRadius: 32,
                 overflow: 'hidden',
-                bgcolor: alpha('#FFFFFF', 0.92),
+                bgcolor: alpha('#FFFFFF', 0.95),
+                backdropFilter: 'blur(20px)',
               },
             }}
           >
@@ -124,8 +124,8 @@ export default function AdminLayout() {
           </Drawer>
         )}
 
-        <Box sx={{ px: { xs: 2, md: 3 }, py: { xs: 2.5, md: 3 } }}>
-          <Box sx={{ maxWidth: 1200, mx: 'auto' }}>
+        <Box sx={{ px: { xs: 2, md: 5 }, py: { xs: 3, md: 5 } }}>
+          <Box sx={{ maxWidth: 1400, mx: 'auto' }}>
             <Outlet />
           </Box>
         </Box>

@@ -1,8 +1,11 @@
 import React, { useMemo, useState } from 'react';
-import { Alert, Box, Button, Card, CardContent, Container, Stack, TextField, Typography } from '@mui/material';
+import { Alert, Box, Button, Card, CardContent, Container, Stack, TextField, Typography, alpha } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../auth/AuthProvider';
 import type { Tenant } from '../api/tenants';
+import { landingColors, premium } from '../components/landing/constants';
+import ArrowBackRoundedIcon from '@mui/icons-material/ArrowBackRounded';
+import LoginRoundedIcon from '@mui/icons-material/LoginRounded';
 
 function routeForRole(role?: string) {
   switch (role) {
@@ -17,9 +20,61 @@ function routeForRole(role?: string) {
   }
 }
 
+function PageWrapper({
+  children,
+  onBack,
+}: {
+  children: React.ReactNode;
+  onBack: () => void;
+}) {
+  return (
+    <Box
+      sx={{
+        minHeight: '100vh',
+        display: 'grid',
+        placeItems: 'center',
+        bgcolor: landingColors.bg,
+        position: 'relative',
+        overflow: 'hidden',
+        py: 4,
+      }}
+    >
+      <Box
+        sx={{
+          position: 'absolute',
+          inset: 0,
+          background: `
+            radial-gradient(circle at 15% 15%, rgba(124,108,255,0.12), transparent 26%),
+            radial-gradient(circle at 85% 85%, rgba(125,211,252,0.10), transparent 22%)
+          `,
+          pointerEvents: 'none',
+        }}
+      />
 
-function isTenantPickResult(result: any): result is { tenants: Array<any> } {
-  return result && Array.isArray(result.tenants);
+      <Container maxWidth="sm" sx={{ position: 'relative', zIndex: 1 }}>
+        <Stack spacing={4} alignItems="center">
+          <Button
+            onClick={onBack}
+            startIcon={<ArrowBackRoundedIcon />}
+            sx={{
+              color: landingColors.muted,
+              fontWeight: 800,
+              fontSize: 14,
+              '&:hover': { color: landingColors.text, bgcolor: alpha(landingColors.white, 0.05) },
+            }}
+          >
+            Back to home
+          </Button>
+
+          {children}
+
+          <Typography sx={{ color: landingColors.muted, fontSize: 13, fontWeight: 700, letterSpacing: 0.5 }}>
+            SLOTIFY OS — MODERN RESERVATIONS FOR SALONS
+          </Typography>
+        </Stack>
+      </Container>
+    </Box>
+  );
 }
 
 export default function LoginPage() {
@@ -28,10 +83,8 @@ export default function LoginPage() {
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
-
   const [tenants, setTenants] = useState<Array<Partial<Tenant> & { _id: string; name?: string }> | null>(null);
 
   const canSubmit = useMemo(() => {
@@ -51,26 +104,6 @@ export default function LoginPage() {
       }
 
       navigate(routeForRole(result.account.role), { replace: true });
-
-      // If API returns multiple memberships -> user must pick tenant
-      if (isTenantPickResult(result)) {
-        const list = (result.tenants ?? [])
-          .filter((t: any) => t && t._id)
-          .map((t: any) => ({ _id: String(t._id), name: t.name }));
-
-        if (list.length === 0) {
-          setError('No tenants found for this account.');
-          setTenants(null);
-          return;
-        }
-
-        setTenants(list);
-        return;
-      }
-
-      // Normal login -> navigate by role
-      const role = result?.account?.role;
-      navigate(routeForRole(role), { replace: true });
     } catch (err: any) {
       setError(err?.message ?? 'Login failed');
     } finally {
@@ -92,118 +125,164 @@ export default function LoginPage() {
     setError(null);
   };
 
-  // ----------------------------
-  // Tenant pick screen
-  // ----------------------------
   if (tenants) {
     return (
-      <Container maxWidth="sm" sx={{ py: 8 }}>
-        <Card sx={{ borderRadius: 4 }}>
-          <CardContent sx={{ p: { xs: 3, md: 4 } }}>
-            <Stack spacing={2.5}>
-              <Stack spacing={0.5}>
-                <Typography variant="h6" fontWeight={900}>
-                  Select a tenant
+      <PageWrapper onBack={() => navigate('/')}>
+        <Card
+          sx={{
+            width: '100%',
+            borderRadius: `${premium.rXl * 4}px`,
+            bgcolor: landingColors.bgSoft2,
+            border: '1px solid',
+            borderColor: 'rgba(255,255,255,0.08)',
+            boxShadow: premium.cardShadow,
+            color: landingColors.text,
+          }}
+        >
+          <CardContent sx={{ p: { xs: 3, md: 5 } }}>
+            <Stack spacing={3}>
+              <Stack spacing={1}>
+                <Typography sx={{ fontWeight: 1000, fontSize: 32, letterSpacing: -1, lineHeight: 1.1 }}>
+                  Select a salon
                 </Typography>
-                <Typography color="text.secondary" fontWeight={600}>
-                  This account has access to multiple tenants.
+                <Typography sx={{ color: landingColors.muted, fontWeight: 600, fontSize: 16 }}>
+                  This account has access to multiple locations.
                 </Typography>
               </Stack>
 
               {error && <Alert severity="error">{error}</Alert>}
 
-              <Stack spacing={1.25}>
+              <Stack spacing={1.5}>
                 {tenants.map((tenant) => (
                   <Button
                     key={tenant._id}
                     variant="outlined"
+                    fullWidth
                     onClick={() => onSelectTenant(tenant)}
                     disabled={submitting}
-                    sx={{ justifyContent: 'flex-start', borderRadius: 2, py: 1.2, fontWeight: 800 }}
                   >
                     {tenant.name ?? tenant._id}
                   </Button>
                 ))}
               </Stack>
 
-              <Button
-                variant="text"
-                onClick={onBackToCredentials}
-                disabled={submitting}
-                sx={{ borderRadius: 999, height: 44, fontWeight: 900 }}
-              >
-                Back
+              <Button variant="text" onClick={onBackToCredentials} disabled={submitting}>
+                Go back to login
               </Button>
             </Stack>
           </CardContent>
         </Card>
-      </Container>
+      </PageWrapper>
     );
   }
 
-  // ----------------------------
-  // Credentials screen
-  // ----------------------------
   return (
-    <Box sx={{ py: { xs: 5, md: 8 } }}>
-      <Container maxWidth="sm">
-        <Card sx={{ borderRadius: 4 }}>
-          <CardContent sx={{ p: { xs: 3, md: 4 } }}>
-            <Stack spacing={2.5}>
-              <Stack spacing={0.5}>
-                <Typography variant="h5" fontWeight={1000} letterSpacing={-0.6}>
-                  Partner login
-                </Typography>
-                <Typography color="text.secondary" fontWeight={600}>
-                  Sign in with your tenant account.
-                </Typography>
-              </Stack>
-
-              {error && <Alert severity="error">{error}</Alert>}
-
-              <Box component="form" onSubmit={onSubmit}>
-                <Stack spacing={2}>
-                  <TextField
-                    label="Email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    autoComplete="email"
-                    fullWidth
-                    required
-                  />
-
-                  <TextField
-                    label="Password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    type="password"
-                    autoComplete="current-password"
-                    fullWidth
-                    required
-                  />
-
-                  <Button
-                    type="submit"
-                    variant="contained"
-                    disabled={!canSubmit}
-                    sx={{ borderRadius: 999, height: 44, fontWeight: 900 }}
-                  >
-                    {submitting ? 'Signing in…' : 'Login'}
-                  </Button>
-
-                  <Button
-                    variant="text"
-                    onClick={() => navigate('/partner')}
-                    sx={{ borderRadius: 999, height: 44, fontWeight: 900 }}
-                  >
-                    Back to partners page
-                  </Button>
-                </Stack>
-              </Box>
+    <PageWrapper onBack={() => navigate('/')}>
+      <Card
+        sx={{
+          width: '100%',
+          borderRadius: `${premium.rXl * 4}px`,
+          bgcolor: landingColors.bgSoft2,
+          border: '1px solid',
+          borderColor: 'rgba(255,255,255,0.08)',
+          boxShadow: premium.cardShadow,
+          color: landingColors.text,
+        }}
+      >
+        <CardContent sx={{ p: { xs: 3, md: 5 } }}>
+          <Stack spacing={4}>
+            <Stack spacing={1}>
+              <Typography sx={{ fontWeight: 1000, fontSize: 40, letterSpacing: -1.5, lineHeight: 1 }}>
+                Partner login
+              </Typography>
+              <Typography sx={{ color: landingColors.muted, fontWeight: 600, fontSize: 16 }}>
+                Manage your salon availability and bookings.
+              </Typography>
             </Stack>
-          </CardContent>
-        </Card>
-      </Container>
-    </Box>
+
+            {error && (
+              <Alert severity="error" sx={{ bgcolor: alpha('#F43F5E', 0.1), color: '#FDA4AF', border: '1px solid', borderColor: alpha('#F43F5E', 0.2) }}>
+                {error}
+              </Alert>
+            )}
+
+            <Box component="form" onSubmit={onSubmit}>
+              <Stack spacing={2.5}>
+                <TextField
+                  label="Email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  autoComplete="email"
+                  fullWidth
+                  required
+                  variant="filled"
+                  sx={{
+                    '& .MuiFilledInput-root': {
+                      bgcolor: alpha(landingColors.white, 0.04),
+                      borderRadius: 3,
+                      color: landingColors.text,
+                      '&:before, &:after': { display: 'none' },
+                      border: '1px solid',
+                      borderColor: 'rgba(255,255,255,0.12)',
+                      '&.Mui-focused': { borderColor: landingColors.purple },
+                    },
+                    '& .MuiInputLabel-root': { color: landingColors.muted },
+                  }}
+                />
+
+                <TextField
+                  label="Password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  type="password"
+                  autoComplete="current-password"
+                  fullWidth
+                  required
+                  variant="filled"
+                  sx={{
+                    '& .MuiFilledInput-root': {
+                      bgcolor: alpha(landingColors.white, 0.04),
+                      borderRadius: 3,
+                      color: landingColors.text,
+                      '&:before, &:after': { display: 'none' },
+                      border: '1px solid',
+                      borderColor: 'rgba(255,255,255,0.12)',
+                      '&.Mui-focused': { borderColor: landingColors.purple },
+                    },
+                    '& .MuiInputLabel-root': { color: landingColors.muted },
+                  }}
+                />
+
+                <Button
+                  type="submit"
+                  variant="contained"
+                  disabled={!canSubmit}
+                  endIcon={!submitting && <LoginRoundedIcon />}
+                  sx={{
+                    minHeight: 56,
+                    borderRadius: 999,
+                    fontSize: 16,
+                    fontWeight: 900,
+                    bgcolor: landingColors.purple,
+                    boxShadow: '0 16px 40px rgba(124,108,255,0.32)',
+                    '&:hover': { bgcolor: landingColors.purple, filter: 'brightness(1.1)' },
+                  }}
+                >
+                  {submitting ? 'Authenticating...' : 'Sign in'}
+                </Button>
+
+                <Button
+                  variant="text"
+                  onClick={() => navigate('/partner')}
+                  sx={{ color: landingColors.muted, fontWeight: 800 }}
+                >
+                  Not a partner yet? Learn more
+                </Button>
+              </Stack>
+            </Box>
+          </Stack>
+        </CardContent>
+      </Card>
+    </PageWrapper>
   );
 }

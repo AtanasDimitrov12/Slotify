@@ -10,7 +10,9 @@ import {
   Stack,
   TextField,
   Typography,
+  alpha,
 } from '@mui/material';
+import { landingColors } from '../../../components/landing/constants';
 
 export type TenantFormValues = {
   name: string;
@@ -80,76 +82,108 @@ export default function TenantFormDialog({
   }
 
   return (
-    <Dialog open={open} onClose={submitting ? undefined : onClose} fullWidth maxWidth="sm">
-      <DialogTitle sx={{ fontWeight: 1000 }}>
-        {isEdit ? 'Edit tenant' : 'Add new tenant'}
+    <Dialog
+      open={open}
+      onClose={submitting ? undefined : onClose}
+      fullWidth
+      maxWidth="sm"
+      PaperProps={{
+        sx: {
+          borderRadius: 8,
+          p: 1,
+        },
+      }}
+    >
+      <DialogTitle sx={{ fontWeight: 1000, fontSize: 24, letterSpacing: -0.5, py: 3, px: 4 }}>
+        {isEdit ? 'Edit Tenant' : 'Onboard New Tenant'}
       </DialogTitle>
 
-      <Divider />
-
-      <DialogContent sx={{ pt: 2.5 }}>
-        <Stack spacing={2}>
-          <Typography color="text.secondary" fontWeight={650}>
+      <DialogContent sx={{ px: 4, pb: 2 }}>
+        <Stack spacing={3}>
+          <Typography sx={{ color: '#64748B', fontWeight: 600, fontSize: 15, lineHeight: 1.6 }}>
             {isEdit
-              ? 'Update the tenant and owner account details.'
-              : 'This creates a new tenant (salon) and the first owner account.'}
+              ? 'Update the salon details and administrative account for this tenant.'
+              : 'Setup a new salon environment and create the primary owner account.'}
           </Typography>
 
-          {error ? <Alert severity="error">{error}</Alert> : null}
+          {error ? (
+            <Alert severity="error" sx={{ borderRadius: 3, fontWeight: 700 }}>
+              {error}
+            </Alert>
+          ) : null}
 
-          <TextField
-            label="Owner name"
-            value={form.name}
-            onChange={(e) => setForm((prev) => ({ ...prev, name: e.target.value }))}
-            fullWidth
-            required
-          />
+          <Stack spacing={2.5}>
+            <TextField
+              label="Owner Full Name"
+              value={form.name}
+              onChange={(e) => setForm((prev) => ({ ...prev, name: e.target.value }))}
+              fullWidth
+              required
+              variant="outlined"
+            />
 
-          <TextField
-            label="Owner email"
-            value={form.email}
-            onChange={(e) => setForm((prev) => ({ ...prev, email: e.target.value }))}
-            fullWidth
-            required
-            autoComplete="email"
-          />
+            <TextField
+              label="Administrative Email"
+              value={form.email}
+              onChange={(e) => setForm((prev) => ({ ...prev, email: e.target.value }))}
+              fullWidth
+              required
+              autoComplete="email"
+            />
 
-          <TextField
-            label={isEdit ? 'New password (optional)' : 'Owner password'}
-            value={form.password}
-            onChange={(e) => setForm((prev) => ({ ...prev, password: e.target.value }))}
-            fullWidth
-            required={!isEdit}
-            type="password"
-            autoComplete={isEdit ? 'current-password' : 'new-password'}
-            helperText={
-              isEdit
-                ? 'Leave empty if you do not want to change the password.'
-                : 'Later: enforce password rules or send invite link instead.'
-            }
-          />
+            <TextField
+              label={isEdit ? 'Reset Password (optional)' : 'Account Password'}
+              value={form.password}
+              onChange={(e) => setForm((prev) => ({ ...prev, password: e.target.value }))}
+              fullWidth
+              required={!isEdit}
+              type="password"
+              autoComplete={isEdit ? 'current-password' : 'new-password'}
+              helperText={
+                isEdit
+                  ? 'Leave empty to keep current password.'
+                  : 'At least 8 characters recommended.'
+              }
+            />
 
-          <TextField
-            label="Tenant name (salon name)"
-            value={form.tenantName}
-            onChange={(e) => setForm((prev) => ({ ...prev, tenantName: e.target.value }))}
-            fullWidth
-            required
-          />
+            <TextField
+              label="Salon Name"
+              value={form.tenantName}
+              onChange={(e) => setForm((prev) => ({ ...prev, tenantName: e.target.value }))}
+              fullWidth
+              required
+            />
+          </Stack>
         </Stack>
       </DialogContent>
 
-      <DialogActions sx={{ p: 2 }}>
-        <Button onClick={onClose} sx={{ borderRadius: 999, fontWeight: 900 }}>
+      <DialogActions sx={{ p: 4, pt: 2 }}>
+        <Button
+          onClick={onClose}
+          sx={{
+            fontWeight: 800,
+            color: '#64748B',
+            borderRadius: 999,
+            px: 3,
+            '&:hover': { bgcolor: alpha('#64748B', 0.05) },
+          }}
+        >
           Cancel
         </Button>
         <Button
           onClick={handleSubmit}
           disabled={submitting}
           variant="contained"
-          sx={{ borderRadius: 999, fontWeight: 950 }}
+          sx={{
+            borderRadius: 999,
+            px: 4,
+            fontWeight: 900,
+            minHeight: 48,
+            bgcolor: landingColors.purple,
+            '&:hover': { bgcolor: landingColors.purple, filter: 'brightness(1.05)' },
+          }}
         >
-          {submitting ? (isEdit ? 'Saving…' : 'Creating…') : isEdit ? 'Save changes' : 'Create tenant'}
+          {submitting ? (isEdit ? 'Saving...' : 'Creating...') : isEdit ? 'Save Changes' : 'Onboard Tenant'}
         </Button>
       </DialogActions>
     </Dialog>

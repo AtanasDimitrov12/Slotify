@@ -10,6 +10,7 @@ import {
   Snackbar,
   Stack,
   Typography,
+  alpha,
 } from '@mui/material';
 import AddRoundedIcon from '@mui/icons-material/AddRounded';
 import ContentCutRoundedIcon from '@mui/icons-material/ContentCutRounded';
@@ -23,6 +24,7 @@ import {
   updateCatalogService,
   type CatalogServiceItem,
 } from '../../api/servicesCatalog';
+import { landingColors, premium } from '../../components/landing/constants';
 
 export default function OwnerServicesPage() {
   const [items, setItems] = React.useState<CatalogServiceItem[]>([]);
@@ -107,7 +109,7 @@ export default function OwnerServicesPage() {
   if (loading) {
     return (
       <Box sx={{ minHeight: 320, display: 'grid', placeItems: 'center' }}>
-        <CircularProgress />
+        <CircularProgress sx={{ color: landingColors.purple }} />
       </Box>
     );
   }
@@ -116,15 +118,14 @@ export default function OwnerServicesPage() {
 
   return (
     <>
-      <Stack spacing={2.5}>
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-          <Box sx={{ flex: 1 }}>
-            <Typography variant="h4" fontWeight={900}>
-              Services catalog
+      <Stack spacing={4}>
+        <Stack direction="row" justifyContent="space-between" alignItems="flex-start" spacing={2}>
+          <Box>
+            <Typography sx={{ fontWeight: 1000, fontSize: 36, letterSpacing: -1.5, color: '#0F172A' }}>
+              Services Catalog
             </Typography>
-            <Typography sx={{ opacity: 0.7 }}>
-              Create the global services your salon offers. Staff members can later
-              select from this catalog and optionally override their own price and duration.
+            <Typography sx={{ color: '#64748B', fontWeight: 600, fontSize: 18 }}>
+              Define the master list of services your salon offers.
             </Typography>
           </Box>
 
@@ -132,34 +133,54 @@ export default function OwnerServicesPage() {
             variant="contained"
             startIcon={<AddRoundedIcon />}
             onClick={handleCreateClick}
+            sx={{
+              minHeight: 52,
+              px: 3,
+              borderRadius: 999,
+              fontWeight: 900,
+              bgcolor: landingColors.purple,
+              boxShadow: `0 12px 30px ${alpha(landingColors.purple, 0.24)}`,
+            }}
           >
-            Add service
+            Add Service
           </Button>
-        </Box>
+        </Stack>
 
-        {error ? <Alert severity="error">{error}</Alert> : null}
+        {error ? <Alert severity="error" sx={{ borderRadius: 3 }}>{error}</Alert> : null}
 
         {showEmptyState ? (
           <Card
-            variant="outlined"
             sx={{
-              borderRadius: 3,
-              textAlign: 'center',
-              py: 5,
-              px: 3,
+              borderRadius: `${premium.rLg * 4}px`,
+              border: '1px dashed',
+              borderColor: '#CBD5E1',
+              bgcolor: 'transparent',
+              py: 8,
             }}
           >
             <CardContent>
-              <Stack spacing={1.5} alignItems="center">
-                <ContentCutRoundedIcon sx={{ fontSize: 44, opacity: 0.35 }} />
+              <Stack spacing={2} alignItems="center" textAlign="center">
+                <Box
+                  sx={{
+                    width: 80,
+                    height: 80,
+                    borderRadius: 4,
+                    bgcolor: alpha(landingColors.purple, 0.06),
+                    display: 'grid',
+                    placeItems: 'center',
+                    color: landingColors.purple,
+                    mb: 1,
+                  }}
+                >
+                  <ContentCutRoundedIcon sx={{ fontSize: 40 }} />
+                </Box>
 
-                <Typography variant="h6" fontWeight={800}>
-                  No catalog services yet
+                <Typography sx={{ fontWeight: 1000, fontSize: 24, color: '#0F172A' }}>
+                  No services yet
                 </Typography>
 
-                <Typography sx={{ opacity: 0.75, maxWidth: 560 }}>
-                  Start by creating the main services your salon offers, such as haircut,
-                  beard trim, coloring, or styling.
+                <Typography sx={{ color: '#64748B', fontWeight: 600, maxWidth: 480 }}>
+                  Create the services your salon offers (e.g., Haircut, Beard Trim) so your team can add them to their profiles.
                 </Typography>
               </Stack>
             </CardContent>
@@ -167,40 +188,76 @@ export default function OwnerServicesPage() {
         ) : null}
 
         {items.length > 0 ? (
-          <Grid container spacing={2}>
+          <Grid container spacing={3}>
             {items.map((item) => (
               <Grid item xs={12} md={6} key={item.id}>
-                <Card variant="outlined" sx={{ borderRadius: 3 }}>
-                  <CardContent>
-                    <Stack spacing={2}>
+                <Card
+                  sx={{
+                    borderRadius: `${premium.rLg * 4}px`,
+                    border: '1px solid',
+                    borderColor: 'rgba(15,23,42,0.06)',
+                    bgcolor: '#FFFFFF',
+                    boxShadow: '0 10px 40px rgba(15,23,42,0.04)',
+                    transition: 'all 0.2s ease',
+                    '&:hover': {
+                      transform: 'translateY(-2px)',
+                      boxShadow: '0 16px 48px rgba(15,23,42,0.08)',
+                      borderColor: alpha(landingColors.purple, 0.1),
+                    },
+                  }}
+                >
+                  <CardContent sx={{ p: 3.5 }}>
+                    <Stack spacing={2.5}>
                       <Box>
-                        <Typography fontWeight={900}>{item.name}</Typography>
-                        <Typography sx={{ opacity: 0.7 }}>
-                          {item.durationMin} min · €{item.priceEUR}
+                        <Stack direction="row" justifyContent="space-between" alignItems="flex-start">
+                          <Typography sx={{ fontWeight: 1000, fontSize: 20, color: '#0F172A' }}>
+                            {item.name}
+                          </Typography>
+                          <Typography sx={{ fontWeight: 900, fontSize: 18, color: landingColors.purple }}>
+                            €{item.priceEUR}
+                          </Typography>
+                        </Stack>
+                        
+                        <Typography sx={{ color: '#64748B', fontWeight: 700, fontSize: 14, mt: 0.5 }}>
+                          {item.durationMin} minutes
                         </Typography>
 
                         {item.description ? (
-                          <Typography variant="body2" sx={{ mt: 1, opacity: 0.8 }}>
+                          <Typography sx={{ mt: 2, color: '#475569', fontSize: 15, lineHeight: 1.6, fontWeight: 500 }}>
                             {item.description}
                           </Typography>
                         ) : null}
                       </Box>
 
-                      <Stack direction="row" spacing={1}>
+                      <Stack direction="row" spacing={1.5}>
                         <Button
                           variant="outlined"
-                          size="small"
+                          fullWidth
                           onClick={() => handleEditClick(item)}
+                          sx={{
+                            borderRadius: 999,
+                            fontWeight: 900,
+                            borderColor: 'rgba(15,23,42,0.12)',
+                            color: '#475569',
+                            '&:hover': { bgcolor: '#F8FAFC', borderColor: landingColors.purple },
+                          }}
                         >
                           Edit
                         </Button>
                         <Button
                           variant="outlined"
                           color="error"
-                          size="small"
+                          fullWidth
                           onClick={() => handleDelete(item.id)}
+                          sx={{
+                            borderRadius: 999,
+                            fontWeight: 900,
+                            borderColor: alpha('#F43F5E', 0.2),
+                            bgcolor: alpha('#F43F5E', 0.02),
+                            '&:hover': { bgcolor: alpha('#F43F5E', 0.05), borderColor: '#F43F5E' },
+                          }}
                         >
-                          Delete
+                          Remove
                         </Button>
                       </Stack>
                     </Stack>
@@ -224,7 +281,7 @@ export default function OwnerServicesPage() {
         autoHideDuration={3000}
         onClose={() => setSuccess('')}
       >
-        <Alert onClose={() => setSuccess('')} severity="success" variant="filled">
+        <Alert onClose={() => setSuccess('')} severity="success" variant="filled" sx={{ borderRadius: 3, fontWeight: 800 }}>
           {success}
         </Alert>
       </Snackbar>

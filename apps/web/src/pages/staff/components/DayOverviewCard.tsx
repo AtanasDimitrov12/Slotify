@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { Card, CardContent, Stack, Typography } from '@mui/material';
+import { Card, CardContent, Stack, Typography, Box } from '@mui/material';
 import type { StaffAppointment } from '../../../api/staffAppointments';
 
 const PRODUCTIVE_STATUSES: StaffAppointment['status'][] = [
@@ -30,25 +30,42 @@ export default function DayOverviewCard({
   const noShows = appointments.filter((item) => item.status === 'no-show').length;
 
   return (
-    <Card variant="outlined" sx={{ borderRadius: 3 }}>
-      <CardContent>
-        <Typography fontWeight={900} sx={{ mb: 1.5 }}>
+    <Card
+      elevation={0}
+      sx={{
+        borderRadius: 4,
+        bgcolor: 'rgba(255,255,255,0.7)',
+        backdropFilter: 'blur(16px)',
+        border: '1px solid rgba(15,23,42,0.08)',
+        boxShadow: '0 10px 30px rgba(15,23,42,0.04)',
+      }}
+    >
+      <CardContent sx={{ p: 3 }}>
+        <Typography
+          fontWeight={1000}
+          variant="h6"
+          sx={{ mb: 2, letterSpacing: -0.8, color: '#111827' }}
+        >
           Day overview
         </Typography>
 
-        <Stack spacing={1}>
-          <Typography>
-            Appointments: <b>{productiveAppointments.length}</b>
-          </Typography>
-          <Typography>
-            Booked time: <b>{totalBookedMinutes} min</b>
-          </Typography>
-          <Typography>
-            Estimated revenue: <b>€{estimatedRevenue}</b>
-          </Typography>
-          <Typography>
-            No-shows: <b>{noShows}</b>
-          </Typography>
+        <Stack spacing={1.5}>
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <Typography sx={{ color: '#475569', fontWeight: 600 }}>Appointments</Typography>
+            <Typography sx={{ fontWeight: 900, color: '#7C6CFF' }}>{productiveAppointments.length}</Typography>
+          </Box>
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <Typography sx={{ color: '#475569', fontWeight: 600 }}>Booked time</Typography>
+            <Typography sx={{ fontWeight: 900, color: '#111827' }}>{totalBookedMinutes} min</Typography>
+          </Box>
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <Typography sx={{ color: '#475569', fontWeight: 600 }}>Estimated revenue</Typography>
+            <Typography sx={{ fontWeight: 1000, color: '#10B981' }}>€{estimatedRevenue}</Typography>
+          </Box>
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <Typography sx={{ color: '#475569', fontWeight: 600 }}>No-shows</Typography>
+            <Typography sx={{ fontWeight: 900, color: '#EF4444' }}>{noShows}</Typography>
+          </Box>
         </Stack>
       </CardContent>
     </Card>

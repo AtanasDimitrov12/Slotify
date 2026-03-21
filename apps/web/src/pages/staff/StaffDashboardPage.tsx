@@ -7,6 +7,7 @@ import {
   IconButton,
   Stack,
   Typography,
+  alpha,
 } from '@mui/material';
 import ChevronLeftRoundedIcon from '@mui/icons-material/ChevronLeftRounded';
 import ChevronRightRoundedIcon from '@mui/icons-material/ChevronRightRounded';
@@ -28,6 +29,7 @@ import DayOverviewCard from './components/DayOverviewCard';
 import SelectedAppointmentCard from './components/SelectedAppointmentCard';
 import AddAppointmentDialog from './components/AddAppointmentDialog';
 import EditAppointmentDialog from './components/EditAppointmentDialog';
+import { landingColors, premium } from '../../components/landing/constants';
 
 function formatDateInput(date: Date) {
   const year = date.getFullYear();
@@ -200,24 +202,35 @@ export default function StaffDashboardPage() {
 
   return (
     <>
-      <Stack spacing={2.5}>
+      <Stack spacing={4}>
         <Stack
           direction={{ xs: 'column', md: 'row' }}
           justifyContent="space-between"
-          alignItems={{ xs: 'stretch', md: 'center' }}
-          spacing={2}
+          alignItems={{ xs: 'stretch', md: 'flex-start' }}
+          spacing={3}
         >
           <Box>
-            <Typography variant="h4" fontWeight={900}>
-              Schedule
+            <Typography sx={{ fontWeight: 1000, fontSize: 36, letterSpacing: -1.5, color: '#0F172A' }}>
+              Your Schedule
             </Typography>
-            <Typography sx={{ opacity: 0.7 }}>
-              Manage your appointments and review your day.
+            <Typography sx={{ color: '#64748B', fontWeight: 600, fontSize: 18 }}>
+              Manage appointments and optimize your day.
             </Typography>
           </Box>
 
-          <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
-            <Button variant="outlined" startIcon={<TodayRoundedIcon />} onClick={goToToday}>
+          <Stack direction="row" spacing={1.5} flexWrap="wrap" useFlexGap sx={{ alignItems: 'center' }}>
+            <Button
+              variant="outlined"
+              startIcon={<TodayRoundedIcon />}
+              onClick={goToToday}
+              sx={{
+                borderRadius: 999,
+                fontWeight: 900,
+                borderColor: 'rgba(15,23,42,0.12)',
+                color: '#475569',
+                '&:hover': { bgcolor: '#FFF', borderColor: landingColors.purple },
+              }}
+            >
               Today
             </Button>
 
@@ -226,22 +239,31 @@ export default function StaffDashboardPage() {
               alignItems="center"
               spacing={1}
               sx={{
-                border: '1px solid',
-                borderColor: 'divider',
-                borderRadius: 2,
+                bgcolor: '#FFFFFF',
+                border: '1px solid rgba(15,23,42,0.06)',
+                borderRadius: 999,
                 px: 1,
                 py: 0.5,
+                boxShadow: '0 4px 12px rgba(15,23,42,0.03)',
               }}
             >
-              <IconButton size="small" onClick={goToPreviousDay}>
+              <IconButton
+                size="small"
+                onClick={goToPreviousDay}
+                sx={{ color: landingColors.purple, '&:hover': { bgcolor: alpha(landingColors.purple, 0.08) } }}
+              >
                 <ChevronLeftRoundedIcon />
               </IconButton>
 
-              <Typography minWidth={170} textAlign="center" fontWeight={700}>
+              <Typography sx={{ minWidth: 180, textAlign: 'center', fontWeight: 800, fontSize: 15, color: '#0F172A' }}>
                 {formatHumanDate(selectedDate)}
               </Typography>
 
-              <IconButton size="small" onClick={goToNextDay}>
+              <IconButton
+                size="small"
+                onClick={goToNextDay}
+                sx={{ color: landingColors.purple, '&:hover': { bgcolor: alpha(landingColors.purple, 0.08) } }}
+              >
                 <ChevronRightRoundedIcon />
               </IconButton>
             </Stack>
@@ -250,17 +272,25 @@ export default function StaffDashboardPage() {
               variant="contained"
               startIcon={<AddRoundedIcon />}
               onClick={() => setAddOpen(true)}
+              sx={{
+                minHeight: 52,
+                px: 3,
+                borderRadius: 999,
+                fontWeight: 900,
+                bgcolor: landingColors.purple,
+                boxShadow: `0 12px 30px ${alpha(landingColors.purple, 0.24)}`,
+              }}
             >
-              Add appointment
+              Add Appointment
             </Button>
           </Stack>
         </Stack>
 
-        {error ? <Alert severity="error">{error}</Alert> : null}
-        {moveError ? <Alert severity="warning">{moveError}</Alert> : null}
+        {error ? <Alert severity="error" sx={{ borderRadius: 3 }}>{error}</Alert> : null}
+        {moveError ? <Alert severity="warning" sx={{ borderRadius: 3 }}>{moveError}</Alert> : null}
 
-        <Grid container spacing={2}>
-          <Grid item xs={12} lg={8}>
+        <Grid container spacing={3}>
+          <Grid item xs={12} lg={8.5}>
             <ScheduleCalendar
               selectedDate={selectedDate}
               appointments={appointments}
@@ -271,8 +301,8 @@ export default function StaffDashboardPage() {
             />
           </Grid>
 
-          <Grid item xs={12} lg={4}>
-            <Stack spacing={2}>
+          <Grid item xs={12} lg={3.5}>
+            <Stack spacing={3}>
               <DayOverviewCard appointments={appointments} />
 
               <SelectedAppointmentCard

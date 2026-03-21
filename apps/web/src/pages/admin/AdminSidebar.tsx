@@ -11,6 +11,7 @@ import {
   Typography,
 } from '@mui/material';
 import { alpha } from '@mui/material/styles';
+import { landingColors } from '../../components/landing/constants';
 
 export type AdminNavItem = {
   label: string;
@@ -27,42 +28,42 @@ type Props = {
 export function AdminSidebar({ items, isActive, onNavigate }: Props) {
   return (
     <Box
-      sx={(theme) => ({
+      sx={{
         height: '100%',
         display: 'flex',
         flexDirection: 'column',
-        bgcolor: alpha('#FFFFFF', 0.72),
-        backdropFilter: 'blur(14px)',
-      })}
+        bgcolor: 'transparent',
+      }}
     >
-      <Stack direction="row" alignItems="center" spacing={1.2} sx={{ p: 2 }}>
+      <Stack direction="row" alignItems="center" spacing={1.5} sx={{ p: 3 }}>
         <Avatar
-          sx={(theme) => ({
-            width: 34,
-            height: 34,
-            fontSize: 14,
-            fontWeight: 900,
-            bgcolor: alpha(theme.palette.primary.main, 0.12),
-            color: theme.palette.primary.main,
-            border: `1px solid ${alpha(theme.palette.primary.main, 0.25)}`,
-          })}
+          sx={{
+            width: 44,
+            height: 44,
+            fontSize: 18,
+            fontWeight: 1000,
+            bgcolor: alpha(landingColors.purple, 0.12),
+            color: landingColors.purple,
+            border: `1px solid ${alpha(landingColors.purple, 0.20)}`,
+            boxShadow: `0 8px 24px ${alpha(landingColors.purple, 0.16)}`,
+          }}
         >
           S
         </Avatar>
 
         <Box>
-          <Typography fontWeight={1000} letterSpacing={-0.4} sx={{ lineHeight: 1.1 }}>
+          <Typography sx={{ fontWeight: 1000, letterSpacing: -0.4, lineHeight: 1, fontSize: 18, color: '#0F172A' }}>
             Admin
           </Typography>
-          <Typography variant="body2" color="text.secondary" fontWeight={650}>
-            Slotify platform control
+          <Typography variant="body2" sx={{ color: '#64748B', fontWeight: 700, mt: 0.4 }}>
+            Slotify OS Control
           </Typography>
         </Box>
       </Stack>
 
-      <Divider />
+      <Divider sx={{ mx: 2, borderColor: 'rgba(15,23,42,0.04)' }} />
 
-      <List sx={{ p: 1.25 }}>
+      <List sx={{ p: 2 }}>
         {items.map((it) => {
           const active = isActive(it.to);
 
@@ -71,34 +72,44 @@ export function AdminSidebar({ items, isActive, onNavigate }: Props) {
               key={it.to}
               selected={active}
               onClick={() => onNavigate(it.to)}
-              sx={(theme) => ({
-                borderRadius: 2.5,
+              sx={{
+                borderRadius: 4,
                 mb: 1,
-                px: 1.4,
-                py: 1.1,
+                px: 2,
+                py: 1.5,
                 border: '1px solid',
-                borderColor: active ? alpha(theme.palette.primary.main, 0.25) : alpha('#000', 0.06),
-                bgcolor: active ? alpha(theme.palette.primary.main, 0.10) : alpha('#FFF', 0.6),
-                transition: 'transform .15s ease, background-color .15s ease, border-color .15s ease',
+                borderColor: active ? alpha(landingColors.purple, 0.12) : 'transparent',
+                bgcolor: active ? alpha(landingColors.purple, 0.08) : 'transparent',
+                transition: 'all 0.2s ease',
                 '&:hover': {
-                  bgcolor: active ? alpha(theme.palette.primary.main, 0.12) : alpha(theme.palette.primary.main, 0.06),
-                  borderColor: active ? alpha(theme.palette.primary.main, 0.30) : alpha(theme.palette.primary.main, 0.18),
-                  transform: 'translateY(-1px)',
+                  bgcolor: active ? alpha(landingColors.purple, 0.12) : alpha(landingColors.purple, 0.04),
+                  transform: 'translateX(4px)',
                 },
-              })}
+                '&.Mui-selected': {
+                  bgcolor: alpha(landingColors.purple, 0.08),
+                },
+                '&.Mui-selected:hover': {
+                  bgcolor: alpha(landingColors.purple, 0.12),
+                },
+              }}
             >
-              <ListItemIcon sx={{ minWidth: 42, color: active ? 'primary.main' : 'text.secondary' }}>
-                {it.icon}
+              <ListItemIcon sx={{ minWidth: 40, color: active ? landingColors.purple : '#94A3B8' }}>
+                {React.cloneElement(it.icon as React.ReactElement, { fontSize: 'medium' })}
               </ListItemIcon>
-              <ListItemText primary={it.label} primaryTypographyProps={{ fontWeight: 900 }} />
+              <ListItemText
+                primary={it.label}
+                primaryTypographyProps={{
+                  fontWeight: active ? 900 : 700,
+                  fontSize: 15,
+                  color: active ? landingColors.purple : '#475569',
+                }}
+              />
             </ListItemButton>
           );
         })}
       </List>
 
       <Box sx={{ flex: 1 }} />
-
-      
     </Box>
   );
 }

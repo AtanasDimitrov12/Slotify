@@ -11,6 +11,7 @@ import {
   Tab,
   Tabs,
   Typography,
+  alpha,
 } from '@mui/material';
 import GeneralSettingsForm, { type GeneralSettingsValues } from './components/GeneralSettingsForm';
 import OpeningHoursEditor, { type OpeningDay } from './components/OpeningHoursEditor';
@@ -19,10 +20,11 @@ import {
   saveGeneralSettings,
   saveOpeningHours,
 } from '../../api/ownerSettings';
+import { landingColors, premium } from '../../components/landing/constants';
 
 function TabPanel({ value, index, children }: { value: number; index: number; children: React.ReactNode }) {
   if (value !== index) return null;
-  return <Box sx={{ mt: 2 }}>{children}</Box>;
+  return <Box sx={{ mt: 4 }}>{children}</Box>;
 }
 
 const emptyGeneralSettings: GeneralSettingsValues = {
@@ -155,39 +157,75 @@ export default function OwnerSettingsPage() {
 
   if (loading) {
     return (
-      <Box sx={{ display: 'grid', placeItems: 'center', minHeight: 300 }}>
-        <CircularProgress />
+      <Box sx={{ display: 'grid', placeItems: 'center', minHeight: 400 }}>
+        <CircularProgress sx={{ color: landingColors.purple }} />
       </Box>
     );
   }
 
   return (
     <>
-      <Stack spacing={2.5}>
+      <Stack spacing={4}>
         <Box>
-          <Typography variant="h4" fontWeight={900}>
-            Business settings
+          <Typography sx={{ fontWeight: 1000, fontSize: 36, letterSpacing: -1.5, color: '#0F172A' }}>
+            Business Settings
           </Typography>
-          <Typography sx={{ opacity: 0.7 }}>
-            Configure your salon details and opening hours.
+          <Typography sx={{ color: '#64748B', fontWeight: 600, fontSize: 18 }}>
+            Update your salon profile and operational hours.
           </Typography>
         </Box>
 
-        {error ? <Alert severity="error">{error}</Alert> : null}
+        {error ? <Alert severity="error" sx={{ borderRadius: 3 }}>{error}</Alert> : null}
 
-        <Card variant="outlined" sx={{ borderRadius: 3 }}>
-          <CardContent sx={{ px: 3 }}>
-            <Tabs value={tab} onChange={(_, v) => setTab(v)} sx={{ borderBottom: 1, borderColor: 'divider' }}>
-              <Tab label="General" />
-              <Tab label="Opening hours" />
+        <Card
+          sx={{
+            borderRadius: `${premium.rLg * 4}px`,
+            border: '1px solid',
+            borderColor: 'rgba(15,23,42,0.06)',
+            bgcolor: '#FFFFFF',
+            boxShadow: '0 10px 40px rgba(15,23,42,0.04)',
+          }}
+        >
+          <CardContent sx={{ p: 4 }}>
+            <Tabs
+              value={tab}
+              onChange={(_, v) => setTab(v)}
+              sx={{
+                borderBottom: '1px solid rgba(15,23,42,0.06)',
+                '& .MuiTab-root': {
+                  fontWeight: 900,
+                  fontSize: 15,
+                  textTransform: 'none',
+                  minHeight: 48,
+                  color: '#64748B',
+                  '&.Mui-selected': { color: landingColors.purple },
+                },
+                '& .MuiTabs-indicator': { bgcolor: landingColors.purple, height: 3, borderRadius: '3px 3px 0 0' },
+              }}
+            >
+              <Tab label="General Info" />
+              <Tab label="Opening Hours" />
             </Tabs>
 
             <TabPanel value={tab} index={0}>
               <GeneralSettingsForm value={generalSettings} onChange={setGeneralSettings} />
 
-              <Box sx={{ mt: 2, display: 'flex', justifyContent: 'flex-end' }}>
-                <Button variant="contained" onClick={handleSaveGeneral} disabled={saving}>
-                  Save
+              <Box sx={{ mt: 4, display: 'flex', justifyContent: 'flex-end' }}>
+                <Button
+                  variant="contained"
+                  size="large"
+                  onClick={handleSaveGeneral}
+                  disabled={saving}
+                  sx={{
+                    minHeight: 52,
+                    px: 4,
+                    borderRadius: 999,
+                    fontWeight: 900,
+                    bgcolor: landingColors.purple,
+                    boxShadow: `0 12px 30px ${alpha(landingColors.purple, 0.24)}`,
+                  }}
+                >
+                  {saving ? 'Saving...' : 'Save Profile'}
                 </Button>
               </Box>
             </TabPanel>
@@ -195,9 +233,22 @@ export default function OwnerSettingsPage() {
             <TabPanel value={tab} index={1}>
               <OpeningHoursEditor value={openingHours} onChange={setOpeningHours} />
 
-              <Box sx={{ mt: 2, display: 'flex', justifyContent: 'flex-end' }}>
-                <Button variant="contained" onClick={handleSaveOpeningHours} disabled={saving}>
-                  Save
+              <Box sx={{ mt: 4, display: 'flex', justifyContent: 'flex-end' }}>
+                <Button
+                  variant="contained"
+                  size="large"
+                  onClick={handleSaveOpeningHours}
+                  disabled={saving}
+                  sx={{
+                    minHeight: 52,
+                    px: 4,
+                    borderRadius: 999,
+                    fontWeight: 900,
+                    bgcolor: landingColors.purple,
+                    boxShadow: `0 12px 30px ${alpha(landingColors.purple, 0.24)}`,
+                  }}
+                >
+                  {saving ? 'Saving...' : 'Save Hours'}
                 </Button>
               </Box>
             </TabPanel>
@@ -206,7 +257,7 @@ export default function OwnerSettingsPage() {
       </Stack>
 
       <Snackbar open={Boolean(success)} autoHideDuration={3000} onClose={() => setSuccess('')}>
-        <Alert onClose={() => setSuccess('')} severity="success" variant="filled">
+        <Alert onClose={() => setSuccess('')} severity="success" variant="filled" sx={{ borderRadius: 3, fontWeight: 800 }}>
           {success}
         </Alert>
       </Snackbar>

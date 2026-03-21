@@ -4,21 +4,24 @@ import {
   Card,
   CardContent,
   CircularProgress,
+  Stack,
   Typography,
+  alpha,
 } from '@mui/material';
 import type { StaffAppointment } from '../../../api/staffAppointments';
 import AppointmentStatusChip from './AppointmentStatusChip';
+import { landingColors, premium } from '../../../components/landing/constants';
 
 const HOURS = Array.from({ length: 11 }, (_, i) => 8 + i);
-const SLOT_HEIGHT = 72;
+const SLOT_HEIGHT = 80;
 const PIXELS_PER_MINUTE = SLOT_HEIGHT / 60;
 const CALENDAR_START_HOUR = 8;
 const SNAP_MINUTES = 5;
 
-const TIME_COLUMN_WIDTH = 88;
-const APPOINTMENT_LEFT = 104;
-const APPOINTMENT_RIGHT_GAP = 16;
-const APPOINTMENT_GAP = 8;
+const TIME_COLUMN_WIDTH = 100;
+const APPOINTMENT_LEFT = 116;
+const APPOINTMENT_RIGHT_GAP = 24;
+const APPOINTMENT_GAP = 12;
 
 type LayoutItem = {
   appointment: StaffAppointment;
@@ -38,7 +41,7 @@ function getAppointmentTop(startTime: string) {
 }
 
 function getAppointmentHeight(durationMin: number) {
-  return Math.max((durationMin / 60) * SLOT_HEIGHT, 38);
+  return Math.max((durationMin / 60) * SLOT_HEIGHT, 42);
 }
 
 function formatTimeOnly(value: string) {
@@ -323,28 +326,34 @@ export default function ScheduleCalendar({
     contentWidth - APPOINTMENT_LEFT - APPOINTMENT_RIGHT_GAP;
 
   return (
-    <Card variant="outlined" sx={{ borderRadius: 3 }}>
+    <Card
+      sx={{
+        borderRadius: `${premium.rLg * 4}px`,
+        border: '1px solid',
+        borderColor: 'rgba(15,23,42,0.06)',
+        bgcolor: '#FFFFFF',
+        boxShadow: '0 10px 40px rgba(15,23,42,0.04)',
+        overflow: 'hidden',
+      }}
+    >
       <CardContent sx={{ p: 0 }}>
         <Box
           sx={{
-            px: 2,
-            py: 1.5,
+            px: 4,
+            py: 2.5,
             borderBottom: '1px solid',
-            borderColor: 'divider',
+            borderColor: 'rgba(15,23,42,0.04)',
+            bgcolor: alpha(landingColors.purple, 0.02),
           }}
         >
-          <Typography variant="h6" fontWeight={900}>
-            {new Date(`${selectedDate}T12:00:00`).toLocaleDateString([], {
-              weekday: 'long',
-              day: '2-digit',
-              month: 'long',
-            })}
+          <Typography sx={{ fontWeight: 1000, fontSize: 20, color: '#0F172A', letterSpacing: -0.5 }}>
+            Daily Timeline
           </Typography>
         </Box>
 
         {loading ? (
-          <Box sx={{ display: 'grid', placeItems: 'center', minHeight: 400 }}>
-            <CircularProgress />
+          <Box sx={{ display: 'grid', placeItems: 'center', minHeight: 500 }}>
+            <CircularProgress sx={{ color: landingColors.purple }} />
           </Box>
         ) : (
           <Box
@@ -353,8 +362,10 @@ export default function ScheduleCalendar({
               position: 'relative',
               height: HOURS.length * SLOT_HEIGHT,
               overflow: 'auto',
-              bgcolor: 'background.paper',
+              bgcolor: '#FFFFFF',
               userSelect: 'none',
+              '&::-webkit-scrollbar': { width: 8 },
+              '&::-webkit-scrollbar-thumb': { bgcolor: 'rgba(0,0,0,0.05)', borderRadius: 4 },
             }}
           >
             {HOURS.map((hour, index) => (
@@ -367,18 +378,18 @@ export default function ScheduleCalendar({
                   right: 0,
                   height: SLOT_HEIGHT,
                   borderTop: '1px solid',
-                  borderColor: 'divider',
+                  borderColor: 'rgba(15,23,42,0.04)',
                 }}
               >
                 <Typography
-                  variant="body2"
                   sx={{
                     position: 'absolute',
-                    top: 8,
-                    left: 16,
-                    width: 56,
-                    opacity: 0.65,
-                    fontWeight: 700,
+                    top: 12,
+                    left: 24,
+                    width: 60,
+                    color: '#94A3B8',
+                    fontWeight: 800,
+                    fontSize: 13,
                   }}
                 >
                   {`${String(hour).padStart(2, '0')}:00`}
@@ -389,10 +400,10 @@ export default function ScheduleCalendar({
                     position: 'absolute',
                     top: 0,
                     left: TIME_COLUMN_WIDTH,
-                    right: 16,
+                    right: 0,
                     bottom: 0,
-                    borderLeft: '1px dashed',
-                    borderColor: 'divider',
+                    borderLeft: '1px solid',
+                    borderColor: 'rgba(15,23,42,0.04)',
                   }}
                 />
               </Box>
@@ -416,81 +427,69 @@ export default function ScheduleCalendar({
 
               const innerGapTotal = Math.max(0, (laneCount - 1) * APPOINTMENT_GAP);
               const laneWidth = Math.max(
-                150,
+                180,
                 Math.floor((totalHorizontalSpace - innerGapTotal) / laneCount),
               );
 
               const left =
                 APPOINTMENT_LEFT + laneIndex * (laneWidth + APPOINTMENT_GAP);
 
-              const dense = laneCount > 1 || laneWidth < 250 || height < 58;
-              const veryDense = laneWidth < 190 || height < 46;
+              const dense = laneCount > 1 || laneWidth < 280 || height < 64;
+              const veryDense = laneWidth < 200 || height < 50;
 
-              const showMetaLine = !veryDense && height >= 52;
-              const compactChip = dense;
+              const showMetaLine = !veryDense && height >= 58;
 
               return (
                 <Box
                   key={appointment.id}
                   onMouseDown={(event) => handleMouseDown(event, appointment)}
                   onClick={() => onSelectAppointment(appointment.id)}
-                  title={`${formatTimeOnly(appointment.startTime)} · ${appointment.customerName} · ${appointment.serviceName} · ${appointment.durationMin} min`}
                   sx={{
                     position: 'absolute',
                     top,
                     left,
                     width: laneWidth,
-                    height,
+                    height: height - 2,
                     boxSizing: 'border-box',
-                    borderRadius: 2.5,
-                    px: dense ? 1 : 1.5,
-                    py: dense ? 0.75 : 1.25,
+                    borderRadius: 3,
+                    px: dense ? 1.5 : 2,
+                    py: dense ? 1 : 1.5,
                     cursor: draggable ? (isDragging ? 'grabbing' : 'grab') : 'pointer',
                     border: '1px solid',
                     borderStyle: isCancelled ? 'dashed' : 'solid',
                     borderColor: isCancelled
-                      ? 'error.main'
+                      ? '#F43F5E'
                       : selected
-                        ? 'primary.main'
-                        : 'divider',
+                        ? landingColors.purple
+                        : 'rgba(15,23,42,0.08)',
                     bgcolor: isCancelled
-                      ? 'rgba(211, 47, 47, 0.06)'
+                      ? alpha('#F43F5E', 0.04)
                       : isCompleted
-                        ? 'rgba(46, 125, 50, 0.06)'
+                        ? alpha(landingColors.success, 0.04)
                         : isNoShow
-                          ? 'rgba(117, 117, 117, 0.08)'
+                          ? alpha('#94A3B8', 0.06)
                           : selected
-                            ? 'primary.50'
-                            : 'background.paper',
+                            ? alpha(landingColors.purple, 0.06)
+                            : '#FFFFFF',
                     boxShadow:
-                      selected && !isCancelled
-                        ? '0 0 0 1px rgba(25,118,210,0.2)'
-                        : 'none',
-                    opacity: isCancelled ? 0.78 : isCompleted ? 0.92 : 1,
-                    zIndex: isDragging ? 20 : selected ? 5 : isCancelled ? 1 : 2,
-                    transition: isDragging ? 'none' : 'top 0.12s ease',
+                      selected && !isDragging
+                        ? `0 12px 30px ${alpha(landingColors.purple, 0.15)}`
+                        : '0 4px 12px rgba(0,0,0,0.02)',
+                    opacity: isDragging ? 0.8 : 1,
+                    zIndex: isDragging ? 100 : selected ? 50 : 10,
+                    transition: isDragging ? 'none' : 'top 0.1s ease, box-shadow 0.2s ease',
                     display: 'flex',
                     flexDirection: 'column',
-                    justifyContent: showMetaLine ? 'flex-start' : 'center',
-                    gap: dense ? 0.25 : 0.5,
+                    justifyContent: 'center',
+                    gap: 0.5,
                   }}
                 >
-                  <Box
-                    sx={{
-                      display: 'flex',
-                      alignItems: dense ? 'center' : 'flex-start',
-                      justifyContent: 'space-between',
-                      gap: 0.75,
-                      minWidth: 0,
-                    }}
-                  >
+                  <Stack direction="row" justifyContent="space-between" alignItems="center" spacing={1}>
                     <Typography
                       sx={{
-                        flex: 1,
-                        minWidth: 0,
-                        fontWeight: 800,
-                        fontSize: dense ? 14 : 15,
-                        lineHeight: 1.2,
+                        fontWeight: 900,
+                        fontSize: dense ? 13 : 14.5,
+                        color: isCancelled ? '#F43F5E' : '#0F172A',
                         textDecoration: isCancelled ? 'line-through' : 'none',
                         overflow: 'hidden',
                         textOverflow: 'ellipsis',
@@ -499,42 +498,24 @@ export default function ScheduleCalendar({
                     >
                       {formatTimeOnly(appointment.startTime)} · {appointment.customerName}
                     </Typography>
-
-                    <Box
-                      sx={{
-                        flexShrink: 0,
-                        display: 'flex',
-                        alignItems: 'center',
-                        '& .MuiChip-root': compactChip
-                          ? {
-                              height: 24,
-                              '& .MuiChip-label': {
-                                px: 1,
-                                fontSize: 12,
-                                fontWeight: 700,
-                              },
-                            }
-                          : undefined,
-                      }}
-                    >
+                    
+                    {!veryDense && (
                       <AppointmentStatusChip status={appointment.status} />
-                    </Box>
-                  </Box>
+                    )}
+                  </Stack>
 
                   {showMetaLine && (
                     <Typography
-                      variant="body2"
                       sx={{
-                        opacity: 0.78,
-                        fontSize: dense ? 12 : 13,
-                        lineHeight: 1.2,
-                        textDecoration: isCancelled ? 'line-through' : 'none',
+                        color: '#64748B',
+                        fontWeight: 700,
+                        fontSize: dense ? 11 : 12.5,
                         overflow: 'hidden',
                         textOverflow: 'ellipsis',
                         whiteSpace: 'nowrap',
                       }}
                     >
-                      {appointment.serviceName} · {appointment.durationMin} min
+                      {appointment.serviceName}
                     </Typography>
                   )}
                 </Box>

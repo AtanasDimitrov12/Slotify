@@ -1,48 +1,56 @@
-import { Box, Grid, Stack, Typography } from '@mui/material';
+import { Box, Container, Grid, Stack, Typography } from '@mui/material';
+import EventAvailableRoundedIcon from '@mui/icons-material/EventAvailableRounded';
+import BlockRoundedIcon from '@mui/icons-material/BlockRounded';
+import QueueRoundedIcon from '@mui/icons-material/QueueRounded';
+import ManageAccountsRoundedIcon from '@mui/icons-material/ManageAccountsRounded';
 import { alpha } from '@mui/material/styles';
+import { landingColors, premium } from './constants';
 
-import StorefrontRoundedIcon from '@mui/icons-material/StorefrontRounded';
-import CalendarMonthRoundedIcon from '@mui/icons-material/CalendarMonthRounded';
-import AutoAwesomeRoundedIcon from '@mui/icons-material/AutoAwesomeRounded';
-import VerifiedRoundedIcon from '@mui/icons-material/VerifiedRounded';
-import StarRoundedIcon from '@mui/icons-material/StarRounded';
-
-import { premium } from './constants';
+const items = [
+  { icon: <EventAvailableRoundedIcon fontSize="small" />, label: 'Live availability' },
+  { icon: <BlockRoundedIcon fontSize="small" />, label: 'No double bookings' },
+  { icon: <QueueRoundedIcon fontSize="small" />, label: 'Waitlist recovery' },
+  { icon: <ManageAccountsRoundedIcon fontSize="small" />, label: 'Partner control' },
+];
 
 export function TrustStrip() {
   return (
     <Box
-      data-reveal="1"
       sx={{
-        mt: { xs: 1, md: 1 },
-        borderRadius: premium.rLg,
-        border: '1px solid',
-        borderColor: 'divider',
-        bgcolor: (t) => alpha(t.palette.background.paper, 0.55),
-        backdropFilter: 'blur(12px)',
-        boxShadow: '0 22px 80px rgba(0,0,0,0.07)',
+        py: 2.6,
+        bgcolor: landingColors.bg,
+        borderBottom: `1px solid ${alpha(landingColors.white, 0.05)}`,
       }}
     >
-      <Box sx={{ px: { xs: 2, md: 3 }, py: { xs: 1.8, md: 2.1 } }}>
-        <Grid container spacing={2} alignItems="center" sx={{textAlign: 'center'}}>
-          {[
-            { icon: <StorefrontRoundedIcon fontSize="small" />, label: 'Marketplace of salons' },
-            { icon: <CalendarMonthRoundedIcon fontSize="small" />, label: 'Real availability' },
-            { icon: <AutoAwesomeRoundedIcon fontSize="small" />, label: 'Recommended slots' },
-            { icon: <VerifiedRoundedIcon fontSize="small" />, label: 'Verified (placeholder)' },
-            { icon: <StarRoundedIcon fontSize="small" />, label: 'Reviews (placeholder)' },
-          ].map((x) => (
-            <Grid item xs={12} sm={6} md={2.4} key={x.label}>
-              <Stack direction="row" spacing={1} alignItems="center">
-                <Box sx={{ color: 'text.secondary' }}>{x.icon}</Box>
-                <Typography variant="body2" sx={{ fontWeight: 950 }}>
-                  {x.label}
-                </Typography>
-              </Stack>
-            </Grid>
-          ))}
-        </Grid>
-      </Box>
+      <Container maxWidth={false} sx={{ maxWidth: premium.maxWidth, px: premium.sectionPx }}>
+        <Box
+          data-reveal="1"
+          sx={{
+            borderRadius: `${premium.rLg * 4}px`,
+            border: '1px solid',
+            borderColor: 'rgba(255,255,255,0.07)',
+            bgcolor: 'rgba(255,255,255,0.02)',
+            boxShadow: premium.cardShadowSoft,
+            px: { xs: 2, md: 3 },
+            py: { xs: 1.7, md: 2 },
+          }}
+        >
+          <Grid container spacing={2} alignItems="center" justifyContent="center">
+            {items.map((item) => (
+              <Grid item xs={12} sm={6} md={3} key={item.label}>
+                <Stack direction="row" spacing={1} alignItems="center" justifyContent="center">
+                  <Box sx={{ color: landingColors.purpleSoft, display: 'grid', placeItems: 'center' }}>
+                    {item.icon}
+                  </Box>
+                  <Typography sx={{ color: landingColors.text, fontWeight: 850, fontSize: 14.5 }}>
+                    {item.label}
+                  </Typography>
+                </Stack>
+              </Grid>
+            ))}
+          </Grid>
+        </Box>
+      </Container>
     </Box>
   );
 }

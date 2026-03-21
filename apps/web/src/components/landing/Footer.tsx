@@ -1,21 +1,32 @@
-import { Divider, Stack, Typography } from '@mui/material';
+import { Box, Container, Stack, Typography } from '@mui/material';
+import { alpha } from '@mui/material/styles';
+import { landingColors, premium } from './constants';
 
 export function Footer() {
   return (
-    <>
-      <Divider sx={{ mt: 1 }} />
-      <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1.2} justifyContent="space-between" sx={{ pb: 2 }}>
-        <Typography variant="body2" sx={{ color: 'text.secondary' }}>
-          © {new Date().getFullYear()} Slotify
-        </Typography>
-        <Stack direction="row" spacing={2}>
-          {['Privacy (later)', 'Terms (later)', 'Contact (later)'].map((t) => (
-            <Typography key={t} variant="body2" sx={{ color: 'text.secondary' }}>
-              {t}
-            </Typography>
-          ))}
+    <Box
+      sx={{
+        py: 4,
+        bgcolor: landingColors.bg,
+        borderTop: `1px solid ${alpha(landingColors.white, 0.05)}`,
+      }}
+    >
+      <Container maxWidth={false} sx={{ maxWidth: premium.maxWidth, px: premium.sectionPx }}>
+        <Stack
+          direction={{ xs: 'column', md: 'row' }}
+          spacing={1.2}
+          justifyContent="space-between"
+          alignItems={{ xs: 'flex-start', md: 'center' }}
+        >
+          <Typography sx={{ color: landingColors.text, fontWeight: 1000, letterSpacing: -0.5, fontSize: 18 }}>
+            SLOTIFY
+          </Typography>
+
+          <Typography sx={{ color: landingColors.muted, fontSize: 14.2 }}>
+            Premium reservation flow for modern salons.
+          </Typography>
         </Stack>
-      </Stack>
-    </>
+      </Container>
+    </Box>
   );
 }

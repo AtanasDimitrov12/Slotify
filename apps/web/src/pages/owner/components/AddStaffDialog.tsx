@@ -9,7 +9,9 @@ import {
   Stack,
   TextField,
   Typography,
+  alpha,
 } from '@mui/material';
+import { landingColors } from '../../../components/landing/constants';
 
 export type AddStaffPayload = {
   name: string;
@@ -75,58 +77,95 @@ export default function AddStaffDialog({ open, onClose, onCreate }: Props) {
   }, [open]);
 
   return (
-    <Dialog open={open} onClose={handleClose} fullWidth maxWidth="sm">
-      <DialogTitle>Add staff member</DialogTitle>
+    <Dialog
+      open={open}
+      onClose={handleClose}
+      fullWidth
+      maxWidth="sm"
+      PaperProps={{
+        sx: {
+          borderRadius: 8,
+          p: 1,
+        },
+      }}
+    >
+      <DialogTitle sx={{ fontWeight: 1000, fontSize: 24, letterSpacing: -0.5, py: 3, px: 4 }}>
+        Add Team Member
+      </DialogTitle>
 
-      <DialogContent>
-        <Stack spacing={2} sx={{ mt: 1 }}>
-          {error ? <Alert severity="error">{error}</Alert> : null}
+      <DialogContent sx={{ px: 4, pb: 2 }}>
+        <Stack spacing={3}>
+          {error ? (
+            <Alert severity="error" sx={{ borderRadius: 3, fontWeight: 700 }}>
+              {error}
+            </Alert>
+          ) : null}
 
-          <TextField
-            label="Full name"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            autoFocus
-            disabled={submitting}
-            fullWidth
-          />
+          <Stack spacing={2.5}>
+            <TextField
+              label="Full Name"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              autoFocus
+              disabled={submitting}
+              fullWidth
+            />
 
-          <TextField
-            label="Email"
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            disabled={submitting}
-            fullWidth
-          />
+            <TextField
+              label="Email Address"
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              disabled={submitting}
+              fullWidth
+            />
 
-          <TextField
-            label="Password"
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            helperText="Minimum 6 characters"
-            disabled={submitting}
-            fullWidth
-          />
+            <TextField
+              label="Account Password"
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              helperText="Minimum 6 characters required."
+              disabled={submitting}
+              fullWidth
+            />
 
-          <Typography variant="body2" sx={{ opacity: 0.7 }}>
-            This will create a user with role <b>staff</b> under your tenant.
-          </Typography>
+            <Typography sx={{ color: '#64748B', fontWeight: 600, fontSize: 14 }}>
+              The new member will be created with the <b>staff</b> role and can immediately setup their profile.
+            </Typography>
+          </Stack>
         </Stack>
       </DialogContent>
 
-      <DialogActions>
-        <Button onClick={handleClose} disabled={submitting}>
+      <DialogActions sx={{ p: 4, pt: 2 }}>
+        <Button
+          onClick={handleClose}
+          disabled={submitting}
+          sx={{
+            fontWeight: 800,
+            color: '#64748B',
+            borderRadius: 999,
+            px: 3,
+            '&:hover': { bgcolor: alpha('#64748B', 0.05) },
+          }}
+        >
           Cancel
         </Button>
-
         <Button
           variant="contained"
           disabled={!canSubmit}
           onClick={handleCreate}
+          sx={{
+            borderRadius: 999,
+            px: 4,
+            fontWeight: 900,
+            minHeight: 48,
+            bgcolor: landingColors.purple,
+            boxShadow: `0 12px 30px ${alpha(landingColors.purple, 0.24)}`,
+            '&:hover': { bgcolor: landingColors.purple, filter: 'brightness(1.05)' },
+          }}
         >
-          {submitting ? 'Creating...' : 'Create'}
+          {submitting ? 'Creating...' : 'Create Account'}
         </Button>
       </DialogActions>
     </Dialog>

@@ -9,10 +9,12 @@ import {
   Snackbar,
   Stack,
   Typography,
+  alpha,
 } from '@mui/material';
 
 import BookingRulesForm, { type BookingRulesValues } from './components/BookingRulesForm';
 import { getBookingRules, saveBookingRules } from '../../api/bookingRules';
+import { landingColors, premium } from '../../components/landing/constants';
 
 const defaultRules: BookingRulesValues = {
   bufferBefore: { enabled: false, minutes: 0 },
@@ -75,33 +77,54 @@ export default function OwnerBookingRulesPage() {
 
   if (loading) {
     return (
-      <Box sx={{ display: 'grid', placeItems: 'center', minHeight: 300 }}>
-        <CircularProgress />
+      <Box sx={{ display: 'grid', placeItems: 'center', minHeight: 400 }}>
+        <CircularProgress sx={{ color: landingColors.purple }} />
       </Box>
     );
   }
 
   return (
     <>
-      <Stack spacing={2.5}>
+      <Stack spacing={4}>
         <Box>
-          <Typography variant="h4" fontWeight={900}>
-            Booking rules
+          <Typography sx={{ fontWeight: 1000, fontSize: 36, letterSpacing: -1.5, color: '#0F172A' }}>
+            Booking Rules
           </Typography>
-          <Typography sx={{ opacity: 0.7 }}>
-            Configure how customers can book appointments in your salon.
+          <Typography sx={{ color: '#64748B', fontWeight: 600, fontSize: 18 }}>
+            Configure how customers interact with your calendar.
           </Typography>
         </Box>
 
-        {error ? <Alert severity="error">{error}</Alert> : null}
+        {error ? <Alert severity="error" sx={{ borderRadius: 3 }}>{error}</Alert> : null}
 
-        <Card variant="outlined" sx={{ borderRadius: 3 }}>
-          <CardContent sx={{ px: 3 }}>
+        <Card
+          sx={{
+            borderRadius: `${premium.rLg * 4}px`,
+            border: '1px solid',
+            borderColor: 'rgba(15,23,42,0.06)',
+            bgcolor: '#FFFFFF',
+            boxShadow: '0 10px 40px rgba(15,23,42,0.04)',
+          }}
+        >
+          <CardContent sx={{ p: 4 }}>
             <BookingRulesForm value={rules} onChange={setRules} />
 
-            <Box sx={{ mt: 2, display: 'flex', justifyContent: 'flex-end' }}>
-              <Button variant="contained" onClick={handleSave} disabled={saving}>
-                Save
+            <Box sx={{ mt: 4, display: 'flex', justifyContent: 'flex-end' }}>
+              <Button
+                variant="contained"
+                size="large"
+                onClick={handleSave}
+                disabled={saving}
+                sx={{
+                  minHeight: 52,
+                  px: 4,
+                  borderRadius: 999,
+                  fontWeight: 900,
+                  bgcolor: landingColors.purple,
+                  boxShadow: `0 12px 30px ${alpha(landingColors.purple, 0.24)}`,
+                }}
+              >
+                {saving ? 'Saving...' : 'Save Rules'}
               </Button>
             </Box>
           </CardContent>
@@ -109,7 +132,7 @@ export default function OwnerBookingRulesPage() {
       </Stack>
 
       <Snackbar open={Boolean(success)} autoHideDuration={3000} onClose={() => setSuccess('')}>
-        <Alert severity="success" variant="filled">
+        <Alert severity="success" variant="filled" sx={{ borderRadius: 3, fontWeight: 800 }}>
           {success}
         </Alert>
       </Snackbar>

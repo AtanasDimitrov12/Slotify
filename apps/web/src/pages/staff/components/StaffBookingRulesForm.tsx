@@ -6,7 +6,11 @@ import {
   Switch,
   TextField,
   Typography,
+  alpha,
+  Box,
+  Divider,
 } from '@mui/material';
+import { landingColors } from '../../../components/landing/constants';
 
 export type StaffBookingRulesValues = {
   bufferBefore: { enabled: boolean; minutes: number };
@@ -50,17 +54,16 @@ export default function StaffBookingRulesForm({
   }
 
   return (
-    <Stack spacing={3}>
-      <Typography sx={{ opacity: 0.7 }}>
-        Define how bookings should behave for your personal schedule.
-      </Typography>
+    <Stack spacing={4}>
+      <Box sx={{ p: 2.5, borderRadius: 3, bgcolor: alpha(landingColors.purple, 0.04), border: `1px solid ${alpha(landingColors.purple, 0.1)}` }}>
+        <Typography sx={{ color: landingColors.purple, fontWeight: 700, fontSize: 15 }}>
+          Customize how your personal calendar handles bookings. These settings override salon defaults when active.
+        </Typography>
+      </Box>
 
-      <Grid container spacing={2}>
+      <Grid container spacing={4}>
         <Grid item xs={12} md={6}>
-          <Typography fontWeight={700} sx={{ mb: 1 }}>
-            Buffer before appointment
-          </Typography>
-
+          <Typography sx={{ fontWeight: 1000, fontSize: 16, color: '#0F172A', mb: 1 }}>Buffer Before Appointment</Typography>
           <FormControlLabel
             control={
               <Switch
@@ -69,9 +72,10 @@ export default function StaffBookingRulesForm({
                   updateBuffer('bufferBefore', { enabled: e.target.checked })
                 }
                 disabled={disabled}
+                sx={{ '& .MuiSwitch-switchBase.Mui-checked': { color: landingColors.purple }, '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': { bgcolor: landingColors.purple } }}
               />
             }
-            label="Enabled"
+            label={<Typography sx={{ fontWeight: 800, fontSize: 14 }}>Enable Buffer</Typography>}
           />
 
           <TextField
@@ -85,14 +89,12 @@ export default function StaffBookingRulesForm({
                 minutes: Number(e.target.value),
               })
             }
+            sx={{ mt: 2 }}
           />
         </Grid>
 
         <Grid item xs={12} md={6}>
-          <Typography fontWeight={700} sx={{ mb: 1 }}>
-            Buffer after appointment
-          </Typography>
-
+          <Typography sx={{ fontWeight: 1000, fontSize: 16, color: '#0F172A', mb: 1 }}>Buffer After Appointment</Typography>
           <FormControlLabel
             control={
               <Switch
@@ -101,9 +103,10 @@ export default function StaffBookingRulesForm({
                   updateBuffer('bufferAfter', { enabled: e.target.checked })
                 }
                 disabled={disabled}
+                sx={{ '& .MuiSwitch-switchBase.Mui-checked': { color: landingColors.purple }, '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': { bgcolor: landingColors.purple } }}
               />
             }
-            label="Enabled"
+            label={<Typography sx={{ fontWeight: 800, fontSize: 14 }}>Enable Buffer</Typography>}
           />
 
           <TextField
@@ -117,14 +120,18 @@ export default function StaffBookingRulesForm({
                 minutes: Number(e.target.value),
               })
             }
+            sx={{ mt: 2 }}
           />
         </Grid>
 
+        <Grid item xs={12}><Divider sx={{ opacity: 0.5 }} /></Grid>
+
         <Grid item xs={12} md={6}>
+          <Typography sx={{ fontWeight: 1000, fontSize: 16, color: '#0F172A', mb: 1 }}>Booking Notice</Typography>
           <TextField
             fullWidth
             type="number"
-            label="Minimum booking notice (minutes)"
+            label="Minimum notice (minutes)"
             disabled={disabled}
             value={value.minimumNoticeMinutes}
             onChange={(e) =>
@@ -134,6 +141,7 @@ export default function StaffBookingRulesForm({
         </Grid>
 
         <Grid item xs={12} md={6}>
+          <Typography sx={{ fontWeight: 1000, fontSize: 16, color: '#0F172A', mb: 1 }}>Booking Horizon</Typography>
           <TextField
             fullWidth
             type="number"
@@ -146,6 +154,8 @@ export default function StaffBookingRulesForm({
           />
         </Grid>
 
+        <Grid item xs={12}><Divider sx={{ opacity: 0.5 }} /></Grid>
+
         <Grid item xs={12}>
           <FormControlLabel
             control={
@@ -155,9 +165,10 @@ export default function StaffBookingRulesForm({
                   update('autoConfirmReservations', e.target.checked)
                 }
                 disabled={disabled}
+                sx={{ '& .MuiSwitch-switchBase.Mui-checked': { color: landingColors.purple }, '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': { bgcolor: landingColors.purple } }}
               />
             }
-            label="Automatically confirm reservations"
+            label={<Typography sx={{ fontWeight: 800 }}>Automatically confirm my reservations</Typography>}
           />
         </Grid>
 
@@ -170,9 +181,10 @@ export default function StaffBookingRulesForm({
                   update('allowBookingToEndAfterWorkingHours', e.target.checked)
                 }
                 disabled={disabled}
+                sx={{ '& .MuiSwitch-switchBase.Mui-checked': { color: landingColors.purple }, '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': { bgcolor: landingColors.purple } }}
               />
             }
-            label="Allow booking to end after working hours"
+            label={<Typography sx={{ fontWeight: 800 }}>Allow sessions to end after my working hours</Typography>}
           />
         </Grid>
 
@@ -185,9 +197,10 @@ export default function StaffBookingRulesForm({
                   update('allowCustomerChooseSpecificStaff', e.target.checked)
                 }
                 disabled={disabled}
+                sx={{ '& .MuiSwitch-switchBase.Mui-checked': { color: landingColors.purple }, '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': { bgcolor: landingColors.purple } }}
               />
             }
-            label="Allow customers to choose you directly"
+            label={<Typography sx={{ fontWeight: 800 }}>Allow customers to book me directly</Typography>}
           />
         </Grid>
       </Grid>

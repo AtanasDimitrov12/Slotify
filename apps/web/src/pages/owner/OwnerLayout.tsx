@@ -1,6 +1,7 @@
 import * as React from 'react';
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 import {
+  AppBar,
   Box,
   Drawer,
   IconButton,
@@ -9,9 +10,12 @@ import {
   ListItemIcon,
   ListItemText,
   Stack,
+  Toolbar,
   Typography,
   useMediaQuery,
   useTheme,
+  Avatar,
+  Divider,
 } from '@mui/material';
 import MenuRoundedIcon from '@mui/icons-material/MenuRounded';
 import DashboardRoundedIcon from '@mui/icons-material/DashboardRounded';
@@ -19,8 +23,10 @@ import GroupsRoundedIcon from '@mui/icons-material/GroupsRounded';
 import SettingsRoundedIcon from '@mui/icons-material/SettingsRounded';
 import ContentCutRoundedIcon from '@mui/icons-material/ContentCutRounded';
 import EventAvailableRoundedIcon from '@mui/icons-material/EventAvailableRounded';
+import { alpha } from '@mui/material/styles';
+import { landingColors, premium } from '../../components/landing/constants';
 
-const drawerWidth = 264;
+const drawerWidth = 280;
 
 type NavItem = { label: string; to: string; icon: React.ReactNode };
 
@@ -39,25 +45,40 @@ export default function OwnerLayout() {
     { label: 'Business settings', to: '/owner/settings', icon: <SettingsRoundedIcon /> },
   ];
 
-  const drawer = (
+  const sidebar = (
     <Stack sx={{ height: '100%' }}>
-      <Box sx={{ px: 2, py: 2 }}>
-        <Typography variant="subtitle2" sx={{ opacity: 0.7 }}>
-          Salon Console
-        </Typography>
-        <Typography variant="h6" fontWeight={800}>
-          Owner
-        </Typography>
-        <Typography variant="body2" sx={{ opacity: 0.7 }}>
-          Manage your salon
-        </Typography>
-      </Box>
+      <Stack direction="row" alignItems="center" spacing={1.5} sx={{ p: 3 }}>
+        <Avatar
+          sx={{
+            width: 44,
+            height: 44,
+            fontSize: 18,
+            fontWeight: 1000,
+            bgcolor: alpha(landingColors.purple, 0.12),
+            color: landingColors.purple,
+            border: `1px solid ${alpha(landingColors.purple, 0.20)}`,
+          }}
+        >
+          O
+        </Avatar>
 
-      <List sx={{ px: 1 }}>
+        <Box>
+          <Typography sx={{ fontWeight: 1000, letterSpacing: -0.4, lineHeight: 1, fontSize: 18, color: '#0F172A' }}>
+            Salon Console
+          </Typography>
+          <Typography variant="body2" sx={{ color: '#64748B', fontWeight: 700, mt: 0.4 }}>
+            Business Owner
+          </Typography>
+        </Box>
+      </Stack>
+
+      <Divider sx={{ mx: 2, borderColor: 'rgba(15,23,42,0.04)' }} />
+
+      <List sx={{ p: 2 }}>
         {items.map((it) => {
           const active =
             location.pathname === it.to ||
-            (it.to.endsWith('/overview') && location.pathname === '/owner');
+            (it.to.endsWith('/overview') && (location.pathname === '/owner' || location.pathname === '/owner/'));
 
           return (
             <ListItemButton
@@ -67,51 +88,126 @@ export default function OwnerLayout() {
                 navigate(it.to);
                 setOpen(false);
               }}
-              sx={{ borderRadius: 2, mx: 1 }}
+              sx={{
+                borderRadius: 4,
+                mb: 1,
+                px: 2,
+                py: 1.5,
+                border: '1px solid',
+                borderColor: active ? alpha(landingColors.purple, 0.12) : 'transparent',
+                bgcolor: active ? alpha(landingColors.purple, 0.08) : 'transparent',
+                transition: 'all 0.2s ease',
+                '&:hover': {
+                  bgcolor: active ? alpha(landingColors.purple, 0.12) : alpha(landingColors.purple, 0.04),
+                  transform: 'translateX(4px)',
+                },
+              }}
             >
-              <ListItemIcon sx={{ minWidth: 40 }}>{it.icon}</ListItemIcon>
-              <ListItemText primary={it.label} />
+              <ListItemIcon sx={{ minWidth: 40, color: active ? landingColors.purple : '#94A3B8' }}>{it.icon}</ListItemIcon>
+              <ListItemText
+                primary={it.label}
+                primaryTypographyProps={{
+                  fontWeight: active ? 900 : 700,
+                  fontSize: 15,
+                  color: active ? landingColors.purple : '#475569',
+                }}
+              />
             </ListItemButton>
           );
         })}
       </List>
 
       <Box sx={{ flex: 1 }} />
-
-
     </Stack>
   );
 
   return (
-    <Box sx={{ display: 'flex', minHeight: 'calc(100vh - 68px)' }}>
-      {isDesktop ? (
-        <Box
-          sx={{
-            width: drawerWidth,
-            flexShrink: 0,
-            borderRight: '1px solid',
-            borderColor: 'divider',
-            bgcolor: 'background.paper',
-          }}
-        >
-          {drawer}
-        </Box>
-      ) : (
-        <>
-          <Box sx={{ p: 2, pb: 0 }}>
-            <IconButton onClick={() => setOpen(true)}>
+    <Box
+      sx={{
+        minHeight: '100vh',
+        bgcolor: '#F8FAFC',
+        backgroundImage: `
+          radial-gradient(900px 480px at 18% -10%, ${alpha(landingColors.purple, 0.06)} 0%, transparent 60%),
+          radial-gradient(900px 520px at 110% 0%, ${alpha(landingColors.blue, 0.05)} 0%, transparent 55%)
+        `,
+      }}
+    >
+      <AppBar
+        position="sticky"
+        elevation={0}
+        sx={{
+          bgcolor: alpha('#FFFFFF', 0.8),
+          backdropFilter: 'blur(20px)',
+          borderBottom: '1px solid',
+          borderColor: 'rgba(15,23,42,0.06)',
+          color: 'text.primary',
+        }}
+      >
+        <Toolbar sx={{ minHeight: 74, px: { xs: 2, md: 4 } }}>
+          {!isDesktop && (
+            <IconButton
+              onClick={() => setOpen(true)}
+              sx={{
+                mr: 2,
+                bgcolor: alpha(landingColors.purple, 0.08),
+                color: landingColors.purple,
+              }}
+            >
               <MenuRoundedIcon />
             </IconButton>
+          )}
+
+          <Box sx={{ flex: 1 }}>
+            <Typography sx={{ fontWeight: 1000, fontSize: 20, letterSpacing: -0.8, color: '#0F172A' }}>
+              Management
+            </Typography>
+            <Typography variant="body2" sx={{ color: '#64748B', fontWeight: 700 }}>
+              Salon & Team Control
+            </Typography>
           </Box>
+        </Toolbar>
+      </AppBar>
 
-          <Drawer open={open} onClose={() => setOpen(false)}>
-            <Box sx={{ width: drawerWidth }}>{drawer}</Box>
+      <Box sx={{ display: 'grid', gridTemplateColumns: isDesktop ? `${drawerWidth}px 1fr` : '1fr' }}>
+        {isDesktop ? (
+          <Box
+            sx={{
+              position: 'sticky',
+              top: 74,
+              height: 'calc(100vh - 74px)',
+              borderRight: '1px solid',
+              borderColor: 'rgba(15,23,42,0.06)',
+              bgcolor: alpha('#FFFFFF', 0.4),
+              backdropFilter: 'blur(10px)',
+            }}
+          >
+            {sidebar}
+          </Box>
+        ) : (
+          <Drawer
+            anchor="left"
+            open={open}
+            onClose={() => setOpen(false)}
+            PaperProps={{
+              sx: {
+                width: drawerWidth,
+                borderTopRightRadius: 32,
+                borderBottomRightRadius: 32,
+                overflow: 'hidden',
+                bgcolor: alpha('#FFFFFF', 0.95),
+                backdropFilter: 'blur(20px)',
+              },
+            }}
+          >
+            {sidebar}
           </Drawer>
-        </>
-      )}
+        )}
 
-      <Box sx={{ flex: 1, p: { xs: 2, md: 3 } }}>
-        <Outlet />
+        <Box sx={{ px: { xs: 2, md: 5 }, py: { xs: 3, md: 5 } }}>
+          <Box sx={{ maxWidth: 1400, mx: 'auto' }}>
+            <Outlet />
+          </Box>
+        </Box>
       </Box>
     </Box>
   );
