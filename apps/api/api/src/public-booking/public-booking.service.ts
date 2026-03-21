@@ -130,13 +130,35 @@ export class PublicBookingService {
         slug: tenant.slug,
       },
       details,
-      services: services.map((service) => ({
-        _id: service._id,
-        name: service.name,
-        durationMin: service.durationMin,
-        priceEUR: service.priceEUR,
-        description: service.description,
-      })),
+      services: services.map((service) => {
+        const serviceIdStr = String(service._id);
+        const relevantAssignments = filteredAssignments.filter(
+          (a) => String(a.serviceId) === serviceIdStr,
+        );
+
+        let durationMin = service.durationMin;
+        let priceEUR = service.priceEUR;
+
+        if (relevantAssignments.length > 0) {
+          const effectiveDurations = relevantAssignments.map(
+            (a) => a.customDurationMinutes ?? service.durationMin,
+          );
+          durationMin = Math.min(...effectiveDurations);
+
+          const effectivePrices = relevantAssignments.map(
+            (a) => a.customPrice ?? service.priceEUR,
+          );
+          priceEUR = Math.min(...effectivePrices);
+        }
+
+        return {
+          _id: service._id,
+          name: service.name,
+          durationMin,
+          priceEUR,
+          description: service.description,
+        };
+      }),
       staff: staffProfiles.map((staff) => ({
         _id: staff.userId,
         displayName: staff.displayName,
@@ -196,7 +218,9 @@ export class PublicBookingService {
       const settings = await this.getEffectiveSettings(tenantId, staffId);
 
       try {
-        this.validateRequestedDateAgainstBookingRules(requestedDate, settings);
+        this.validateRequestedDateAgainstBookingRules(requestedDate, settings, {
+          isDay: true,
+        });
       } catch {
         continue;
       }
@@ -576,6 +600,7 @@ export class PublicBookingService {
   private validateRequestedDateAgainstBookingRules(
     date: Date,
     settings: EffectiveBookingSettings,
+    options: { isDay?: boolean } = {},
   ): void {
     const now = new Date();
     const minimumStart = addMinutes(now, settings.minimumNoticeMinutes);
@@ -584,11 +609,19 @@ export class PublicBookingService {
       settings.maximumDaysInAdvance * 24 * 60,
     );
 
-    if (date < minimumStart) {
+    const tooSoon = options.isDay
+      ? endOfDay(date) < minimumStart
+      : date < minimumStart;
+
+    const tooFar = options.isDay
+      ? startOfDay(date) > maximumStart
+      : date > maximumStart;
+
+    if (tooSoon) {
       throw new BadRequestException('Selected time is too soon');
     }
 
-    if (date > maximumStart) {
+    if (tooFar) {
       throw new BadRequestException('Selected time is too far in the future');
     }
   }
@@ -606,7 +639,6 @@ export class PublicBookingService {
     const dayStart = startOfDay(requestedDate);
     const dayEnd = endOfDay(requestedDate);
     const weekday = requestedDate.getDay();
-    const mappedWeekday = weekday === 0 ? 6 : weekday - 1;
 
     const [tenantDetails, availability, timeOffEntries, reservations, locks] =
       await Promise.all([
@@ -649,7 +681,7 @@ export class PublicBookingService {
 
     const staffDayEntries =
       availability?.weeklyAvailability?.filter(
-        (entry) => entry.dayOfWeek === mappedWeekday && entry.isAvailable,
+        (entry) => entry.dayOfWeek === weekday && entry.isAvailable,
       ) ?? [];
 
     if (staffDayEntries.length === 0) {
@@ -954,7 +986,9 @@ export class PublicBookingService {
       const settings = await this.getEffectiveSettings(tenantId, staffId);
 
       try {
-        this.validateRequestedDateAgainstBookingRules(requestedDate, settings);
+        this.validateRequestedDateAgainstBookingRules(requestedDate, settings, {
+          isDay: true,
+        });
       } catch {
         continue;
       }

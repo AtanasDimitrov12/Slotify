@@ -494,7 +494,6 @@ export class StaffAppointmentsService {
     const dayStart = startOfDay(requestedDate);
     const dayEnd = endOfDay(requestedDate);
     const weekday = requestedDate.getDay();
-    const mappedWeekday = weekday === 0 ? 6 : weekday - 1;
 
     const [tenantDetails, availability, timeOffEntries, reservations] = await Promise.all([
       this.tenantDetailsModel.findOne({ tenantId: String(tenantId), isPublished: true }).lean(),
@@ -520,7 +519,7 @@ export class StaffAppointmentsService {
 
     const staffDayEntries =
       availability?.weeklyAvailability?.filter(
-        (entry) => entry.dayOfWeek === mappedWeekday && entry.isAvailable,
+        (entry) => entry.dayOfWeek === weekday && entry.isAvailable,
       ) ?? [];
 
     if (!staffDayEntries.length) {
