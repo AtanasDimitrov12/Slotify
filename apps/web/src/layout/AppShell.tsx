@@ -82,6 +82,22 @@ export default function AppShell() {
     return location.pathname.startsWith(to);
   };
 
+  const getUserHomePath = () => {
+    if (!user) return '/login';
+
+    const role = user.role;
+
+    if (role === 'staff') return '/staff';
+    if (role === 'admin') return '/admin';
+    if (role === 'owner') return '/owner';
+
+    return '/';
+  };
+
+  const handleUserHomeClick = () => {
+    go(getUserHomePath());
+  };
+
   return (
     <Box
       sx={{
@@ -258,6 +274,8 @@ export default function AppShell() {
                   <Chip
                     label={user.email}
                     size="small"
+                    onClick={handleUserHomeClick}
+                    clickable
                     sx={{
                       display: { xs: 'none', md: 'inline-flex' },
                       height: 34,
@@ -265,9 +283,13 @@ export default function AppShell() {
                       color: shellColors.textSoft,
                       bgcolor: 'rgba(255,255,255,0.70)',
                       border: `1px solid ${shellColors.navBorder}`,
+                      cursor: 'pointer',
                       '& .MuiChip-label': {
                         px: 1.2,
                         fontWeight: 800,
+                      },
+                      '&:hover': {
+                        bgcolor: 'rgba(255,255,255,0.90)',
                       },
                     }}
                   />
@@ -486,12 +508,19 @@ export default function AppShell() {
           {user ? (
             <Stack spacing={1.2}>
               <Box
+                onClick={handleUserHomeClick}
                 sx={{
                   px: 1.5,
                   py: 1.3,
                   borderRadius: 4,
                   border: `1px solid ${shellColors.drawerBorder}`,
                   bgcolor: 'rgba(248,250,252,0.92)',
+                  cursor: 'pointer',
+                  transition: 'background-color 160ms ease, transform 160ms ease',
+                  '&:hover': {
+                    bgcolor: 'rgba(255,255,255,0.98)',
+                    transform: 'translateY(-1px)',
+                  },
                 }}
               >
                 <Typography
