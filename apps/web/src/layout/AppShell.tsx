@@ -98,6 +98,7 @@ export default function AppShell() {
         elevation={0}
         position="sticky"
         sx={{
+          zIndex: (theme) => theme.zIndex.drawer + 1,
           bgcolor: shellColors.navBg,
           backdropFilter: 'blur(16px)',
           borderBottom: `1px solid ${shellColors.navBorder}`,

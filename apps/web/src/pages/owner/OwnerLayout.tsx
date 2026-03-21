@@ -46,7 +46,14 @@ export default function OwnerLayout() {
   ];
 
   const sidebar = (
-    <Stack sx={{ height: '100%' }}>
+    <Box
+      sx={{
+        height: '100%',
+        display: 'flex',
+        flexDirection: 'column',
+        bgcolor: 'transparent',
+      }}
+    >
       <Stack direction="row" alignItems="center" spacing={1.5} sx={{ p: 3 }}>
         <Avatar
           sx={{
@@ -57,6 +64,7 @@ export default function OwnerLayout() {
             bgcolor: alpha(landingColors.purple, 0.12),
             color: landingColors.purple,
             border: `1px solid ${alpha(landingColors.purple, 0.20)}`,
+            boxShadow: `0 8px 24px ${alpha(landingColors.purple, 0.16)}`,
           }}
         >
           O
@@ -101,9 +109,17 @@ export default function OwnerLayout() {
                   bgcolor: active ? alpha(landingColors.purple, 0.12) : alpha(landingColors.purple, 0.04),
                   transform: 'translateX(4px)',
                 },
+                '&.Mui-selected': {
+                  bgcolor: alpha(landingColors.purple, 0.08),
+                },
+                '&.Mui-selected:hover': {
+                  bgcolor: alpha(landingColors.purple, 0.12),
+                },
               }}
             >
-              <ListItemIcon sx={{ minWidth: 40, color: active ? landingColors.purple : '#94A3B8' }}>{it.icon}</ListItemIcon>
+              <ListItemIcon sx={{ minWidth: 40, color: active ? landingColors.purple : '#94A3B8' }}>
+                {React.cloneElement(it.icon as React.ReactElement, { fontSize: 'medium' })}
+              </ListItemIcon>
               <ListItemText
                 primary={it.label}
                 primaryTypographyProps={{
@@ -118,7 +134,7 @@ export default function OwnerLayout() {
       </List>
 
       <Box sx={{ flex: 1 }} />
-    </Stack>
+    </Box>
   );
 
   return (
@@ -136,6 +152,7 @@ export default function OwnerLayout() {
         position="sticky"
         elevation={0}
         sx={{
+          zIndex: (theme) => theme.zIndex.appBar,
           bgcolor: alpha('#FFFFFF', 0.8),
           backdropFilter: 'blur(20px)',
           borderBottom: '1px solid',
@@ -151,7 +168,9 @@ export default function OwnerLayout() {
                 mr: 2,
                 bgcolor: alpha(landingColors.purple, 0.08),
                 color: landingColors.purple,
+                '&:hover': { bgcolor: alpha(landingColors.purple, 0.12) },
               }}
+              aria-label="Open management menu"
             >
               <MenuRoundedIcon />
             </IconButton>
@@ -173,8 +192,8 @@ export default function OwnerLayout() {
           <Box
             sx={{
               position: 'sticky',
-              top: 74,
-              height: 'calc(100vh - 74px)',
+              top: 148,
+              height: 'calc(100vh - 148px)',
               borderRight: '1px solid',
               borderColor: 'rgba(15,23,42,0.06)',
               bgcolor: alpha('#FFFFFF', 0.4),

@@ -4,6 +4,7 @@ import { Tenant, TenantSchema } from './tenant.schema';
 import { TenantsService } from './tenants.service';
 import { TenantsController } from './tenants.controller';
 import { PublicTenantsController } from './public-tenants.controller';
+import { AdminTenantsController } from './admin-tenants.controller';
 import { BookingSettingsModule } from '../booking-settings/booking-settings.module';
 import { TenantDetailsModule } from '../tenant-details/tenant-details.module';
 
@@ -15,7 +16,7 @@ import { TenantDetailsModule } from '../tenant-details/tenant-details.module';
     BookingSettingsModule,
     TenantDetailsModule,
   ],
-  controllers: [TenantsController, PublicTenantsController],
+  controllers: [TenantsController, PublicTenantsController, AdminTenantsController],
   providers: [TenantsService],
   exports: [TenantsService],
 })

@@ -55,6 +55,7 @@ export default function AdminLayout() {
         position="sticky"
         elevation={0}
         sx={{
+          zIndex: (theme) => theme.zIndex.appBar,
           bgcolor: alpha('#FFFFFF', 0.8),
           backdropFilter: 'blur(20px)',
           borderBottom: '1px solid',
@@ -94,8 +95,8 @@ export default function AdminLayout() {
           <Box
             sx={{
               position: 'sticky',
-              top: 74,
-              height: 'calc(100vh - 74px)',
+              top: 148,
+              height: 'calc(100vh - 148px)',
               borderRight: '1px solid',
               borderColor: 'rgba(15,23,42,0.06)',
               bgcolor: alpha('#FFFFFF', 0.4),
