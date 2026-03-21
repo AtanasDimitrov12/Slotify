@@ -187,70 +187,67 @@ export default function OwnerSettingsPage() {
           }}
         >
           <CardContent sx={{ p: 4 }}>
-            <Tabs
-              value={tab}
-              onChange={(_, v) => setTab(v)}
+            <Box
               sx={{
+                display: 'flex',
+                alignItems: { xs: 'stretch', md: 'center' },
+                justifyContent: 'space-between',
+                gap: 2,
+                flexDirection: { xs: 'column', md: 'row' },
                 borderBottom: '1px solid rgba(15,23,42,0.06)',
-                '& .MuiTab-root': {
-                  fontWeight: 900,
-                  fontSize: 15,
-                  textTransform: 'none',
-                  minHeight: 48,
-                  color: '#64748B',
-                  '&.Mui-selected': { color: landingColors.purple },
-                },
-                '& .MuiTabs-indicator': { bgcolor: landingColors.purple, height: 3, borderRadius: '3px 3px 0 0' },
+                pb: 2,
               }}
             >
-              <Tab label="General Info" />
-              <Tab label="Opening Hours" />
-            </Tabs>
+              <Tabs
+                value={tab}
+                onChange={(_, v) => setTab(v)}
+                sx={{
+                  minHeight: 48,
+                  '& .MuiTab-root': {
+                    fontWeight: 900,
+                    fontSize: 15,
+                    textTransform: 'none',
+                    minHeight: 48,
+                    color: '#64748B',
+                    '&.Mui-selected': { color: landingColors.purple },
+                  },
+                  '& .MuiTabs-indicator': {
+                    bgcolor: landingColors.purple,
+                    height: 3,
+                    borderRadius: '3px 3px 0 0',
+                  },
+                }}
+              >
+                <Tab label="General Info" />
+                <Tab label="Opening Hours" />
+              </Tabs>
+
+              <Button
+                variant="contained"
+                size="large"
+                onClick={tab === 0 ? handleSaveGeneral : handleSaveOpeningHours}
+                disabled={saving}
+                sx={{
+                  minHeight: 52,
+                  px: 4,
+                  borderRadius: 999,
+                  fontWeight: 900,
+                  whiteSpace: 'nowrap',
+                  alignSelf: { xs: 'flex-start', md: 'center' },
+                  bgcolor: landingColors.purple,
+                  boxShadow: `0 12px 30px ${alpha(landingColors.purple, 0.24)}`,
+                }}
+              >
+                {saving ? 'Saving...' : tab === 0 ? 'Save Profile' : 'Save Hours'}
+              </Button>
+            </Box>
 
             <TabPanel value={tab} index={0}>
               <GeneralSettingsForm value={generalSettings} onChange={setGeneralSettings} />
-
-              <Box sx={{ mt: 4, display: 'flex', justifyContent: 'flex-end' }}>
-                <Button
-                  variant="contained"
-                  size="large"
-                  onClick={handleSaveGeneral}
-                  disabled={saving}
-                  sx={{
-                    minHeight: 52,
-                    px: 4,
-                    borderRadius: 999,
-                    fontWeight: 900,
-                    bgcolor: landingColors.purple,
-                    boxShadow: `0 12px 30px ${alpha(landingColors.purple, 0.24)}`,
-                  }}
-                >
-                  {saving ? 'Saving...' : 'Save Profile'}
-                </Button>
-              </Box>
             </TabPanel>
 
             <TabPanel value={tab} index={1}>
               <OpeningHoursEditor value={openingHours} onChange={setOpeningHours} />
-
-              <Box sx={{ mt: 4, display: 'flex', justifyContent: 'flex-end' }}>
-                <Button
-                  variant="contained"
-                  size="large"
-                  onClick={handleSaveOpeningHours}
-                  disabled={saving}
-                  sx={{
-                    minHeight: 52,
-                    px: 4,
-                    borderRadius: 999,
-                    fontWeight: 900,
-                    bgcolor: landingColors.purple,
-                    boxShadow: `0 12px 30px ${alpha(landingColors.purple, 0.24)}`,
-                  }}
-                >
-                  {saving ? 'Saving...' : 'Save Hours'}
-                </Button>
-              </Box>
             </TabPanel>
           </CardContent>
         </Card>

@@ -87,29 +87,34 @@ export default function OwnerBookingRulesPage() {
     <>
       <Stack spacing={4}>
         <Box>
-          <Typography sx={{ fontWeight: 1000, fontSize: 36, letterSpacing: -1.5, color: '#0F172A' }}>
-            Booking Rules
-          </Typography>
-          <Typography sx={{ color: '#64748B', fontWeight: 600, fontSize: 18 }}>
-            Configure how customers interact with your calendar.
-          </Typography>
-        </Box>
+          <Box
+            sx={{
+              display: 'flex',
+              flexDirection: { xs: 'column', md: 'row' },
+              alignItems: { xs: 'flex-start', md: 'center' },
+              justifyContent: 'space-between',
+              gap: 2,
+            }}
+          >
+            <Box>
+              <Typography
+                sx={{ fontWeight: 1000, fontSize: 36, letterSpacing: -1.5, color: '#0F172A' }}
+              >
+                Booking Rules
+              </Typography>
 
-        {error ? <Alert severity="error" sx={{ borderRadius: 3 }}>{error}</Alert> : null}
+              <Typography sx={{ mt: 1, color: '#64748B', fontWeight: 600, fontSize: 18 }}>
+                Configure how customers interact with your calendar.
+              </Typography>
+            </Box>
 
-        <Card
-          sx={{
-            borderRadius: `${premium.rLg * 4}px`,
-            border: '1px solid',
-            borderColor: 'rgba(15,23,42,0.06)',
-            bgcolor: '#FFFFFF',
-            boxShadow: '0 10px 40px rgba(15,23,42,0.04)',
-          }}
-        >
-          <CardContent sx={{ p: 4 }}>
-            <BookingRulesForm value={rules} onChange={setRules} />
-
-            <Box sx={{ mt: 4, display: 'flex', justifyContent: 'flex-end' }}>
+            <Box
+              sx={{
+                width: { xs: '100%', md: 'auto' },
+                display: 'flex',
+                justifyContent: { xs: 'flex-start', md: 'flex-end' },
+              }}
+            >
               <Button
                 variant="contained"
                 size="large"
@@ -127,6 +132,22 @@ export default function OwnerBookingRulesPage() {
                 {saving ? 'Saving...' : 'Save Rules'}
               </Button>
             </Box>
+          </Box>
+        </Box>
+
+        {error ? <Alert severity="error" sx={{ borderRadius: 3 }}>{error}</Alert> : null}
+
+        <Card
+          sx={{
+            borderRadius: `${premium.rLg * 4}px`,
+            border: '1px solid',
+            borderColor: 'rgba(15,23,42,0.06)',
+            bgcolor: '#FFFFFF',
+            boxShadow: '0 10px 40px rgba(15,23,42,0.04)',
+          }}
+        >
+          <CardContent sx={{ p: 4 }}>
+            <BookingRulesForm value={rules} onChange={setRules} />
           </CardContent>
         </Card>
       </Stack>
