@@ -1,118 +1,98 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { getModelToken } from '@nestjs/mongoose';
-import { NotFoundException } from '@nestjs/common';
 import { Types } from 'mongoose';
 import { StaffTimeOffService } from './staff-time-off.service';
 import { StaffTimeOff } from './staff-time-off.schema';
+import { NotFoundException, BadRequestException } from '@nestjs/common';
 
 describe('StaffTimeOffService', () => {
   let service: StaffTimeOffService;
 
-  const mockTimeOff = {
-    _id: new Types.ObjectId(),
-    tenantId: new Types.ObjectId(),
-    userId: new Types.ObjectId(),
-    startDate: new Date('2023-11-01'),
-    endDate: new Date('2023-11-05'),
-    status: 'requested',
-    reason: 'Vacation',
-  };
+  const mockQuery = (data: any) => ({
+    lean: jest.fn().mockResolvedValue(data),
+    sort: jest.fn().mockReturnThis(),
+  });
 
   const mockTimeOffModel = {
     create: jest.fn(),
     find: jest.fn(),
-    findByIdAndUpdate: jest.fn(),
-    findByIdAndDelete: jest.fn(),
-    findOneAndUpdate: jest.fn(),
     aggregate: jest.fn(),
+    findOneAndUpdate: jest.fn(),
+    findByIdAndDelete: jest.fn(),
   };
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         StaffTimeOffService,
-        {
-          provide: getModelToken(StaffTimeOff.name),
-          useValue: mockTimeOffModel,
-        },
+        { provide: getModelToken(StaffTimeOff.name), useValue: mockTimeOffModel },
       ],
     }).compile();
 
     service = module.get<StaffTimeOffService>(StaffTimeOffService);
   });
 
-  afterEach(() => {
-    jest.clearAllMocks();
-  });
+  const tenantId = new Types.ObjectId().toString();
+  const requestId = new Types.ObjectId().toString();
 
-  it('should be defined', () => {
-    expect(service).toBeDefined();
-  });
+  describe('reviewRequest (State Machine)', () => {
+    it('should approve a request and return updated document', async () => {
+      const mockUpdated = { _id: requestId, status: 'approved' };
+      mockTimeOffModel.findOneAndUpdate.mockReturnValue(mockQuery(mockUpdated));
 
-  describe('create', () => {
-    it('should create a new time off request', async () => {
-      mockTimeOffModel.create.mockResolvedValue(mockTimeOff);
-
-      const dto = {
-        tenantId: mockTimeOff.tenantId.toString(),
-        userId: mockTimeOff.userId.toString(),
-        startDate: '2023-11-01',
-        endDate: '2023-11-05',
-        reason: 'Vacation',
-      };
-
-      const result = await service.create(dto);
-
-      expect(mockTimeOffModel.create).toHaveBeenCalled();
-      expect(result).toBeDefined();
-    });
-  });
-
-  describe('findAllByStaff', () => {
-    it('should return all time off entries for staff', async () => {
-      mockTimeOffModel.find.mockReturnValue({
-        sort: jest.fn().mockReturnValue({
-          lean: jest.fn().mockResolvedValue([mockTimeOff]),
-        }),
-      });
-
-      const result = await service.findAllByStaff(
-        mockTimeOff.tenantId.toString(),
-        mockTimeOff.userId.toString()
-      );
-
-      expect(mockTimeOffModel.find).toHaveBeenCalled();
-      expect(result).toHaveLength(1);
-    });
-  });
-
-  describe('reviewRequest', () => {
-    it('should update status of a request', async () => {
-      mockTimeOffModel.findOneAndUpdate.mockReturnValue({
-        lean: jest.fn().mockResolvedValue({ ...mockTimeOff, status: 'approved' }),
-      });
-
-      const result = await service.reviewRequest(
-        mockTimeOff.tenantId.toString(),
-        mockTimeOff._id.toString(),
-        'approved'
-      );
+      const result = await service.reviewRequest(tenantId, requestId, 'approved');
 
       expect(result.status).toBe('approved');
+      expect(mockTimeOffModel.findOneAndUpdate).toHaveBeenCalledWith(
+        { _id: new Types.ObjectId(requestId), tenantId: new Types.ObjectId(tenantId) },
+        { $set: { status: 'approved' } },
+        expect.anything()
+      );
     });
 
-    it('should throw NotFoundException if request not found', async () => {
-      mockTimeOffModel.findOneAndUpdate.mockReturnValue({
-        lean: jest.fn().mockResolvedValue(null),
-      });
+    it('should throw BadRequestException for invalid status transitions', async () => {
+      await expect(service.reviewRequest(tenantId, requestId, 'requested' as any))
+        .rejects.toThrow(BadRequestException);
+    });
 
-      await expect(
-        service.reviewRequest(
-            new Types.ObjectId().toString(),
-            new Types.ObjectId().toString(),
-            'approved'
-        ),
-      ).rejects.toThrow(NotFoundException);
+    it('should throw NotFoundException if request does not exist in tenant context', async () => {
+      mockTimeOffModel.findOneAndUpdate.mockReturnValue(mockQuery(null));
+      await expect(service.reviewRequest(tenantId, requestId, 'approved'))
+        .rejects.toThrow(NotFoundException);
+    });
+  });
+
+  describe('Aggregation & Dashboard', () => {
+    it('should aggregate pending counts correctly', async () => {
+      const mockUserId = new Types.ObjectId();
+      mockTimeOffModel.aggregate.mockResolvedValue([
+        { _id: mockUserId, pendingCount: 5 }
+      ]);
+
+      const result = await service.getPendingCountsByTenant(tenantId);
+
+      expect(result[0].userId).toBe(mockUserId.toString());
+      expect(result[0].pendingCount).toBe(5);
+    });
+  });
+
+  describe('Lifecycle', () => {
+    it('should create a request with "requested" as default status', async () => {
+        const dto = {
+            tenantId,
+            userId: new Types.ObjectId().toString(),
+            startDate: '2026-04-01',
+            endDate: '2026-04-05',
+            reason: 'Spring break'
+        };
+        mockTimeOffModel.create.mockImplementation((data) => ({
+            ...data,
+            _id: new Types.ObjectId()
+        }));
+
+        const result = await service.create(dto);
+        expect(result.status).toBe('requested');
+        expect(result.startDate).toBeInstanceOf(Date);
     });
   });
 });

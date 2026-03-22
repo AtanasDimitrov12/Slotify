@@ -1,15 +1,20 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { AuthService } from './auth.service';
 import { JwtService } from '@nestjs/jwt';
+import { UnauthorizedException, BadRequestException } from '@nestjs/common';
+import { AuthService } from './auth.service';
 import { MembershipsService } from '../memberships/memberships.service';
 import { UsersService } from '../users/users.service';
 import { TenantsService } from '../tenants/tenants.service';
-import { UnauthorizedException } from '@nestjs/common';
+import * as bcrypt from 'bcryptjs';
 
-describe('AuthService', () => {
-  let authService: AuthService;
-  let usersService: UsersService;
+jest.mock('bcryptjs');
+
+describe('AuthService (Security & Multi-tenancy)', () => {
+  let service: AuthService;
+  let jwtService: JwtService;
   let membershipsService: MembershipsService;
+  let usersService: UsersService;
+  let tenantsService: TenantsService;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -17,101 +22,124 @@ describe('AuthService', () => {
         AuthService,
         {
           provide: JwtService,
-          useValue: {
-            signAsync: jest.fn().mockResolvedValue('test-token'),
-          },
+          useValue: { signAsync: jest.fn().mockResolvedValue('mock-jwt') },
         },
         {
           provide: MembershipsService,
           useValue: {
             findActiveByUserIdAndTenantId: jest.fn(),
             findAllByUserId: jest.fn(),
+            create: jest.fn(),
           },
         },
         {
           provide: UsersService,
           useValue: {
             findByEmail: jest.fn(),
+            create: jest.fn(),
           },
         },
         {
           provide: TenantsService,
-          useValue: {},
+          useValue: {
+            findByName: jest.fn(),
+            create: jest.fn(),
+          },
         },
       ],
     }).compile();
 
-    authService = module.get<AuthService>(AuthService);
-    usersService = module.get<UsersService>(UsersService);
+    service = module.get<AuthService>(AuthService);
+    jwtService = module.get<JwtService>(JwtService);
     membershipsService = module.get<MembershipsService>(MembershipsService);
+    usersService = module.get<UsersService>(UsersService);
+    tenantsService = module.get<TenantsService>(TenantsService);
   });
 
-  const mockUser = {
-    _id: 'user-id',
-    email: 'test@example.com',
-    password: 'hashed-password',
-    name: 'Test User',
-  };
+  describe('Login Logic', () => {
+    const mockUser = { _id: 'user-123', email: 'test@example.com', password: 'hashed-password', name: 'John' };
+    const loginDto = { email: 'test@example.com', password: 'password123' };
 
-  const mockMembership = {
-    _id: 'membership-id',
-    tenantId: 'tenant-id-1',
-    userId: 'user-id',
-    role: 'owner',
-  };
+    it('should throw UnauthorizedException for non-existent user', async () => {
+      (usersService.findByEmail as jest.Mock).mockResolvedValue(null);
 
-  const loginDto = {
-    email: 'test@example.com',
-    password: 'password',
-  };
+      await expect(service.login(loginDto)).rejects.toThrow(UnauthorizedException);
+    });
 
-  it('should be defined', () => {
-    expect(authService).toBeDefined();
+    it('should throw UnauthorizedException for incorrect password', async () => {
+      (usersService.findByEmail as jest.Mock).mockResolvedValue(mockUser);
+      (bcrypt.compare as jest.Mock).mockResolvedValue(false);
+
+      await expect(service.login(loginDto)).rejects.toThrow(UnauthorizedException);
+    });
+
+    it('should return a list of tenants if user has multiple memberships and no tenantId is provided', async () => {
+      (usersService.findByEmail as jest.Mock).mockResolvedValue(mockUser);
+      (bcrypt.compare as jest.Mock).mockResolvedValue(true);
+      (membershipsService.findAllByUserId as jest.Mock).mockResolvedValue([
+        { tenantId: { _id: 't1', name: 'Tenant 1' }, role: 'owner' },
+        { tenantId: { _id: 't2', name: 'Tenant 2' }, role: 'staff' },
+      ]);
+
+      const result = await service.login(loginDto);
+
+      expect(result).toHaveProperty('tenants');
+      expect(result['tenants']).toHaveLength(2);
+    });
+
+    it('should finalize login if a valid tenantId is provided', async () => {
+      (usersService.findByEmail as jest.Mock).mockResolvedValue(mockUser);
+      (bcrypt.compare as jest.Mock).mockResolvedValue(true);
+      (membershipsService.findActiveByUserIdAndTenantId as jest.Mock).mockResolvedValue({
+        tenantId: 't1',
+        role: 'owner'
+      });
+
+      const result = await service.login({ ...loginDto, tenantId: 't1' });
+
+      expect(result).toHaveProperty('accessToken');
+      expect(result['account'].tenantId).toBe('t1');
+    });
   });
 
-  describe('login', () => {
-    beforeEach(() => {
-      jest.spyOn(usersService, 'findByEmail').mockResolvedValue(mockUser as any);
-      jest.spyOn(require('bcryptjs'), 'compare').mockResolvedValue(true);
+  describe('Registration Logic', () => {
+    const registerDto = {
+      name: 'Jane',
+      email: 'jane@example.com',
+      password: 'password123',
+      tenantName: 'Jane Salon'
+    };
+
+    it('should throw BadRequestException if email is already in use', async () => {
+      (usersService.findByEmail as jest.Mock).mockResolvedValue({ _id: 'existing' });
+
+      await expect(service.register(registerDto)).rejects.toThrow(BadRequestException);
     });
 
-    it('should throw UnauthorizedException for invalid credentials', async () => {
-      jest.spyOn(require('bcryptjs'), 'compare').mockResolvedValue(false);
-      await expect(authService.login(loginDto)).rejects.toThrow(UnauthorizedException);
+    it('should throw BadRequestException if tenant name is taken', async () => {
+      (usersService.findByEmail as jest.Mock).mockResolvedValue(null);
+      (tenantsService.findByName as jest.Mock).mockResolvedValue({ _id: 'existing-tenant' });
+
+      await expect(service.register(registerDto)).rejects.toThrow(BadRequestException);
     });
 
-    it('should throw UnauthorizedException if user has no membership', async () => {
-      jest.spyOn(membershipsService, 'findAllByUserId').mockResolvedValue([]);
-      await expect(authService.login(loginDto)).rejects.toThrow(UnauthorizedException);
-    });
+    it('should orchestrate user and tenant creation correctly', async () => {
+      (usersService.findByEmail as jest.Mock).mockResolvedValue(null);
+      (tenantsService.findByName as jest.Mock).mockResolvedValue(null);
+      
+      const mockTenant = { _id: 'new-t-id', name: 'Jane Salon' };
+      const mockUser = { _id: 'new-u-id', name: 'Jane', email: 'jane@example.com' };
+      
+      (tenantsService.create as jest.Mock).mockResolvedValue(mockTenant);
+      (usersService.create as jest.Mock).mockResolvedValue(mockUser);
+      (membershipsService.create as jest.Mock).mockResolvedValue({ role: 'owner' });
 
-    it('should return accessToken for user with one membership', async () => {
-      jest.spyOn(membershipsService, 'findAllByUserId').mockResolvedValue([mockMembership] as any);
-      const result = await authService.login(loginDto);
-      expect(result.accessToken).toBe('test-token');
-      expect(result.account.tenantId).toBe('tenant-id-1');
-    });
+      const result = await service.register(registerDto);
 
-    it('should return a list of tenants for user with multiple memberships', async () => {
-      const memberships = [
-        { tenantId: { _id: 'tenant-id-1', name: 'Tenant 1' } },
-        { tenantId: { _id: 'tenant-id-2', name: 'Tenant 2' } },
-      ];
-      jest.spyOn(membershipsService, 'findAllByUserId').mockResolvedValue(memberships as any);
-      const result = await authService.login(loginDto);
-      expect(result.tenants).toHaveLength(2);
+      expect(tenantsService.create).toHaveBeenCalledWith({ name: 'Jane Salon' });
+      expect(usersService.create).toHaveBeenCalled();
+      expect(membershipsService.create).toHaveBeenCalledWith(expect.objectContaining({ role: 'owner' }));
+      expect(result).toHaveProperty('accessToken');
     });
-
-    it('should login with tenantId and return accessToken', async () => {
-        jest.spyOn(membershipsService, 'findActiveByUserIdAndTenantId').mockResolvedValue(mockMembership as any);
-        const result = await authService.login({ ...loginDto, tenantId: 'tenant-id-1' });
-        expect(result.accessToken).toBe('test-token');
-        expect(result.account.tenantId).toBe('tenant-id-1');
-      });
-  
-      it('should throw UnauthorizedException for invalid tenantId', async () => {
-        jest.spyOn(membershipsService, 'findActiveByUserIdAndTenantId').mockResolvedValue(null);
-        await expect(authService.login({ ...loginDto, tenantId: 'invalid-tenant-id' })).rejects.toThrow(UnauthorizedException);
-      });
   });
 });

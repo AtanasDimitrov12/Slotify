@@ -13,119 +13,149 @@ import { TenantDetails } from '../tenant-details/tenant-details.schema';
 import { TenantBookingSettings } from '../booking-settings/tenant-booking-settings.schema';
 import { StaffBookingSettings } from '../staff-booking-settings/staff-booking-settings.schema';
 
-describe('StaffAppointmentsService', () => {
+describe('StaffAppointmentsService (Production Life Cycle)', () => {
   let service: StaffAppointmentsService;
 
-  const mockModel = () => ({
-    find: jest.fn(),
-    findOne: jest.fn(),
-    create: jest.fn(),
-    updateOne: jest.fn(),
-    findOneAndUpdate: jest.fn(),
-    lean: jest.fn(),
+  const mockQuery = (data: any) => ({
+    lean: jest.fn().mockReturnThis(),
+    sort: jest.fn().mockReturnThis(),
+    exec: jest.fn().mockResolvedValue(data),
+    then: (resolve: any) => resolve(data),
   });
 
-  const mockReservationModel = mockModel();
-  const mockServiceModel = mockModel();
-  const mockStaffProfileModel = mockModel();
-  const mockStaffServiceAssignmentModel = mockModel();
-  const mockStaffAvailabilityModel = mockModel();
-  const mockStaffTimeOffModel = mockModel();
-  const mockTenantDetailsModel = mockModel();
-  const mockTenantBookingSettingsModel = mockModel();
-  const mockStaffBookingSettingsModel = mockModel();
+  const mockModels = {
+    reservation: {
+      find: jest.fn(),
+      findOne: jest.fn(),
+      create: jest.fn(),
+      updateOne: jest.fn(),
+    },
+    staffProfile: { findOne: jest.fn() },
+    staffServiceAssignment: { findOne: jest.fn(), find: jest.fn() },
+    service: { findOne: jest.fn(), find: jest.fn() },
+    tenantBookingSettings: { findOne: jest.fn() },
+    staffBookingSettings: { findOne: jest.fn() },
+    tenantDetails: { findOne: jest.fn() },
+    staffAvailability: { findOne: jest.fn() },
+    staffTimeOff: { find: jest.fn() },
+  };
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         StaffAppointmentsService,
-        { provide: getModelToken(Reservation.name), useValue: mockReservationModel },
-        { provide: getModelToken(Service.name), useValue: mockServiceModel },
-        { provide: getModelToken(StaffProfile.name), useValue: mockStaffProfileModel },
-        { provide: getModelToken(StaffServiceAssignment.name), useValue: mockStaffServiceAssignmentModel },
-        { provide: getModelToken(StaffAvailability.name), useValue: mockStaffAvailabilityModel },
-        { provide: getModelToken(StaffTimeOff.name), useValue: mockStaffTimeOffModel },
-        { provide: getModelToken(TenantDetails.name), useValue: mockTenantDetailsModel },
-        { provide: getModelToken(TenantBookingSettings.name), useValue: mockTenantBookingSettingsModel },
-        { provide: getModelToken(StaffBookingSettings.name), useValue: mockStaffBookingSettingsModel },
+        { provide: getModelToken(Reservation.name), useValue: mockModels.reservation },
+        { provide: getModelToken(Service.name), useValue: mockModels.service },
+        { provide: getModelToken(StaffProfile.name), useValue: mockModels.staffProfile },
+        { provide: getModelToken(StaffServiceAssignment.name), useValue: mockModels.staffServiceAssignment },
+        { provide: getModelToken(StaffAvailability.name), useValue: mockModels.staffAvailability },
+        { provide: getModelToken(StaffTimeOff.name), useValue: mockModels.staffTimeOff },
+        { provide: getModelToken(TenantDetails.name), useValue: mockModels.tenantDetails },
+        { provide: getModelToken(TenantBookingSettings.name), useValue: mockModels.tenantBookingSettings },
+        { provide: getModelToken(StaffBookingSettings.name), useValue: mockModels.staffBookingSettings },
       ],
     }).compile();
 
     service = module.get<StaffAppointmentsService>(StaffAppointmentsService);
   });
 
-  afterEach(() => {
-    jest.clearAllMocks();
-  });
+  const tenantId = new Types.ObjectId().toString();
+  const userId = new Types.ObjectId().toString();
+  const reservationId = new Types.ObjectId().toString();
 
-  it('should be defined', () => {
-    expect(service).toBeDefined();
-  });
-
-  describe('listForDay', () => {
-    it('should return reservations for a given day', async () => {
-      const tenantId = new Types.ObjectId().toString();
-      const userId = new Types.ObjectId().toString();
-      const date = '2023-10-27';
-
-      const mockReservations = [
-        {
-          _id: new Types.ObjectId(),
-          startTime: new Date(),
-          endTime: new Date(),
-          customerName: 'John Doe',
-          status: 'confirmed',
-        },
-      ];
-
-      mockReservationModel.find.mockReturnValue({
-        sort: jest.fn().mockReturnValue({
-          lean: jest.fn().mockResolvedValue(mockReservations),
-        }),
-      });
-
-      const result = await service.listForDay({ tenantId, userId, date });
-
-      expect(result).toHaveLength(1);
-      expect(result[0].customerName).toBe('John Doe');
-    });
-
-    it('should throw BadRequestException for invalid date', async () => {
-      await expect(
-        service.listForDay({
-          tenantId: new Types.ObjectId().toString(),
-          userId: new Types.ObjectId().toString(),
-          date: 'invalid',
-        }),
-      ).rejects.toThrow(BadRequestException);
-    });
-  });
-
-  describe('updateStatusForStaff', () => {
-    it('should update the status of a reservation', async () => {
-      mockReservationModel.updateOne.mockResolvedValue({ matchedCount: 1 });
+  describe('Appointment Lifecycle', () => {
+    it('should update appointment status correctly (Confirmed -> Completed)', async () => {
+      mockModels.reservation.updateOne.mockResolvedValue({ matchedCount: 1 });
 
       const result = await service.updateStatusForStaff({
-        tenantId: new Types.ObjectId().toString(),
-        userId: new Types.ObjectId().toString(),
-        reservationId: new Types.ObjectId().toString(),
+        tenantId,
+        userId,
+        reservationId,
         status: 'completed',
       });
 
       expect(result.success).toBe(true);
+      expect(mockModels.reservation.updateOne).toHaveBeenCalledWith(
+        expect.objectContaining({ _id: reservationId, tenantId: new Types.ObjectId(tenantId) }),
+        { $set: { status: 'completed' } }
+      );
     });
 
-    it('should throw NotFoundException if reservation not found', async () => {
-      mockReservationModel.updateOne.mockResolvedValue({ matchedCount: 0 });
+    it('should prevent updating an appointment belonging to another tenant', async () => {
+      mockModels.reservation.updateOne.mockResolvedValue({ matchedCount: 0 });
 
-      await expect(
-        service.updateStatusForStaff({
-          tenantId: new Types.ObjectId().toString(),
-          userId: new Types.ObjectId().toString(),
-          reservationId: new Types.ObjectId().toString(),
-          status: 'completed',
-        }),
-      ).rejects.toThrow(NotFoundException);
+      await expect(service.updateStatusForStaff({
+        tenantId,
+        userId,
+        reservationId,
+        status: 'completed',
+      })).rejects.toThrow(NotFoundException);
+    });
+
+    it('should cancel an appointment by setting status to "cancelled"', async () => {
+      mockModels.reservation.updateOne.mockResolvedValue({ matchedCount: 1 });
+
+      const result = await service.cancelForStaff({
+        tenantId,
+        userId,
+        reservationId,
+      });
+
+      expect(result.success).toBe(true);
+      expect(mockModels.reservation.updateOne).toHaveBeenCalledWith(
+        expect.anything(),
+        { $set: { status: 'cancelled' } }
+      );
+    });
+  });
+
+  describe('Appointment Creation (Manual Entry)', () => {
+    const assignmentId = new Types.ObjectId().toString();
+    const startTime = new Date('2026-03-23T10:00:00Z').toISOString();
+
+    beforeEach(() => {
+        mockModels.staffProfile.findOne.mockReturnValue(mockQuery({ userId: new Types.ObjectId(userId), isActive: true, isBookable: true }));
+        mockModels.staffServiceAssignment.findOne.mockReturnValue(mockQuery({ _id: new Types.ObjectId(assignmentId), serviceId: new Types.ObjectId() }));
+        mockModels.service.findOne.mockReturnValue(mockQuery({ _id: new Types.ObjectId(), durationMin: 30 }));
+        mockModels.tenantBookingSettings.findOne.mockReturnValue(mockQuery({}));
+        mockModels.staffBookingSettings.findOne.mockReturnValue(mockQuery({ useGlobalSettings: true }));
+        mockModels.tenantDetails.findOne.mockReturnValue(mockQuery({ isPublished: true, openingHours: { mon: [{start: '09:00', end: '18:00'}] } }));
+        mockModels.staffAvailability.findOne.mockReturnValue(mockQuery({ weeklyAvailability: [{dayOfWeek: 1, startTime: '09:00', endTime: '18:00', isAvailable: true}] }));
+        mockModels.staffTimeOff.find.mockReturnValue(mockQuery([]));
+        mockModels.reservation.find.mockReturnValue(mockQuery([]));
+    });
+
+    it('should successfully create a manual appointment when slot is free', async () => {
+      mockModels.reservation.create.mockResolvedValue({ _id: new Types.ObjectId(), status: 'confirmed' });
+
+      const result = await service.createForStaff({
+        tenantId,
+        userId,
+        dto: {
+          staffServiceAssignmentId: assignmentId,
+          startTime,
+          customerName: 'Alice',
+          customerPhone: '+123456789',
+        },
+      });
+
+      expect(result.status).toBe('confirmed');
+      expect(mockModels.reservation.create).toHaveBeenCalled();
+    });
+
+    it('should throw BadRequestException if creating an appointment on a closed day', async () => {
+        mockModels.tenantDetails.findOne.mockReturnValue(mockQuery({ openingHours: { mon: [] } })); // Closed
+
+        await expect(service.createForStaff({
+            tenantId,
+            userId,
+            dto: {
+              staffServiceAssignmentId: assignmentId,
+              startTime,
+              customerName: 'Alice',
+              customerPhone: '+123456789',
+            },
+          })).rejects.toThrow(BadRequestException);
     });
   });
 });

@@ -16,7 +16,7 @@ import { UpdateStaffProfileDto } from '../staff-profiles/dto/update-staff-profil
 import { StaffTimeOffService } from '../staff-time-off/staff-time-off.service';
 import { CreateStaffAccountDto } from './dto/create-staff-account.dto';
 import { UsersService } from '../users/users.service';
-import { ServicesService } from 'src/services/services.service';
+import { ServicesService } from '../services/services.service';
 import { StaffBookingSettingsService } from '../staff-booking-settings/staff-booking-settings.service';
 
 
