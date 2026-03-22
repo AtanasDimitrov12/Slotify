@@ -1,6 +1,8 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
+import { AppController } from './app.controller';
+import { AppService } from './app.service';
 import { TenantsModule } from './tenants/tenants.module';
 import { TenantDetailsModule } from './tenant-details/tenant-details.module';
 import { AuthModule } from './auth/auth.module';
@@ -47,5 +49,7 @@ import { StaffAppointmentsModule } from './staff-appointments/staff-appointments
     PublicBookingModule,
     StaffAppointmentsModule,
   ],
+  controllers: [AppController],
+  providers: [AppService],
 })
 export class AppModule { }

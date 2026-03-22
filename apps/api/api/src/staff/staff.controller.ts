@@ -4,7 +4,7 @@ import { CurrentUser } from '../auth/current-user.decorator';
 import { StaffService } from './staff.service';
 import { CreateStaffAccountDto } from './dto/create-staff-account.dto';
 import { UpdateStaffProfileDto } from '../staff-profiles/dto/update-staff-profile.dto';
-import { UpdateStaffAvailabilityDto } from 'src/staff-availability/dto/update-staff-availability.dto';
+import { UpdateStaffAvailabilityDto } from '../staff-availability/dto/update-staff-availability.dto';
 
 @Controller('staff')
 export class StaffController {
