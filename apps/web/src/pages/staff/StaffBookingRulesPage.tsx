@@ -7,7 +7,6 @@ import {
     CardContent,
     CircularProgress,
     FormControlLabel,
-    Snackbar,
     Stack,
     Switch,
     Typography,
@@ -21,6 +20,7 @@ import {
     updateMyStaffBookingRules,
 } from '../../api/bookingRules';
 import { landingColors, premium } from '../../components/landing/constants';
+import { useToast } from '../../components/ToastProvider';
 
 const defaultRules: StaffBookingRulesValues = {
     bufferBefore: { enabled: false, minutes: 0 },
@@ -33,10 +33,10 @@ const defaultRules: StaffBookingRulesValues = {
 };
 
 export default function StaffBookingRulesPage() {
+    const { showError, showSuccess } = useToast();
     const [loading, setLoading] = React.useState(true);
     const [saving, setSaving] = React.useState(false);
     const [error, setError] = React.useState('');
-    const [success, setSuccess] = React.useState('');
     const [userId, setUserId] = React.useState('');
     const [useGlobalSettings, setUseGlobalSettings] = React.useState(true);
     const [rules, setRules] = React.useState<StaffBookingRulesValues>(defaultRules);
@@ -75,12 +75,11 @@ export default function StaffBookingRulesPage() {
 
     async function handleSave() {
         if (!userId) {
-            setError('Missing staff user id.');
+            showError('Missing staff user id.');
             return;
         }
 
         setSaving(true);
-        setError('');
 
         try {
             await updateMyStaffBookingRules({
@@ -88,10 +87,10 @@ export default function StaffBookingRulesPage() {
                 overrides: useGlobalSettings ? undefined : rules,
             });
 
-            setSuccess('Booking rules saved successfully.');
+            showSuccess('Booking rules saved successfully.');
             await loadRules();
         } catch (err) {
-            setError(err instanceof Error ? err.message : 'Failed to save booking rules');
+            showError(err);
         } finally {
             setSaving(false);
         }
@@ -190,16 +189,6 @@ export default function StaffBookingRulesPage() {
                     </CardContent>
                 </Card>
             </Stack>
-
-            <Snackbar
-                open={Boolean(success)}
-                autoHideDuration={3000}
-                onClose={() => setSuccess('')}
-            >
-                <Alert onClose={() => setSuccess('')} severity="success" variant="filled" sx={{ borderRadius: 3, fontWeight: 800 }}>
-                    {success}
-                </Alert>
-            </Snackbar>
         </>
     );
 }

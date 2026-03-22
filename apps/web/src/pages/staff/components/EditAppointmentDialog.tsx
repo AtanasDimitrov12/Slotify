@@ -13,6 +13,7 @@ import {
 } from '@mui/material';
 import type { StaffAppointment } from '../../../api/staffAppointments';
 import { landingColors } from '../../../components/landing/constants';
+import { useToast } from '../../../components/ToastProvider';
 
 function toTimeInputValue(value: string) {
   const date = new Date(value);
@@ -41,6 +42,7 @@ export default function EditAppointmentDialog({
   }) => Promise<void>;
   saving: boolean;
 }) {
+  const { showError, showSuccess } = useToast();
   const [startTime, setStartTime] = React.useState('10:00');
   const [customerName, setCustomerName] = React.useState('');
   const [customerPhone, setCustomerPhone] = React.useState('');
@@ -59,17 +61,46 @@ export default function EditAppointmentDialog({
     setStatus(appointment.status);
   }, [appointment, open]);
 
-  async function handleSubmit() {
-    if (!customerName.trim() || !customerPhone.trim() || !startTime) return;
+  const validateEmail = (email: string) => {
+    if (!email) return true;
+    return String(email)
+        .toLowerCase()
+        .match(
+            /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
+        );
+  };
 
-    await onSubmit({
-      startTime,
-      customerName: customerName.trim(),
-      customerPhone: customerPhone.trim(),
-      customerEmail: customerEmail.trim() || undefined,
-      notes: notes.trim() || undefined,
-      status,
-    });
+  const validatePhone = (phone: string) => {
+    return /^[+()\-\s0-9]{5,40}$/.test(phone);
+  };
+
+  async function handleSubmit() {
+    if (!customerName.trim()) {
+      showError('Customer name is required.');
+      return;
+    }
+    if (!customerPhone.trim() || !validatePhone(customerPhone)) {
+      showError('Please provide a valid phone number.');
+      return;
+    }
+    if (customerEmail.trim() && !validateEmail(customerEmail)) {
+      showError('Please provide a valid email address.');
+      return;
+    }
+
+    try {
+      await onSubmit({
+        startTime,
+        customerName: customerName.trim(),
+        customerPhone: customerPhone.trim(),
+        customerEmail: customerEmail.trim().toLowerCase() || undefined,
+        notes: notes.trim() || undefined,
+        status,
+      });
+      showSuccess('Appointment updated successfully.');
+    } catch (err) {
+      showError(err);
+    }
   }
 
   return (
@@ -101,6 +132,7 @@ export default function EditAppointmentDialog({
                 onChange={(e) => setStartTime(e.target.value)}
                 InputLabelProps={{ shrink: true }}
                 fullWidth
+                required
               />
 
               <TextField
@@ -109,6 +141,7 @@ export default function EditAppointmentDialog({
                 value={status}
                 onChange={(e) => setStatus(e.target.value as StaffAppointment['status'])}
                 fullWidth
+                required
               >
                 <MenuItem value="pending">Pending</MenuItem>
                 <MenuItem value="confirmed">Confirmed</MenuItem>
@@ -123,6 +156,7 @@ export default function EditAppointmentDialog({
               value={customerName}
               onChange={(e) => setCustomerName(e.target.value)}
               fullWidth
+              required
             />
 
             <Stack direction="row" spacing={2}>
@@ -131,6 +165,7 @@ export default function EditAppointmentDialog({
                 value={customerPhone}
                 onChange={(e) => setCustomerPhone(e.target.value)}
                 fullWidth
+                required
               />
 
               <TextField

@@ -18,6 +18,7 @@ import {
   type OwnerStaffTimeOffItem,
 } from '../../../api/staffTimeOff';
 import { landingColors } from '../../../components/landing/constants';
+import { useToast } from '../../../components/ToastProvider';
 
 type Props = {
   open: boolean;
@@ -40,28 +41,25 @@ export default function ManageStaffTimeOffDialog({
   staffName,
   onUpdated,
 }: Props) {
+  const { showError, showSuccess } = useToast();
   const [items, setItems] = React.useState<OwnerStaffTimeOffItem[]>([]);
   const [loading, setLoading] = React.useState(false);
   const [actionLoadingId, setActionLoadingId] = React.useState<string | null>(null);
-  const [error, setError] = React.useState('');
 
   const load = React.useCallback(async () => {
     if (!open || !staffId) return;
 
     setLoading(true);
-    setError('');
 
     try {
       const data = await getOwnerStaffTimeOffRequests(staffId);
       setItems(data);
     } catch (err) {
-      setError(
-        err instanceof Error ? err.message : 'Failed to load time off requests',
-      );
+      showError(err);
     } finally {
       setLoading(false);
     }
-  }, [open, staffId]);
+  }, [open, staffId, showError]);
 
   React.useEffect(() => {
     void load();
@@ -69,16 +67,14 @@ export default function ManageStaffTimeOffDialog({
 
   async function handleReview(requestId: string, status: 'approved' | 'denied') {
     setActionLoadingId(requestId);
-    setError('');
 
     try {
       await reviewOwnerStaffTimeOffRequest(requestId, status);
+      showSuccess(`Request ${status} successfully.`);
       await load();
       await onUpdated?.();
     } catch (err) {
-      setError(
-        err instanceof Error ? err.message : 'Failed to review time off request',
-      );
+      showError(err);
     } finally {
       setActionLoadingId(null);
     }
@@ -103,8 +99,6 @@ export default function ManageStaffTimeOffDialog({
 
       <DialogContent sx={{ px: 4 }}>
         <Stack spacing={4} sx={{ mt: 1 }}>
-          {error ? <Alert severity="error" sx={{ borderRadius: 3 }}>{error}</Alert> : null}
-
           {loading ? (
             <Typography sx={{ color: '#64748B', fontWeight: 600 }}>Loading requests...</Typography>
           ) : (

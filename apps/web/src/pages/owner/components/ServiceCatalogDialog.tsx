@@ -11,6 +11,7 @@ import {
   alpha,
 } from '@mui/material';
 import { landingColors } from '../../../components/landing/constants';
+import { useToast } from '../../../components/ToastProvider';
 
 export type CatalogServicePayload = {
   name: string;
@@ -40,6 +41,7 @@ export default function ServiceCatalogDialog({
   onSave,
   initialData = null,
 }: Props) {
+  const { showError, showSuccess } = useToast();
   const [name, setName] = React.useState('');
   const [durationMin, setDurationMin] = React.useState('30');
   const [priceEUR, setPriceEUR] = React.useState('25');
@@ -68,13 +70,30 @@ export default function ServiceCatalogDialog({
     Number(priceEUR) >= 0;
 
   async function handleSave() {
-    await onSave({
-      name: name.trim(),
-      durationMin: Number(durationMin),
-      priceEUR: Number(priceEUR),
-      description: description.trim(),
-    });
-    onClose();
+    if (!name.trim()) {
+      showError('Service name is required.');
+      return;
+    }
+    if (Number(durationMin) <= 0) {
+      showError('Duration must be at least 1 minute.');
+      return;
+    }
+    if (Number(priceEUR) < 0) {
+      showError('Price cannot be negative.');
+      return;
+    }
+
+    try {
+      await onSave({
+        name: name.trim(),
+        durationMin: Number(durationMin),
+        priceEUR: Number(priceEUR),
+        description: description.trim(),
+      });
+      showSuccess(initialData ? 'Service updated.' : 'Service created.');
+    } catch (err) {
+      showError(err);
+    }
   }
 
   return (
@@ -106,6 +125,7 @@ export default function ServiceCatalogDialog({
               value={name}
               onChange={(e) => setName(e.target.value)}
               fullWidth
+              required
             />
 
             <Stack direction="row" spacing={2}>
@@ -115,6 +135,7 @@ export default function ServiceCatalogDialog({
                 value={durationMin}
                 onChange={(e) => setDurationMin(e.target.value)}
                 fullWidth
+                required
               />
 
               <TextField
@@ -123,6 +144,7 @@ export default function ServiceCatalogDialog({
                 value={priceEUR}
                 onChange={(e) => setPriceEUR(e.target.value)}
                 fullWidth
+                required
               />
             </Stack>
 

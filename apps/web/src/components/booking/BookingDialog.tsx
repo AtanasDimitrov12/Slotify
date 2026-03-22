@@ -36,6 +36,7 @@ import {
     type BookingOptionStaff,
 } from '../../api/publicTenants';
 import { landingColors, premium } from '../landing/constants';
+import { useToast } from '../ToastProvider';
 
 type BookingDialogProps = {
     open: boolean;
@@ -49,7 +50,6 @@ const STEP_STAFF = 1;
 const STEP_TIME = 2;
 const STEP_DETAILS = 3;
 const STEP_SUCCESS = 4;
-const TOTAL_STEPS = 5;
 
 function formatDateInput(date: Date) {
     const year = date.getFullYear();
@@ -104,8 +104,6 @@ function isQuarterHourSlot(slot: AvailabilitySlot) {
 
 function getDisplaySlots(slots: AvailabilitySlot[]) {
     const quarterHourSlots = slots.filter(isQuarterHourSlot);
-
-    // fallback so we don't accidentally hide all valid slots
     return quarterHourSlots.length > 0 ? quarterHourSlots : slots;
 }
 
@@ -146,6 +144,7 @@ export default function BookingDialog({
 }: BookingDialogProps) {
     const theme = useTheme();
     const fullScreen = useMediaQuery(theme.breakpoints.down('md'));
+    const { showError } = useToast();
 
     const [step, setStep] = React.useState<number>(STEP_SERVICE);
 
@@ -168,7 +167,6 @@ export default function BookingDialog({
     const [notes, setNotes] = React.useState('');
 
     const [submitLoading, setSubmitLoading] = React.useState(false);
-    const [submitError, setSubmitError] = React.useState('');
     const [successMessage, setSuccessMessage] = React.useState('');
 
     const nextDays = React.useMemo(() => getNextDays(14), []);
@@ -176,7 +174,6 @@ export default function BookingDialog({
     const groupedSlots = React.useMemo(() => groupSlots(displaySlots), [displaySlots]);
 
     const selectedService = services.find((item) => item._id === selectedServiceId);
-    const selectedStaff = staff.find((item) => item._id === selectedStaffId);
 
     React.useEffect(() => {
         if (!open) return;
@@ -185,7 +182,6 @@ export default function BookingDialog({
             try {
                 setLoadingOptions(true);
                 setOptionsError('');
-                setSubmitError('');
                 setSuccessMessage('');
                 setStep(STEP_SERVICE);
 
@@ -201,16 +197,16 @@ export default function BookingDialog({
                     setSelectedStaffId(result.staff[0]._id);
                 }
             } catch (err) {
-                setOptionsError(
-                    err instanceof Error ? err.message : 'Failed to load booking options',
-                );
+                const msg = err instanceof Error ? err.message : 'Failed to load booking options';
+                setOptionsError(msg);
+                showError(msg);
             } finally {
                 setLoadingOptions(false);
             }
         }
 
         void loadOptions();
-    }, [open, slug]);
+    }, [open, slug, showError]);
 
     React.useEffect(() => {
         if (!open || !selectedServiceId || !selectedDate) {
@@ -234,9 +230,8 @@ export default function BookingDialog({
 
                 setSlots(result.slots);
             } catch (err) {
-                setSlotsError(
-                    err instanceof Error ? err.message : 'Failed to load availability',
-                );
+                const msg = err instanceof Error ? err.message : 'Failed to load availability';
+                setSlotsError(msg);
                 setSlots([]);
             } finally {
                 setSlotsLoading(false);
@@ -257,7 +252,6 @@ export default function BookingDialog({
         setCustomerPhone('');
         setCustomerEmail('');
         setNotes('');
-        setSubmitError('');
         setSuccessMessage('');
         setOptionsError('');
     }
@@ -272,7 +266,6 @@ export default function BookingDialog({
             handleClose();
             return;
         }
-
         setStep((prev) => Math.max(prev - 1, STEP_SERVICE));
     }
 
@@ -282,32 +275,51 @@ export default function BookingDialog({
             setStep(STEP_STAFF);
             return;
         }
-
         if (step === STEP_STAFF) {
             setStep(STEP_TIME);
             return;
         }
-
         if (step === STEP_TIME) {
             if (!selectedSlot) return;
             setStep(STEP_DETAILS);
         }
     }
 
+    const validateEmail = (email: string) => {
+        return String(email)
+            .toLowerCase()
+            .match(
+                /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
+            );
+    };
+
+    const validatePhone = (phone: string) => {
+        return /^[+()\-\s0-9]{5,40}$/.test(phone);
+    };
+
     async function handleConfirm() {
         if (!selectedServiceId || !selectedSlot) {
-            setSubmitError('Please choose a service and a time slot.');
+            showError('Please choose a service and a time slot.');
             return;
         }
 
-        if (!customerName.trim() || !customerPhone.trim()) {
-            setSubmitError('Please fill in your full name and phone number.');
+        if (!customerName.trim()) {
+            showError('Please fill in your full name.');
+            return;
+        }
+
+        if (!customerPhone.trim() || !validatePhone(customerPhone)) {
+            showError('Please provide a valid phone number (at least 5 digits).');
+            return;
+        }
+
+        if (customerEmail.trim() && !validateEmail(customerEmail)) {
+            showError('Please provide a valid email address.');
             return;
         }
 
         try {
             setSubmitLoading(true);
-            setSubmitError('');
 
             await createReservation(slug, {
                 serviceId: selectedServiceId,
@@ -315,16 +327,14 @@ export default function BookingDialog({
                 startTime: selectedSlot.startTime,
                 customerName: customerName.trim(),
                 customerPhone: customerPhone.trim(),
-                customerEmail: customerEmail.trim() || undefined,
+                customerEmail: customerEmail.trim().toLowerCase() || undefined,
                 notes: notes.trim() || undefined,
             });
 
             setSuccessMessage('Your booking was created successfully.');
             setStep(STEP_SUCCESS);
         } catch (err) {
-            setSubmitError(
-                err instanceof Error ? err.message : 'Failed to create reservation',
-            );
+            showError(err);
         } finally {
             setSubmitLoading(false);
         }
@@ -359,11 +369,7 @@ export default function BookingDialog({
                 >
                     <Chip
                         icon={<ContentCutRoundedIcon sx={{ fontSize: '1.1rem !important' }} />}
-                        label={
-                            selectedService
-                                ? selectedService.name
-                                : 'Choose service'
-                        }
+                        label={selectedService ? selectedService.name : 'Choose service'}
                         sx={{
                             fontWeight: 800,
                             bgcolor: selectedService ? alpha(landingColors.purple, 0.12) : 'transparent',
@@ -375,26 +381,19 @@ export default function BookingDialog({
                         icon={<PersonRoundedIcon sx={{ fontSize: '1.1rem !important' }} />}
                         label={
                             selectedSlot
-                                ? staff.find((member) => member._id === selectedSlot.staffId)?.displayName ??
-                                'Selected staff'
-                                : selectedStaff
-                                    ? selectedStaff.displayName
-                                    : 'Any available'
+                                ? staff.find((member) => member._id === selectedSlot.staffId)?.displayName ?? 'Selected staff'
+                                : staff.find((m) => m._id === selectedStaffId)?.displayName ?? 'Any available'
                         }
                         sx={{
                             fontWeight: 800,
-                            bgcolor: (selectedStaff || selectedSlot) ? alpha(landingColors.purple, 0.12) : 'transparent',
-                            color: (selectedStaff || selectedSlot) ? landingColors.purple : 'text.secondary',
-                            border: `1px solid ${(selectedStaff || selectedSlot) ? alpha(landingColors.purple, 0.2) : 'rgba(0,0,0,0.08)'}`,
+                            bgcolor: (selectedStaffId || selectedSlot) ? alpha(landingColors.purple, 0.12) : 'transparent',
+                            color: (selectedStaffId || selectedSlot) ? landingColors.purple : 'text.secondary',
+                            border: `1px solid ${(selectedStaffId || selectedSlot) ? alpha(landingColors.purple, 0.2) : 'rgba(0,0,0,0.08)'}`,
                         }}
                     />
                     <Chip
                         icon={<EventAvailableRoundedIcon sx={{ fontSize: '1.1rem !important' }} />}
-                        label={
-                            selectedSlot
-                                ? formatSlotDateTime(selectedSlot.startTime)
-                                : 'Choose time'
-                        }
+                        label={selectedSlot ? formatSlotDateTime(selectedSlot.startTime) : 'Choose time'}
                         sx={{
                             fontWeight: 800,
                             bgcolor: selectedSlot ? alpha(landingColors.purple, 0.12) : 'transparent',
@@ -422,7 +421,6 @@ export default function BookingDialog({
                 <Stack spacing={2}>
                     {services.map((service) => {
                         const selected = selectedServiceId === service._id;
-
                         return (
                             <Card
                                 key={service._id}
@@ -515,7 +513,6 @@ export default function BookingDialog({
 
                     {staff.map((member) => {
                         const selected = selectedStaffId === member._id;
-
                         return (
                             <Card
                                 key={member._id}
@@ -563,7 +560,6 @@ export default function BookingDialog({
                         {nextDays.map((date) => {
                             const day = formatDayChip(date);
                             const selected = selectedDate === day.value;
-
                             return (
                                 <Card
                                     key={day.value}
@@ -611,13 +607,11 @@ export default function BookingDialog({
                             {(['Morning', 'Afternoon', 'Evening'] as const).map((groupName) => {
                                 const items = groupedSlots[groupName];
                                 if (!items.length) return null;
-
                                 return (
                                     <Box key={groupName}>
                                         <Typography sx={{ fontWeight: 1000, fontSize: 14, color: '#94A3B8', textTransform: 'uppercase', letterSpacing: 1, mb: 2 }}>
                                             {groupName}
                                         </Typography>
-
                                         <Box
                                             sx={{
                                                 display: 'grid',
@@ -633,9 +627,7 @@ export default function BookingDialog({
                                                 const selected =
                                                     selectedSlot?.staffId === slot.staffId &&
                                                     selectedSlot?.startTime === slot.startTime;
-
                                                 const staffMember = staff.find((m) => m._id === slot.staffId);
-
                                                 return (
                                                     <Button
                                                         key={`${slot.staffId}-${slot.startTime}`}
@@ -691,8 +683,6 @@ export default function BookingDialog({
                         Almost there! Just a few details to finalize your spot.
                     </Typography>
                 </Box>
-
-                {submitError ? <Alert severity="error" sx={{ borderRadius: 3 }}>{submitError}</Alert> : null}
 
                 <Stack spacing={3}>
                     <TextField
@@ -821,11 +811,9 @@ export default function BookingDialog({
                 </Box>
             );
         }
-
         if (optionsError) {
             return <Alert severity="error" sx={{ borderRadius: 3 }}>{optionsError}</Alert>;
         }
-
         switch (step) {
             case STEP_SERVICE:
                 return renderServiceStep();
@@ -867,7 +855,6 @@ export default function BookingDialog({
                 </Button>
             );
         }
-
         if (step === STEP_STAFF) {
             return (
                 <Button
@@ -880,7 +867,6 @@ export default function BookingDialog({
                 </Button>
             );
         }
-
         if (step === STEP_TIME) {
             return (
                 <Button
@@ -894,7 +880,6 @@ export default function BookingDialog({
                 </Button>
             );
         }
-
         if (step === STEP_DETAILS) {
             return (
                 <Button
@@ -907,7 +892,6 @@ export default function BookingDialog({
                 </Button>
             );
         }
-
         return (
             <Button variant="contained" onClick={handleClose} sx={btnSx}>
                 Finish

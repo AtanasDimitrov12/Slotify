@@ -2,6 +2,7 @@ import {
   IsArray,
   IsBoolean,
   IsMongoId,
+  IsNotEmpty,
   IsNumber,
   IsOptional,
   IsString,
@@ -17,6 +18,7 @@ export class CreateStaffProfileDto {
   userId!: string;
 
   @IsString()
+  @IsNotEmpty()
   @MaxLength(100)
   displayName!: string;
 

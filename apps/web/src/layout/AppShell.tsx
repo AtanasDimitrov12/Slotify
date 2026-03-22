@@ -89,7 +89,7 @@ export default function AppShell() {
 
     if (role === 'staff') return '/staff';
     if (role === 'admin') return '/admin';
-    if (role === 'owner') return '/owner';
+  if (role === 'owner') return '/owner';
 
     return '/';
   };

@@ -7,7 +7,6 @@ import {
   CardContent,
   Chip,
   CircularProgress,
-  Snackbar,
   Stack,
   Typography,
   alpha,
@@ -22,6 +21,7 @@ import {
 import { landingColors, premium } from '../../components/landing/constants';
 import AddRoundedIcon from '@mui/icons-material/AddRounded';
 import CalendarMonthRoundedIcon from '@mui/icons-material/CalendarMonthRounded';
+import { useToast } from '../../components/ToastProvider';
 
 function StatusChip({ status }: { status: TimeOffRequest['status'] }) {
   const map: Record<TimeOffRequest['status'], { label: string; color: string }> = {
@@ -50,12 +50,12 @@ function StatusChip({ status }: { status: TimeOffRequest['status'] }) {
 }
 
 export default function StaffTimeOffPage() {
+  const { showError, showSuccess } = useToast();
   const [open, setOpen] = React.useState(false);
   const [items, setItems] = React.useState<TimeOffRequest[]>([]);
   const [loading, setLoading] = React.useState(true);
   const [submitting, setSubmitting] = React.useState(false);
   const [error, setError] = React.useState('');
-  const [success, setSuccess] = React.useState('');
 
   const loadTimeOff = React.useCallback(async () => {
     setLoading(true);
@@ -77,7 +77,6 @@ export default function StaffTimeOffPage() {
 
   async function handleSubmit(payload: TimeOffPayload) {
     setSubmitting(true);
-    setError('');
 
     try {
       const created = await createMyStaffTimeOff({
@@ -88,11 +87,9 @@ export default function StaffTimeOffPage() {
 
       setItems((prev) => [created, ...prev]);
       setOpen(false);
-      setSuccess('Time off request submitted successfully.');
+      showSuccess('Time off request submitted successfully.');
     } catch (err) {
-      const message =
-        err instanceof Error ? err.message : 'Failed to create time off request';
-      setError(message);
+      showError(err);
       throw err;
     } finally {
       setSubmitting(false);
@@ -100,14 +97,12 @@ export default function StaffTimeOffPage() {
   }
 
   async function handleDelete(id: string) {
-    setError('');
-
     try {
       await deleteMyStaffTimeOff(id);
       setItems((prev) => prev.filter((item) => item.id !== id));
-      setSuccess('Time off request removed successfully.');
+      showSuccess('Time off request removed successfully.');
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to delete time off request');
+      showError(err);
     }
   }
 
@@ -241,16 +236,6 @@ export default function StaffTimeOffPage() {
           onSubmit={handleSubmit}
         />
       </Stack>
-
-      <Snackbar
-        open={Boolean(success)}
-        autoHideDuration={3000}
-        onClose={() => setSuccess('')}
-      >
-        <Alert onClose={() => setSuccess('')} severity="success" variant="filled" sx={{ borderRadius: 3, fontWeight: 800 }}>
-          {success}
-        </Alert>
-      </Snackbar>
     </>
   );
 }

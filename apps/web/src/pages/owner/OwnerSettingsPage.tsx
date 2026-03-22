@@ -6,7 +6,6 @@ import {
   Card,
   CardContent,
   CircularProgress,
-  Snackbar,
   Stack,
   Tab,
   Tabs,
@@ -21,6 +20,7 @@ import {
   saveOpeningHours,
 } from '../../api/ownerSettings';
 import { landingColors, premium } from '../../components/landing/constants';
+import { useToast } from '../../components/ToastProvider';
 
 function TabPanel({ value, index, children }: { value: number; index: number; children: React.ReactNode }) {
   if (value !== index) return null;
@@ -75,11 +75,11 @@ function mapOpeningHoursFromApi(
 }
 
 export default function OwnerSettingsPage() {
+  const { showError, showSuccess } = useToast();
   const [tab, setTab] = React.useState(0);
   const [loading, setLoading] = React.useState(true);
   const [saving, setSaving] = React.useState(false);
   const [error, setError] = React.useState('');
-  const [success, setSuccess] = React.useState('');
   const [generalSettings, setGeneralSettings] = React.useState<GeneralSettingsValues>(emptyGeneralSettings);
   const [openingHours, setOpeningHours] = React.useState<OpeningDay[]>(defaultOpeningHours);
 
@@ -125,9 +125,9 @@ export default function OwnerSettingsPage() {
 
     try {
       await saveGeneralSettings(generalSettings);
-      setSuccess('Business settings saved successfully.');
+      showSuccess('Business settings saved successfully.');
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to save settings');
+      showError(err);
     } finally {
       setSaving(false);
     }
@@ -147,9 +147,9 @@ export default function OwnerSettingsPage() {
         })),
       });
 
-      setSuccess('Opening hours saved successfully.');
+      showSuccess('Opening hours saved successfully.');
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to save opening hours');
+      showError(err);
     } finally {
       setSaving(false);
     }
@@ -252,12 +252,6 @@ export default function OwnerSettingsPage() {
           </CardContent>
         </Card>
       </Stack>
-
-      <Snackbar open={Boolean(success)} autoHideDuration={3000} onClose={() => setSuccess('')}>
-        <Alert onClose={() => setSuccess('')} severity="success" variant="filled" sx={{ borderRadius: 3, fontWeight: 800 }}>
-          {success}
-        </Alert>
-      </Snackbar>
     </>
   );
 }

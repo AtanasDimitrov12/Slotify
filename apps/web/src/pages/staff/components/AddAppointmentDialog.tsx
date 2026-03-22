@@ -12,6 +12,7 @@ import {
   alpha,
 } from '@mui/material';
 import { landingColors } from '../../../components/landing/constants';
+import { useToast } from '../../../components/ToastProvider';
 
 type ServiceOption = {
   id: string;
@@ -40,6 +41,7 @@ export default function AddAppointmentDialog({
   creating: boolean;
   services: ServiceOption[];
 }) {
+  const { showError, showSuccess } = useToast();
   const [staffServiceAssignmentId, setStaffServiceAssignmentId] = React.useState('');
   const [startTime, setStartTime] = React.useState('10:00');
   const [customerName, setCustomerName] = React.useState('');
@@ -57,19 +59,54 @@ export default function AddAppointmentDialog({
     setNotes('');
   }, [open]);
 
+  const validateEmail = (email: string) => {
+    if (!email) return true;
+    return String(email)
+        .toLowerCase()
+        .match(
+            /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
+        );
+  };
+
+  const validatePhone = (phone: string) => {
+    return /^[+()\-\s0-9]{5,40}$/.test(phone);
+  };
+
   async function handleSubmit() {
-    if (!staffServiceAssignmentId || !customerName.trim() || !customerPhone.trim() || !startTime) {
+    if (!staffServiceAssignmentId) {
+      showError('Please select a service.');
+      return;
+    }
+    if (!startTime) {
+      showError('Please select a start time.');
+      return;
+    }
+    if (!customerName.trim()) {
+      showError('Please enter the customer name.');
+      return;
+    }
+    if (!customerPhone.trim() || !validatePhone(customerPhone)) {
+      showError('Please provide a valid phone number.');
+      return;
+    }
+    if (customerEmail.trim() && !validateEmail(customerEmail)) {
+      showError('Please provide a valid email address.');
       return;
     }
 
-    await onSubmit({
-      staffServiceAssignmentId,
-      startTime,
-      customerName: customerName.trim(),
-      customerPhone: customerPhone.trim(),
-      customerEmail: customerEmail.trim() || undefined,
-      notes: notes.trim() || undefined,
-    });
+    try {
+      await onSubmit({
+        staffServiceAssignmentId,
+        startTime,
+        customerName: customerName.trim(),
+        customerPhone: customerPhone.trim(),
+        customerEmail: customerEmail.trim().toLowerCase() || undefined,
+        notes: notes.trim() || undefined,
+      });
+      showSuccess('Appointment booked successfully.');
+    } catch (err) {
+      showError(err);
+    }
   }
 
   return (
@@ -99,6 +136,7 @@ export default function AddAppointmentDialog({
               value={staffServiceAssignmentId}
               onChange={(e) => setStaffServiceAssignmentId(e.target.value)}
               fullWidth
+              required
             >
               {services.map((service) => (
                 <MenuItem key={service.id} value={service.id}>
@@ -114,6 +152,7 @@ export default function AddAppointmentDialog({
               onChange={(e) => setStartTime(e.target.value)}
               InputLabelProps={{ shrink: true }}
               fullWidth
+              required
             />
 
             <TextField
@@ -122,6 +161,7 @@ export default function AddAppointmentDialog({
               value={customerName}
               onChange={(e) => setCustomerName(e.target.value)}
               fullWidth
+              required
             />
 
             <Stack direction="row" spacing={2}>
@@ -130,6 +170,7 @@ export default function AddAppointmentDialog({
                 value={customerPhone}
                 onChange={(e) => setCustomerPhone(e.target.value)}
                 fullWidth
+                required
               />
 
               <TextField

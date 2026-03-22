@@ -1,4 +1,5 @@
-import { IsEmail, IsISO8601, IsMongoId, IsOptional, IsString, MaxLength } from 'class-validator';
+import { IsEmail, IsISO8601, IsMongoId, IsOptional, IsString, Matches, MaxLength } from 'class-validator';
+import { Transform } from 'class-transformer';
 
 export class UpdateStaffAppointmentDto {
   @IsOptional()
@@ -17,11 +18,15 @@ export class UpdateStaffAppointmentDto {
   @IsOptional()
   @IsString()
   @MaxLength(40)
+  @Matches(/^[+()\-\s0-9]{5,40}$/, {
+    message: 'customerPhone contains invalid characters',
+  })
   customerPhone?: string;
 
   @IsOptional()
   @IsEmail()
   @MaxLength(200)
+  @Transform(({ value }) => typeof value === 'string' ? value.trim().toLowerCase() : value)
   customerEmail?: string;
 
   @IsOptional()

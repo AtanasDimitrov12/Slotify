@@ -54,6 +54,7 @@ export default function GeneralSettingsForm({ value, onChange }: Props) {
               label="Salon Name"
               value={value.salonName}
               onChange={(e) => updateField('salonName', e.target.value)}
+              required
             />
           </Grid>
 
@@ -63,6 +64,7 @@ export default function GeneralSettingsForm({ value, onChange }: Props) {
               label="Primary Contact Person"
               value={value.contactPersonName}
               onChange={(e) => updateField('contactPersonName', e.target.value)}
+              required
             />
           </Grid>
 
@@ -72,6 +74,7 @@ export default function GeneralSettingsForm({ value, onChange }: Props) {
               label="Business Phone Number"
               value={value.phone}
               onChange={(e) => updateField('phone', e.target.value)}
+              required
             />
           </Grid>
 
@@ -82,6 +85,7 @@ export default function GeneralSettingsForm({ value, onChange }: Props) {
               type="email"
               value={value.email}
               onChange={(e) => updateField('email', e.target.value)}
+              required
             />
           </Grid>
 

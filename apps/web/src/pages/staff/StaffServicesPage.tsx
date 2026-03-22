@@ -7,7 +7,6 @@ import {
   CardContent,
   CircularProgress,
   Grid,
-  Snackbar,
   Stack,
   Typography,
   alpha,
@@ -24,8 +23,10 @@ import {
 } from '../../api/staffServices';
 import { getCatalogServices } from '../../api/servicesCatalog';
 import { landingColors, premium } from '../../components/landing/constants';
+import { useToast } from '../../components/ToastProvider';
 
 export default function StaffServicesPage() {
+  const { showError, showSuccess } = useToast();
   const [open, setOpen] = React.useState(false);
   const [items, setItems] = React.useState<StaffService[]>([]);
   const [catalogOptions, setCatalogOptions] = React.useState<CatalogServiceOption[]>([]);
@@ -33,7 +34,6 @@ export default function StaffServicesPage() {
   const [loading, setLoading] = React.useState(true);
   const [saving, setSaving] = React.useState(false);
   const [error, setError] = React.useState('');
-  const [success, setSuccess] = React.useState('');
 
   const loadData = React.useCallback(async () => {
     setLoading(true);
@@ -78,7 +78,6 @@ export default function StaffServicesPage() {
 
   async function handleSave(payload: ServicePayload) {
     setSaving(true);
-    setError('');
 
     try {
       if (editingService) {
@@ -90,7 +89,7 @@ export default function StaffServicesPage() {
         setItems((prev) =>
           prev.map((item) => (item.id === editingService.id ? updated : item)),
         );
-        setSuccess('Service updated successfully.');
+        showSuccess('Service updated successfully.');
       } else {
         const created = await createMyStaffService({
           serviceId: payload.serviceId,
@@ -99,12 +98,12 @@ export default function StaffServicesPage() {
         });
 
         setItems((prev) => [created, ...prev]);
-        setSuccess('Service added successfully.');
+        showSuccess('Service added successfully.');
       }
 
       handleClose();
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to save service');
+      showError(err);
       throw err;
     } finally {
       setSaving(false);
@@ -112,14 +111,12 @@ export default function StaffServicesPage() {
   }
 
   async function handleDelete(id: string) {
-    setError('');
-
     try {
       await deleteMyStaffService(id);
       setItems((prev) => prev.filter((item) => item.id !== id));
-      setSuccess('Service removed successfully.');
+      showSuccess('Service removed successfully.');
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to delete service');
+      showError(err);
     }
   }
 
@@ -294,16 +291,6 @@ export default function StaffServicesPage() {
           catalogOptions={availableCatalogOptions}
         />
       </Stack>
-
-      <Snackbar
-        open={Boolean(success)}
-        autoHideDuration={3000}
-        onClose={() => setSuccess('')}
-      >
-        <Alert onClose={() => setSuccess('')} severity="success" variant="filled" sx={{ borderRadius: 3, fontWeight: 800 }}>
-          {success}
-        </Alert>
-      </Snackbar>
     </>
   );
 }

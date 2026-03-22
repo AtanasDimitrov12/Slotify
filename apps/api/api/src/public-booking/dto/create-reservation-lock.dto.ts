@@ -6,6 +6,7 @@ import {
   IsString,
   Length,
 } from 'class-validator';
+import { Transform } from 'class-transformer';
 
 export class CreateReservationLockDto {
   @IsMongoId()
@@ -25,5 +26,6 @@ export class CreateReservationLockDto {
   @IsOptional()
   @IsEmail()
   @Length(0, 200)
+  @Transform(({ value }) => typeof value === 'string' ? value.trim().toLowerCase() : value)
   customerEmail?: string;
 }

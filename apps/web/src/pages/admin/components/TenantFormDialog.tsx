@@ -1,18 +1,17 @@
 import * as React from 'react';
 import {
-  Alert,
   Button,
   Dialog,
   DialogActions,
   DialogContent,
   DialogTitle,
-  Divider,
   Stack,
   TextField,
   Typography,
   alpha,
 } from '@mui/material';
 import { landingColors } from '../../../components/landing/constants';
+import { useToast } from '../../../components/ToastProvider';
 
 export type TenantFormValues = {
   name: string;
@@ -45,27 +44,39 @@ export default function TenantFormDialog({
   onClose,
   onSubmit,
 }: Props) {
+  const { showError, showSuccess } = useToast();
   const [form, setForm] = React.useState<TenantFormValues>(emptyValues);
-  const [error, setError] = React.useState<string | null>(null);
 
   React.useEffect(() => {
     if (!open) return;
-    setError(null);
     setForm(initialValues ?? emptyValues);
   }, [open, initialValues]);
 
   const isEdit = mode === 'edit';
 
-  async function handleSubmit() {
-    setError(null);
+  const validateEmail = (email: string) => {
+    return String(email)
+        .toLowerCase()
+        .match(
+            /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
+        );
+  };
 
-    if (!form.name.trim() || !form.email.trim() || !form.tenantName.trim()) {
-      setError('Please fill all required fields.');
+  async function handleSubmit() {
+    if (!form.name.trim()) {
+      showError('Owner full name is required.');
       return;
     }
-
-    if (!isEdit && !form.password.trim()) {
-      setError('Password is required.');
+    if (!form.email.trim() || !validateEmail(form.email)) {
+      showError('A valid administrative email is required.');
+      return;
+    }
+    if (!isEdit && (!form.password.trim() || form.password.length < 6)) {
+      showError('Password is required and must be at least 6 characters.');
+      return;
+    }
+    if (!form.tenantName.trim()) {
+      showError('Salon name is required.');
       return;
     }
 
@@ -76,8 +87,9 @@ export default function TenantFormDialog({
         password: form.password,
         tenantName: form.tenantName.trim(),
       });
+      showSuccess(isEdit ? 'Tenant updated successfully.' : 'Tenant onboarded successfully.');
     } catch (e: any) {
-      setError(e?.message ?? 'Failed to save tenant');
+      showError(e);
     }
   }
 
@@ -105,12 +117,6 @@ export default function TenantFormDialog({
               ? 'Update the salon details and administrative account for this tenant.'
               : 'Setup a new salon environment and create the primary owner account.'}
           </Typography>
-
-          {error ? (
-            <Alert severity="error" sx={{ borderRadius: 3, fontWeight: 700 }}>
-              {error}
-            </Alert>
-          ) : null}
 
           <Stack spacing={2.5}>
             <TextField

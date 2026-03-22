@@ -1,7 +1,8 @@
 import React, { useMemo, useState } from 'react';
-import { Alert, Box, Button, Card, CardContent, Container, Stack, TextField, Typography, alpha } from '@mui/material';
+import { Box, Button, Card, CardContent, Container, Stack, TextField, Typography, alpha } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../auth/AuthProvider';
+import { useToast } from '../components/ToastProvider';
 import type { Tenant } from '../api/tenants';
 import { landingColors, premium } from '../components/landing/constants';
 import ArrowBackRoundedIcon from '@mui/icons-material/ArrowBackRounded';
@@ -18,6 +19,84 @@ function routeForRole(role?: string) {
     default:
       return '/';
   }
+}
+
+function getErrorMessage(error: unknown): string {
+  const fallback = 'We could not sign you in. Please check your details and try again.';
+
+  if (!error) return fallback;
+
+  if (typeof error === 'string') {
+    return mapFriendlyError(error);
+  }
+
+  if (error instanceof Error) {
+    return mapFriendlyError(error.message);
+  }
+
+  if (typeof error === 'object' && error !== null) {
+    const maybeError = error as {
+      message?: unknown;
+      error?: unknown;
+      statusCode?: unknown;
+      response?: {
+        message?: unknown;
+        error?: unknown;
+        statusCode?: unknown;
+      };
+    };
+
+    if (typeof maybeError.response?.message === 'string') {
+      return mapFriendlyError(maybeError.response.message);
+    }
+
+    if (Array.isArray(maybeError.response?.message) && maybeError.response.message.length > 0) {
+      return mapFriendlyError(String(maybeError.response.message[0]));
+    }
+
+    if (typeof maybeError.message === 'string') {
+      return mapFriendlyError(maybeError.message);
+    }
+
+    if (Array.isArray(maybeError.message) && maybeError.message.length > 0) {
+      return mapFriendlyError(String(maybeError.message[0]));
+    }
+  }
+
+  return fallback;
+}
+
+function mapFriendlyError(message: string): string {
+  const normalized = message.toLowerCase();
+
+  if (
+    normalized.includes('password must be longer than or equal to 8 characters') ||
+    normalized.includes('password must be longer than or equal to')
+  ) {
+    return 'Your password must be at least 8 characters long.';
+  }
+
+  if (
+    normalized.includes('invalid credentials') ||
+    normalized.includes('unauthorized') ||
+    normalized.includes('invalid email or password')
+  ) {
+    return 'Incorrect email or password.';
+  }
+
+  if (normalized.includes('user not found')) {
+    return 'We could not find an account with that email.';
+  }
+
+  if (normalized.includes('too many requests')) {
+    return 'Too many sign-in attempts. Please wait a moment and try again.';
+  }
+
+  if (normalized.includes('network error') || normalized.includes('failed to fetch')) {
+    return 'Unable to connect right now. Please check your internet connection and try again.';
+  }
+
+  return 'We could not sign you in. Please check your details and try again.';
 }
 
 function PageWrapper({
@@ -80,11 +159,11 @@ function PageWrapper({
 export default function LoginPage() {
   const navigate = useNavigate();
   const { login } = useAuth();
+  const { showError } = useToast();
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [submitting, setSubmitting] = useState(false);
-  const [error, setError] = useState<string | null>(null);
   const [tenants, setTenants] = useState<Array<Partial<Tenant> & { _id: string; name?: string }> | null>(null);
 
   const canSubmit = useMemo(() => {
@@ -92,11 +171,10 @@ export default function LoginPage() {
   }, [email, password, submitting]);
 
   const handleLogin = async (tenantId?: string) => {
-    setError(null);
     setSubmitting(true);
 
     try {
-      const result = await login(email.trim(), password, tenantId);
+      const result = await login(email.trim().toLowerCase(), password, tenantId);
 
       if (result.kind === 'pickTenant') {
         setTenants(result.tenants);
@@ -104,8 +182,8 @@ export default function LoginPage() {
       }
 
       navigate(routeForRole(result.account.role), { replace: true });
-    } catch (err: any) {
-      setError(err?.message ?? 'Login failed');
+    } catch (err: unknown) {
+      showError(getErrorMessage(err));
     } finally {
       setSubmitting(false);
     }
@@ -122,7 +200,6 @@ export default function LoginPage() {
 
   const onBackToCredentials = () => {
     setTenants(null);
-    setError(null);
   };
 
   if (tenants) {
@@ -149,8 +226,6 @@ export default function LoginPage() {
                   This account has access to multiple locations.
                 </Typography>
               </Stack>
-
-              {error && <Alert severity="error">{error}</Alert>}
 
               <Stack spacing={1.5}>
                 {tenants.map((tenant) => (
@@ -199,12 +274,6 @@ export default function LoginPage() {
                 Manage your salon availability and bookings.
               </Typography>
             </Stack>
-
-            {error && (
-              <Alert severity="error" sx={{ bgcolor: alpha('#F43F5E', 0.1), color: '#FDA4AF', border: '1px solid', borderColor: alpha('#F43F5E', 0.2) }}>
-                {error}
-              </Alert>
-            )}
 
             <Box component="form" onSubmit={onSubmit}>
               <Stack spacing={2.5}>

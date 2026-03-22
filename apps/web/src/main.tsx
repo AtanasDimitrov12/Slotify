@@ -1,8 +1,9 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import App from './App';
-import { createTheme } from '@mui/material';
+import { createTheme, ThemeProvider } from '@mui/material';
 import { AuthProvider } from './auth/AuthProvider';
+import { ToastProvider } from './components/ToastProvider';
 import { BrowserRouter } from 'react-router-dom';
 import { CssBaseline } from '@mui/material';
 
@@ -62,11 +63,15 @@ const theme = createTheme({
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
-    <AuthProvider>
-      <BrowserRouter>
-      <CssBaseline />
-        <App />
-      </BrowserRouter>
-    </AuthProvider>
+    <ToastProvider>
+      <ThemeProvider theme={theme}>
+        <AuthProvider>
+          <BrowserRouter>
+            <CssBaseline />
+            <App />
+          </BrowserRouter>
+        </AuthProvider>
+      </ThemeProvider>
+    </ToastProvider>
   </React.StrictMode>
 );

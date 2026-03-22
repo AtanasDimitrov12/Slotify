@@ -9,7 +9,6 @@ import {
     Chip,
     CircularProgress,
     Grid,
-    Snackbar,
     Stack,
     Typography,
     alpha,
@@ -21,6 +20,7 @@ import ManageStaffTimeOffDialog from './components/ManageStaffTimeOffDialog';
 import { createStaff, listStaff } from '../../api/staff';
 import { getOwnerPendingTimeOffCounts } from '../../api/staffTimeOff';
 import { landingColors, premium } from '../../components/landing/constants';
+import { useToast } from '../../components/ToastProvider';
 
 type StaffMember = {
     id: string;
@@ -31,11 +31,11 @@ type StaffMember = {
 };
 
 export default function OwnerTeamPage() {
+    const { showError } = useToast();
     const [items, setItems] = React.useState<StaffMember[]>([]);
     const [open, setOpen] = React.useState(false);
     const [creating, setCreating] = React.useState(false);
     const [error, setError] = React.useState('');
-    const [success, setSuccess] = React.useState('');
 
     const [timeOffDialogOpen, setTimeOffDialogOpen] = React.useState(false);
     const [selectedStaffId, setSelectedStaffId] = React.useState<string | null>(null);
@@ -62,11 +62,9 @@ export default function OwnerTeamPage() {
 
             setItems(mapped);
         } catch (err) {
-            const message =
-                err instanceof Error ? err.message : 'Failed to load staff members';
-            setError(message);
+            showError(err);
         }
-    }, []);
+    }, [showError]);
 
     React.useEffect(() => {
         void loadStaff();
@@ -74,7 +72,6 @@ export default function OwnerTeamPage() {
 
     async function handleCreateStaff(payload: AddStaffPayload) {
         setCreating(true);
-        setError('');
 
         try {
             const result = await createStaff({
@@ -93,11 +90,8 @@ export default function OwnerTeamPage() {
 
             setItems((prev) => [newItem, ...prev]);
             setOpen(false);
-            setSuccess('Staff member created successfully.');
         } catch (err) {
-            const message =
-                err instanceof Error ? err.message : 'Failed to create staff member';
-            setError(message);
+            showError(err);
             throw err;
         } finally {
             setCreating(false);
@@ -281,16 +275,6 @@ export default function OwnerTeamPage() {
                     onUpdated={loadStaff}
                 />
             </Stack>
-
-            <Snackbar
-                open={Boolean(success)}
-                autoHideDuration={3000}
-                onClose={() => setSuccess('')}
-            >
-                <Alert onClose={() => setSuccess('')} severity="success" variant="filled">
-                    {success}
-                </Alert>
-            </Snackbar>
 
             {creating ? (
                 <Box

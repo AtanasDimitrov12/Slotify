@@ -4,7 +4,6 @@ import {
   Box,
   Button,
   CircularProgress,
-  Snackbar,
   Stack,
   Typography,
   alpha,
@@ -16,6 +15,7 @@ import {
   updateMyStaffAvailability,
 } from '../../api/staffAvailability';
 import { landingColors } from '../../components/landing/constants';
+import { useToast } from '../../components/ToastProvider';
 
 const defaultSchedule: DaySchedule[] = [
   { dayOfWeek: 1, label: 'Mon', enabled: true, start: '09:00', end: '18:00', breakStart: '13:00', breakEnd: '13:30' },
@@ -61,11 +61,11 @@ function mapApiToUi(
 }
 
 export default function StaffAvailabilityPage() {
+  const { showError, showSuccess } = useToast();
   const [schedule, setSchedule] = React.useState<DaySchedule[]>(defaultSchedule);
   const [loading, setLoading] = React.useState(true);
   const [saving, setSaving] = React.useState(false);
   const [error, setError] = React.useState('');
-  const [success, setSuccess] = React.useState('');
 
   const loadAvailability = React.useCallback(async () => {
     setLoading(true);
@@ -87,7 +87,6 @@ export default function StaffAvailabilityPage() {
 
   async function handleSave() {
     setSaving(true);
-    setError('');
 
     try {
       await updateMyStaffAvailability({
@@ -101,9 +100,9 @@ export default function StaffAvailabilityPage() {
         })),
       });
 
-      setSuccess('Availability updated successfully.');
+      showSuccess('Availability updated successfully.');
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to save availability');
+      showError(err);
     } finally {
       setSaving(false);
     }
@@ -161,19 +160,7 @@ export default function StaffAvailabilityPage() {
         {error ? <Alert severity="error" sx={{ borderRadius: 3 }}>{error}</Alert> : null}
 
         <WeeklyScheduleEditor value={schedule} onChange={setSchedule} />
-
-
       </Stack>
-
-      <Snackbar
-        open={Boolean(success)}
-        autoHideDuration={3000}
-        onClose={() => setSuccess('')}
-      >
-        <Alert onClose={() => setSuccess('')} severity="success" variant="filled" sx={{ borderRadius: 3, fontWeight: 800 }}>
-          {success}
-        </Alert>
-      </Snackbar>
     </>
   );
 }

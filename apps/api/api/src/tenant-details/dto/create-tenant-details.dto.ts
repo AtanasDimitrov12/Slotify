@@ -1,5 +1,5 @@
-import { IsBoolean, IsEmail, IsOptional, IsString, IsUrl, ValidateNested } from 'class-validator';
-import { Type } from 'class-transformer';
+import { IsBoolean, IsEmail, IsNotEmpty, IsOptional, IsString, IsUrl, Matches, ValidateNested } from 'class-validator';
+import { Transform, Type } from 'class-transformer';
 
 class AddressDto {
   @IsOptional() @IsString() street?: string;
@@ -37,6 +37,7 @@ class GeoDto {
 
 export class CreateTenantDetailsDto {
   @IsString()
+  @IsNotEmpty()
   tenantId!: string;
 
   @IsOptional() @ValidateNested() @Type(() => AddressDto)
@@ -49,9 +50,13 @@ export class CreateTenantDetailsDto {
   contactPersonName?: string;
 
   @IsOptional() @IsEmail()
+  @Transform(({ value }) => typeof value === 'string' ? value.trim().toLowerCase() : value)
   contactEmail?: string;
 
   @IsOptional() @IsString()
+  @Matches(/^[+()\-\s0-9]{5,40}$/, {
+    message: 'contactPhone contains invalid characters or length',
+  })
   contactPhone?: string;
 
   @IsOptional() @IsString()

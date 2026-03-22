@@ -1,6 +1,5 @@
 import * as React from 'react';
 import {
-  Alert,
   Button,
   Dialog,
   DialogActions,
@@ -12,6 +11,7 @@ import {
   alpha,
 } from '@mui/material';
 import { landingColors } from '../../../components/landing/constants';
+import { useToast } from '../../../components/ToastProvider';
 
 export type AddStaffPayload = {
   name: string;
@@ -26,23 +26,29 @@ type Props = {
 };
 
 export default function AddStaffDialog({ open, onClose, onCreate }: Props) {
+  const { showError, showSuccess } = useToast();
+
   const [name, setName] = React.useState('');
   const [email, setEmail] = React.useState('');
   const [password, setPassword] = React.useState('');
   const [submitting, setSubmitting] = React.useState(false);
-  const [error, setError] = React.useState('');
 
-  function resetForm() {
+  const resetForm = React.useCallback(() => {
     setName('');
     setEmail('');
     setPassword('');
-    setError('');
-  }
+  }, []);
 
-  function handleClose() {
+  const handleClose = React.useCallback(() => {
     if (submitting) return;
     onClose();
-  }
+  }, [onClose, submitting]);
+
+  const canSubmit =
+    name.trim().length > 1 &&
+    email.trim().includes('@') &&
+    password.trim().length >= 6 &&
+    !submitting;
 
   async function handleCreate() {
     const payload: AddStaffPayload = {
@@ -52,29 +58,26 @@ export default function AddStaffDialog({ open, onClose, onCreate }: Props) {
     };
 
     setSubmitting(true);
-    setError('');
 
     try {
       await onCreate(payload);
       resetForm();
-    } catch (err) {
+      showSuccess('Staff member created successfully.');
+      onClose();
+    } catch (err: unknown) {
       const message =
-        err instanceof Error ? err.message : 'Failed to create staff member';
-      setError(message);
+        err instanceof Error ? err.message : 'Failed to create staff member.';
+      showError(message);
     } finally {
       setSubmitting(false);
     }
   }
 
-  const canSubmit =
-    name.trim().length > 1 &&
-    email.trim().includes('@') &&
-    password.trim().length >= 6 &&
-    !submitting;
-
   React.useEffect(() => {
-    if (!open) resetForm();
-  }, [open]);
+    if (!open) {
+      resetForm();
+    }
+  }, [open, resetForm]);
 
   return (
     <Dialog
@@ -89,18 +92,20 @@ export default function AddStaffDialog({ open, onClose, onCreate }: Props) {
         },
       }}
     >
-      <DialogTitle sx={{ fontWeight: 1000, fontSize: 24, letterSpacing: -0.5, py: 3, px: 4 }}>
+      <DialogTitle
+        sx={{
+          fontWeight: 1000,
+          fontSize: 24,
+          letterSpacing: -0.5,
+          py: 3,
+          px: 4,
+        }}
+      >
         Add Team Member
       </DialogTitle>
 
       <DialogContent sx={{ px: 4, pb: 2 }}>
         <Stack spacing={3}>
-          {error ? (
-            <Alert severity="error" sx={{ borderRadius: 3, fontWeight: 700 }}>
-              {error}
-            </Alert>
-          ) : null}
-
           <Stack spacing={2.5}>
             <TextField
               label="Full Name"
@@ -131,7 +136,8 @@ export default function AddStaffDialog({ open, onClose, onCreate }: Props) {
             />
 
             <Typography sx={{ color: '#64748B', fontWeight: 600, fontSize: 14 }}>
-              The new member will be created with the <b>staff</b> role and can immediately setup their profile.
+              The new member will be created with the <b>staff</b> role and can
+              immediately setup their profile.
             </Typography>
           </Stack>
         </Stack>
@@ -151,6 +157,7 @@ export default function AddStaffDialog({ open, onClose, onCreate }: Props) {
         >
           Cancel
         </Button>
+
         <Button
           variant="contained"
           disabled={!canSubmit}
@@ -162,7 +169,10 @@ export default function AddStaffDialog({ open, onClose, onCreate }: Props) {
             minHeight: 48,
             bgcolor: landingColors.purple,
             boxShadow: `0 12px 30px ${alpha(landingColors.purple, 0.24)}`,
-            '&:hover': { bgcolor: landingColors.purple, filter: 'brightness(1.05)' },
+            '&:hover': {
+              bgcolor: landingColors.purple,
+              filter: 'brightness(1.05)',
+            },
           }}
         >
           {submitting ? 'Creating...' : 'Create Account'}

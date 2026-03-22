@@ -6,7 +6,6 @@ import {
   Card,
   CardContent,
   CircularProgress,
-  Snackbar,
   Stack,
   Typography,
   alpha,
@@ -15,6 +14,7 @@ import {
 import BookingRulesForm, { type BookingRulesValues } from './components/BookingRulesForm';
 import { getBookingRules, saveBookingRules } from '../../api/bookingRules';
 import { landingColors, premium } from '../../components/landing/constants';
+import { useToast } from '../../components/ToastProvider';
 
 const defaultRules: BookingRulesValues = {
   bufferBefore: { enabled: false, minutes: 0 },
@@ -27,11 +27,11 @@ const defaultRules: BookingRulesValues = {
 };
 
 export default function OwnerBookingRulesPage() {
+  const { showError, showSuccess } = useToast();
   const [rules, setRules] = React.useState<BookingRulesValues>(defaultRules);
   const [loading, setLoading] = React.useState(true);
   const [saving, setSaving] = React.useState(false);
   const [error, setError] = React.useState('');
-  const [success, setSuccess] = React.useState('');
 
   const load = React.useCallback(async () => {
     setLoading(true);
@@ -67,9 +67,9 @@ export default function OwnerBookingRulesPage() {
 
     try {
       await saveBookingRules(rules);
-      setSuccess('Booking rules saved successfully.');
+      showSuccess('Booking rules saved successfully.');
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to save booking rules');
+      showError(err);
     } finally {
       setSaving(false);
     }
@@ -151,12 +151,6 @@ export default function OwnerBookingRulesPage() {
           </CardContent>
         </Card>
       </Stack>
-
-      <Snackbar open={Boolean(success)} autoHideDuration={3000} onClose={() => setSuccess('')}>
-        <Alert severity="success" variant="filled" sx={{ borderRadius: 3, fontWeight: 800 }}>
-          {success}
-        </Alert>
-      </Snackbar>
     </>
   );
 }

@@ -1,4 +1,5 @@
-import { IsOptional, IsString, IsEmail } from 'class-validator';
+import { IsOptional, IsString, IsEmail, Matches } from 'class-validator';
+import { Transform } from 'class-transformer';
 
 export class UpdateBusinessGeneralDto {
   @IsOptional()
@@ -11,10 +12,14 @@ export class UpdateBusinessGeneralDto {
 
   @IsOptional()
   @IsString()
+  @Matches(/^[+()\-\s0-9]{5,20}$/, {
+    message: 'contactPhone contains invalid characters or length',
+  })
   contactPhone?: string;
 
   @IsOptional()
   @IsEmail()
+  @Transform(({ value }) => typeof value === 'string' ? value.trim().toLowerCase() : value)
   contactEmail?: string;
 
   @IsOptional()

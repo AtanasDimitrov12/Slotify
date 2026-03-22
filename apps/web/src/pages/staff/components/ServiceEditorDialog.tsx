@@ -10,9 +10,11 @@ import {
   TextField,
   Typography,
   alpha,
+  Box,
 } from '@mui/material';
 import type { CatalogServiceOption, StaffService } from './types';
 import { landingColors } from '../../../components/landing/constants';
+import { useToast } from '../../../components/ToastProvider';
 
 export type ServicePayload = {
   serviceId: string;
@@ -35,6 +37,7 @@ export default function ServiceEditorDialog({
   initialData,
   catalogOptions = [],
 }: Props) {
+  const { showError, showSuccess } = useToast();
   const [serviceId, setServiceId] = React.useState('');
   const [durationMin, setDurationMin] = React.useState('30');
   const [priceEUR, setPriceEUR] = React.useState('25');
@@ -67,18 +70,31 @@ export default function ServiceEditorDialog({
   const selectedCatalogService = catalogOptions.find((item) => item.id === serviceId);
   const isEditing = Boolean(initialData);
 
-  const canSubmit =
-    serviceId.trim().length > 0 &&
-    Number(durationMin) > 0 &&
-    Number(priceEUR) >= 0;
-
   async function handleSave() {
-    await onSave({
-      serviceId,
-      durationMin: Number(durationMin),
-      priceEUR: Number(priceEUR),
-    });
-    onClose();
+    if (!serviceId) {
+      showError('Please select a service.');
+      return;
+    }
+    if (Number(durationMin) <= 0) {
+      showError('Duration must be at least 1 minute.');
+      return;
+    }
+    if (Number(priceEUR) < 0) {
+      showError('Price cannot be negative.');
+      return;
+    }
+
+    try {
+      await onSave({
+        serviceId,
+        durationMin: Number(durationMin),
+        priceEUR: Number(priceEUR),
+      });
+      showSuccess(isEditing ? 'Service updated successfully.' : 'Service added to your profile.');
+      onClose();
+    } catch (err) {
+      showError(err);
+    }
   }
 
   return (
@@ -111,6 +127,7 @@ export default function ServiceEditorDialog({
               onChange={(e) => setServiceId(e.target.value)}
               disabled={isEditing}
               fullWidth
+              required
             >
               {catalogOptions.map((service) => (
                 <MenuItem key={service.id} value={service.id}>
@@ -134,6 +151,7 @@ export default function ServiceEditorDialog({
                 value={durationMin}
                 onChange={(e) => setDurationMin(e.target.value)}
                 fullWidth
+                required
               />
 
               <TextField
@@ -142,6 +160,7 @@ export default function ServiceEditorDialog({
                 value={priceEUR}
                 onChange={(e) => setPriceEUR(e.target.value)}
                 fullWidth
+                required
               />
             </Stack>
 
@@ -161,7 +180,6 @@ export default function ServiceEditorDialog({
         </Button>
         <Button
           variant="contained"
-          disabled={!canSubmit}
           onClick={handleSave}
           sx={{
             borderRadius: 999,

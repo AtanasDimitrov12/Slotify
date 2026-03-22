@@ -7,7 +7,6 @@ import {
   CardContent,
   CircularProgress,
   Grid,
-  Snackbar,
   Stack,
   TextField,
   Typography,
@@ -18,6 +17,7 @@ import ExpertiseChipsInput from './components/ExpertiseChipsInput';
 import type { StaffProfile } from './components/types';
 import { getMyStaffProfile, updateMyStaffProfile } from '../../api/staff';
 import { landingColors, premium } from '../../components/landing/constants';
+import { useToast } from '../../components/ToastProvider';
 
 const emptyProfile: StaffProfile = {
   name: '',
@@ -29,11 +29,11 @@ const emptyProfile: StaffProfile = {
 };
 
 export default function StaffProfilePage() {
+  const { showError, showSuccess } = useToast();
   const [profile, setProfile] = React.useState<StaffProfile>(emptyProfile);
   const [loading, setLoading] = React.useState(true);
   const [saving, setSaving] = React.useState(false);
   const [error, setError] = React.useState('');
-  const [success, setSuccess] = React.useState('');
 
   const loadProfile = React.useCallback(async () => {
     setLoading(true);
@@ -62,7 +62,6 @@ export default function StaffProfilePage() {
 
   async function handleSave() {
     setSaving(true);
-    setError('');
 
     try {
       await updateMyStaffProfile({
@@ -73,9 +72,9 @@ export default function StaffProfilePage() {
         avatarUrl: profile.photoUrl ?? '',
       });
 
-      setSuccess('Profile updated successfully.');
+      showSuccess('Profile updated successfully.');
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to update profile');
+      showError(err);
     } finally {
       setSaving(false);
     }
@@ -204,16 +203,6 @@ export default function StaffProfilePage() {
           </Grid>
         </Grid>
       </Stack>
-
-      <Snackbar
-        open={Boolean(success)}
-        autoHideDuration={3000}
-        onClose={() => setSuccess('')}
-      >
-        <Alert onClose={() => setSuccess('')} severity="success" variant="filled" sx={{ borderRadius: 3, fontWeight: 800 }}>
-          {success}
-        </Alert>
-      </Snackbar>
     </>
   );
 }

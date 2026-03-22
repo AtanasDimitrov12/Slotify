@@ -12,6 +12,7 @@ import {
   alpha,
 } from '@mui/material';
 import { landingColors } from '../../../components/landing/constants';
+import { useToast } from '../../../components/ToastProvider';
 
 export type TimeOffPayload = {
   startDate: string;
@@ -26,49 +27,97 @@ type Props = {
 };
 
 export default function TimeOffRequestDialog({ open, onClose, onSubmit }: Props) {
+  const { showError, showSuccess } = useToast();
+
   const [startDate, setStartDate] = React.useState('');
   const [endDate, setEndDate] = React.useState('');
   const [reason, setReason] = React.useState('');
+  const [isSubmitting, setIsSubmitting] = React.useState(false);
 
-  function reset() {
+  const canSubmit =
+    startDate.trim() !== '' &&
+    endDate.trim() !== '' &&
+    startDate <= endDate &&
+    !isSubmitting;
+
+  const reset = React.useCallback(() => {
     setStartDate('');
     setEndDate('');
     setReason('');
-  }
-
-  const canSubmit = Boolean(startDate) && Boolean(endDate) && startDate <= endDate;
+    setIsSubmitting(false);
+  }, []);
 
   React.useEffect(() => {
-    if (!open) reset();
-  }, [open]);
+    if (!open) {
+      reset();
+    }
+  }, [open, reset]);
 
   async function handleSubmit() {
-    await onSubmit({ startDate, endDate, reason: reason.trim() || undefined });
-    onClose();
+    if (!startDate || !endDate) {
+      showError('Start date and end date are required.');
+      return;
+    }
+
+    if (startDate > endDate) {
+      showError('Start date cannot be after end date.');
+      return;
+    }
+
+    try {
+      setIsSubmitting(true);
+
+      await onSubmit({
+        startDate,
+        endDate,
+        reason: reason.trim() || undefined,
+      });
+
+      showSuccess('Time off request submitted.');
+      onClose();
+    } catch (err: unknown) {
+      const message =
+        err instanceof Error ? err.message : 'Failed to submit time off request.';
+      showError(message);
+    } finally {
+      setIsSubmitting(false);
+    }
   }
 
   return (
     <Dialog
       open={open}
-      onClose={onClose}
+      onClose={isSubmitting ? undefined : onClose}
       fullWidth
       maxWidth="sm"
       PaperProps={{
-        sx: { borderRadius: 8, p: 1 }
+        sx: {
+          borderRadius: 8,
+          p: 1,
+        },
       }}
     >
-      <DialogTitle sx={{ fontWeight: 1000, fontSize: 24, letterSpacing: -0.5, py: 3, px: 4 }}>
+      <DialogTitle
+        sx={{
+          fontWeight: 1000,
+          fontSize: 24,
+          letterSpacing: -0.5,
+          py: 3,
+          px: 4,
+        }}
+      >
         Request Time Off
       </DialogTitle>
 
       <DialogContent sx={{ px: 4, pb: 2 }}>
         <Stack spacing={3}>
           <Typography sx={{ color: '#64748B', fontWeight: 600, fontSize: 15 }}>
-            Submit a leave request. The salon owner will receive a notification to review and approve it.
+            Submit a leave request. The salon owner will receive a notification to
+            review and approve it.
           </Typography>
 
           <Stack spacing={2.5}>
-            <Stack direction="row" spacing={2}>
+            <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
               <TextField
                 label="Start Date"
                 type="date"
@@ -77,6 +126,7 @@ export default function TimeOffRequestDialog({ open, onClose, onSubmit }: Props)
                 InputLabelProps={{ shrink: true }}
                 fullWidth
               />
+
               <TextField
                 label="End Date"
                 type="date"
@@ -97,9 +147,23 @@ export default function TimeOffRequestDialog({ open, onClose, onSubmit }: Props)
               fullWidth
             />
 
-            <Box sx={{ p: 2, borderRadius: 2, bgcolor: alpha(landingColors.blue, 0.05), border: `1px solid ${alpha(landingColors.blue, 0.1)}` }}>
-              <Typography sx={{ color: '#0369A1', fontSize: 13, fontWeight: 700 }}>
-                Note: Once approved, your availability for these dates will be automatically blocked.
+            <Box
+              sx={{
+                p: 2,
+                borderRadius: 2,
+                bgcolor: alpha(landingColors.blue, 0.05),
+                border: `1px solid ${alpha(landingColors.blue, 0.1)}`,
+              }}
+            >
+              <Typography
+                sx={{
+                  color: '#0369A1',
+                  fontSize: 13,
+                  fontWeight: 700,
+                }}
+              >
+                Note: Once approved, your availability for these dates will be
+                automatically blocked.
               </Typography>
             </Box>
           </Stack>
@@ -109,10 +173,17 @@ export default function TimeOffRequestDialog({ open, onClose, onSubmit }: Props)
       <DialogActions sx={{ p: 4, pt: 2 }}>
         <Button
           onClick={onClose}
-          sx={{ fontWeight: 800, color: '#64748B', borderRadius: 999, px: 3 }}
+          disabled={isSubmitting}
+          sx={{
+            fontWeight: 800,
+            color: '#64748B',
+            borderRadius: 999,
+            px: 3,
+          }}
         >
           Cancel
         </Button>
+
         <Button
           variant="contained"
           disabled={!canSubmit}
@@ -124,10 +195,13 @@ export default function TimeOffRequestDialog({ open, onClose, onSubmit }: Props)
             minHeight: 48,
             bgcolor: landingColors.purple,
             boxShadow: `0 12px 30px ${alpha(landingColors.purple, 0.24)}`,
-            '&:hover': { bgcolor: landingColors.purple, filter: 'brightness(1.05)' },
+            '&:hover': {
+              bgcolor: landingColors.purple,
+              filter: 'brightness(1.05)',
+            },
           }}
         >
-          Submit Request
+          {isSubmitting ? 'Submitting...' : 'Submit Request'}
         </Button>
       </DialogActions>
     </Dialog>
