@@ -86,7 +86,7 @@ export class PublicBookingService {
 
     const tenantId = new Types.ObjectId(String(tenant._id));
 
-    const [details, staffProfiles, assignments] = await Promise.all([
+    const [details, staffProfiles, assignments, bookingSettings] = await Promise.all([
       this.tenantDetailsModel
         .findOne({ tenantId: String(tenant._id), isPublished: true })
         .lean(),
@@ -103,6 +103,9 @@ export class PublicBookingService {
           tenantId,
           isOffered: true,
         })
+        .lean(),
+      this.tenantBookingSettingsModel
+        .findOne({ tenantId })
         .lean(),
     ]);
 
@@ -166,6 +169,7 @@ export class PublicBookingService {
         avatarUrl: staff.avatarUrl,
         expertise: staff.expertise,
       })),
+      maximumDaysInAdvance: bookingSettings?.maximumDaysInAdvance ?? 30,
     };
   }
 

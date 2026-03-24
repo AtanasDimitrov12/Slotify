@@ -82,6 +82,7 @@ export type BookingOptionsResponse = {
   details?: PublicTenantDetails;
   services: BookingOptionService[];
   staff: BookingOptionStaff[];
+  maximumDaysInAdvance: number;
 };
 
 export type AvailabilitySlot = {

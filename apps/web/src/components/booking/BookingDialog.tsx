@@ -21,12 +21,9 @@ import {
     alpha,
 } from '@mui/material';
 import CheckCircleRoundedIcon from '@mui/icons-material/CheckCircleRounded';
-import ArrowBackRoundedIcon from '@mui/icons-material/ArrowBackRounded';
-import ArrowForwardRoundedIcon from '@mui/icons-material/ArrowForwardRounded';
-import EventAvailableRoundedIcon from '@mui/icons-material/EventAvailableRounded';
 import PersonRoundedIcon from '@mui/icons-material/PersonRounded';
 import ContentCutRoundedIcon from '@mui/icons-material/ContentCutRounded';
-import AccessTimeRoundedIcon from '@mui/icons-material/AccessTimeRounded';
+import EventAvailableRoundedIcon from '@mui/icons-material/EventAvailableRounded';
 import {
     createReservation,
     getAvailability,
@@ -35,7 +32,7 @@ import {
     type BookingOptionService,
     type BookingOptionStaff,
 } from '../../api/publicTenants';
-import { landingColors, premium } from '../landing/constants';
+import { landingColors } from '../landing/constants';
 import { useToast } from '../ToastProvider';
 
 type BookingDialogProps = {
@@ -102,19 +99,29 @@ function isQuarterHourSlot(slot: AvailabilitySlot) {
     return minutes % 15 === 0;
 }
 
-function getDisplaySlots(slots: AvailabilitySlot[]) {
-    const quarterHourSlots = slots.filter(isQuarterHourSlot);
-    return quarterHourSlots.length > 0 ? quarterHourSlots : slots;
-}
+function groupSlots(allSlots: AvailabilitySlot[]) {
+    const sortedByScore = [...allSlots].sort((a, b) => b.score - a.score);
+    
+    // Logic: If there are slots with score >= 800 (perfect fit), show them.
+    // This now uses ALL slots, including those not on the 15-minute mark.
+    let recommended = sortedByScore.filter((s) => s.score >= 800);
+    if (recommended.length === 0 && sortedByScore.length > 0) {
+        recommended = sortedByScore.filter(s => s.score > 0).slice(0, 3);
+    } else {
+        recommended = recommended.slice(0, 4);
+    }
 
-function groupSlots(slots: AvailabilitySlot[]) {
-    const groups: Record<'Morning' | 'Afternoon' | 'Evening', AvailabilitySlot[]> = {
+    const groups: Record<'Recommended' | 'Morning' | 'Afternoon' | 'Evening', AvailabilitySlot[]> = {
+        Recommended: recommended,
         Morning: [],
         Afternoon: [],
         Evening: [],
     };
 
-    slots.forEach((slot) => {
+    // For the main lists, we only show quarter-hour slots to keep the UI clean
+    const filteredSlots = allSlots.filter(isQuarterHourSlot);
+
+    filteredSlots.forEach((slot) => {
         const hour = new Date(slot.startTime).getHours();
 
         if (hour < 12) {
@@ -152,6 +159,7 @@ export default function BookingDialog({
     const [optionsError, setOptionsError] = React.useState('');
     const [services, setServices] = React.useState<BookingOptionService[]>([]);
     const [staff, setStaff] = React.useState<BookingOptionStaff[]>([]);
+    const [maxDays, setMaxDays] = React.useState(14);
 
     const [selectedServiceId, setSelectedServiceId] = React.useState('');
     const [selectedStaffId, setSelectedStaffId] = React.useState('');
@@ -169,9 +177,8 @@ export default function BookingDialog({
     const [submitLoading, setSubmitLoading] = React.useState(false);
     const [successMessage, setSuccessMessage] = React.useState('');
 
-    const nextDays = React.useMemo(() => getNextDays(14), []);
-    const displaySlots = React.useMemo(() => getDisplaySlots(slots), [slots]);
-    const groupedSlots = React.useMemo(() => groupSlots(displaySlots), [displaySlots]);
+    const nextDays = React.useMemo(() => getNextDays(Math.max(maxDays, 14)), [maxDays]);
+    const groupedSlots = React.useMemo(() => groupSlots(slots), [slots]);
 
     const selectedService = services.find((item) => item._id === selectedServiceId);
 
@@ -188,6 +195,7 @@ export default function BookingDialog({
                 const result = await getBookingOptions(slug);
                 setServices(result.services);
                 setStaff(result.staff);
+                setMaxDays(result.maximumDaysInAdvance);
 
                 if (result.services.length === 1) {
                     setSelectedServiceId(result.services[0]._id);
@@ -355,50 +363,56 @@ export default function BookingDialog({
         return (
             <Box
                 sx={{
-                    p: 2,
-                    borderRadius: 4,
+                    p: 1.5,
+                    borderRadius: 3,
                     bgcolor: alpha(landingColors.purple, 0.04),
                     border: `1px solid ${alpha(landingColors.purple, 0.08)}`,
                 }}
             >
                 <Stack
-                    direction={{ xs: 'column', sm: 'row' }}
-                    spacing={1.5}
+                    direction="row"
+                    spacing={1}
                     useFlexGap
                     flexWrap="wrap"
                 >
                     <Chip
-                        icon={<ContentCutRoundedIcon sx={{ fontSize: '1.1rem !important' }} />}
-                        label={selectedService ? selectedService.name : 'Choose service'}
+                        icon={<ContentCutRoundedIcon sx={{ fontSize: '1rem !important' }} />}
+                        label={selectedService ? selectedService.name : 'Service'}
+                        size="small"
                         sx={{
-                            fontWeight: 800,
-                            bgcolor: selectedService ? alpha(landingColors.purple, 0.12) : 'transparent',
+                            fontWeight: 700,
+                            borderRadius: 1.5,
+                            bgcolor: selectedService ? alpha(landingColors.purple, 0.1) : 'transparent',
                             color: selectedService ? landingColors.purple : 'text.secondary',
-                            border: `1px solid ${selectedService ? alpha(landingColors.purple, 0.2) : 'rgba(0,0,0,0.08)'}`,
+                            border: `1px solid ${selectedService ? alpha(landingColors.purple, 0.2) : 'rgba(0,0,0,0.06)'}`,
                         }}
                     />
                     <Chip
-                        icon={<PersonRoundedIcon sx={{ fontSize: '1.1rem !important' }} />}
+                        icon={<PersonRoundedIcon sx={{ fontSize: '1rem !important' }} />}
                         label={
                             selectedSlot
-                                ? staff.find((member) => member._id === selectedSlot.staffId)?.displayName ?? 'Selected staff'
-                                : staff.find((m) => m._id === selectedStaffId)?.displayName ?? 'Any available'
+                                ? staff.find((member) => member._id === selectedSlot.staffId)?.displayName ?? 'Staff'
+                                : staff.find((m) => m._id === selectedStaffId)?.displayName ?? 'Any Staff'
                         }
+                        size="small"
                         sx={{
-                            fontWeight: 800,
-                            bgcolor: (selectedStaffId || selectedSlot) ? alpha(landingColors.purple, 0.12) : 'transparent',
+                            fontWeight: 700,
+                            borderRadius: 1.5,
+                            bgcolor: (selectedStaffId || selectedSlot) ? alpha(landingColors.purple, 0.1) : 'transparent',
                             color: (selectedStaffId || selectedSlot) ? landingColors.purple : 'text.secondary',
-                            border: `1px solid ${(selectedStaffId || selectedSlot) ? alpha(landingColors.purple, 0.2) : 'rgba(0,0,0,0.08)'}`,
+                            border: `1px solid ${(selectedStaffId || selectedSlot) ? alpha(landingColors.purple, 0.2) : 'rgba(0,0,0,0.06)'}`,
                         }}
                     />
                     <Chip
-                        icon={<EventAvailableRoundedIcon sx={{ fontSize: '1.1rem !important' }} />}
-                        label={selectedSlot ? formatSlotDateTime(selectedSlot.startTime) : 'Choose time'}
+                        icon={<EventAvailableRoundedIcon sx={{ fontSize: '1rem !important' }} />}
+                        label={selectedSlot ? formatSlotTime(selectedSlot.startTime) : 'Time'}
+                        size="small"
                         sx={{
-                            fontWeight: 800,
-                            bgcolor: selectedSlot ? alpha(landingColors.purple, 0.12) : 'transparent',
+                            fontWeight: 700,
+                            borderRadius: 1.5,
+                            bgcolor: selectedSlot ? alpha(landingColors.purple, 0.1) : 'transparent',
                             color: selectedSlot ? landingColors.purple : 'text.secondary',
-                            border: `1px solid ${selectedSlot ? alpha(landingColors.purple, 0.2) : 'rgba(0,0,0,0.08)'}`,
+                            border: `1px solid ${selectedSlot ? alpha(landingColors.purple, 0.2) : 'rgba(0,0,0,0.06)'}`,
                         }}
                     />
                 </Stack>
@@ -408,62 +422,58 @@ export default function BookingDialog({
 
     function renderServiceStep() {
         return (
-            <Stack spacing={3}>
+            <Stack spacing={2.5}>
                 <Box>
-                    <Typography sx={{ fontWeight: 1000, fontSize: 28, letterSpacing: -1, color: '#0F172A' }}>
+                    <Typography sx={{ fontWeight: 900, fontSize: 24, letterSpacing: -0.5, color: '#0F172A' }}>
                         Select Service
                     </Typography>
-                    <Typography sx={{ color: '#64748B', fontWeight: 600, fontSize: 16 }}>
+                    <Typography sx={{ color: '#64748B', fontWeight: 500, fontSize: 15 }}>
                         Choose the treatment you would like to receive.
                     </Typography>
                 </Box>
 
-                <Stack spacing={2}>
+                <Stack spacing={1.5}>
                     {services.map((service) => {
                         const selected = selectedServiceId === service._id;
                         return (
                             <Card
                                 key={service._id}
+                                elevation={0}
                                 sx={{
-                                    borderRadius: 4,
+                                    borderRadius: 3,
                                     border: '1px solid',
-                                    borderColor: selected ? landingColors.purple : 'rgba(15,23,42,0.06)',
+                                    borderColor: selected ? landingColors.purple : 'rgba(15,23,42,0.08)',
                                     bgcolor: selected ? alpha(landingColors.purple, 0.02) : '#FFFFFF',
-                                    boxShadow: selected ? `0 12px 30px ${alpha(landingColors.purple, 0.12)}` : '0 4px 12px rgba(15,23,42,0.03)',
                                     transition: 'all 0.2s ease',
                                     '&:hover': {
                                         borderColor: landingColors.purple,
-                                        transform: 'translateY(-2px)',
                                     },
                                 }}
                             >
-                                <CardActionArea onClick={() => setSelectedServiceId(service._id)} sx={{ p: 0.5 }}>
-                                    <CardContent sx={{ p: 2.5 }}>
+                                <CardActionArea onClick={() => setSelectedServiceId(service._id)}>
+                                    <CardContent sx={{ p: 2 }}>
                                         <Stack
-                                            direction={{ xs: 'column', sm: 'row' }}
+                                            direction="row"
                                             justifyContent="space-between"
-                                            alignItems={{ xs: 'flex-start', sm: 'center' }}
+                                            alignItems="center"
                                             spacing={2}
                                         >
                                             <Box>
-                                                <Typography sx={{ fontWeight: 1000, fontSize: 18, color: '#0F172A' }}>
+                                                <Typography sx={{ fontWeight: 800, fontSize: 16, color: '#0F172A' }}>
                                                     {service.name}
                                                 </Typography>
                                                 {service.description ? (
-                                                    <Typography sx={{ color: '#64748B', fontWeight: 500, fontSize: 14, mt: 0.5, lineHeight: 1.5 }}>
+                                                    <Typography sx={{ color: '#64748B', fontWeight: 500, fontSize: 13, mt: 0.5 }}>
                                                         {service.description}
                                                     </Typography>
                                                 ) : null}
                                             </Box>
 
-                                            <Stack direction="row" spacing={1.5} sx={{ alignSelf: { xs: 'flex-end', sm: 'center' } }}>
-                                                <Chip
-                                                    icon={<AccessTimeRoundedIcon style={{ fontSize: 14 }} />}
-                                                    label={`${service.durationMin} min`}
-                                                    size="small"
-                                                    sx={{ fontWeight: 800, bgcolor: 'rgba(15,23,42,0.04)', color: '#475569' }}
-                                                />
-                                                <Typography sx={{ fontWeight: 1000, fontSize: 18, color: landingColors.purple }}>
+                                            <Stack direction="row" spacing={1.5} alignItems="center">
+                                                <Typography sx={{ color: '#64748B', fontWeight: 600, fontSize: 13 }}>
+                                                    {service.durationMin} min
+                                                </Typography>
+                                                <Typography sx={{ fontWeight: 800, fontSize: 16, color: landingColors.purple }}>
                                                     €{service.priceEUR}
                                                 </Typography>
                                             </Stack>
@@ -480,32 +490,32 @@ export default function BookingDialog({
 
     function renderStaffStep() {
         return (
-            <Stack spacing={3}>
+            <Stack spacing={2.5}>
                 <Box>
-                    <Typography sx={{ fontWeight: 1000, fontSize: 28, letterSpacing: -1, color: '#0F172A' }}>
+                    <Typography sx={{ fontWeight: 900, fontSize: 24, letterSpacing: -0.5, color: '#0F172A' }}>
                         Select Staff
                     </Typography>
-                    <Typography sx={{ color: '#64748B', fontWeight: 600, fontSize: 16 }}>
-                        Pick your favorite professional or choose anyone available.
+                    <Typography sx={{ color: '#64748B', fontWeight: 500, fontSize: 15 }}>
+                        Pick your professional or choose anyone available.
                     </Typography>
                 </Box>
 
-                <Stack spacing={2}>
+                <Stack spacing={1.5}>
                     <Card
+                        elevation={0}
                         sx={{
-                            borderRadius: 4,
+                            borderRadius: 3,
                             border: '1px solid',
-                            borderColor: selectedStaffId === '' ? landingColors.purple : 'rgba(15,23,42,0.06)',
+                            borderColor: selectedStaffId === '' ? landingColors.purple : 'rgba(15,23,42,0.08)',
                             bgcolor: selectedStaffId === '' ? alpha(landingColors.purple, 0.02) : '#FFFFFF',
-                            boxShadow: selectedStaffId === '' ? `0 12px 30px ${alpha(landingColors.purple, 0.12)}` : '0 4px 12px rgba(15,23,42,0.03)',
                             transition: 'all 0.2s ease',
                         }}
                     >
                         <CardActionArea onClick={() => setSelectedStaffId('')}>
-                            <CardContent sx={{ p: 3 }}>
-                                <Typography sx={{ fontWeight: 1000, fontSize: 18, color: '#0F172A' }}>Any available professional</Typography>
-                                <Typography sx={{ color: '#64748B', fontWeight: 500, fontSize: 14, mt: 0.5 }}>
-                                    Show the best available time slots regardless of who is working.
+                            <CardContent sx={{ p: 2 }}>
+                                <Typography sx={{ fontWeight: 800, fontSize: 16, color: '#0F172A' }}>Any available professional</Typography>
+                                <Typography sx={{ color: '#64748B', fontWeight: 500, fontSize: 13, mt: 0.5 }}>
+                                    Show the best available time slots.
                                 </Typography>
                             </CardContent>
                         </CardActionArea>
@@ -516,20 +526,20 @@ export default function BookingDialog({
                         return (
                             <Card
                                 key={member._id}
+                                elevation={0}
                                 sx={{
-                                    borderRadius: 4,
+                                    borderRadius: 3,
                                     border: '1px solid',
-                                    borderColor: selected ? landingColors.purple : 'rgba(15,23,42,0.06)',
+                                    borderColor: selected ? landingColors.purple : 'rgba(15,23,42,0.08)',
                                     bgcolor: selected ? alpha(landingColors.purple, 0.02) : '#FFFFFF',
-                                    boxShadow: selected ? `0 12px 30px ${alpha(landingColors.purple, 0.12)}` : '0 4px 12px rgba(15,23,42,0.03)',
                                     transition: 'all 0.2s ease',
                                 }}
                             >
                                 <CardActionArea onClick={() => setSelectedStaffId(member._id)}>
-                                    <CardContent sx={{ p: 3 }}>
-                                        <Typography sx={{ fontWeight: 1000, fontSize: 18, color: '#0F172A' }}>{member.displayName}</Typography>
+                                    <CardContent sx={{ p: 2 }}>
+                                        <Typography sx={{ fontWeight: 800, fontSize: 16, color: '#0F172A' }}>{member.displayName}</Typography>
                                         {member.bio ? (
-                                            <Typography sx={{ color: '#64748B', fontWeight: 500, fontSize: 14, mt: 0.5, lineHeight: 1.5 }}>
+                                            <Typography sx={{ color: '#64748B', fontWeight: 500, fontSize: 13, mt: 0.5 }}>
                                                 {member.bio}
                                             </Typography>
                                         ) : null}
@@ -547,44 +557,60 @@ export default function BookingDialog({
         return (
             <Stack spacing={3}>
                 <Box>
-                    <Typography sx={{ fontWeight: 1000, fontSize: 28, letterSpacing: -1, color: '#0F172A' }}>
+                    <Typography sx={{ fontWeight: 900, fontSize: 24, letterSpacing: -0.5, color: '#0F172A' }}>
                         Pick Time
                     </Typography>
-                    <Typography sx={{ color: '#64748B', fontWeight: 600, fontSize: 16 }}>
-                        Select an available date and time for your appointment.
+                    <Typography sx={{ color: '#64748B', fontWeight: 500, fontSize: 15 }}>
+                        Select an available slot for your appointment.
                     </Typography>
                 </Box>
 
-                <Box sx={{ mx: -3, px: 3, overflowX: 'auto', pb: 1, '&::-webkit-scrollbar': { display: 'none' } }}>
-                    <Stack direction="row" spacing={1.5}>
+                <Box
+                    sx={{
+                        mx: -1,
+                        px: 1,
+                        overflowX: 'auto',
+                        pb: 1,
+                        // Improved scrollbar visibility for desktop users
+                        '&::-webkit-scrollbar': { height: 6 },
+                        '&::-webkit-scrollbar-thumb': {
+                            backgroundColor: alpha(landingColors.purple, 0.2),
+                            borderRadius: 3,
+                        },
+                    }}
+                >
+                    <Stack direction="row" spacing={1}>
                         {nextDays.map((date) => {
                             const day = formatDayChip(date);
                             const selected = selectedDate === day.value;
                             return (
-                                <Card
+                                <Box
                                     key={day.value}
+                                    onClick={() => setSelectedDate(day.value)}
                                     sx={{
-                                        minWidth: 100,
+                                        minWidth: 80,
                                         flexShrink: 0,
-                                        borderRadius: 4,
+                                        p: 1.5,
+                                        borderRadius: 2.5,
                                         border: '1px solid',
                                         borderColor: selected ? landingColors.purple : 'rgba(15,23,42,0.06)',
                                         bgcolor: selected ? landingColors.purple : '#FFFFFF',
-                                        boxShadow: selected ? `0 12px 24px ${alpha(landingColors.purple, 0.25)}` : 'none',
+                                        textAlign: 'center',
+                                        cursor: 'pointer',
                                         transition: 'all 0.2s ease',
+                                        '&:hover': {
+                                            borderColor: landingColors.purple,
+                                            bgcolor: selected ? landingColors.purple : alpha(landingColors.purple, 0.02),
+                                        },
                                     }}
                                 >
-                                    <CardActionArea onClick={() => setSelectedDate(day.value)}>
-                                        <CardContent sx={{ textAlign: 'center', py: 2 }}>
-                                            <Typography sx={{ fontSize: 13, fontWeight: 800, color: selected ? '#FFFFFF' : '#64748B', textTransform: 'uppercase', letterSpacing: 0.5 }}>
-                                                {day.title}
-                                            </Typography>
-                                            <Typography sx={{ fontSize: 16, fontWeight: 1000, color: selected ? '#FFFFFF' : '#0F172A', mt: 0.5 }}>
-                                                {day.subtitle}
-                                            </Typography>
-                                        </CardContent>
-                                    </CardActionArea>
-                                </Card>
+                                    <Typography sx={{ fontSize: 11, fontWeight: 700, color: selected ? '#FFFFFF' : '#64748B', textTransform: 'uppercase' }}>
+                                        {day.title}
+                                    </Typography>
+                                    <Typography sx={{ fontSize: 15, fontWeight: 800, color: selected ? '#FFFFFF' : '#0F172A', mt: 0.25 }}>
+                                        {day.subtitle.split(' ')[0]}
+                                    </Typography>
+                                </Box>
                             );
                         })}
                     </Stack>
@@ -592,72 +618,63 @@ export default function BookingDialog({
 
                 <Box>
                     {slotsLoading ? (
-                        <Box sx={{ display: 'grid', placeItems: 'center', minHeight: 300 }}>
-                            <CircularProgress sx={{ color: landingColors.purple }} />
+                        <Box sx={{ display: 'grid', placeItems: 'center', minHeight: 200 }}>
+                            <CircularProgress size={32} sx={{ color: landingColors.purple }} />
                         </Box>
                     ) : slotsError ? (
-                        <Alert severity="error" sx={{ borderRadius: 3 }}>{slotsError}</Alert>
-                    ) : displaySlots.length === 0 ? (
-                        <Box sx={{ py: 8, textAlign: 'center', borderRadius: 4, bgcolor: alpha('#F1F5F9', 0.5), border: '1px dashed #CBD5E1' }}>
-                            <Typography sx={{ fontWeight: 800, color: '#64748B' }}>No slots available</Typography>
-                            <Typography sx={{ color: '#94A3B8', mt: 1 }}>Please try another date or professional.</Typography>
+                        <Alert severity="error" sx={{ borderRadius: 2 }}>{slotsError}</Alert>
+                    ) : slots.length === 0 ? (
+                        <Box sx={{ py: 6, textAlign: 'center', borderRadius: 3, bgcolor: alpha('#F1F5F9', 0.5), border: '1px dashed #CBD5E1' }}>
+                            <Typography sx={{ fontWeight: 700, color: '#64748B' }}>No slots available</Typography>
                         </Box>
                     ) : (
-                        <Stack spacing={4}>
-                            {(['Morning', 'Afternoon', 'Evening'] as const).map((groupName) => {
+                        <Stack spacing={3}>
+                            {(['Recommended', 'Morning', 'Afternoon', 'Evening'] as const).map((groupName) => {
                                 const items = groupedSlots[groupName];
                                 if (!items.length) return null;
                                 return (
                                     <Box key={groupName}>
-                                        <Typography sx={{ fontWeight: 1000, fontSize: 14, color: '#94A3B8', textTransform: 'uppercase', letterSpacing: 1, mb: 2 }}>
-                                            {groupName}
+                                        <Typography sx={{ fontWeight: 800, fontSize: 12, color: groupName === 'Recommended' ? landingColors.purple : '#94A3B8', textTransform: 'uppercase', letterSpacing: 0.5, mb: 1.5, display: 'flex', alignItems: 'center', gap: 1 }}>
+                                            {groupName === 'Recommended' && <CheckCircleRoundedIcon sx={{ fontSize: 16 }} />}
+                                            {groupName} {groupName === 'Recommended' && 'Slots'}
                                         </Typography>
                                         <Box
                                             sx={{
                                                 display: 'grid',
                                                 gridTemplateColumns: {
-                                                    xs: 'repeat(2, minmax(0, 1fr))',
-                                                    sm: 'repeat(3, minmax(0, 1fr))',
-                                                    md: 'repeat(4, minmax(0, 1fr))',
+                                                    xs: 'repeat(3, minmax(0, 1fr))',
+                                                    sm: 'repeat(4, minmax(0, 1fr))',
                                                 },
-                                                gap: 1.5,
+                                                gap: 1,
                                             }}
                                         >
                                             {items.map((slot) => {
                                                 const selected =
                                                     selectedSlot?.staffId === slot.staffId &&
                                                     selectedSlot?.startTime === slot.startTime;
-                                                const staffMember = staff.find((m) => m._id === slot.staffId);
                                                 return (
                                                     <Button
                                                         key={`${slot.staffId}-${slot.startTime}`}
                                                         variant={selected ? 'contained' : 'outlined'}
                                                         onClick={() => setSelectedSlot(slot)}
+                                                        size="small"
                                                         sx={{
-                                                            borderRadius: 3,
-                                                            py: 1.5,
-                                                            px: 2,
+                                                            borderRadius: 2,
+                                                            py: 1,
+                                                            px: 1,
                                                             textTransform: 'none',
                                                             bgcolor: selected ? landingColors.purple : 'transparent',
                                                             borderColor: selected ? landingColors.purple : 'rgba(15,23,42,0.1)',
                                                             color: selected ? '#FFFFFF' : '#0F172A',
-                                                            boxShadow: selected ? `0 8px 20px ${alpha(landingColors.purple, 0.25)}` : 'none',
                                                             '&:hover': {
                                                                 bgcolor: selected ? landingColors.purple : alpha(landingColors.purple, 0.04),
                                                                 borderColor: landingColors.purple,
                                                             },
                                                         }}
                                                     >
-                                                        <Stack alignItems="center" spacing={0.25} sx={{ width: '100%' }}>
-                                                            <Typography sx={{ fontWeight: 1000, fontSize: 16 }}>
-                                                                {formatSlotTime(slot.startTime)}
-                                                            </Typography>
-                                                            {!selectedStaffId && staffMember ? (
-                                                                <Typography sx={{ fontSize: 11, fontWeight: 700, opacity: 0.7, textTransform: 'uppercase', letterSpacing: 0.5 }}>
-                                                                    {staffMember.displayName.split(' ')[0]}
-                                                                </Typography>
-                                                            ) : null}
-                                                        </Stack>
+                                                        <Typography sx={{ fontWeight: 700, fontSize: 14 }}>
+                                                            {formatSlotTime(slot.startTime)}
+                                                        </Typography>
                                                     </Button>
                                                 );
                                             })}
@@ -674,52 +691,50 @@ export default function BookingDialog({
 
     function renderDetailsStep() {
         return (
-            <Stack spacing={4}>
+            <Stack spacing={3}>
                 <Box>
-                    <Typography sx={{ fontWeight: 1000, fontSize: 28, letterSpacing: -1, color: '#0F172A' }}>
+                    <Typography sx={{ fontWeight: 900, fontSize: 24, letterSpacing: -0.5, color: '#0F172A' }}>
                         Your Details
                     </Typography>
-                    <Typography sx={{ color: '#64748B', fontWeight: 600, fontSize: 16 }}>
-                        Almost there! Just a few details to finalize your spot.
+                    <Typography sx={{ color: '#64748B', fontWeight: 500, fontSize: 15 }}>
+                        Almost there! Provide your details to finalize.
                     </Typography>
                 </Box>
 
-                <Stack spacing={3}>
+                <Stack spacing={2}>
                     <TextField
                         label="Full Name"
-                        placeholder="e.g. Michael Scott"
+                        size="small"
                         value={customerName}
                         onChange={(event) => setCustomerName(event.target.value)}
                         fullWidth
                         required
                     />
 
-                    <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2.5}>
-                        <TextField
-                            label="Phone Number"
-                            placeholder="e.g. +1 234 567 890"
-                            value={customerPhone}
-                            onChange={(event) => setCustomerPhone(event.target.value)}
-                            fullWidth
-                            required
-                        />
-
-                        <TextField
-                            label="Email Address"
-                            placeholder="e.g. michael@dundermifflin.com"
-                            value={customerEmail}
-                            onChange={(event) => setCustomerEmail(event.target.value)}
-                            fullWidth
-                        />
-                    </Stack>
+                    <TextField
+                        label="Phone Number"
+                        size="small"
+                        value={customerPhone}
+                        onChange={(event) => setCustomerPhone(event.target.value)}
+                        fullWidth
+                        required
+                    />
 
                     <TextField
-                        label="Add a note (optional)"
-                        placeholder="Any special requests or details for the barber?"
+                        label="Email Address"
+                        size="small"
+                        value={customerEmail}
+                        onChange={(event) => setCustomerEmail(event.target.value)}
+                        fullWidth
+                    />
+
+                    <TextField
+                        label="Note (optional)"
+                        size="small"
                         value={notes}
                         onChange={(event) => setNotes(event.target.value)}
                         multiline
-                        minRows={4}
+                        minRows={2}
                         fullWidth
                     />
                 </Stack>
@@ -730,74 +745,65 @@ export default function BookingDialog({
     function renderSuccessStep() {
         return (
             <Stack
-                spacing={4}
+                spacing={3}
                 alignItems="center"
                 justifyContent="center"
-                sx={{ minHeight: 480, textAlign: 'center' }}
+                sx={{ minHeight: 400, textAlign: 'center' }}
             >
                 <Box
                     sx={{
-                        width: 100,
-                        height: 100,
-                        borderRadius: 999,
+                        width: 80,
+                        height: 80,
+                        borderRadius: '50%',
                         bgcolor: alpha(landingColors.success, 0.1),
                         display: 'grid',
                         placeItems: 'center',
                         color: landingColors.success,
-                        mb: 1,
                     }}
                 >
-                    <CheckCircleRoundedIcon sx={{ fontSize: 60 }} />
+                    <CheckCircleRoundedIcon sx={{ fontSize: 48 }} />
                 </Box>
                 
                 <Box>
-                    <Typography sx={{ fontWeight: 1000, fontSize: 36, letterSpacing: -1.5, color: '#0F172A', lineHeight: 1 }}>
-                        Booking Confirmed!
+                    <Typography sx={{ fontWeight: 900, fontSize: 28, letterSpacing: -0.5, color: '#0F172A' }}>
+                        Confirmed!
                     </Typography>
-                    <Typography sx={{ color: '#64748B', fontWeight: 600, fontSize: 18, mt: 1.5, maxWidth: 420 }}>
-                        {successMessage || 'We have successfully reserved your slot. See you soon!'}
+                    <Typography sx={{ color: '#64748B', fontWeight: 500, fontSize: 16, mt: 1 }}>
+                        {successMessage || 'We have successfully reserved your slot.'}
                     </Typography>
                 </Box>
 
                 {selectedService && selectedSlot ? (
-                    <Card
+                    <Box
                         sx={{
-                            borderRadius: 6,
-                            border: '1px solid',
-                            borderColor: 'rgba(15,23,42,0.06)',
+                            borderRadius: 4,
+                            border: '1px solid rgba(15,23,42,0.06)',
                             bgcolor: '#FFFFFF',
-                            boxShadow: '0 20px 50px rgba(15,23,42,0.06)',
+                            p: 3,
                             width: '100%',
-                            maxWidth: 480,
+                            maxWidth: 360,
+                            textAlign: 'left',
                         }}
                     >
-                        <CardContent sx={{ p: 4 }}>
-                            <Stack spacing={3} textAlign="left">
-                                <Typography sx={{ fontWeight: 1000, fontSize: 18, color: '#0F172A', textTransform: 'uppercase', letterSpacing: 1 }}>
-                                    Appointment Details
+                        <Stack spacing={2}>
+                            <Box>
+                                <Typography sx={{ color: '#94A3B8', fontWeight: 700, fontSize: 11, textTransform: 'uppercase' }}>Service</Typography>
+                                <Typography sx={{ fontWeight: 800, color: '#0F172A' }}>{selectedService.name}</Typography>
+                            </Box>
+                            <Box>
+                                <Typography sx={{ color: '#94A3B8', fontWeight: 700, fontSize: 11, textTransform: 'uppercase' }}>Professional</Typography>
+                                <Typography sx={{ fontWeight: 800, color: '#0F172A' }}>
+                                    {staff.find((member) => member._id === selectedSlot.staffId)?.displayName ?? 'Expert Staff'}
                                 </Typography>
-                                
-                                <Stack spacing={2}>
-                                    <Box>
-                                        <Typography sx={{ color: '#94A3B8', fontWeight: 800, fontSize: 11, textTransform: 'uppercase', letterSpacing: 1 }}>Service</Typography>
-                                        <Typography sx={{ fontWeight: 1000, color: '#0F172A', fontSize: 18 }}>{selectedService.name}</Typography>
-                                    </Box>
-                                    <Box>
-                                        <Typography sx={{ color: '#94A3B8', fontWeight: 800, fontSize: 11, textTransform: 'uppercase', letterSpacing: 1 }}>Professional</Typography>
-                                        <Typography sx={{ fontWeight: 1000, color: '#0F172A', fontSize: 18 }}>
-                                            {staff.find((member) => member._id === selectedSlot.staffId)?.displayName ?? 'Expert Staff'}
-                                        </Typography>
-                                    </Box>
-                                    <Box>
-                                        <Typography sx={{ color: '#94A3B8', fontWeight: 800, fontSize: 11, textTransform: 'uppercase', letterSpacing: 1 }}>Date & Time</Typography>
-                                        <Typography sx={{ fontWeight: 1000, color: landingColors.purple, fontSize: 18 }}>
-                                            {formatSlotDateTime(selectedSlot.startTime)}
-                                        </Typography>
-                                    </Box>
-                                </Stack>
-                            </Stack>
-                        </CardContent>
-                    </Card>
+                            </Box>
+                            <Box>
+                                <Typography sx={{ color: '#94A3B8', fontWeight: 700, fontSize: 11, textTransform: 'uppercase' }}>Date & Time</Typography>
+                                <Typography sx={{ fontWeight: 800, color: landingColors.purple }}>
+                                    {formatSlotDateTime(selectedSlot.startTime)}
+                                </Typography>
+                            </Box>
+                        </Stack>
+                    </Box>
                 ) : null}
             </Stack>
         );
@@ -832,13 +838,13 @@ export default function BookingDialog({
 
     function getPrimaryAction() {
         const btnSx = {
-            minHeight: 52,
-            px: 4,
-            borderRadius: 999,
-            fontWeight: 1000,
-            fontSize: 16,
+            minHeight: 48,
+            px: 3,
+            borderRadius: 2,
+            fontWeight: 800,
+            fontSize: 15,
+            textTransform: 'none',
             bgcolor: landingColors.purple,
-            boxShadow: `0 12px 30px ${alpha(landingColors.purple, 0.24)}`,
             '&:hover': { bgcolor: landingColors.purple, filter: 'brightness(1.05)' },
         };
 
@@ -846,12 +852,11 @@ export default function BookingDialog({
             return (
                 <Button
                     variant="contained"
-                    endIcon={<ArrowForwardRoundedIcon />}
                     onClick={handleNext}
                     disabled={!canContinueFromService}
                     sx={btnSx}
                 >
-                    Choose Staff
+                    Continue
                 </Button>
             );
         }
@@ -859,7 +864,6 @@ export default function BookingDialog({
             return (
                 <Button
                     variant="contained"
-                    endIcon={<ArrowForwardRoundedIcon />}
                     onClick={handleNext}
                     sx={btnSx}
                 >
@@ -871,7 +875,6 @@ export default function BookingDialog({
             return (
                 <Button
                     variant="contained"
-                    endIcon={<ArrowForwardRoundedIcon />}
                     onClick={handleNext}
                     disabled={!canContinueFromTime}
                     sx={btnSx}
@@ -888,13 +891,13 @@ export default function BookingDialog({
                     disabled={!canConfirm}
                     sx={btnSx}
                 >
-                    {submitLoading ? 'Booking...' : 'Confirm Reservation'}
+                    {submitLoading ? 'Booking...' : 'Confirm Booking'}
                 </Button>
             );
         }
         return (
             <Button variant="contained" onClick={handleClose} sx={btnSx}>
-                Finish
+                Close
             </Button>
         );
     }
@@ -905,30 +908,31 @@ export default function BookingDialog({
             onClose={handleClose}
             fullScreen={fullScreen}
             fullWidth
-            maxWidth="md"
+            maxWidth="sm"
             PaperProps={{
                 sx: {
-                    borderRadius: fullScreen ? 0 : 8,
-                    minHeight: fullScreen ? '100%' : 800,
+                    borderRadius: fullScreen ? 0 : 4,
+                    minHeight: fullScreen ? '100%' : 600,
                     bgcolor: '#F8FAFC',
                 },
             }}
         >
-            <DialogTitle sx={{ p: { xs: 3, md: 5 }, pb: 0 }}>
-                <Stack spacing={3}>
+            <DialogTitle sx={{ p: { xs: 2, md: 4 }, pb: 0 }}>
+                <Stack spacing={2}>
                     <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                         <Box>
-                            <Typography sx={{ fontWeight: 1000, fontSize: 32, letterSpacing: -1.5, color: '#0F172A', lineHeight: 1 }}>
-                                Book Appointment
-                            </Typography>
-                            <Typography sx={{ color: '#64748B', fontWeight: 700, fontSize: 18, mt: 1 }}>
+                            <Typography sx={{ fontWeight: 900, fontSize: 24, letterSpacing: -1, color: '#0F172A', lineHeight: 1.2 }}>
                                 {salonName}
+                            </Typography>
+                            <Typography sx={{ color: '#64748B', fontWeight: 600, fontSize: 14, mt: 0.5 }}>
+                                Online Booking
                             </Typography>
                         </Box>
                         {!fullScreen && (
                             <Button 
                                 onClick={handleClose} 
-                                sx={{ color: '#94A3B8', fontWeight: 1000, borderRadius: 999, minWidth: 0, p: 1 }}
+                                size="small"
+                                sx={{ color: '#94A3B8', fontWeight: 800, borderRadius: 2, minWidth: 0, p: 1 }}
                             >
                                 CLOSE
                             </Button>
@@ -947,13 +951,13 @@ export default function BookingDialog({
                                 sx={{
                                     p: 0,
                                     bgcolor: alpha(landingColors.purple, 0.06),
-                                    borderRadius: 999,
-                                    height: 8,
+                                    borderRadius: 1,
+                                    height: 6,
                                     overflow: 'hidden',
                                     '& .MuiMobileStepper-progress': {
                                         bgcolor: landingColors.purple,
                                         width: '100%',
-                                        borderRadius: 999,
+                                        borderRadius: 1,
                                     },
                                 }}
                             />
@@ -964,8 +968,8 @@ export default function BookingDialog({
                 </Stack>
             </DialogTitle>
 
-            <DialogContent sx={{ p: { xs: 3, md: 5 }, pt: 4 }}>
-                <Box sx={{ minHeight: fullScreen ? 'auto' : 400 }}>
+            <DialogContent sx={{ p: { xs: 2, md: 4 }, pt: 3 }}>
+                <Box sx={{ minHeight: fullScreen ? 'auto' : 320 }}>
                     {renderStepContent()}
                 </Box>
             </DialogContent>
@@ -974,8 +978,8 @@ export default function BookingDialog({
 
             <Box
                 sx={{
-                    p: { xs: 3, md: 4 },
-                    px: { xs: 3, md: 5 },
+                    p: { xs: 2, md: 3 },
+                    px: { xs: 2, md: 4 },
                     display: 'flex',
                     justifyContent: 'space-between',
                     alignItems: 'center',
@@ -983,14 +987,13 @@ export default function BookingDialog({
                 }}
             >
                 <Button
-                    startIcon={step === STEP_SERVICE ? undefined : <ArrowBackRoundedIcon />}
                     onClick={handleBack}
                     sx={{
-                        fontWeight: 900,
+                        fontWeight: 700,
                         color: '#64748B',
-                        borderRadius: 999,
-                        px: 3,
-                        '&:hover': { bgcolor: alpha('#64748B', 0.05) },
+                        borderRadius: 2,
+                        textTransform: 'none',
+                        px: 2,
                     }}
                 >
                     {step === STEP_SERVICE ? 'Cancel' : 'Back'}
