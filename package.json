@@ -5,10 +5,15 @@
   "main": "index.js",
   "private": true,
   "scripts": {
-    "dev": "pnpm -C apps/api/api dev & pnpm -C apps/web dev",
+    "dev": "pnpm run dev:api & pnpm run dev:web-admin",
+    "dev:all": "pnpm run dev:api & pnpm run dev:web-admin & pnpm run dev:web-user",
     "dev:api": "pnpm -C apps/api/api dev",
-    "dev:web": "pnpm -C apps/web dev",
-    "build": "pnpm --filter ./apps/api/api build && pnpm --filter ./apps/web build",
+    "dev:web-admin": "pnpm -C apps/web-admin dev",
+    "dev:web-user": "pnpm -C apps/web-user dev",
+    "build": "pnpm run build:api && pnpm run build:web-admin && pnpm run build:web-user",
+    "build:api": "pnpm -C apps/api/api build",
+    "build:web-admin": "pnpm -C apps/web-admin build",
+    "build:web-user": "pnpm -C apps/web-user build",
     "test:api:integration": "pnpm --filter api test:e2e",
     "test:web:e2e": "pnpm --filter slotify test:e2e",
     "test": "echo \"Error: no test specified\" && exit 1"
