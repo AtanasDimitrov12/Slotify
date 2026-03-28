@@ -10,6 +10,9 @@ import {
   TextField,
   Typography,
   alpha,
+  useMediaQuery,
+  useTheme,
+  Divider,
 } from '@mui/material';
 import { landingColors } from '../../../components/landing/constants';
 import { useToast } from '../../../components/ToastProvider';
@@ -28,6 +31,8 @@ type Props = {
 
 export default function TimeOffRequestDialog({ open, onClose, onSubmit }: Props) {
   const { showError, showSuccess } = useToast();
+  const theme = useTheme();
+  const fullScreen = useMediaQuery(theme.breakpoints.down('sm'));
 
   const [startDate, setStartDate] = React.useState('');
   const [endDate, setEndDate] = React.useState('');
@@ -89,11 +94,12 @@ export default function TimeOffRequestDialog({ open, onClose, onSubmit }: Props)
       open={open}
       onClose={isSubmitting ? undefined : onClose}
       fullWidth
+      fullScreen={fullScreen}
       maxWidth="sm"
       PaperProps={{
         sx: {
-          borderRadius: 8,
-          p: 1,
+          borderRadius: fullScreen ? 0 : 3,
+          p: 0,
         },
       }}
     >
@@ -109,7 +115,7 @@ export default function TimeOffRequestDialog({ open, onClose, onSubmit }: Props)
         Request Time Off
       </DialogTitle>
 
-      <DialogContent sx={{ px: 4, pb: 2 }}>
+      <DialogContent sx={{ px: 4, pb: 4 }}>
         <Stack spacing={3}>
           <Typography sx={{ color: '#64748B', fontWeight: 600, fontSize: 15 }}>
             Submit a leave request. The salon owner will receive a notification to
@@ -170,7 +176,9 @@ export default function TimeOffRequestDialog({ open, onClose, onSubmit }: Props)
         </Stack>
       </DialogContent>
 
-      <DialogActions sx={{ p: 4, pt: 2 }}>
+      <Divider sx={{ opacity: 0.5 }} />
+
+      <DialogActions sx={{ p: 3, px: 4, bgcolor: '#F8FAFC' }}>
         <Button
           onClick={onClose}
           disabled={isSubmitting}

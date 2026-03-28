@@ -11,6 +11,9 @@ import {
   Typography,
   alpha,
   Box,
+  useMediaQuery,
+  useTheme,
+  Divider,
 } from '@mui/material';
 import type { CatalogServiceOption, StaffService } from './types';
 import { landingColors } from '../../../components/landing/constants';
@@ -38,6 +41,8 @@ export default function ServiceEditorDialog({
   catalogOptions = [],
 }: Props) {
   const { showError, showSuccess } = useToast();
+  const theme = useTheme();
+  const fullScreen = useMediaQuery(theme.breakpoints.down('sm'));
   const [serviceId, setServiceId] = React.useState('');
   const [durationMin, setDurationMin] = React.useState('30');
   const [priceEUR, setPriceEUR] = React.useState('25');
@@ -102,16 +107,17 @@ export default function ServiceEditorDialog({
       open={open}
       onClose={onClose}
       fullWidth
+      fullScreen={fullScreen}
       maxWidth="sm"
       PaperProps={{
-        sx: { borderRadius: 8, p: 1 }
+        sx: { borderRadius: fullScreen ? 0 : 3, p: 0 }
       }}
     >
       <DialogTitle sx={{ fontWeight: 1000, fontSize: 24, letterSpacing: -0.5, py: 3, px: 4 }}>
         {isEditing ? 'Adjust Service' : 'Offer New Service'}
       </DialogTitle>
 
-      <DialogContent sx={{ px: 4, pb: 2 }}>
+      <DialogContent sx={{ px: 4, pb: 4 }}>
         <Stack spacing={3}>
           <Typography sx={{ color: '#64748B', fontWeight: 600, fontSize: 15 }}>
             {isEditing 
@@ -171,7 +177,9 @@ export default function ServiceEditorDialog({
         </Stack>
       </DialogContent>
 
-      <DialogActions sx={{ p: 4, pt: 2 }}>
+      <Divider sx={{ opacity: 0.5 }} />
+
+      <DialogActions sx={{ p: 3, px: 4, bgcolor: '#F8FAFC' }}>
         <Button
           onClick={onClose}
           sx={{ fontWeight: 800, color: '#64748B', borderRadius: 999, px: 3 }}

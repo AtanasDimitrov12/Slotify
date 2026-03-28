@@ -9,6 +9,9 @@ import {
   TextField,
   Typography,
   alpha,
+  useMediaQuery,
+  useTheme,
+  Divider,
 } from '@mui/material';
 import { landingColors } from '../../../components/landing/constants';
 import { useToast } from '../../../components/ToastProvider';
@@ -45,6 +48,8 @@ export default function TenantFormDialog({
   onSubmit,
 }: Props) {
   const { showError, showSuccess } = useToast();
+  const theme = useTheme();
+  const fullScreen = useMediaQuery(theme.breakpoints.down('sm'));
   const [form, setForm] = React.useState<TenantFormValues>(emptyValues);
 
   React.useEffect(() => {
@@ -98,11 +103,12 @@ export default function TenantFormDialog({
       open={open}
       onClose={submitting ? undefined : onClose}
       fullWidth
+      fullScreen={fullScreen}
       maxWidth="sm"
       PaperProps={{
         sx: {
-          borderRadius: 8,
-          p: 1,
+          borderRadius: fullScreen ? 0 : 3,
+          p: 0,
         },
       }}
     >
@@ -110,7 +116,7 @@ export default function TenantFormDialog({
         {isEdit ? 'Edit Tenant' : 'Onboard New Tenant'}
       </DialogTitle>
 
-      <DialogContent sx={{ px: 4, pb: 2 }}>
+      <DialogContent sx={{ px: 4, pb: 4 }}>
         <Stack spacing={3}>
           <Typography sx={{ color: '#64748B', fontWeight: 600, fontSize: 15, lineHeight: 1.6 }}>
             {isEdit
@@ -163,7 +169,9 @@ export default function TenantFormDialog({
         </Stack>
       </DialogContent>
 
-      <DialogActions sx={{ p: 4, pt: 2 }}>
+      <Divider sx={{ opacity: 0.5 }} />
+
+      <DialogActions sx={{ p: 3, px: 4, bgcolor: '#F8FAFC' }}>
         <Button
           onClick={onClose}
           sx={{

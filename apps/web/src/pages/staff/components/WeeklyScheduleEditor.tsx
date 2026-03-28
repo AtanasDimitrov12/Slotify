@@ -16,38 +16,39 @@ export default function WeeklyScheduleEditor({ value, onChange }: Props) {
   return (
     <Card
       sx={{
-        borderRadius: 6,
+        borderRadius: 3,
         border: '1px solid',
         borderColor: 'rgba(15,23,42,0.06)',
         bgcolor: '#FFFFFF',
         boxShadow: '0 10px 40px rgba(15,23,42,0.04)',
       }}
     >
-      <CardContent sx={{ p: 4 }}>
+      <CardContent sx={{ p: { xs: 2, sm: 4 } }}>
         <Typography sx={{ fontWeight: 1000, fontSize: 22, color: '#0F172A', mb: 1 }}>
           Weekly Availability
         </Typography>
         <Typography sx={{ color: '#64748B', fontWeight: 600, fontSize: 15, mb: 4 }}>
-          Set your default recurring schedule. You can adjust individual days later.
+          Set your default recurring schedule.
         </Typography>
 
-        <Stack spacing={2}>
+        <Stack spacing={1.5}>
           {value.map((d) => (
             <Box
               key={d.dayOfWeek}
               sx={{
-                p: 2.5,
-                borderRadius: 4,
+                p: 2,
+                borderRadius: 3,
                 border: '1px solid',
                 borderColor: d.enabled ? 'rgba(124,108,255,0.12)' : 'rgba(15,23,42,0.04)',
                 bgcolor: d.enabled ? alpha(landingColors.purple, 0.02) : alpha('#F8FAFC', 0.5),
                 transition: 'all 0.2s ease',
               }}
             >
-              <Grid container spacing={3} alignItems="center">
-                <Grid item xs={12} md={2.5}>
-                  <Stack direction="row" alignItems="center" spacing={2}>
+              <Grid container spacing={2} alignItems="center">
+                <Grid item xs={12} sm={3}>
+                  <Stack direction="row" alignItems="center" spacing={1}>
                     <Switch
+                      size="small"
                       checked={d.enabled}
                       onChange={(e) => patch(d.dayOfWeek, { enabled: e.target.checked })}
                       sx={{
@@ -61,10 +62,10 @@ export default function WeeklyScheduleEditor({ value, onChange }: Props) {
                   </Stack>
                 </Grid>
 
-                <Grid item xs={6} md={2.2}>
+                <Grid item xs={6} sm={2}>
                   <TextField
                     fullWidth
-                    label="Work Start"
+                    label="Start"
                     type="time"
                     value={d.start}
                     disabled={!d.enabled}
@@ -74,10 +75,10 @@ export default function WeeklyScheduleEditor({ value, onChange }: Props) {
                   />
                 </Grid>
 
-                <Grid item xs={6} md={2.2}>
+                <Grid item xs={6} sm={2}>
                   <TextField
                     fullWidth
-                    label="Work End"
+                    label="End"
                     type="time"
                     value={d.end}
                     disabled={!d.enabled}
@@ -87,7 +88,7 @@ export default function WeeklyScheduleEditor({ value, onChange }: Props) {
                   />
                 </Grid>
 
-                <Grid item xs={6} md={2.2}>
+                <Grid item xs={6} sm={2.5}>
                   <TextField
                     fullWidth
                     label="Break Start"
@@ -100,7 +101,7 @@ export default function WeeklyScheduleEditor({ value, onChange }: Props) {
                   />
                 </Grid>
 
-                <Grid item xs={6} md={2.2}>
+                <Grid item xs={6} sm={2.5}>
                   <TextField
                     fullWidth
                     label="Break End"

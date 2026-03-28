@@ -10,6 +10,9 @@ import {
   TextField,
   Typography,
   alpha,
+  useMediaQuery,
+  useTheme,
+  Divider,
 } from '@mui/material';
 import { landingColors } from '../../../components/landing/constants';
 import { useToast } from '../../../components/ToastProvider';
@@ -42,6 +45,8 @@ export default function AddAppointmentDialog({
   services: ServiceOption[];
 }) {
   const { showError, showSuccess } = useToast();
+  const theme = useTheme();
+  const fullScreen = useMediaQuery(theme.breakpoints.down('sm'));
   const [staffServiceAssignmentId, setStaffServiceAssignmentId] = React.useState('');
   const [startTime, setStartTime] = React.useState('10:00');
   const [customerName, setCustomerName] = React.useState('');
@@ -114,16 +119,17 @@ export default function AddAppointmentDialog({
       open={open}
       onClose={onClose}
       fullWidth
+      fullScreen={fullScreen}
       maxWidth="sm"
       PaperProps={{
-        sx: { borderRadius: 8, p: 1 }
+        sx: { borderRadius: fullScreen ? 0 : 3, p: 0 }
       }}
     >
       <DialogTitle sx={{ fontWeight: 1000, fontSize: 24, letterSpacing: -0.5, py: 3, px: 4 }}>
         New Appointment
       </DialogTitle>
 
-      <DialogContent sx={{ px: 4, pb: 2 }}>
+      <DialogContent sx={{ px: 4, pb: 4 }}>
         <Stack spacing={3}>
           <Typography sx={{ color: '#64748B', fontWeight: 600, fontSize: 15 }}>
             Fill in the customer details and select a service to book a slot manually.
@@ -194,7 +200,9 @@ export default function AddAppointmentDialog({
         </Stack>
       </DialogContent>
 
-      <DialogActions sx={{ p: 4, pt: 2 }}>
+      <Divider sx={{ opacity: 0.5 }} />
+
+      <DialogActions sx={{ p: 3, px: 4, bgcolor: '#F8FAFC' }}>
         <Button
           onClick={onClose}
           sx={{ fontWeight: 800, color: '#64748B', borderRadius: 999, px: 3 }}

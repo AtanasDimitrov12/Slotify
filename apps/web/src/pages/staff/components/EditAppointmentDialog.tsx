@@ -10,6 +10,9 @@ import {
   TextField,
   Typography,
   alpha,
+  useMediaQuery,
+  useTheme,
+  Divider,
 } from '@mui/material';
 import type { StaffAppointment } from '../../../api/staffAppointments';
 import { landingColors } from '../../../components/landing/constants';
@@ -43,6 +46,8 @@ export default function EditAppointmentDialog({
   saving: boolean;
 }) {
   const { showError, showSuccess } = useToast();
+  const theme = useTheme();
+  const fullScreen = useMediaQuery(theme.breakpoints.down('sm'));
   const [startTime, setStartTime] = React.useState('10:00');
   const [customerName, setCustomerName] = React.useState('');
   const [customerPhone, setCustomerPhone] = React.useState('');
@@ -108,16 +113,17 @@ export default function EditAppointmentDialog({
       open={open}
       onClose={onClose}
       fullWidth
+      fullScreen={fullScreen}
       maxWidth="sm"
       PaperProps={{
-        sx: { borderRadius: 8, p: 1 }
+        sx: { borderRadius: fullScreen ? 0 : 3, p: 0 }
       }}
     >
       <DialogTitle sx={{ fontWeight: 1000, fontSize: 24, letterSpacing: -0.5, py: 3, px: 4 }}>
         Edit Appointment
       </DialogTitle>
 
-      <DialogContent sx={{ px: 4, pb: 2 }}>
+      <DialogContent sx={{ px: 4, pb: 4 }}>
         <Stack spacing={3}>
           <Typography sx={{ color: '#64748B', fontWeight: 600, fontSize: 15 }}>
             Adjust the timing, customer details, or update the current status of this booking.
@@ -188,7 +194,9 @@ export default function EditAppointmentDialog({
         </Stack>
       </DialogContent>
 
-      <DialogActions sx={{ p: 4, pt: 2 }}>
+      <Divider sx={{ opacity: 0.5 }} />
+
+      <DialogActions sx={{ p: 3, px: 4, bgcolor: '#F8FAFC' }}>
         <Button
           onClick={onClose}
           sx={{ fontWeight: 800, color: '#64748B', borderRadius: 999, px: 3 }}

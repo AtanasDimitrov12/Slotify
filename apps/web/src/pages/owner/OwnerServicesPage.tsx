@@ -11,17 +11,22 @@ import {
   Stack,
   Typography,
   alpha,
+  Tooltip,
 } from '@mui/material';
 import AddRoundedIcon from '@mui/icons-material/AddRounded';
 import ContentCutRoundedIcon from '@mui/icons-material/ContentCutRounded';
+import AutoFixHighRoundedIcon from '@mui/icons-material/AutoFixHighRounded';
 import ServiceCatalogDialog, {
   type CatalogServicePayload,
 } from './components/ServiceCatalogDialog';
+import ReviewAIServicesDialog from './components/ReviewAIServicesDialog';
 import {
   createCatalogService,
   deleteCatalogService,
   getCatalogServices,
   updateCatalogService,
+  extractServicesFromAI,
+  createBulkCatalogServices,
   type CatalogServiceItem,
 } from '../../api/servicesCatalog';
 import { landingColors, premium } from '../../components/landing/constants';
@@ -30,10 +35,15 @@ export default function OwnerServicesPage() {
   const [items, setItems] = React.useState<CatalogServiceItem[]>([]);
   const [loading, setLoading] = React.useState(true);
   const [saving, setSaving] = React.useState(false);
+  const [extracting, setExtracting] = React.useState(false);
   const [error, setError] = React.useState('');
   const [success, setSuccess] = React.useState('');
   const [open, setOpen] = React.useState(false);
+  const [reviewOpen, setReviewOpen] = React.useState(false);
   const [editingItem, setEditingItem] = React.useState<CatalogServiceItem | null>(null);
+  const [extractedServices, setExtractedServices] = React.useState<CatalogServicePayload[]>([]);
+  
+  const fileInputRef = React.useRef<HTMLInputElement>(null);
 
   const loadData = React.useCallback(async () => {
     setLoading(true);
@@ -106,6 +116,45 @@ export default function OwnerServicesPage() {
     }
   }
 
+  const handleScanClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    setExtracting(true);
+    setError('');
+
+    try {
+      const services = await extractServicesFromAI(file);
+      setExtractedServices(services);
+      setReviewOpen(true);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to extract services');
+    } finally {
+      setExtracting(false);
+      if (fileInputRef.current) fileInputRef.current.value = '';
+    }
+  };
+
+  const handleBulkConfirm = async (payloads: CatalogServicePayload[]) => {
+    setSaving(true);
+    setError('');
+
+    try {
+      const created = await createBulkCatalogServices(payloads);
+      setItems((prev) => [...created, ...prev]);
+      setSuccess(`${created.length} services created successfully.`);
+      setReviewOpen(false);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to save services');
+    } finally {
+      setSaving(false);
+    }
+  };
+
   if (loading) {
     return (
       <Box sx={{ minHeight: 320, display: 'grid', placeItems: 'center' }}>
@@ -129,21 +178,57 @@ export default function OwnerServicesPage() {
             </Typography>
           </Box>
 
-          <Button
-            variant="contained"
-            startIcon={<AddRoundedIcon />}
-            onClick={handleCreateClick}
-            sx={{
-              minHeight: 52,
-              px: 3,
-              borderRadius: 999,
-              fontWeight: 900,
-              bgcolor: landingColors.purple,
-              boxShadow: `0 12px 30px ${alpha(landingColors.purple, 0.24)}`,
-            }}
-          >
-            Add Service
-          </Button>
+          <Stack direction="row" spacing={2}>
+            <input
+              type="file"
+              ref={fileInputRef}
+              style={{ display: 'none' }}
+              accept="image/*,.pdf"
+              onChange={handleFileChange}
+            />
+            
+            <Tooltip title="Upload a photo or PDF of your pricelist and let AI extract the services for you!">
+              <Button
+                variant="outlined"
+                startIcon={extracting ? <CircularProgress size={20} color="inherit" /> : <AutoFixHighRoundedIcon />}
+                onClick={handleScanClick}
+                disabled={extracting || saving}
+                sx={{
+                  minHeight: 52,
+                  px: 3,
+                  borderRadius: 999,
+                  fontWeight: 900,
+                  borderColor: alpha(landingColors.purple, 0.3),
+                  color: landingColors.purple,
+                  bgcolor: alpha(landingColors.purple, 0.04),
+                  '&:hover': {
+                    bgcolor: alpha(landingColors.purple, 0.08),
+                    borderColor: landingColors.purple,
+                  },
+                }}
+              >
+                {extracting ? 'Scanning...' : 'Scan Pricelist'}
+              </Button>
+            </Tooltip>
+
+            <Button
+              variant="contained"
+              startIcon={<AddRoundedIcon />}
+              onClick={handleCreateClick}
+              disabled={extracting || saving}
+              sx={{
+                minHeight: 52,
+                px: 3,
+                borderRadius: 999,
+                fontWeight: 900,
+                bgcolor: landingColors.purple,
+                boxShadow: `0 12px 30px ${alpha(landingColors.purple, 0.24)}`,
+                '&:hover': { bgcolor: landingColors.purple, filter: 'brightness(1.05)' },
+              }}
+            >
+              Add Service
+            </Button>
+          </Stack>
         </Stack>
 
         {error ? <Alert severity="error" sx={{ borderRadius: 3 }}>{error}</Alert> : null}
@@ -182,6 +267,15 @@ export default function OwnerServicesPage() {
                 <Typography sx={{ color: '#64748B', fontWeight: 600, maxWidth: 480 }}>
                   Create the services your salon offers (e.g., Haircut, Beard Trim) so your team can add them to their profiles.
                 </Typography>
+                
+                <Button
+                  variant="text"
+                  startIcon={<AutoFixHighRoundedIcon />}
+                  onClick={handleScanClick}
+                  sx={{ mt: 2, fontWeight: 800, color: landingColors.purple }}
+                >
+                  Scan a pricelist with AI
+                </Button>
               </Stack>
             </CardContent>
           </Card>
@@ -273,6 +367,14 @@ export default function OwnerServicesPage() {
           onClose={handleClose}
           onSave={handleSave}
           initialData={editingItem}
+        />
+
+        <ReviewAIServicesDialog
+          open={reviewOpen}
+          services={extractedServices}
+          onClose={() => setReviewOpen(false)}
+          onConfirm={handleBulkConfirm}
+          loading={saving}
         />
       </Stack>
 

@@ -25,6 +25,73 @@ function mapService(raw: any): CatalogServiceItem {
   };
 }
 
+export type CatalogServicePayload = {
+  name: string;
+  durationMin: number;
+  priceEUR: number;
+  description?: string;
+};
+
+export async function extractServicesFromAI(file: File): Promise<CatalogServicePayload[]> {
+  const formData = new FormData();
+  formData.append('file', file);
+
+  const token = localStorage.getItem('accessToken');
+  const headers: Record<string, string> = {};
+  if (token) {
+    headers.Authorization = `Bearer ${token}`;
+  }
+
+  const res = await fetch('/api/services/extract-ai', {
+    method: 'POST',
+    headers,
+    body: formData,
+  });
+
+  if (!res.ok) {
+    let message = 'Failed to extract services';
+    try {
+      const data = await res.json();
+      message = data.message || message;
+    } catch {}
+    throw new Error(message);
+  }
+
+  const data: unknown = await res.json();
+
+  if (
+    !data ||
+    typeof data !== 'object' ||
+    !Array.isArray((data as { services?: unknown }).services)
+  ) {
+    throw new Error('Invalid AI extraction response');
+  }
+
+  return (data as { services: CatalogServicePayload[] }).services;
+}
+
+export async function createBulkCatalogServices(
+  payloads: CatalogServicePayload[],
+): Promise<CatalogServiceItem[]> {
+  const res = await fetch('/api/services/bulk', {
+    method: 'POST',
+    headers: getAuthHeaders(),
+    body: JSON.stringify(payloads),
+  });
+
+  if (!res.ok) {
+    let message = 'Failed to create services';
+    try {
+      const data = await res.json();
+      message = data.message || message;
+    } catch {}
+    throw new Error(message);
+  }
+
+  const data = await res.json();
+  return (data ?? []).map(mapService);
+}
+
 export async function getCatalogServices(): Promise<CatalogServiceItem[]> {
   const res = await fetch('/api/services/catalog', {
     method: 'GET',

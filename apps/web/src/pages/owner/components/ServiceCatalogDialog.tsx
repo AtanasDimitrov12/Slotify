@@ -9,6 +9,10 @@ import {
   TextField,
   Typography,
   alpha,
+  useMediaQuery,
+  useTheme,
+  Divider,
+  Box,
 } from '@mui/material';
 import { landingColors } from '../../../components/landing/constants';
 import { useToast } from '../../../components/ToastProvider';
@@ -42,6 +46,8 @@ export default function ServiceCatalogDialog({
   initialData = null,
 }: Props) {
   const { showError, showSuccess } = useToast();
+  const theme = useTheme();
+  const fullScreen = useMediaQuery(theme.breakpoints.down('sm'));
   const [name, setName] = React.useState('');
   const [durationMin, setDurationMin] = React.useState('30');
   const [priceEUR, setPriceEUR] = React.useState('25');
@@ -101,16 +107,17 @@ export default function ServiceCatalogDialog({
       open={open}
       onClose={onClose}
       fullWidth
+      fullScreen={fullScreen}
       maxWidth="sm"
       PaperProps={{
-        sx: { borderRadius: 8, p: 1 }
+        sx: { borderRadius: fullScreen ? 0 : 3, p: 0 }
       }}
     >
       <DialogTitle sx={{ fontWeight: 1000, fontSize: 24, letterSpacing: -0.5, py: 3, px: 4 }}>
         {initialData ? 'Edit Catalog Service' : 'Add Catalog Service'}
       </DialogTitle>
 
-      <DialogContent sx={{ px: 4, pb: 2 }}>
+      <DialogContent sx={{ px: 4, pb: 4 }}>
         <Stack spacing={3}>
           <Typography sx={{ color: '#64748B', fontWeight: 600, fontSize: 15 }}>
             {initialData 
@@ -161,7 +168,9 @@ export default function ServiceCatalogDialog({
         </Stack>
       </DialogContent>
 
-      <DialogActions sx={{ p: 4, pt: 2 }}>
+      <Divider sx={{ opacity: 0.5 }} />
+
+      <DialogActions sx={{ p: 3, px: 4, bgcolor: '#F8FAFC' }}>
         <Button
           onClick={onClose}
           sx={{ fontWeight: 800, color: '#64748B', borderRadius: 999, px: 3 }}

@@ -33,6 +33,25 @@ export class ServicesService {
     });
   }
 
+  async createManyForTenant(tenantId: string, dtos: CreateServiceDto[]) {
+    const services = dtos.map((dto) => {
+      const trimmedName = dto.name?.trim();
+      if (!trimmedName) {
+        throw new BadRequestException('All services must have a name');
+      }
+      return {
+        name: trimmedName,
+        durationMin: dto.durationMin,
+        priceEUR: dto.priceEUR,
+        description: dto.description?.trim() || '',
+        tenantId: new Types.ObjectId(tenantId),
+        isActive: true,
+      };
+    });
+
+    return this.serviceModel.insertMany(services);
+  }
+
   findAllByTenant(tenantId: string) {
     return this.serviceModel
       .find({

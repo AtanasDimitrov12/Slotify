@@ -9,6 +9,10 @@ import {
   TextField,
   Typography,
   alpha,
+  useMediaQuery,
+  useTheme,
+  Divider,
+  Box,
 } from '@mui/material';
 import { landingColors } from '../../../components/landing/constants';
 import { useToast } from '../../../components/ToastProvider';
@@ -27,6 +31,8 @@ type Props = {
 
 export default function AddStaffDialog({ open, onClose, onCreate }: Props) {
   const { showError, showSuccess } = useToast();
+  const theme = useTheme();
+  const fullScreen = useMediaQuery(theme.breakpoints.down('sm'));
 
   const [name, setName] = React.useState('');
   const [email, setEmail] = React.useState('');
@@ -84,11 +90,12 @@ export default function AddStaffDialog({ open, onClose, onCreate }: Props) {
       open={open}
       onClose={handleClose}
       fullWidth
+      fullScreen={fullScreen}
       maxWidth="sm"
       PaperProps={{
         sx: {
-          borderRadius: 8,
-          p: 1,
+          borderRadius: fullScreen ? 0 : 3,
+          p: 0,
         },
       }}
     >
@@ -104,8 +111,12 @@ export default function AddStaffDialog({ open, onClose, onCreate }: Props) {
         Add Team Member
       </DialogTitle>
 
-      <DialogContent sx={{ px: 4, pb: 2 }}>
+      <DialogContent sx={{ px: 4, pb: 4 }}>
         <Stack spacing={3}>
+          <Typography sx={{ color: '#64748B', fontWeight: 600, fontSize: 15 }}>
+            Create a new administrative account for your staff member.
+          </Typography>
+
           <Stack spacing={2.5}>
             <TextField
               label="Full Name"
@@ -114,6 +125,7 @@ export default function AddStaffDialog({ open, onClose, onCreate }: Props) {
               autoFocus
               disabled={submitting}
               fullWidth
+              required
             />
 
             <TextField
@@ -123,6 +135,7 @@ export default function AddStaffDialog({ open, onClose, onCreate }: Props) {
               onChange={(e) => setEmail(e.target.value)}
               disabled={submitting}
               fullWidth
+              required
             />
 
             <TextField
@@ -133,17 +146,22 @@ export default function AddStaffDialog({ open, onClose, onCreate }: Props) {
               helperText="Minimum 6 characters required."
               disabled={submitting}
               fullWidth
+              required
             />
 
-            <Typography sx={{ color: '#64748B', fontWeight: 600, fontSize: 14 }}>
-              The new member will be created with the <b>staff</b> role and can
-              immediately setup their profile.
-            </Typography>
+            <Box sx={{ p: 2, borderRadius: 2, bgcolor: alpha(landingColors.purple, 0.05), border: `1px solid ${alpha(landingColors.purple, 0.1)}` }}>
+              <Typography sx={{ color: landingColors.purple, fontWeight: 700, fontSize: 14 }}>
+                The new member will be created with the <b>staff</b> role and can
+                immediately setup their profile.
+              </Typography>
+            </Box>
           </Stack>
         </Stack>
       </DialogContent>
 
-      <DialogActions sx={{ p: 4, pt: 2 }}>
+      <Divider sx={{ opacity: 0.5 }} />
+
+      <DialogActions sx={{ p: 3, px: 4, bgcolor: '#F8FAFC' }}>
         <Button
           onClick={handleClose}
           disabled={submitting}
