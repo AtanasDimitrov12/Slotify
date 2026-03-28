@@ -1,6 +1,6 @@
 import { Box, Button, Container, Stack, Typography, alpha } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
-import { landingColors } from '../components/landing/constants';
+import { landingColors } from '@barber/shared'; 
 import HomeRoundedIcon from '@mui/icons-material/HomeRounded';
 
 export default function NotFoundPage() {

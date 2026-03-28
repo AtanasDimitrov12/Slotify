@@ -14,9 +14,9 @@ import {
   Container,
 } from '@mui/material';
 import { Link as RouterLink } from 'react-router-dom';
-import { listPublicTenants, type PublicTenantListItem, type TenantAddress } from '../../api/publicTenants';
-import { Page } from '../../layout/Page';
-import { landingColors, premium } from '../../components/landing/constants';
+import { listPublicTenants, type PublicTenantListItem, type TenantAddress } from '@barber/shared'; 
+import { Page } from '@barber/shared'; 
+import { landingColors, premium } from '@barber/shared'; 
 import LocationOnRoundedIcon from '@mui/icons-material/LocationOnRounded';
 import ArrowForwardRoundedIcon from '@mui/icons-material/ArrowForwardRounded';
 

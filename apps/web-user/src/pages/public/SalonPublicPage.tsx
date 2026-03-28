@@ -18,10 +18,10 @@ import {
   getPublicTenantBySlug,
   type TenantAddress,
   type WeeklyOpeningHours,
-} from '../../api/publicTenants';
-import { Page } from '../../layout/Page';
-import BookingDialog from '../../components/booking/BookingDialog';
-import { landingColors, premium } from '../../components/landing/constants';
+} from '@barber/shared';
+import { Page } from '@barber/shared';
+import { BookingDialog } from '@barber/shared';
+import { landingColors, premium } from '@barber/shared';
 import LocationOnRoundedIcon from '@mui/icons-material/LocationOnRounded';
 import AccessTimeRoundedIcon from '@mui/icons-material/AccessTimeRounded';
 import ContactSupportRoundedIcon from '@mui/icons-material/ContactSupportRounded';
