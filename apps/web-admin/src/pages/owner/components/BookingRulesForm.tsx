@@ -10,7 +10,7 @@ import {
   Box,
   Divider,
 } from '@mui/material';
-import { landingColors } from '../../../components/landing/constants';
+import { landingColors } from '@barber/shared'; 
 
 export type BookingRulesValues = {
   bufferBefore: { enabled: boolean; minutes: number };

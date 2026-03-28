@@ -1,6 +1,6 @@
 import { Chip, alpha } from '@mui/material';
-import type { Tenant } from '../../../api/tenants';
-import { landingColors } from '../../../components/landing/constants';
+import type { Tenant } from '@barber/shared'; 
+import { landingColors } from '@barber/shared'; 
 
 type TenantStatus = Tenant['status'];
 

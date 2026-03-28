@@ -25,7 +25,7 @@ import BeachAccessRoundedIcon from '@mui/icons-material/BeachAccessRounded';
 import LocalOfferRoundedIcon from '@mui/icons-material/LocalOfferRounded';
 import TuneRoundedIcon from '@mui/icons-material/TuneRounded';
 import { alpha } from '@mui/material/styles';
-import { landingColors, premium } from '../../components/landing/constants';
+import { landingColors } from '@barber/shared'; 
 
 const drawerWidth = 280;
 

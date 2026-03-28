@@ -15,9 +15,9 @@ import {
 import ProfilePhotoCard from './components/ProfilePhotoCard';
 import ExpertiseChipsInput from './components/ExpertiseChipsInput';
 import type { StaffProfile } from './components/types';
-import { getMyStaffProfile, updateMyStaffProfile } from '../../api/staff';
-import { landingColors, premium } from '../../components/landing/constants';
-import { useToast } from '../../components/ToastProvider';
+import { getMyStaffProfile, updateMyStaffProfile } from '@barber/shared'; 
+import { landingColors, premium } from '@barber/shared'; 
+import { useToast } from '@barber/shared'; 
 
 const emptyProfile: StaffProfile = {
   name: '',

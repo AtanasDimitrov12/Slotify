@@ -11,7 +11,7 @@ import {
   Typography,
 } from '@mui/material';
 import { alpha } from '@mui/material/styles';
-import { landingColors } from '../../components/landing/constants';
+import { landingColors } from '@barber/shared'; 
 
 export type AdminNavItem = {
   label: string;

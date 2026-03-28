@@ -18,9 +18,9 @@ import {
   getOwnerSettings,
   saveGeneralSettings,
   saveOpeningHours,
-} from '../../api/ownerSettings';
-import { landingColors, premium } from '../../components/landing/constants';
-import { useToast } from '../../components/ToastProvider';
+} from '@barber/shared'; 
+import { landingColors, premium } from '@barber/shared'; 
+import { useToast } from '@barber/shared'; 
 
 function TabPanel({ value, index, children }: { value: number; index: number; children: React.ReactNode }) {
   if (value !== index) return null;

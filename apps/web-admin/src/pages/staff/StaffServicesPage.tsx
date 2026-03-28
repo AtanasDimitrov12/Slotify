@@ -20,10 +20,10 @@ import {
   deleteMyStaffService,
   getMyStaffServices,
   updateMyStaffService,
-} from '../../api/staffServices';
-import { getCatalogServices } from '../../api/servicesCatalog';
-import { landingColors, premium } from '../../components/landing/constants';
-import { useToast } from '../../components/ToastProvider';
+} from '@barber/shared'; 
+import { getCatalogServices } from '@barber/shared'; 
+import { landingColors, premium } from '@barber/shared'; 
+import { useToast } from '@barber/shared'; 
 
 export default function StaffServicesPage() {
   const { showError, showSuccess } = useToast();

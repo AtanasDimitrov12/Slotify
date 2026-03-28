@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { alpha, Box, Card, CardContent, Grid, Stack, Typography } from '@mui/material';
-import { landingColors, premium } from '../../components/landing/constants';
+import { landingColors, premium } from '@barber/shared'; 
 
 type OverviewStats = {
   tenantsTotal: number;

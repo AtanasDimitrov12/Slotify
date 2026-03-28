@@ -8,7 +8,7 @@ import {
   XAxis,
   YAxis,
 } from 'recharts';
-import { landingColors, premium } from '../../components/landing/constants';
+import { landingColors, premium } from '@barber/shared'; 
 
 const kpis = [
   { label: 'Bookings (7d)', value: '128', color: landingColors.purple },

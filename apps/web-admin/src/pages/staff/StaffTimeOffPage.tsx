@@ -17,11 +17,11 @@ import {
   createMyStaffTimeOff,
   deleteMyStaffTimeOff,
   getMyStaffTimeOff,
-} from '../../api/staffTimeOff';
-import { landingColors, premium } from '../../components/landing/constants';
+} from '@barber/shared'; 
+import { landingColors, premium } from '@barber/shared'; 
 import AddRoundedIcon from '@mui/icons-material/AddRounded';
 import CalendarMonthRoundedIcon from '@mui/icons-material/CalendarMonthRounded';
-import { useToast } from '../../components/ToastProvider';
+import { useToast } from '@barber/shared'; 
 
 function StatusChip({ status }: { status: TimeOffRequest['status'] }) {
   const map: Record<TimeOffRequest['status'], { label: string; color: string }> = {

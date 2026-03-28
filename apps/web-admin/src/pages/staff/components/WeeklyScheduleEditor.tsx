@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { Box, Card, CardContent, Grid, Stack, Switch, TextField, Typography, alpha } from '@mui/material';
 import type { DaySchedule } from './types';
-import { landingColors } from '../../../components/landing/constants';
+import { landingColors } from '@barber/shared'; 
 
 type Props = {
   value: DaySchedule[];

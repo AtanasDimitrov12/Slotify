@@ -13,9 +13,9 @@ import AccessTimeRoundedIcon from '@mui/icons-material/AccessTimeRounded';
 import PersonRoundedIcon from '@mui/icons-material/PersonRounded';
 import ContentCutRoundedIcon from '@mui/icons-material/ContentCutRounded';
 import NotesRoundedIcon from '@mui/icons-material/NotesRounded';
-import type { StaffAppointment } from '../../../api/staffAppointments';
+import type { StaffAppointment } from '@barber/shared'; 
 import AppointmentStatusChip from './AppointmentStatusChip';
-import { landingColors, premium } from '../../../components/landing/constants';
+import { landingColors, premium } from '@barber/shared'; 
 
 function formatTimeOnly(value: string) {
   return new Date(value).toLocaleTimeString([], {

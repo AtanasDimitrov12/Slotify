@@ -12,9 +12,9 @@ import {
 } from '@mui/material';
 
 import BookingRulesForm, { type BookingRulesValues } from './components/BookingRulesForm';
-import { getBookingRules, saveBookingRules } from '../../api/bookingRules';
-import { landingColors, premium } from '../../components/landing/constants';
-import { useToast } from '../../components/ToastProvider';
+import { getBookingRules, saveBookingRules } from '@barber/shared'; 
+import { landingColors, premium } from '@barber/shared'; 
+import { useToast } from '@barber/shared'; 
 
 const defaultRules: BookingRulesValues = {
   bufferBefore: { enabled: false, minutes: 0 },

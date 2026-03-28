@@ -14,9 +14,9 @@ import {
   useTheme,
   Divider,
 } from '@mui/material';
-import type { StaffAppointment } from '../../../api/staffAppointments';
-import { landingColors } from '../../../components/landing/constants';
-import { useToast } from '../../../components/ToastProvider';
+import type { StaffAppointment } from '@barber/shared'; 
+import { landingColors } from '@barber/shared'; 
+import { useToast } from '@barber/shared'; 
 
 function toTimeInputValue(value: string) {
   const date = new Date(value);

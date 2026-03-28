@@ -14,9 +14,9 @@ import {
   TableRow,
   Typography,
 } from '@mui/material';
-import type { Tenant } from '../../../api/tenants';
+import type { Tenant } from '@barber/shared'; 
 import StatusChip from './StatusChip';
-import { landingColors, premium } from '../../../components/landing/constants';
+import { landingColors, premium } from '@barber/shared'; 
 
 type Props = {
   rows: Tenant[];

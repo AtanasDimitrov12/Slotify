@@ -14,8 +14,8 @@ import {
   Divider,
   Box,
 } from '@mui/material';
-import { landingColors } from '../../../components/landing/constants';
-import { useToast } from '../../../components/ToastProvider';
+import { landingColors } from '@barber/shared'; 
+import { useToast } from '@barber/shared'; 
 
 export type CatalogServicePayload = {
   name: string;

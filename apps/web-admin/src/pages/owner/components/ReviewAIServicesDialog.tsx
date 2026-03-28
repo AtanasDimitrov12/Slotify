@@ -20,7 +20,7 @@ import {
 } from '@mui/material';
 import DeleteRoundedIcon from '@mui/icons-material/DeleteRounded';
 import AutoFixHighRoundedIcon from '@mui/icons-material/AutoFixHighRounded';
-import { landingColors } from '../../../components/landing/constants';
+import { landingColors } from '@barber/shared'; 
 import { type CatalogServicePayload } from './ServiceCatalogDialog';
 
 interface ReviewAIServicesDialogProps {

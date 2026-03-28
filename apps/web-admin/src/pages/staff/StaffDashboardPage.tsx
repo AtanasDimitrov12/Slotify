@@ -22,14 +22,14 @@ import {
   updateStaffAppointment,
   updateStaffAppointmentStatus,
   type StaffAppointment,
-} from '../../api/staffAppointments';
+} from '@barber/shared'; 
 
 import ScheduleCalendar from './components/ScheduleCalendar';
 import DayOverviewCard from './components/DayOverviewCard';
 import SelectedAppointmentCard from './components/SelectedAppointmentCard';
 import AddAppointmentDialog from './components/AddAppointmentDialog';
 import EditAppointmentDialog from './components/EditAppointmentDialog';
-import { landingColors, premium } from '../../components/landing/constants';
+import { landingColors } from '@barber/shared'; 
 
 function formatDateInput(date: Date) {
   const year = date.getFullYear();

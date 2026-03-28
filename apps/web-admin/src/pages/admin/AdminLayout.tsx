@@ -14,7 +14,7 @@ import DashboardRoundedIcon from '@mui/icons-material/DashboardRounded';
 import StorefrontRoundedIcon from '@mui/icons-material/StorefrontRounded';
 import MenuRoundedIcon from '@mui/icons-material/MenuRounded';
 import { alpha } from '@mui/material/styles';
-import { landingColors, premium } from '../../components/landing/constants';
+import { landingColors } from '@barber/shared'; 
 
 import { AdminSidebar, type AdminNavItem } from './AdminSidebar';
 

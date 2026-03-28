@@ -16,9 +16,9 @@ import {
   getOwnerStaffTimeOffRequests,
   reviewOwnerStaffTimeOffRequest,
   type OwnerStaffTimeOffItem,
-} from '../../../api/staffTimeOff';
-import { landingColors } from '../../../components/landing/constants';
-import { useToast } from '../../../components/ToastProvider';
+} from '@barber/shared'; 
+import { landingColors } from '@barber/shared'; 
+import { useToast } from '@barber/shared'; 
 
 type Props = {
   open: boolean;

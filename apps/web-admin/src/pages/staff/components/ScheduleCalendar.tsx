@@ -8,9 +8,9 @@ import {
   Typography,
   alpha,
 } from '@mui/material';
-import type { StaffAppointment } from '../../../api/staffAppointments';
+import type { StaffAppointment } from '@barber/shared'; 
 import AppointmentStatusChip from './AppointmentStatusChip';
-import { landingColors, premium } from '../../../components/landing/constants';
+import { landingColors, premium } from '@barber/shared'; 
 
 const HOURS = Array.from({ length: 11 }, (_, i) => 8 + i);
 const SLOT_HEIGHT = 80;

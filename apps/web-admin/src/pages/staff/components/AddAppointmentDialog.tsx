@@ -14,8 +14,8 @@ import {
   useTheme,
   Divider,
 } from '@mui/material';
-import { landingColors } from '../../../components/landing/constants';
-import { useToast } from '../../../components/ToastProvider';
+import { landingColors } from '@barber/shared'; 
+import { useToast } from '@barber/shared'; 
 
 type ServiceOption = {
   id: string;

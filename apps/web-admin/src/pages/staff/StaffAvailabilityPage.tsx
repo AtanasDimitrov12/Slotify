@@ -13,9 +13,9 @@ import type { DaySchedule } from './components/types';
 import {
   getMyStaffAvailability,
   updateMyStaffAvailability,
-} from '../../api/staffAvailability';
-import { landingColors } from '../../components/landing/constants';
-import { useToast } from '../../components/ToastProvider';
+} from '@barber/shared'; 
+import { landingColors } from '@barber/shared'; 
+import { useToast } from '@barber/shared'; 
 
 const defaultSchedule: DaySchedule[] = [
   { dayOfWeek: 1, label: 'Mon', enabled: true, start: '09:00', end: '18:00', breakStart: '13:00', breakEnd: '13:30' },

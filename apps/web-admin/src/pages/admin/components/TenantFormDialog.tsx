@@ -13,8 +13,8 @@ import {
   useTheme,
   Divider,
 } from '@mui/material';
-import { landingColors } from '../../../components/landing/constants';
-import { useToast } from '../../../components/ToastProvider';
+import { landingColors } from '@barber/shared';
+import { useToast } from '@barber/shared';
 
 export type TenantFormValues = {
   name: string;
@@ -61,10 +61,10 @@ export default function TenantFormDialog({
 
   const validateEmail = (email: string) => {
     return String(email)
-        .toLowerCase()
-        .match(
-            /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
-        );
+      .toLowerCase()
+      .match(
+        /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
+      );
   };
 
   async function handleSubmit() {

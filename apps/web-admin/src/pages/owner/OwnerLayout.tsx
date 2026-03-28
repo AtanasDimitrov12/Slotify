@@ -24,7 +24,7 @@ import SettingsRoundedIcon from '@mui/icons-material/SettingsRounded';
 import ContentCutRoundedIcon from '@mui/icons-material/ContentCutRounded';
 import EventAvailableRoundedIcon from '@mui/icons-material/EventAvailableRounded';
 import { alpha } from '@mui/material/styles';
-import { landingColors, premium } from '../../components/landing/constants';
+import { landingColors } from '@barber/shared'; 
 
 const drawerWidth = 280;
 

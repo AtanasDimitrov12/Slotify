@@ -28,8 +28,8 @@ import {
   extractServicesFromAI,
   createBulkCatalogServices,
   type CatalogServiceItem,
-} from '../../api/servicesCatalog';
-import { landingColors, premium } from '../../components/landing/constants';
+} from '@barber/shared'; 
+import { landingColors, premium } from '@barber/shared'; 
 
 export default function OwnerServicesPage() {
   const [items, setItems] = React.useState<CatalogServiceItem[]>([]);

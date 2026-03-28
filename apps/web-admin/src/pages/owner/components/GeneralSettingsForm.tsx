@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { Grid, MenuItem, Stack, TextField, Typography, Box, alpha, Divider } from '@mui/material';
-import { landingColors } from '../../../components/landing/constants';
+import { landingColors } from '@barber/shared'; 
 
 export type GeneralSettingsValues = {
   salonName: string;

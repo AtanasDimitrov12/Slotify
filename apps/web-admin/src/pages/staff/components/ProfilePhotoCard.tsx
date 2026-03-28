@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { Avatar, Box, Button, Card, CardContent, Stack, Typography, alpha } from '@mui/material';
-import { landingColors, premium } from '../../../components/landing/constants';
+import { landingColors, premium } from '@barber/shared'; 
 import CameraAltRoundedIcon from '@mui/icons-material/CameraAltRounded';
 
 type Props = {

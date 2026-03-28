@@ -17,10 +17,10 @@ import EastRoundedIcon from '@mui/icons-material/EastRounded';
 import AddRoundedIcon from '@mui/icons-material/AddRounded';
 import AddStaffDialog, { type AddStaffPayload } from './components/AddStaffDialog';
 import ManageStaffTimeOffDialog from './components/ManageStaffTimeOffDialog';
-import { createStaff, listStaff } from '../../api/staff';
-import { getOwnerPendingTimeOffCounts } from '../../api/staffTimeOff';
-import { landingColors, premium } from '../../components/landing/constants';
-import { useToast } from '../../components/ToastProvider';
+import { createStaff,listStaff } from '@barber/shared'; 
+import { getOwnerPendingTimeOffCounts } from '@barber/shared'; 
+import { landingColors, premium } from '@barber/shared'; 
+import { useToast } from '@barber/shared'; 
 
 type StaffMember = {
     id: string;

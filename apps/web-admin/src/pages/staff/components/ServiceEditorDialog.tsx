@@ -16,8 +16,8 @@ import {
   Divider,
 } from '@mui/material';
 import type { CatalogServiceOption, StaffService } from './types';
-import { landingColors } from '../../../components/landing/constants';
-import { useToast } from '../../../components/ToastProvider';
+import { landingColors } from '@barber/shared'; 
+import { useToast } from '@barber/shared'; 
 
 export type ServicePayload = {
   serviceId: string;

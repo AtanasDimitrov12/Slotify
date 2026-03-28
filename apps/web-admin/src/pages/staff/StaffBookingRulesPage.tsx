@@ -18,9 +18,9 @@ import StaffBookingRulesForm, {
 import {
     getMyStaffBookingRules,
     updateMyStaffBookingRules,
-} from '../../api/bookingRules';
-import { landingColors, premium } from '../../components/landing/constants';
-import { useToast } from '../../components/ToastProvider';
+} from '@barber/shared'; 
+import { landingColors, premium } from '@barber/shared'; 
+import { useToast } from '@barber/shared'; 
 
 const defaultRules: StaffBookingRulesValues = {
     bufferBefore: { enabled: false, minutes: 0 },

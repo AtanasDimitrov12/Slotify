@@ -11,7 +11,7 @@ import {
   alpha,
   Box,
 } from '@mui/material';
-import { landingColors } from '../../../components/landing/constants';
+import { landingColors } from '@barber/shared'; 
 
 export type OpeningDayKey = 'mon' | 'tue' | 'wed' | 'thu' | 'fri' | 'sat' | 'sun';
 
