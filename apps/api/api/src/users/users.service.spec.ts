@@ -54,6 +54,7 @@ describe('UsersService', () => {
         name: 'Test User',
         email: 'test@example.com',
         password: 'password123',
+        accountType: 'internal' as const,
       };
 
       const result = await service.create(dto);
@@ -69,6 +70,7 @@ describe('UsersService', () => {
         name: 'Test User',
         email: 'test@example.com',
         password: 'password123',
+        accountType: 'internal' as const,
       };
 
       await expect(service.create(dto)).rejects.toThrow(BadRequestException);

@@ -10,8 +10,8 @@ import { TenantsService } from '../tenants/tenants.service';
 import { UserDocument } from '../users/user.schema';
 import { UsersService } from '../users/users.service';
 import { LoginDto } from './dto/login.dto';
-import { RegisterCustomerDto } from './dto/register-customer.dto';
 import { RegisterDto } from './dto/register.dto';
+import { RegisterCustomerDto } from './dto/register-customer.dto';
 
 type JwtPayload = {
   sub: string;

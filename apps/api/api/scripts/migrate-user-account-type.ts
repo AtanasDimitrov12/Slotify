@@ -1,6 +1,6 @@
+import * as path from 'node:path';
 import * as dotenv from 'dotenv';
 import { MongoClient } from 'mongodb';
-import * as path from 'path';
 
 dotenv.config({ path: path.join(__dirname, '../../.env') });
 

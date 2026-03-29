@@ -3,9 +3,9 @@ import AppShell from './layout/AppShell';
 import LandingPage from './pages/LandingPage';
 import LoginPage from './pages/LoginPage';
 import NotFoundPage from './pages/NotFoundPage';
-import RegisterPage from './pages/RegisterPage';
 import SalonPublicPage from './pages/public/SalonPublicPage';
 import SalonsListPage from './pages/public/SalonsListPage';
+import RegisterPage from './pages/RegisterPage';
 
 export default function App() {
   return (

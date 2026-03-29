@@ -1,3 +1,4 @@
+import { useAuth } from '@barber/shared';
 import {
   CloseRounded,
   HomeRounded,
@@ -28,7 +29,6 @@ import { alpha } from '@mui/material/styles';
 import type { ReactNode } from 'react';
 import { useMemo, useState } from 'react';
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
-import { useAuth } from '@barber/shared';
 
 type NavItem = {
   label: string;
