@@ -1,4 +1,5 @@
-import * as React from 'react';
+import type { Tenant } from '@barber/shared';
+import { landingColors, premium } from '@barber/shared';
 import {
   alpha,
   Box,
@@ -14,9 +15,8 @@ import {
   TableRow,
   Typography,
 } from '@mui/material';
-import type { Tenant } from '@barber/shared'; 
+import * as React from 'react';
 import StatusChip from './StatusChip';
-import { landingColors, premium } from '@barber/shared'; 
 
 type Props = {
   rows: Tenant[];
@@ -55,12 +55,79 @@ export default function TenantsTable({ rows, loading, onEdit, onToggleStatus }: 
           <Table>
             <TableHead sx={{ bgcolor: alpha(landingColors.purple, 0.03) }}>
               <TableRow>
-                <TableCell sx={{ fontWeight: 1000, fontSize: 13, textTransform: 'uppercase', letterSpacing: 1, color: '#64748B', py: 2.5 }}>Tenant</TableCell>
-                <TableCell sx={{ fontWeight: 1000, fontSize: 13, textTransform: 'uppercase', letterSpacing: 1, color: '#64748B' }}>Plan</TableCell>
-                <TableCell sx={{ fontWeight: 1000, fontSize: 13, textTransform: 'uppercase', letterSpacing: 1, color: '#64748B', width: 130 }}>Published</TableCell>
-                <TableCell sx={{ fontWeight: 1000, fontSize: 13, textTransform: 'uppercase', letterSpacing: 1, color: '#64748B', width: 130 }}>Status</TableCell>
-                <TableCell sx={{ fontWeight: 1000, fontSize: 13, textTransform: 'uppercase', letterSpacing: 1, color: '#64748B', width: 140 }}>Created</TableCell>
-                <TableCell sx={{ fontWeight: 1000, fontSize: 13, textTransform: 'uppercase', letterSpacing: 1, color: '#64748B', width: 220, textAlign: 'right', pr: 4 }}>Actions</TableCell>
+                <TableCell
+                  sx={{
+                    fontWeight: 1000,
+                    fontSize: 13,
+                    textTransform: 'uppercase',
+                    letterSpacing: 1,
+                    color: '#64748B',
+                    py: 2.5,
+                  }}
+                >
+                  Tenant
+                </TableCell>
+                <TableCell
+                  sx={{
+                    fontWeight: 1000,
+                    fontSize: 13,
+                    textTransform: 'uppercase',
+                    letterSpacing: 1,
+                    color: '#64748B',
+                  }}
+                >
+                  Plan
+                </TableCell>
+                <TableCell
+                  sx={{
+                    fontWeight: 1000,
+                    fontSize: 13,
+                    textTransform: 'uppercase',
+                    letterSpacing: 1,
+                    color: '#64748B',
+                    width: 130,
+                  }}
+                >
+                  Published
+                </TableCell>
+                <TableCell
+                  sx={{
+                    fontWeight: 1000,
+                    fontSize: 13,
+                    textTransform: 'uppercase',
+                    letterSpacing: 1,
+                    color: '#64748B',
+                    width: 130,
+                  }}
+                >
+                  Status
+                </TableCell>
+                <TableCell
+                  sx={{
+                    fontWeight: 1000,
+                    fontSize: 13,
+                    textTransform: 'uppercase',
+                    letterSpacing: 1,
+                    color: '#64748B',
+                    width: 140,
+                  }}
+                >
+                  Created
+                </TableCell>
+                <TableCell
+                  sx={{
+                    fontWeight: 1000,
+                    fontSize: 13,
+                    textTransform: 'uppercase',
+                    letterSpacing: 1,
+                    color: '#64748B',
+                    width: 220,
+                    textAlign: 'right',
+                    pr: 4,
+                  }}
+                >
+                  Actions
+                </TableCell>
               </TableRow>
             </TableHead>
 
@@ -105,7 +172,13 @@ export default function TenantsTable({ rows, loading, onEdit, onToggleStatus }: 
                         </Typography>
                       </TableCell>
                       <TableCell>
-                        <Typography sx={{ fontWeight: 800, fontSize: 14, color: row.isPublished ? landingColors.success : '#94A3B8' }}>
+                        <Typography
+                          sx={{
+                            fontWeight: 800,
+                            fontSize: 14,
+                            color: row.isPublished ? landingColors.success : '#94A3B8',
+                          }}
+                        >
                           {row.isPublished ? 'YES' : 'NO'}
                         </Typography>
                       </TableCell>
@@ -129,7 +202,10 @@ export default function TenantsTable({ rows, loading, onEdit, onToggleStatus }: 
                               px: 2,
                               borderColor: 'rgba(15,23,42,0.12)',
                               color: '#475569',
-                              '&:hover': { bgcolor: alpha(landingColors.purple, 0.04), borderColor: landingColors.purple },
+                              '&:hover': {
+                                bgcolor: alpha(landingColors.purple, 0.04),
+                                borderColor: landingColors.purple,
+                              },
                             }}
                           >
                             Edit
@@ -144,13 +220,19 @@ export default function TenantsTable({ rows, loading, onEdit, onToggleStatus }: 
                               borderRadius: 999,
                               fontWeight: 900,
                               px: 2,
-                              bgcolor: isActive ? alpha('#F43F5E', 0.1) : alpha(landingColors.success, 0.1),
+                              bgcolor: isActive
+                                ? alpha('#F43F5E', 0.1)
+                                : alpha(landingColors.success, 0.1),
                               color: isActive ? '#F43F5E' : landingColors.success,
                               border: '1px solid',
-                              borderColor: isActive ? alpha('#F43F5E', 0.2) : alpha(landingColors.success, 0.2),
+                              borderColor: isActive
+                                ? alpha('#F43F5E', 0.2)
+                                : alpha(landingColors.success, 0.2),
                               boxShadow: 'none',
                               '&:hover': {
-                                bgcolor: isActive ? alpha('#F43F5E', 0.2) : alpha(landingColors.success, 0.2),
+                                bgcolor: isActive
+                                  ? alpha('#F43F5E', 0.2)
+                                  : alpha(landingColors.success, 0.2),
                                 boxShadow: 'none',
                               },
                             }}

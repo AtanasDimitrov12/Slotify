@@ -1,10 +1,10 @@
-import { Test, TestingModule } from '@nestjs/testing';
-import { getModelToken } from '@nestjs/mongoose';
 import { NotFoundException } from '@nestjs/common';
-import { Model } from 'mongoose';
-import { TenantsService } from './tenants.service';
-import { Tenant } from './tenant.schema';
+import { getModelToken } from '@nestjs/mongoose';
+import { Test, type TestingModule } from '@nestjs/testing';
+import type { Model } from 'mongoose';
 import { BookingSettingsService } from '../booking-settings/booking-settings.service';
+import { Tenant } from './tenant.schema';
+import { TenantsService } from './tenants.service';
 
 describe('TenantsService', () => {
   let service: TenantsService;
@@ -77,7 +77,9 @@ describe('TenantsService', () => {
       const dto = { name: 'Test Salon' };
       const result = await service.create(dto);
 
-      expect(mockTenantModel.exists).toHaveBeenCalledWith({ slug: 'test-salon' });
+      expect(mockTenantModel.exists).toHaveBeenCalledWith({
+        slug: 'test-salon',
+      });
       expect(mockTenantModel.create).toHaveBeenCalledWith({
         ...dto,
         slug: 'test-salon',
@@ -100,7 +102,9 @@ describe('TenantsService', () => {
       await service.create(dto);
 
       expect(mockTenantModel.exists).toHaveBeenCalledTimes(2);
-      expect(mockTenantModel.exists).toHaveBeenLastCalledWith({ slug: 'test-salon-2' });
+      expect(mockTenantModel.exists).toHaveBeenLastCalledWith({
+        slug: 'test-salon-2',
+      });
     });
   });
 
@@ -149,7 +153,9 @@ describe('TenantsService', () => {
 
       const result = await service.findByName('Test Salon');
 
-      expect(mockTenantModel.findOne).toHaveBeenCalledWith({ name: 'Test Salon' });
+      expect(mockTenantModel.findOne).toHaveBeenCalledWith({
+        name: 'Test Salon',
+      });
       expect(result).toEqual(mockTenant);
     });
   });
@@ -176,7 +182,9 @@ describe('TenantsService', () => {
         lean: jest.fn().mockResolvedValue(null),
       });
 
-      await expect(service.update('invalid-id', { name: 'New' })).rejects.toThrow(NotFoundException);
+      await expect(service.update('invalid-id', { name: 'New' })).rejects.toThrow(
+        NotFoundException,
+      );
     });
   });
 

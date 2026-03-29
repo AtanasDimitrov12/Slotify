@@ -7,19 +7,17 @@ import {
 import * as bcrypt from 'bcryptjs';
 import { Types } from 'mongoose';
 
-import { MembershipsService } from '../memberships/memberships.service';
-import { StaffAvailabilityService } from '../staff-availability/staff-availability.service';
-import { UpdateStaffAvailabilityDto } from '../staff-availability/dto/update-staff-availability.dto';
-import { StaffProfilesService } from '../staff-profiles/staff-profiles.service';
-import { StaffServiceAssignmentsService } from '../staff-service-assignments/staff-service-assignments.service';
-import { UpdateStaffProfileDto } from '../staff-profiles/dto/update-staff-profile.dto';
-import { StaffTimeOffService } from '../staff-time-off/staff-time-off.service';
-import { CreateStaffAccountDto } from './dto/create-staff-account.dto';
-import { UsersService } from '../users/users.service';
-import { ServicesService } from '../services/services.service';
-import { StaffBookingSettingsService } from '../staff-booking-settings/staff-booking-settings.service';
-
-
+import type { MembershipsService } from '../memberships/memberships.service';
+import type { ServicesService } from '../services/services.service';
+import type { UpdateStaffAvailabilityDto } from '../staff-availability/dto/update-staff-availability.dto';
+import type { StaffAvailabilityService } from '../staff-availability/staff-availability.service';
+import type { StaffBookingSettingsService } from '../staff-booking-settings/staff-booking-settings.service';
+import type { UpdateStaffProfileDto } from '../staff-profiles/dto/update-staff-profile.dto';
+import type { StaffProfilesService } from '../staff-profiles/staff-profiles.service';
+import type { StaffServiceAssignmentsService } from '../staff-service-assignments/staff-service-assignments.service';
+import type { StaffTimeOffService } from '../staff-time-off/staff-time-off.service';
+import type { UsersService } from '../users/users.service';
+import type { CreateStaffAccountDto } from './dto/create-staff-account.dto';
 
 type AuthUser = {
   sub?: string;
@@ -81,7 +79,6 @@ type UpdateMyStaffServiceDto = {
   isOffered?: boolean;
 };
 
-
 @Injectable()
 export class StaffService {
   constructor(
@@ -93,7 +90,7 @@ export class StaffService {
     private readonly staffServiceAssignmentsService: StaffServiceAssignmentsService,
     private readonly servicesService: ServicesService,
     private readonly staffBookingSettingsService: StaffBookingSettingsService,
-  ) { }
+  ) {}
 
   private getTenantIdOrThrow(currentUser: AuthUser): string {
     const tenantId = currentUser?.tenantId;
@@ -106,11 +103,7 @@ export class StaffService {
   }
 
   private getUserIdOrThrow(currentUser: AuthUser): string {
-    const userId =
-      currentUser?.sub ??
-      currentUser?.userId ??
-      currentUser?._id ??
-      currentUser?.id;
+    const userId = currentUser?.sub ?? currentUser?.userId ?? currentUser?._id ?? currentUser?.id;
 
     if (!userId || !Types.ObjectId.isValid(userId)) {
       throw new UnauthorizedException('Invalid user context');
@@ -132,10 +125,7 @@ export class StaffService {
     const userId = this.getUserIdOrThrow(currentUser);
 
     const user = await this.usersService.findById(userId);
-    const profile = await this.staffProfilesService.findByTenantAndUser(
-      tenantId,
-      userId,
-    );
+    const profile = await this.staffProfilesService.findByTenantAndUser(tenantId, userId);
 
     if (!profile) {
       throw new NotFoundException('Staff profile not found');
@@ -160,11 +150,7 @@ export class StaffService {
     const tenantId = this.getTenantIdOrThrow(currentUser);
     const userId = this.getUserIdOrThrow(currentUser);
 
-    const updated = await this.staffProfilesService.updateByTenantAndUser(
-      tenantId,
-      userId,
-      dto,
-    );
+    const updated = await this.staffProfilesService.updateByTenantAndUser(tenantId, userId, dto);
 
     const user = await this.usersService.findById(userId);
 
@@ -187,9 +173,7 @@ export class StaffService {
     const tenantId = this.getTenantIdOrThrow(currentUser);
 
     if (!['owner', 'manager'].includes(currentUser?.role ?? '')) {
-      throw new UnauthorizedException(
-        'You are not allowed to create staff members',
-      );
+      throw new UnauthorizedException('You are not allowed to create staff members');
     }
 
     const email = dto.email.trim().toLowerCase();
@@ -307,10 +291,7 @@ export class StaffService {
         const userId = membership.userId.toString();
 
         const user = await this.usersService.findById(userId);
-        const profile = await this.staffProfilesService.findByTenantAndUser(
-          tenantId,
-          userId,
-        );
+        const profile = await this.staffProfilesService.findByTenantAndUser(tenantId, userId);
 
         return {
           id: profile?._id?.toString() ?? userId,
@@ -335,10 +316,7 @@ export class StaffService {
     const tenantId = this.getTenantIdOrThrow(currentUser);
     const userId = this.getUserIdOrThrow(currentUser);
 
-    const availability = await this.staffAvailabilityService.findByStaff(
-      tenantId,
-      userId,
-    );
+    const availability = await this.staffAvailabilityService.findByStaff(tenantId, userId);
 
     if (!availability) {
       throw new NotFoundException('Staff availability not found');
@@ -352,18 +330,11 @@ export class StaffService {
     };
   }
 
-  async updateMyAvailability(
-    currentUser: AuthUser,
-    dto: UpdateStaffAvailabilityDto,
-  ) {
+  async updateMyAvailability(currentUser: AuthUser, dto: UpdateStaffAvailabilityDto) {
     const tenantId = this.getTenantIdOrThrow(currentUser);
     const userId = this.getUserIdOrThrow(currentUser);
 
-    const updated = await this.staffAvailabilityService.upsertByStaff(
-      tenantId,
-      userId,
-      dto,
-    );
+    const updated = await this.staffAvailabilityService.upsertByStaff(tenantId, userId, dto);
 
     return {
       id: updated._id.toString(),
@@ -380,7 +351,6 @@ export class StaffService {
     const items = await this.staffTimeOffService.findAllByStaff(tenantId, userId);
 
     return items.map((item) => {
-
       return {
         id: item._id.toString(),
         startDate: this.toIsoDateOnly(item.startDate),
@@ -435,12 +405,8 @@ export class StaffService {
     return { message: 'Time off request removed successfully' };
   }
 
-  private mapStaffServiceAssignment(
-    item: StaffServiceAssignmentView,
-  ): StaffServiceResponseItem {
-    const service = this.isPopulatedServiceRef(item.serviceId)
-      ? item.serviceId
-      : null;
+  private mapStaffServiceAssignment(item: StaffServiceAssignmentView): StaffServiceResponseItem {
+    const service = this.isPopulatedServiceRef(item.serviceId) ? item.serviceId : null;
 
     return {
       id: item._id.toString(),
@@ -455,25 +421,16 @@ export class StaffService {
   private isPopulatedServiceRef(
     value: Types.ObjectId | PopulatedServiceRef,
   ): value is PopulatedServiceRef {
-    return (
-      typeof value === 'object' &&
-      value !== null &&
-      'name' in value
-    );
+    return typeof value === 'object' && value !== null && 'name' in value;
   }
 
   async getMyServices(currentUser: AuthUser): Promise<StaffServiceResponseItem[]> {
     const tenantId = this.getTenantIdOrThrow(currentUser);
     const userId = this.getUserIdOrThrow(currentUser);
 
-    const items = await this.staffServiceAssignmentsService.findAllByStaff(
-      tenantId,
-      userId,
-    );
+    const items = await this.staffServiceAssignmentsService.findAllByStaff(tenantId, userId);
 
-    return items.map((item) =>
-      this.mapStaffServiceAssignment(item as StaffServiceAssignmentView),
-    );
+    return items.map((item) => this.mapStaffServiceAssignment(item as StaffServiceAssignmentView));
   }
 
   async createMyService(
@@ -498,14 +455,9 @@ export class StaffService {
       isOffered: true,
     });
 
-    const hydrated = await this.staffServiceAssignmentsService.update(
-      created._id.toString(),
-      {},
-    );
+    const hydrated = await this.staffServiceAssignmentsService.update(created._id.toString(), {});
 
-    return this.mapStaffServiceAssignment(
-      hydrated as StaffServiceAssignmentView,
-    );
+    return this.mapStaffServiceAssignment(hydrated as StaffServiceAssignmentView);
   }
 
   async updateMyService(
@@ -516,10 +468,7 @@ export class StaffService {
     const tenantId = this.getTenantIdOrThrow(currentUser);
     const userId = this.getUserIdOrThrow(currentUser);
 
-    const existing = await this.staffServiceAssignmentsService.findAllByStaff(
-      tenantId,
-      userId,
-    );
+    const existing = await this.staffServiceAssignmentsService.findAllByStaff(tenantId, userId);
 
     const ownAssignment = existing.find((item) => item._id.toString() === id);
 
@@ -533,19 +482,14 @@ export class StaffService {
       isOffered: dto.isOffered,
     });
 
-    return this.mapStaffServiceAssignment(
-      updated as StaffServiceAssignmentView,
-    );
+    return this.mapStaffServiceAssignment(updated as StaffServiceAssignmentView);
   }
 
   async removeMyService(currentUser: AuthUser, id: string) {
     const tenantId = this.getTenantIdOrThrow(currentUser);
     const userId = this.getUserIdOrThrow(currentUser);
 
-    const existing = await this.staffServiceAssignmentsService.findAllByStaff(
-      tenantId,
-      userId,
-    );
+    const existing = await this.staffServiceAssignmentsService.findAllByStaff(tenantId, userId);
 
     const ownAssignment = existing.find((item) => item._id.toString() === id);
 

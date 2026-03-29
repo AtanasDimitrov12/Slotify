@@ -1,5 +1,5 @@
-import { IsOptional, IsString, IsEmail, Matches } from 'class-validator';
 import { Transform } from 'class-transformer';
+import { IsEmail, IsOptional, IsString, Matches } from 'class-validator';
 
 export class UpdateBusinessGeneralDto {
   @IsOptional()
@@ -19,7 +19,7 @@ export class UpdateBusinessGeneralDto {
 
   @IsOptional()
   @IsEmail()
-  @Transform(({ value }) => typeof value === 'string' ? value.trim().toLowerCase() : value)
+  @Transform(({ value }) => (typeof value === 'string' ? value.trim().toLowerCase() : value))
   contactEmail?: string;
 
   @IsOptional()

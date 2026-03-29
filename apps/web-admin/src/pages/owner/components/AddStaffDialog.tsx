@@ -1,21 +1,20 @@
-import * as React from 'react';
+import { landingColors, useToast } from '@barber/shared';
 import {
+  alpha,
+  Box,
   Button,
   Dialog,
   DialogActions,
   DialogContent,
   DialogTitle,
+  Divider,
   Stack,
   TextField,
   Typography,
-  alpha,
   useMediaQuery,
   useTheme,
-  Divider,
-  Box,
 } from '@mui/material';
-import { landingColors } from '@barber/shared'; 
-import { useToast } from '@barber/shared'; 
+import * as React from 'react';
 
 export type AddStaffPayload = {
   name: string;
@@ -71,8 +70,7 @@ export default function AddStaffDialog({ open, onClose, onCreate }: Props) {
       showSuccess('Staff member created successfully.');
       onClose();
     } catch (err: unknown) {
-      const message =
-        err instanceof Error ? err.message : 'Failed to create staff member.';
+      const message = err instanceof Error ? err.message : 'Failed to create staff member.';
       showError(message);
     } finally {
       setSubmitting(false);
@@ -149,10 +147,17 @@ export default function AddStaffDialog({ open, onClose, onCreate }: Props) {
               required
             />
 
-            <Box sx={{ p: 2, borderRadius: 2, bgcolor: alpha(landingColors.purple, 0.05), border: `1px solid ${alpha(landingColors.purple, 0.1)}` }}>
+            <Box
+              sx={{
+                p: 2,
+                borderRadius: 2,
+                bgcolor: alpha(landingColors.purple, 0.05),
+                border: `1px solid ${alpha(landingColors.purple, 0.1)}`,
+              }}
+            >
               <Typography sx={{ color: landingColors.purple, fontWeight: 700, fontSize: 14 }}>
-                The new member will be created with the <b>staff</b> role and can
-                immediately setup their profile.
+                The new member will be created with the <b>staff</b> role and can immediately setup
+                their profile.
               </Typography>
             </Box>
           </Stack>

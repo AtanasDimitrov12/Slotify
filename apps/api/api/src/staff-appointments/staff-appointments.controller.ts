@@ -11,18 +11,16 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
-import { StaffAppointmentsService } from './staff-appointments.service';
-import { ListStaffAppointmentsDto } from './dto/list-staff-appointments.dto';
-import { CreateStaffAppointmentDto } from './dto/create-staff-appointment.dto';
-import { UpdateStaffAppointmentDto } from './dto/update-staff-appointment.dto';
-import { UpdateStaffAppointmentStatusDto } from './dto/update-staff-appointment-status.dto';
+import type { CreateStaffAppointmentDto } from './dto/create-staff-appointment.dto';
+import type { ListStaffAppointmentsDto } from './dto/list-staff-appointments.dto';
+import type { UpdateStaffAppointmentDto } from './dto/update-staff-appointment.dto';
+import type { UpdateStaffAppointmentStatusDto } from './dto/update-staff-appointment-status.dto';
+import type { StaffAppointmentsService } from './staff-appointments.service';
 
 @UseGuards(JwtAuthGuard)
 @Controller('staff/me/appointments')
 export class StaffAppointmentsController {
-  constructor(
-    private readonly staffAppointmentsService: StaffAppointmentsService,
-  ) {}
+  constructor(private readonly staffAppointmentsService: StaffAppointmentsService) {}
 
   @Get('services')
   listServices(@Req() req: any) {
@@ -51,11 +49,7 @@ export class StaffAppointmentsController {
   }
 
   @Patch(':id')
-  update(
-    @Req() req: any,
-    @Param('id') id: string,
-    @Body() body: UpdateStaffAppointmentDto,
-  ) {
+  update(@Req() req: any, @Param('id') id: string, @Body() body: UpdateStaffAppointmentDto) {
     return this.staffAppointmentsService.updateForStaff({
       tenantId: req.user.tenantId,
       userId: req.user.userId,

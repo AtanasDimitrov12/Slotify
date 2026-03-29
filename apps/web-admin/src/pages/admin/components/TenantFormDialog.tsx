@@ -1,20 +1,19 @@
-import * as React from 'react';
+import { landingColors, useToast } from '@barber/shared';
 import {
+  alpha,
   Button,
   Dialog,
   DialogActions,
   DialogContent,
   DialogTitle,
+  Divider,
   Stack,
   TextField,
   Typography,
-  alpha,
   useMediaQuery,
   useTheme,
-  Divider,
 } from '@mui/material';
-import { landingColors } from '@barber/shared';
-import { useToast } from '@barber/shared';
+import * as React from 'react';
 
 export type TenantFormValues = {
   name: string;
@@ -63,7 +62,7 @@ export default function TenantFormDialog({
     return String(email)
       .toLowerCase()
       .match(
-        /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
+        /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/,
       );
   };
 
@@ -93,8 +92,8 @@ export default function TenantFormDialog({
         tenantName: form.tenantName.trim(),
       });
       showSuccess(isEdit ? 'Tenant updated successfully.' : 'Tenant onboarded successfully.');
-    } catch (e: any) {
-      showError(e);
+    } catch (e: unknown) {
+      showError(e instanceof Error ? e.message : String(e));
     }
   }
 
@@ -197,7 +196,13 @@ export default function TenantFormDialog({
             '&:hover': { bgcolor: landingColors.purple, filter: 'brightness(1.05)' },
           }}
         >
-          {submitting ? (isEdit ? 'Saving...' : 'Creating...') : isEdit ? 'Save Changes' : 'Onboard Tenant'}
+          {submitting
+            ? isEdit
+              ? 'Saving...'
+              : 'Creating...'
+            : isEdit
+              ? 'Save Changes'
+              : 'Onboard Tenant'}
         </Button>
       </DialogActions>
     </Dialog>

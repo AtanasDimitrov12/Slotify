@@ -1,21 +1,7 @@
-import {
-  BadRequestException,
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model, Types } from 'mongoose';
-import { Reservation, ReservationDocument } from '../reservations/reservation.schema';
-import { Service } from '../services/service.schema';
-import { StaffProfile } from '../staff-profiles/staff-profile.schema';
-import { StaffServiceAssignment } from '../staff-service-assignments/staff-service-assignment.schema';
-import { StaffAvailability } from '../staff-availability/staff-availability.schema';
-import { StaffTimeOff } from '../staff-time-off/staff-time-off.schema';
-import { TenantDetails } from '../tenant-details/tenant-details.schema';
+import { type Model, Types } from 'mongoose';
 import { TenantBookingSettings } from '../booking-settings/tenant-booking-settings.schema';
-import { StaffBookingSettings } from '../staff-booking-settings/staff-booking-settings.schema';
-import { CreateStaffAppointmentDto } from './dto/create-staff-appointment.dto';
-import { UpdateStaffAppointmentDto } from './dto/update-staff-appointment.dto';
 import {
   addMinutes,
   buildDateTimeOnDay,
@@ -25,8 +11,20 @@ import {
   startOfDay,
   subtractRanges,
 } from '../public-booking/public-booking.utils';
-import { EffectiveBookingSettings, TimeRange } from '../public-booking/types/availability.types';
-import { WeeklyOpeningHours } from '../tenant-details/tenant-details.schema';
+import type {
+  EffectiveBookingSettings,
+  TimeRange,
+} from '../public-booking/types/availability.types';
+import { Reservation, type ReservationDocument } from '../reservations/reservation.schema';
+import { Service } from '../services/service.schema';
+import { StaffAvailability } from '../staff-availability/staff-availability.schema';
+import { StaffBookingSettings } from '../staff-booking-settings/staff-booking-settings.schema';
+import { StaffProfile } from '../staff-profiles/staff-profile.schema';
+import { StaffServiceAssignment } from '../staff-service-assignments/staff-service-assignment.schema';
+import { StaffTimeOff } from '../staff-time-off/staff-time-off.schema';
+import { TenantDetails, type WeeklyOpeningHours } from '../tenant-details/tenant-details.schema';
+import type { CreateStaffAppointmentDto } from './dto/create-staff-appointment.dto';
+import type { UpdateStaffAppointmentDto } from './dto/update-staff-appointment.dto';
 
 @Injectable()
 export class StaffAppointmentsService {
@@ -51,11 +49,7 @@ export class StaffAppointmentsService {
     private readonly staffBookingSettingsModel: Model<StaffBookingSettings>,
   ) {}
 
-  async listForDay(params: {
-    tenantId: string;
-    userId: string;
-    date: string;
-  }) {
+  async listForDay(params: { tenantId: string; userId: string; date: string }) {
     const tenantId = new Types.ObjectId(params.tenantId);
     const userId = new Types.ObjectId(params.userId);
     const date = new Date(params.date);
@@ -94,10 +88,7 @@ export class StaffAppointmentsService {
     }));
   }
 
-  async listBookableServicesForStaff(params: {
-    tenantId: string;
-    userId: string;
-  }) {
+  async listBookableServicesForStaff(params: { tenantId: string; userId: string }) {
     const tenantId = new Types.ObjectId(params.tenantId);
     const userId = new Types.ObjectId(params.userId);
 
@@ -169,18 +160,22 @@ export class StaffAppointmentsService {
     }
 
     const [staffProfile, assignment] = await Promise.all([
-      this.staffProfileModel.findOne({
-        tenantId,
-        userId,
-        isBookable: true,
-        isActive: true,
-      }).lean(),
-      this.staffServiceAssignmentModel.findOne({
-        _id: assignmentId,
-        tenantId,
-        userId,
-        isOffered: true,
-      }).lean(),
+      this.staffProfileModel
+        .findOne({
+          tenantId,
+          userId,
+          isBookable: true,
+          isActive: true,
+        })
+        .lean(),
+      this.staffServiceAssignmentModel
+        .findOne({
+          _id: assignmentId,
+          tenantId,
+          userId,
+          isOffered: true,
+        })
+        .lean(),
     ]);
 
     if (!staffProfile) {
@@ -191,11 +186,13 @@ export class StaffAppointmentsService {
       throw new NotFoundException('Bookable service not found');
     }
 
-    const service = await this.serviceModel.findOne({
-      _id: assignment.serviceId,
-      tenantId,
-      isActive: true,
-    }).lean();
+    const service = await this.serviceModel
+      .findOne({
+        _id: assignment.serviceId,
+        tenantId,
+        isActive: true,
+      })
+      .lean();
 
     if (!service) {
       throw new NotFoundException('Base service not found');
@@ -265,22 +262,26 @@ export class StaffAppointmentsService {
         params.dto.staffServiceAssignmentId ?? String(reservation.staffServiceAssignmentId),
       );
 
-      const assignment = await this.staffServiceAssignmentModel.findOne({
-        _id: assignmentId,
-        tenantId,
-        userId,
-        isOffered: true,
-      }).lean();
+      const assignment = await this.staffServiceAssignmentModel
+        .findOne({
+          _id: assignmentId,
+          tenantId,
+          userId,
+          isOffered: true,
+        })
+        .lean();
 
       if (!assignment) {
         throw new NotFoundException('Bookable service not found');
       }
 
-      const service = await this.serviceModel.findOne({
-        _id: assignment.serviceId,
-        tenantId,
-        isActive: true,
-      }).lean();
+      const service = await this.serviceModel
+        .findOne({
+          _id: assignment.serviceId,
+          tenantId,
+          isActive: true,
+        })
+        .lean();
 
       if (!service) {
         throw new NotFoundException('Base service not found');
@@ -360,11 +361,7 @@ export class StaffAppointmentsService {
     return { success: true };
   }
 
-  async cancelForStaff(params: {
-    tenantId: string;
-    userId: string;
-    reservationId: string;
-  }) {
+  async cancelForStaff(params: { tenantId: string; userId: string; reservationId: string }) {
     const result = await this.reservationModel.updateOne(
       {
         _id: params.reservationId,
@@ -420,11 +417,11 @@ export class StaffAppointmentsService {
       bufferBeforeMinutes:
         staffSettings.overrides.bufferBefore?.enabled === false
           ? 0
-          : staffSettings.overrides.bufferBefore?.minutes ?? base.bufferBeforeMinutes,
+          : (staffSettings.overrides.bufferBefore?.minutes ?? base.bufferBeforeMinutes),
       bufferAfterMinutes:
         staffSettings.overrides.bufferAfter?.enabled === false
           ? 0
-          : staffSettings.overrides.bufferAfter?.minutes ?? base.bufferAfterMinutes,
+          : (staffSettings.overrides.bufferAfter?.minutes ?? base.bufferAfterMinutes),
       allowBookingToEndAfterWorkingHours:
         staffSettings.overrides.allowBookingToEndAfterWorkingHours ??
         base.allowBookingToEndAfterWorkingHours,
@@ -481,14 +478,7 @@ export class StaffAppointmentsService {
     settings: EffectiveBookingSettings;
     ignoreReservationId?: string;
   }) {
-    const {
-      tenantId,
-      staffId,
-      startTime,
-      endTime,
-      settings,
-      ignoreReservationId,
-    } = params;
+    const { tenantId, staffId, startTime, endTime, settings, ignoreReservationId } = params;
 
     const requestedDate = new Date(startTime);
     const dayStart = startOfDay(requestedDate);
@@ -498,23 +488,27 @@ export class StaffAppointmentsService {
     const [tenantDetails, availability, timeOffEntries, reservations] = await Promise.all([
       this.tenantDetailsModel.findOne({ tenantId: String(tenantId), isPublished: true }).lean(),
       this.staffAvailabilityModel.findOne({ tenantId, userId: staffId }).lean(),
-      this.staffTimeOffModel.find({
-        tenantId,
-        userId: staffId,
-        status: 'approved',
-        startDate: { $lt: dayEnd },
-        endDate: { $gt: dayStart },
-      }).lean(),
-      this.reservationModel.find({
-        tenantId,
-        staffId,
-        _id: ignoreReservationId
-          ? { $ne: new Types.ObjectId(ignoreReservationId) }
-          : { $exists: true },
-        status: { $in: ['pending', 'confirmed'] },
-        startTime: { $lt: dayEnd },
-        endTime: { $gt: dayStart },
-      }).lean(),
+      this.staffTimeOffModel
+        .find({
+          tenantId,
+          userId: staffId,
+          status: 'approved',
+          startDate: { $lt: dayEnd },
+          endDate: { $gt: dayStart },
+        })
+        .lean(),
+      this.reservationModel
+        .find({
+          tenantId,
+          staffId,
+          _id: ignoreReservationId
+            ? { $ne: new Types.ObjectId(ignoreReservationId) }
+            : { $exists: true },
+          status: { $in: ['pending', 'confirmed'] },
+          startTime: { $lt: dayEnd },
+          endTime: { $gt: dayStart },
+        })
+        .lean(),
     ]);
 
     const staffDayEntries =
@@ -566,13 +560,9 @@ export class StaffAppointmentsService {
       })),
     ];
 
-    const freeWindows = workingWindows.flatMap((window) =>
-      subtractRanges(window, blockers),
-    );
+    const freeWindows = workingWindows.flatMap((window) => subtractRanges(window, blockers));
 
-    const valid = freeWindows.some(
-      (window) => startTime >= window.start && endTime <= window.end,
-    );
+    const valid = freeWindows.some((window) => startTime >= window.start && endTime <= window.end);
 
     if (!valid) {
       throw new BadRequestException('Selected time is not available');

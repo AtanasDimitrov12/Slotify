@@ -41,7 +41,7 @@ describe('Booking Flow (Integration)', () => {
       .post('/auth/register')
       .send(ownerRegisterDto)
       .expect(201);
-    
+
     const ownerToken = registerResponse.body.accessToken;
     const tenantId = registerResponse.body.account.tenantId;
     const slug = 'elite-cuts'; // based on slugify('Elite Cuts')
@@ -67,7 +67,7 @@ describe('Booking Flow (Integration)', () => {
       .set('Authorization', `Bearer ${ownerToken}`)
       .send(serviceDto)
       .expect(201);
-    
+
     const serviceId = serviceResponse.body._id;
 
     // 3. Onboard Staff
@@ -76,7 +76,7 @@ describe('Booking Flow (Integration)', () => {
       .set('Authorization', `Bearer ${ownerToken}`)
       .send(staffDto)
       .expect(201);
-    
+
     const staffUserId = onboardResponse.body.account.userId;
 
     // 4. Staff Login
@@ -84,7 +84,7 @@ describe('Booking Flow (Integration)', () => {
       .post('/auth/login')
       .send({ email: staffDto.email, password: staffDto.password })
       .expect(201);
-    
+
     const staffToken = loginResponse.body.accessToken;
 
     // 5. Staff assigns Service to themselves
@@ -99,14 +99,14 @@ describe('Booking Flow (Integration)', () => {
       .get(`/public/tenants/${slug}/availability`)
       .query({
         serviceId,
-        date: '2026-03-23',
+        date: '2026-04-06',
       })
       .expect(200);
 
     expect(availabilityResponse.body.slots.length).toBeGreaterThan(0);
     const firstSlot = availabilityResponse.body.slots[0];
     // We check that the slot is on the requested day
-    expect(firstSlot.startTime).toContain('2026-03-23'); 
+    expect(firstSlot.startTime).toContain('2026-04-06');
 
     // 7. Create Public Reservation
     const reservationDto = {
@@ -128,18 +128,18 @@ describe('Booking Flow (Integration)', () => {
     expect(reservationResponse.body.service.name).toBe(serviceDto.name);
 
     // 8. Verify Availability is updated (slot should be gone or blocked)
-    // Actually, depending on the implementation, the slot might still be "available" if there are multiple staff, 
+    // Actually, depending on the implementation, the slot might still be "available" if there are multiple staff,
     // but here we only have one staff and they are now booked for that 30 min slot.
     const availabilityAfterResponse = await request(ctx.app.getHttpServer())
       .get(`/public/tenants/${slug}/availability`)
       .query({
         serviceId,
-        date: '2026-03-23',
+        date: '2026-04-06',
       })
       .expect(200);
-    
+
     const slotStillThere = availabilityAfterResponse.body.slots.find(
-        (s: any) => s.startTime === firstSlot.startTime
+      (s: any) => s.startTime === firstSlot.startTime,
     );
     expect(slotStillThere).toBeUndefined();
   });

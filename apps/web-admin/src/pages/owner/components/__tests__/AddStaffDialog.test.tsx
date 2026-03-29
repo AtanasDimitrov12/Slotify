@@ -1,7 +1,7 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import AddStaffDialog from '../AddStaffDialog';
+import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { useToast } from '../../../../components/ToastProvider';
+import AddStaffDialog from '../AddStaffDialog';
 
 vi.mock('../../../../components/ToastProvider', () => ({
   useToast: vi.fn(),
@@ -22,9 +22,7 @@ describe('AddStaffDialog', () => {
   });
 
   it('renders correctly when open', () => {
-    render(
-      <AddStaffDialog open={true} onClose={mockOnClose} onCreate={mockOnCreate} />
-    );
+    render(<AddStaffDialog open={true} onClose={mockOnClose} onCreate={mockOnCreate} />);
 
     expect(screen.getByText(/Add Team Member/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/Full Name/i)).toBeInTheDocument();
@@ -34,9 +32,7 @@ describe('AddStaffDialog', () => {
   });
 
   it('enables create button only when validation passes', () => {
-    render(
-      <AddStaffDialog open={true} onClose={mockOnClose} onCreate={mockOnCreate} />
-    );
+    render(<AddStaffDialog open={true} onClose={mockOnClose} onCreate={mockOnCreate} />);
 
     const nameInput = screen.getByLabelText(/Full Name/i);
     const emailInput = screen.getByLabelText(/Email Address/i);
@@ -59,14 +55,16 @@ describe('AddStaffDialog', () => {
   it('calls onCreate and shows success on valid submission', async () => {
     mockOnCreate.mockResolvedValue(undefined);
 
-    render(
-      <AddStaffDialog open={true} onClose={mockOnClose} onCreate={mockOnCreate} />
-    );
+    render(<AddStaffDialog open={true} onClose={mockOnClose} onCreate={mockOnCreate} />);
 
     fireEvent.change(screen.getByLabelText(/Full Name/i), { target: { value: 'John Doe' } });
-    fireEvent.change(screen.getByLabelText(/Email Address/i), { target: { value: 'john@doe.com' } });
-    fireEvent.change(screen.getByLabelText(/Account Password/i), { target: { value: 'password123' } });
-    
+    fireEvent.change(screen.getByLabelText(/Email Address/i), {
+      target: { value: 'john@doe.com' },
+    });
+    fireEvent.change(screen.getByLabelText(/Account Password/i), {
+      target: { value: 'password123' },
+    });
+
     fireEvent.click(screen.getByRole('button', { name: /Create Account/i }));
 
     await waitFor(() => {
@@ -83,14 +81,16 @@ describe('AddStaffDialog', () => {
   it('shows error toast when onCreate fails', async () => {
     mockOnCreate.mockRejectedValue(new Error('Email already in use'));
 
-    render(
-      <AddStaffDialog open={true} onClose={mockOnClose} onCreate={mockOnCreate} />
-    );
+    render(<AddStaffDialog open={true} onClose={mockOnClose} onCreate={mockOnCreate} />);
 
     fireEvent.change(screen.getByLabelText(/Full Name/i), { target: { value: 'John Doe' } });
-    fireEvent.change(screen.getByLabelText(/Email Address/i), { target: { value: 'john@doe.com' } });
-    fireEvent.change(screen.getByLabelText(/Account Password/i), { target: { value: 'password123' } });
-    
+    fireEvent.change(screen.getByLabelText(/Email Address/i), {
+      target: { value: 'john@doe.com' },
+    });
+    fireEvent.change(screen.getByLabelText(/Account Password/i), {
+      target: { value: 'password123' },
+    });
+
     fireEvent.click(screen.getByRole('button', { name: /Create Account/i }));
 
     await waitFor(() => {

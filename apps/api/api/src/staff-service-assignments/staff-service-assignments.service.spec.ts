@@ -1,9 +1,9 @@
-import { Test, TestingModule } from '@nestjs/testing';
-import { getModelToken } from '@nestjs/mongoose';
 import { NotFoundException } from '@nestjs/common';
+import { getModelToken } from '@nestjs/mongoose';
+import { Test, type TestingModule } from '@nestjs/testing';
 import { Types } from 'mongoose';
-import { StaffServiceAssignmentsService } from './staff-service-assignments.service';
 import { StaffServiceAssignment } from './staff-service-assignment.schema';
+import { StaffServiceAssignmentsService } from './staff-service-assignments.service';
 
 describe('StaffServiceAssignmentsService', () => {
   let service: StaffServiceAssignmentsService;
@@ -75,7 +75,7 @@ describe('StaffServiceAssignmentsService', () => {
 
       const result = await service.findAllByStaff(
         mockAssignment.tenantId.toString(),
-        mockAssignment.userId.toString()
+        mockAssignment.userId.toString(),
       );
 
       expect(mockAssignmentModel.find).toHaveBeenCalled();
@@ -91,10 +91,9 @@ describe('StaffServiceAssignmentsService', () => {
         }),
       });
 
-      const result = await service.update(
-        mockAssignment._id.toString(),
-        { customPrice: 40 }
-      );
+      const result = await service.update(mockAssignment._id.toString(), {
+        customPrice: 40,
+      });
 
       expect(mockAssignmentModel.findByIdAndUpdate).toHaveBeenCalled();
       expect(result).toEqual(mockAssignment);

@@ -1,5 +1,5 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { HydratedDocument } from 'mongoose';
+import type { HydratedDocument } from 'mongoose';
 
 export type TenantDocument = HydratedDocument<Tenant>;
 
@@ -7,14 +7,23 @@ export type TenantStatus = 'active' | 'inactive' | 'suspended';
 
 @Schema({ timestamps: true })
 export class Tenant {
-
   @Prop({ required: true, trim: true })
   name!: string;
 
-  @Prop({ required: true, trim: true, lowercase: true, unique: true, index: true })
+  @Prop({
+    required: true,
+    trim: true,
+    lowercase: true,
+    unique: true,
+    index: true,
+  })
   slug!: string;
 
-  @Prop({ default: 'active', enum: ['active', 'inactive', 'suspended'], index: true })
+  @Prop({
+    default: 'active',
+    enum: ['active', 'inactive', 'suspended'],
+    index: true,
+  })
   status!: TenantStatus;
 
   @Prop({ default: true, index: true })

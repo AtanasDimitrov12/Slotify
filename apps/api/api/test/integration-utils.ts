@@ -1,8 +1,8 @@
-import { Test, TestingModule } from '@nestjs/testing';
-import { INestApplication, ValidationPipe } from '@nestjs/common';
-import { Connection } from 'mongoose';
-import { getConnectionToken } from '@nestjs/mongoose';
+import { type INestApplication, ValidationPipe } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { getConnectionToken } from '@nestjs/mongoose';
+import { Test, type TestingModule } from '@nestjs/testing';
+import type { Connection } from 'mongoose';
 import { AppModule } from '../src/app.module';
 
 export class TestContext {
@@ -17,10 +17,12 @@ export class TestContext {
       .useValue({
         get: (key: string) => {
           if (key === 'MONGO_URI') {
-            return process.env.MONGO_URI_TEST || 'mongodb://localhost:27017/barber_reservation_test';
+            return (
+              process.env.MONGO_URI_TEST || 'mongodb://localhost:27017/barber_reservation_test'
+            );
           }
           if (key === 'JWT_SECRET') {
-              return 'test-secret';
+            return 'test-secret';
           }
           // fallback to original or other mock values if needed
           return process.env[key];

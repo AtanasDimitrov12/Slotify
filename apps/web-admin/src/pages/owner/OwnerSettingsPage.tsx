@@ -1,6 +1,14 @@
-import * as React from 'react';
+import {
+  getOwnerSettings,
+  landingColors,
+  premium,
+  saveGeneralSettings,
+  saveOpeningHours,
+  useToast,
+} from '@barber/shared';
 import {
   Alert,
+  alpha,
   Box,
   Button,
   Card,
@@ -10,19 +18,20 @@ import {
   Tab,
   Tabs,
   Typography,
-  alpha,
 } from '@mui/material';
+import * as React from 'react';
 import GeneralSettingsForm, { type GeneralSettingsValues } from './components/GeneralSettingsForm';
 import OpeningHoursEditor, { type OpeningDay } from './components/OpeningHoursEditor';
-import {
-  getOwnerSettings,
-  saveGeneralSettings,
-  saveOpeningHours,
-} from '@barber/shared'; 
-import { landingColors, premium } from '@barber/shared'; 
-import { useToast } from '@barber/shared'; 
 
-function TabPanel({ value, index, children }: { value: number; index: number; children: React.ReactNode }) {
+function TabPanel({
+  value,
+  index,
+  children,
+}: {
+  value: number;
+  index: number;
+  children: React.ReactNode;
+}) {
   if (value !== index) return null;
   return <Box sx={{ mt: 4 }}>{children}</Box>;
 }
@@ -80,7 +89,8 @@ export default function OwnerSettingsPage() {
   const [loading, setLoading] = React.useState(true);
   const [saving, setSaving] = React.useState(false);
   const [error, setError] = React.useState('');
-  const [generalSettings, setGeneralSettings] = React.useState<GeneralSettingsValues>(emptyGeneralSettings);
+  const [generalSettings, setGeneralSettings] =
+    React.useState<GeneralSettingsValues>(emptyGeneralSettings);
   const [openingHours, setOpeningHours] = React.useState<OpeningDay[]>(defaultOpeningHours);
 
   const loadSettings = React.useCallback(async () => {
@@ -167,7 +177,9 @@ export default function OwnerSettingsPage() {
     <>
       <Stack spacing={4}>
         <Box>
-          <Typography sx={{ fontWeight: 1000, fontSize: 36, letterSpacing: -1.5, color: '#0F172A' }}>
+          <Typography
+            sx={{ fontWeight: 1000, fontSize: 36, letterSpacing: -1.5, color: '#0F172A' }}
+          >
             Business Settings
           </Typography>
           <Typography sx={{ color: '#64748B', fontWeight: 600, fontSize: 18 }}>
@@ -175,7 +187,11 @@ export default function OwnerSettingsPage() {
           </Typography>
         </Box>
 
-        {error ? <Alert severity="error" sx={{ borderRadius: 3 }}>{error}</Alert> : null}
+        {error ? (
+          <Alert severity="error" sx={{ borderRadius: 3 }}>
+            {error}
+          </Alert>
+        ) : null}
 
         <Card
           sx={{

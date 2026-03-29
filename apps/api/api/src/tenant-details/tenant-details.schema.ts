@@ -1,11 +1,11 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Document } from 'mongoose';
+import type { Document } from 'mongoose';
 
 export type TenantDetailsDocument = TenantDetails & Document;
 
 export type OpeningTimeRange = {
   start: string; // "09:00"
-  end: string;   // "18:00"
+  end: string; // "18:00"
 };
 
 export type WeeklyOpeningHours = Partial<

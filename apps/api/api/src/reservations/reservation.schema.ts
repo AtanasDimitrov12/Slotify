@@ -1,17 +1,12 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { HydratedDocument, Types } from 'mongoose';
-import { Tenant } from '../tenants/tenant.schema';
-import { User } from '../users/user.schema';
+import { type HydratedDocument, Types } from 'mongoose';
 import { Service } from '../services/service.schema';
 import { StaffServiceAssignment } from '../staff-service-assignments/staff-service-assignment.schema';
+import { Tenant } from '../tenants/tenant.schema';
+import { User } from '../users/user.schema';
 
 export type ReservationDocument = HydratedDocument<Reservation>;
-export type ReservationStatus =
-  | 'pending'
-  | 'confirmed'
-  | 'cancelled'
-  | 'completed'
-  | 'no-show';
+export type ReservationStatus = 'pending' | 'confirmed' | 'cancelled' | 'completed' | 'no-show';
 
 @Schema({ timestamps: true })
 export class Reservation {
@@ -29,7 +24,12 @@ export class Reservation {
   })
   staffServiceAssignmentId!: Types.ObjectId;
 
-  @Prop({ type: Types.ObjectId, ref: Service.name, required: true, index: true })
+  @Prop({
+    type: Types.ObjectId,
+    ref: Service.name,
+    required: true,
+    index: true,
+  })
   serviceId!: Types.ObjectId;
 
   @Prop({ required: true, trim: true, maxlength: 120 })
@@ -76,4 +76,8 @@ export const ReservationSchema = SchemaFactory.createForClass(Reservation);
 ReservationSchema.index({ tenantId: 1, staffId: 1, startTime: 1, endTime: 1 });
 ReservationSchema.index({ tenantId: 1, startTime: 1, status: 1 });
 ReservationSchema.index({ tenantId: 1, staffId: 1, status: 1, startTime: 1 });
-ReservationSchema.index({ tenantId: 1, staffServiceAssignmentId: 1, startTime: 1 });
+ReservationSchema.index({
+  tenantId: 1,
+  staffServiceAssignmentId: 1,
+  startTime: 1,
+});

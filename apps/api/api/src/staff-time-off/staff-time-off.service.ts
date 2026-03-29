@@ -1,9 +1,9 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model, Types } from 'mongoose';
-import { StaffTimeOff, StaffTimeOffDocument } from './staff-time-off.schema';
-import { CreateStaffTimeOffDto } from './dto/create-staff-time-off.dto';
-import { UpdateStaffTimeOffDto } from './dto/update-staff-time-off.dto';
+import { type Model, Types } from 'mongoose';
+import type { CreateStaffTimeOffDto } from './dto/create-staff-time-off.dto';
+import type { UpdateStaffTimeOffDto } from './dto/update-staff-time-off.dto';
+import { StaffTimeOff, type StaffTimeOffDocument } from './staff-time-off.schema';
 
 @Injectable()
 export class StaffTimeOffService {
@@ -86,11 +86,7 @@ export class StaffTimeOffService {
     }));
   }
 
-  async reviewRequest(
-    tenantId: string,
-    requestId: string,
-    status: 'approved' | 'denied',
-  ) {
+  async reviewRequest(tenantId: string, requestId: string, status: 'approved' | 'denied') {
     if (!['approved', 'denied'].includes(status)) {
       throw new BadRequestException('Invalid review status');
     }

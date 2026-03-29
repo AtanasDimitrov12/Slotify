@@ -1,35 +1,26 @@
-import {
-    Body,
-    Controller,
-    Get,
-    Param,
-    Patch,
-    Post,
-    UseGuards,
-} from '@nestjs/common';
-
-import { MembershipsService } from './memberships.service';
-import { CreateMembershipDto } from './dto/create-membership.dto';
-import { UpdateMembershipDto } from './dto/update-membership.dto';
+import { Body, Controller, Get, Param, Patch, Post, UseGuards } from '@nestjs/common';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import type { CreateMembershipDto } from './dto/create-membership.dto';
+import type { UpdateMembershipDto } from './dto/update-membership.dto';
+import type { MembershipsService } from './memberships.service';
 
 @Controller('memberships')
 @UseGuards(JwtAuthGuard)
 export class MembershipsController {
-    constructor(private readonly membershipsService: MembershipsService) { }
+  constructor(private readonly membershipsService: MembershipsService) {}
 
-    @Post()
-    create(@Body() dto: CreateMembershipDto) {
-        return this.membershipsService.create(dto);
-    }
+  @Post()
+  create(@Body() dto: CreateMembershipDto) {
+    return this.membershipsService.create(dto);
+  }
 
-    @Get('tenant/:tenantId')
-    listByTenant(@Param('tenantId') tenantId: string) {
-        return this.membershipsService.listByTenant(tenantId);
-    }
+  @Get('tenant/:tenantId')
+  listByTenant(@Param('tenantId') tenantId: string) {
+    return this.membershipsService.listByTenant(tenantId);
+  }
 
-    @Patch(':id')
-    update(@Param('id') id: string, @Body() dto: UpdateMembershipDto) {
-        return this.membershipsService.update(id, dto);
-    }
+  @Patch(':id')
+  update(@Param('id') id: string, @Body() dto: UpdateMembershipDto) {
+    return this.membershipsService.update(id, dto);
+  }
 }

@@ -1,9 +1,9 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model, Types } from 'mongoose';
-import { StaffAvailability, StaffAvailabilityDocument } from './staff-availability.schema';
-import { CreateStaffAvailabilityDto } from './dto/create-staff-availability.dto';
-import { UpdateStaffAvailabilityDto } from './dto/update-staff-availability.dto';
+import { type Model, Types } from 'mongoose';
+import type { CreateStaffAvailabilityDto } from './dto/create-staff-availability.dto';
+import type { UpdateStaffAvailabilityDto } from './dto/update-staff-availability.dto';
+import { StaffAvailability, type StaffAvailabilityDocument } from './staff-availability.schema';
 
 @Injectable()
 export class StaffAvailabilityService {
@@ -21,31 +21,31 @@ export class StaffAvailabilityService {
   }
 
   findByStaff(tenantId: string, userId: string) {
-    return this.availabilityModel.findOne({
-      tenantId: new Types.ObjectId(tenantId),
-      userId: new Types.ObjectId(userId),
-    }).lean();
-  }
-
-  async upsertByStaff(
-    tenantId: string,
-    userId: string,
-    dto: UpdateStaffAvailabilityDto,
-  ) {
-    return this.availabilityModel.findOneAndUpdate(
-      {
+    return this.availabilityModel
+      .findOne({
         tenantId: new Types.ObjectId(tenantId),
         userId: new Types.ObjectId(userId),
-      },
-      {
-        $set: {
+      })
+      .lean();
+  }
+
+  async upsertByStaff(tenantId: string, userId: string, dto: UpdateStaffAvailabilityDto) {
+    return this.availabilityModel
+      .findOneAndUpdate(
+        {
           tenantId: new Types.ObjectId(tenantId),
           userId: new Types.ObjectId(userId),
-          weeklyAvailability: dto.weeklyAvailability,
         },
-      },
-      { new: true, upsert: true },
-    ).lean();
+        {
+          $set: {
+            tenantId: new Types.ObjectId(tenantId),
+            userId: new Types.ObjectId(userId),
+            weeklyAvailability: dto.weeklyAvailability,
+          },
+        },
+        { new: true, upsert: true },
+      )
+      .lean();
   }
 
   async update(id: string, dto: UpdateStaffAvailabilityDto) {

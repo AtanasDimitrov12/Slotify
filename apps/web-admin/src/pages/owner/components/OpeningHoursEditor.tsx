@@ -1,5 +1,7 @@
-import * as React from 'react';
+import { landingColors } from '@barber/shared';
 import {
+  alpha,
+  Box,
   Card,
   CardContent,
   FormControlLabel,
@@ -8,10 +10,8 @@ import {
   Switch,
   TextField,
   Typography,
-  alpha,
-  Box,
 } from '@mui/material';
-import { landingColors } from '@barber/shared'; 
+import * as React from 'react';
 
 export type OpeningDayKey = 'mon' | 'tue' | 'wed' | 'thu' | 'fri' | 'sat' | 'sun';
 
@@ -35,9 +35,17 @@ export default function OpeningHoursEditor({ value, onChange }: Props) {
 
   return (
     <Stack spacing={3}>
-      <Box sx={{ p: 2, borderRadius: 2, bgcolor: alpha(landingColors.purple, 0.04), border: `1px solid ${alpha(landingColors.purple, 0.1)}` }}>
+      <Box
+        sx={{
+          p: 2,
+          borderRadius: 2,
+          bgcolor: alpha(landingColors.purple, 0.04),
+          border: `1px solid ${alpha(landingColors.purple, 0.1)}`,
+        }}
+      >
         <Typography sx={{ color: landingColors.purple, fontWeight: 700, fontSize: 14 }}>
-          Specify your salon's weekly schedule. These hours determine when customers can book appointments.
+          Specify your salon's weekly schedule. These hours determine when customers can book
+          appointments.
         </Typography>
       </Box>
 
@@ -57,7 +65,9 @@ export default function OpeningHoursEditor({ value, onChange }: Props) {
           >
             <Grid container spacing={2} alignItems="center">
               <Grid item xs={12} sm={3}>
-                <Typography sx={{ fontWeight: 900, fontSize: 16, color: day.enabled ? '#0F172A' : '#94A3B8' }}>
+                <Typography
+                  sx={{ fontWeight: 900, fontSize: 16, color: day.enabled ? '#0F172A' : '#94A3B8' }}
+                >
                   {day.label}
                 </Typography>
               </Grid>
@@ -68,17 +78,23 @@ export default function OpeningHoursEditor({ value, onChange }: Props) {
                     <Switch
                       size="small"
                       checked={day.enabled}
-                      onChange={(e) =>
-                        updateOpeningDay(day.key, { enabled: e.target.checked })
-                      }
+                      onChange={(e) => updateOpeningDay(day.key, { enabled: e.target.checked })}
                       sx={{
                         '& .MuiSwitch-switchBase.Mui-checked': { color: landingColors.purple },
-                        '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': { bgcolor: landingColors.purple },
+                        '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': {
+                          bgcolor: landingColors.purple,
+                        },
                       }}
                     />
                   }
                   label={
-                    <Typography sx={{ fontWeight: 800, fontSize: 13, color: day.enabled ? landingColors.success : '#64748B' }}>
+                    <Typography
+                      sx={{
+                        fontWeight: 800,
+                        fontSize: 13,
+                        color: day.enabled ? landingColors.success : '#64748B',
+                      }}
+                    >
                       {day.enabled ? 'OPEN' : 'CLOSED'}
                     </Typography>
                   }

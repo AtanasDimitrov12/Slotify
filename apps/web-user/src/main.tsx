@@ -1,10 +1,9 @@
+import { AuthProvider, ToastProvider } from '@barber/shared';
+import { CssBaseline, createTheme, ThemeProvider } from '@mui/material';
 import React from 'react';
 import ReactDOM from 'react-dom/client';
-import App from './App';
-import { createTheme, ThemeProvider } from '@mui/material';
-import { AuthProvider, ToastProvider } from '@barber/shared';
 import { BrowserRouter } from 'react-router-dom';
-import { CssBaseline } from '@mui/material';
+import App from './App';
 
 const theme = createTheme({
   palette: {
@@ -72,5 +71,5 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
         </AuthProvider>
       </ThemeProvider>
     </ToastProvider>
-  </React.StrictMode>
+  </React.StrictMode>,
 );

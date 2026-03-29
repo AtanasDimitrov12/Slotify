@@ -1,17 +1,17 @@
-import { useMemo, useState } from 'react';
-import type { ReactNode } from 'react';
+import { useAuth } from '@barber/shared';
 import {
   ArrowForwardIosRounded,
   CloseRounded,
+  HomeRounded,
   LoginRounded,
   LogoutRounded,
   MenuRounded,
-  HomeRounded,
 } from '@mui/icons-material';
 import {
   AppBar,
   Box,
   Button,
+  ButtonBase,
   Chip,
   Container,
   Divider,
@@ -24,11 +24,11 @@ import {
   Stack,
   Toolbar,
   Typography,
-  ButtonBase,
 } from '@mui/material';
 import { alpha } from '@mui/material/styles';
+import type { ReactNode } from 'react';
+import { useMemo, useState } from 'react';
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
-import { useAuth } from '@barber/shared';
 
 type NavItem = {
   label: string;
@@ -89,7 +89,7 @@ export default function AppShell() {
 
     if (role === 'staff') return '/staff';
     if (role === 'admin') return '/admin';
-  if (role === 'owner') return '/owner';
+    if (role === 'owner') return '/owner';
 
     return '/';
   };
@@ -132,12 +132,7 @@ export default function AppShell() {
               gap: 2,
             }}
           >
-            <Stack
-              direction="row"
-              spacing={1.5}
-              alignItems="center"
-              sx={{ flex: 1, minWidth: 0 }}
-            >
+            <Stack direction="row" spacing={1.5} alignItems="center" sx={{ flex: 1, minWidth: 0 }}>
               <ButtonBase
                 onClick={() => go('/')}
                 sx={{
@@ -196,7 +191,7 @@ export default function AppShell() {
                         py: 0.22,
                         borderRadius: 999,
                         bgcolor: alpha(shellColors.purple, 0.12),
-                        border: `1px solid ${alpha(shellColors.purple, 0.20)}`,
+                        border: `1px solid ${alpha(shellColors.purple, 0.2)}`,
                         display: { xs: 'none', sm: 'inline-flex' },
                       }}
                     >

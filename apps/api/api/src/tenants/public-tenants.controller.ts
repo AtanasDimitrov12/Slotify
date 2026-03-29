@@ -1,6 +1,6 @@
 import { Controller, Get, NotFoundException, Param } from '@nestjs/common';
-import { TenantsService } from './tenants.service';
-import { TenantDetailsService } from '../tenant-details/tenant-details.service';
+import type { TenantDetailsService } from '../tenant-details/tenant-details.service';
+import type { TenantsService } from './tenants.service';
 
 @Controller('public/tenants')
 export class PublicTenantsController {
@@ -15,7 +15,9 @@ export class PublicTenantsController {
 
     const items = await Promise.all(
       tenants.map(async (tenant) => {
-        const details = await this.tenantDetailsService.findOptionalByTenantId(tenant._id.toString());
+        const details = await this.tenantDetailsService.findOptionalByTenantId(
+          tenant._id.toString(),
+        );
 
         return {
           _id: tenant._id,

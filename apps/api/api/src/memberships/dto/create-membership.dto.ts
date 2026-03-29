@@ -1,13 +1,13 @@
-import { IsMongoId, IsOptional, IsIn } from 'class-validator';
+import { IsIn, IsMongoId, IsOptional } from 'class-validator';
 
 export class CreateMembershipDto {
-    @IsMongoId()
-    tenantId!: string;
+  @IsMongoId()
+  tenantId!: string;
 
-    @IsMongoId()
-    userId!: string;
+  @IsMongoId()
+  userId!: string;
 
-    @IsOptional()
-    @IsIn(['owner', 'manager', 'staff'])
-    role?: 'owner' | 'manager' | 'staff';
+  @IsOptional()
+  @IsIn(['owner', 'manager', 'staff'])
+  role?: 'owner' | 'manager' | 'staff';
 }

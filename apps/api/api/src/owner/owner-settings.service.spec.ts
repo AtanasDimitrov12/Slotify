@@ -1,9 +1,9 @@
-import { Test, TestingModule } from '@nestjs/testing';
-import { OwnerSettingsService } from './owner-settings.service';
-import { TenantsService } from '../tenants/tenants.service';
-import { TenantDetailsService } from '../tenant-details/tenant-details.service';
 import { UnauthorizedException } from '@nestjs/common';
+import { Test, type TestingModule } from '@nestjs/testing';
 import { Types } from 'mongoose';
+import { TenantDetailsService } from '../tenant-details/tenant-details.service';
+import { TenantsService } from '../tenants/tenants.service';
+import { OwnerSettingsService } from './owner-settings.service';
 
 describe('OwnerSettingsService', () => {
   let service: OwnerSettingsService;
@@ -72,7 +72,7 @@ describe('OwnerSettingsService', () => {
             mon: [{ start: '09:00', end: '17:00' }],
             tue: [],
           },
-        })
+        }),
       );
     });
   });
@@ -82,18 +82,20 @@ describe('OwnerSettingsService', () => {
       const dto = {
         salonName: 'New Salon Name',
         contactEmail: 'new@salon.com',
-        city: 'Amsterdam'
+        city: 'Amsterdam',
       };
 
       await service.updateGeneral(mockUser, dto);
 
-      expect(tenantsService.update).toHaveBeenCalledWith(mockTenantId, { name: 'New Salon Name' });
+      expect(tenantsService.update).toHaveBeenCalledWith(mockTenantId, {
+        name: 'New Salon Name',
+      });
       expect(tenantDetailsService.upsertByTenantId).toHaveBeenCalledWith(
         mockTenantId,
         expect.objectContaining({
           contactEmail: 'new@salon.com',
-          address: expect.objectContaining({ city: 'Amsterdam' })
-        })
+          address: expect.objectContaining({ city: 'Amsterdam' }),
+        }),
       );
     });
   });

@@ -1,9 +1,9 @@
-import { Test, TestingModule } from '@nestjs/testing';
+import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { getModelToken } from '@nestjs/mongoose';
-import { NotFoundException, BadRequestException } from '@nestjs/common';
+import { Test, type TestingModule } from '@nestjs/testing';
 import { Types } from 'mongoose';
-import { StaffProfilesService } from './staff-profiles.service';
 import { StaffProfile } from './staff-profile.schema';
+import { StaffProfilesService } from './staff-profiles.service';
 
 describe('StaffProfilesService', () => {
   let service: StaffProfilesService;
@@ -85,7 +85,7 @@ describe('StaffProfilesService', () => {
 
       const result = await service.findByTenantAndUser(
         mockStaffProfile.tenantId.toString(),
-        mockStaffProfile.userId.toString()
+        mockStaffProfile.userId.toString(),
       );
 
       expect(result).toEqual(mockStaffProfile);
@@ -102,7 +102,7 @@ describe('StaffProfilesService', () => {
       const result = await service.updateByTenantAndUser(
         mockStaffProfile.tenantId.toString(),
         mockStaffProfile.userId.toString(),
-        dto
+        dto,
       );
 
       expect(result).toEqual(mockStaffProfile);
@@ -115,9 +115,9 @@ describe('StaffProfilesService', () => {
 
       await expect(
         service.updateByTenantAndUser(
-            new Types.ObjectId().toString(),
-            new Types.ObjectId().toString(),
-            { displayName: 'New' }
+          new Types.ObjectId().toString(),
+          new Types.ObjectId().toString(),
+          { displayName: 'New' },
         ),
       ).rejects.toThrow(NotFoundException);
     });

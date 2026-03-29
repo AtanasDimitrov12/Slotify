@@ -1,9 +1,9 @@
 import { ConflictException, NotFoundException } from '@nestjs/common';
-import { Test } from '@nestjs/testing';
 import { getModelToken } from '@nestjs/mongoose';
+import { Test } from '@nestjs/testing';
 import type { Model } from 'mongoose';
-import { TenantDetailsService } from './tenant-details.service';
 import { TenantDetails } from './tenant-details.schema';
+import { TenantDetailsService } from './tenant-details.service';
 
 type MockModel<T = any> = Partial<Record<keyof Model<T>, jest.Mock>> & {
   findOne: jest.Mock;
@@ -68,7 +68,9 @@ describe('TenantDetailsService', () => {
 
   describe('findByTenantId', () => {
     it('returns details when found', async () => {
-      model.findOne.mockReturnValue({ lean: () => ({ tenantId, contactEmail: 'a@b.com' }) });
+      model.findOne.mockReturnValue({
+        lean: () => ({ tenantId, contactEmail: 'a@b.com' }),
+      });
 
       const res = await service.findByTenantId(tenantId);
 
@@ -89,7 +91,9 @@ describe('TenantDetailsService', () => {
         lean: () => ({ tenantId, contactPhone: '123' }),
       });
 
-      const res = await service.updateByTenantId(tenantId, { contactPhone: '123' } as any);
+      const res = await service.updateByTenantId(tenantId, {
+        contactPhone: '123',
+      } as any);
 
       expect(model.findOneAndUpdate).toHaveBeenCalledWith(
         { tenantId },
@@ -102,8 +106,9 @@ describe('TenantDetailsService', () => {
     it('throws NotFoundException when updating missing doc', async () => {
       model.findOneAndUpdate.mockReturnValue({ lean: () => null });
 
-      await expect(service.updateByTenantId(tenantId, { contactPhone: '123' } as any))
-        .rejects.toBeInstanceOf(NotFoundException);
+      await expect(
+        service.updateByTenantId(tenantId, { contactPhone: '123' } as any),
+      ).rejects.toBeInstanceOf(NotFoundException);
     });
   });
 
@@ -113,7 +118,9 @@ describe('TenantDetailsService', () => {
         lean: () => ({ tenantId, contactEmail: 'upsert@x.com' }),
       });
 
-      const res = await service.upsertByTenantId(tenantId, { contactEmail: 'upsert@x.com' } as any);
+      const res = await service.upsertByTenantId(tenantId, {
+        contactEmail: 'upsert@x.com',
+      } as any);
 
       expect(model.findOneAndUpdate).toHaveBeenCalledWith(
         { tenantId },

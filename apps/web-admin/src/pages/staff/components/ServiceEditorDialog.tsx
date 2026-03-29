@@ -1,23 +1,22 @@
-import * as React from 'react';
+import { landingColors, useToast } from '@barber/shared';
 import {
+  alpha,
+  Box,
   Button,
   Dialog,
   DialogActions,
   DialogContent,
   DialogTitle,
+  Divider,
   MenuItem,
   Stack,
   TextField,
   Typography,
-  alpha,
-  Box,
   useMediaQuery,
   useTheme,
-  Divider,
 } from '@mui/material';
+import * as React from 'react';
 import type { CatalogServiceOption, StaffService } from './types';
-import { landingColors } from '@barber/shared'; 
-import { useToast } from '@barber/shared'; 
 
 export type ServicePayload = {
   serviceId: string;
@@ -110,7 +109,7 @@ export default function ServiceEditorDialog({
       fullScreen={fullScreen}
       maxWidth="sm"
       PaperProps={{
-        sx: { borderRadius: fullScreen ? 0 : 3, p: 0 }
+        sx: { borderRadius: fullScreen ? 0 : 3, p: 0 },
       }}
     >
       <DialogTitle sx={{ fontWeight: 1000, fontSize: 24, letterSpacing: -0.5, py: 3, px: 4 }}>
@@ -120,8 +119,8 @@ export default function ServiceEditorDialog({
       <DialogContent sx={{ px: 4, pb: 4 }}>
         <Stack spacing={3}>
           <Typography sx={{ color: '#64748B', fontWeight: 600, fontSize: 15 }}>
-            {isEditing 
-              ? 'Customize your personal price and duration for this service.' 
+            {isEditing
+              ? 'Customize your personal price and duration for this service.'
               : 'Choose a service from the salon catalog to add to your profile.'}
           </Typography>
 
@@ -143,8 +142,17 @@ export default function ServiceEditorDialog({
             </TextField>
 
             {selectedCatalogService?.description ? (
-              <Box sx={{ p: 2, borderRadius: 3, bgcolor: alpha('#F1F5F9', 0.5), border: '1px solid rgba(15,23,42,0.04)' }}>
-                <Typography sx={{ color: '#475569', fontSize: 14, fontStyle: 'italic', lineHeight: 1.5 }}>
+              <Box
+                sx={{
+                  p: 2,
+                  borderRadius: 3,
+                  bgcolor: alpha('#F1F5F9', 0.5),
+                  border: '1px solid rgba(15,23,42,0.04)',
+                }}
+              >
+                <Typography
+                  sx={{ color: '#475569', fontSize: 14, fontStyle: 'italic', lineHeight: 1.5 }}
+                >
                   "{selectedCatalogService.description}"
                 </Typography>
               </Box>
@@ -171,7 +179,8 @@ export default function ServiceEditorDialog({
             </Stack>
 
             <Typography sx={{ color: '#94A3B8', fontWeight: 600, fontSize: 13 }}>
-              Note: The service name and description are fixed by the salon. You only control your personal availability and pricing.
+              Note: The service name and description are fixed by the salon. You only control your
+              personal availability and pricing.
             </Typography>
           </Stack>
         </Stack>

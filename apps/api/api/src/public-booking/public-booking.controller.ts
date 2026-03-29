@@ -1,8 +1,8 @@
 import { Body, Controller, Get, Param, Post, Query } from '@nestjs/common';
-import { PublicBookingService } from './public-booking.service';
-import { GetAvailabilityDto } from './dto/get-availability.dto';
-import { CreatePublicReservationDto } from '../reservations/dto/create-public-reservation.dto';
-import { CreateReservationLockDto } from './dto/create-reservation-lock.dto';
+import type { CreatePublicReservationDto } from '../reservations/dto/create-public-reservation.dto';
+import type { CreateReservationLockDto } from './dto/create-reservation-lock.dto';
+import type { GetAvailabilityDto } from './dto/get-availability.dto';
+import type { PublicBookingService } from './public-booking.service';
 
 @Controller('public/tenants/:slug')
 export class PublicBookingController {
@@ -19,18 +19,12 @@ export class PublicBookingController {
   }
 
   @Post('reservation-locks')
-  createLock(
-    @Param('slug') slug: string,
-    @Body() body: CreateReservationLockDto,
-  ) {
+  createLock(@Param('slug') slug: string, @Body() body: CreateReservationLockDto) {
     return this.publicBookingService.createReservationLockBySlug(slug, body);
   }
 
   @Post('reservations')
-  createReservation(
-    @Param('slug') slug: string,
-    @Body() body: CreatePublicReservationDto,
-  ) {
+  createReservation(@Param('slug') slug: string, @Body() body: CreatePublicReservationDto) {
     return this.publicBookingService.createReservationBySlug(slug, body);
   }
 }

@@ -1,35 +1,24 @@
-import * as React from 'react';
-import {
-  Alert,
-  Box,
-  Button,
-  Grid,
-  IconButton,
-  Stack,
-  Typography,
-  alpha,
-} from '@mui/material';
-import ChevronLeftRoundedIcon from '@mui/icons-material/ChevronLeftRounded';
-import ChevronRightRoundedIcon from '@mui/icons-material/ChevronRightRounded';
-import AddRoundedIcon from '@mui/icons-material/AddRounded';
-import TodayRoundedIcon from '@mui/icons-material/TodayRounded';
-
 import {
   cancelStaffAppointment,
   createStaffAppointment,
+  landingColors,
   listStaffAppointments,
   listStaffServices,
+  type StaffAppointment,
   updateStaffAppointment,
   updateStaffAppointmentStatus,
-  type StaffAppointment,
-} from '@barber/shared'; 
-
-import ScheduleCalendar from './components/ScheduleCalendar';
-import DayOverviewCard from './components/DayOverviewCard';
-import SelectedAppointmentCard from './components/SelectedAppointmentCard';
+} from '@barber/shared';
+import AddRoundedIcon from '@mui/icons-material/AddRounded';
+import ChevronLeftRoundedIcon from '@mui/icons-material/ChevronLeftRounded';
+import ChevronRightRoundedIcon from '@mui/icons-material/ChevronRightRounded';
+import TodayRoundedIcon from '@mui/icons-material/TodayRounded';
+import { Alert, alpha, Box, Button, Grid, IconButton, Stack, Typography } from '@mui/material';
+import * as React from 'react';
 import AddAppointmentDialog from './components/AddAppointmentDialog';
+import DayOverviewCard from './components/DayOverviewCard';
 import EditAppointmentDialog from './components/EditAppointmentDialog';
-import { landingColors } from '@barber/shared'; 
+import ScheduleCalendar from './components/ScheduleCalendar';
+import SelectedAppointmentCard from './components/SelectedAppointmentCard';
 
 function formatDateInput(date: Date) {
   const year = date.getFullYear();
@@ -50,7 +39,14 @@ export default function StaffDashboardPage() {
   const [selectedDate, setSelectedDate] = React.useState<string>(formatDateInput(new Date()));
   const [appointments, setAppointments] = React.useState<StaffAppointment[]>([]);
   const [services, setServices] = React.useState<
-    { id: string; serviceId: string; name: string; durationMin: number; priceEUR: number; description?: string }[]
+    {
+      id: string;
+      serviceId: string;
+      name: string;
+      durationMin: number;
+      priceEUR: number;
+      description?: string;
+    }[]
   >([]);
   const [selectedAppointmentId, setSelectedAppointmentId] = React.useState<string | null>(null);
   const [loading, setLoading] = React.useState(true);
@@ -136,36 +132,36 @@ export default function StaffDashboardPage() {
   }
 
   async function handleEditAppointment(payload: {
-  startTime: string;
-  customerName: string;
-  customerPhone: string;
-  customerEmail?: string;
-  notes?: string;
-  status: StaffAppointment['status'];
-}) {
-  if (!selectedAppointment) return;
+    startTime: string;
+    customerName: string;
+    customerPhone: string;
+    customerEmail?: string;
+    notes?: string;
+    status: StaffAppointment['status'];
+  }) {
+    if (!selectedAppointment) return;
 
-  try {
-    setActionLoading(true);
+    try {
+      setActionLoading(true);
 
-    await updateStaffAppointment(selectedAppointment.id, {
-      startTime: new Date(`${selectedDate}T${payload.startTime}:00`).toISOString(),
-      customerName: payload.customerName,
-      customerPhone: payload.customerPhone,
-      customerEmail: payload.customerEmail,
-      notes: payload.notes,
-    });
+      await updateStaffAppointment(selectedAppointment.id, {
+        startTime: new Date(`${selectedDate}T${payload.startTime}:00`).toISOString(),
+        customerName: payload.customerName,
+        customerPhone: payload.customerPhone,
+        customerEmail: payload.customerEmail,
+        notes: payload.notes,
+      });
 
-    if (payload.status !== selectedAppointment.status) {
-      await updateStaffAppointmentStatus(selectedAppointment.id, payload.status);
+      if (payload.status !== selectedAppointment.status) {
+        await updateStaffAppointmentStatus(selectedAppointment.id, payload.status);
+      }
+
+      setEditOpen(false);
+      await loadAppointments();
+    } finally {
+      setActionLoading(false);
     }
-
-    setEditOpen(false);
-    await loadAppointments();
-  } finally {
-    setActionLoading(false);
   }
-}
 
   async function handleMarkDone() {
     if (!selectedAppointment) return;
@@ -210,7 +206,9 @@ export default function StaffDashboardPage() {
           spacing={3}
         >
           <Box>
-            <Typography sx={{ fontWeight: 1000, fontSize: 36, letterSpacing: -1.5, color: '#0F172A' }}>
+            <Typography
+              sx={{ fontWeight: 1000, fontSize: 36, letterSpacing: -1.5, color: '#0F172A' }}
+            >
               Your Schedule
             </Typography>
             <Typography sx={{ color: '#64748B', fontWeight: 600, fontSize: 18 }}>
@@ -218,7 +216,13 @@ export default function StaffDashboardPage() {
             </Typography>
           </Box>
 
-          <Stack direction="row" spacing={1.5} flexWrap="wrap" useFlexGap sx={{ alignItems: 'center' }}>
+          <Stack
+            direction="row"
+            spacing={1.5}
+            flexWrap="wrap"
+            useFlexGap
+            sx={{ alignItems: 'center' }}
+          >
             <Button
               variant="outlined"
               startIcon={<TodayRoundedIcon />}
@@ -250,19 +254,33 @@ export default function StaffDashboardPage() {
               <IconButton
                 size="small"
                 onClick={goToPreviousDay}
-                sx={{ color: landingColors.purple, '&:hover': { bgcolor: alpha(landingColors.purple, 0.08) } }}
+                sx={{
+                  color: landingColors.purple,
+                  '&:hover': { bgcolor: alpha(landingColors.purple, 0.08) },
+                }}
               >
                 <ChevronLeftRoundedIcon />
               </IconButton>
 
-              <Typography sx={{ minWidth: 180, textAlign: 'center', fontWeight: 800, fontSize: 15, color: '#0F172A' }}>
+              <Typography
+                sx={{
+                  minWidth: 180,
+                  textAlign: 'center',
+                  fontWeight: 800,
+                  fontSize: 15,
+                  color: '#0F172A',
+                }}
+              >
                 {formatHumanDate(selectedDate)}
               </Typography>
 
               <IconButton
                 size="small"
                 onClick={goToNextDay}
-                sx={{ color: landingColors.purple, '&:hover': { bgcolor: alpha(landingColors.purple, 0.08) } }}
+                sx={{
+                  color: landingColors.purple,
+                  '&:hover': { bgcolor: alpha(landingColors.purple, 0.08) },
+                }}
               >
                 <ChevronRightRoundedIcon />
               </IconButton>
@@ -286,8 +304,16 @@ export default function StaffDashboardPage() {
           </Stack>
         </Stack>
 
-        {error ? <Alert severity="error" sx={{ borderRadius: 3 }}>{error}</Alert> : null}
-        {moveError ? <Alert severity="warning" sx={{ borderRadius: 3 }}>{moveError}</Alert> : null}
+        {error ? (
+          <Alert severity="error" sx={{ borderRadius: 3 }}>
+            {error}
+          </Alert>
+        ) : null}
+        {moveError ? (
+          <Alert severity="warning" sx={{ borderRadius: 3 }}>
+            {moveError}
+          </Alert>
+        ) : null}
 
         <Grid container spacing={3}>
           <Grid item xs={12} lg={8.5}>

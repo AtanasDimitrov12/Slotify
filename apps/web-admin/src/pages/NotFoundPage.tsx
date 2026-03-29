@@ -1,7 +1,7 @@
-import { Box, Button, Container, Stack, Typography, alpha } from '@mui/material';
-import { useNavigate } from 'react-router-dom';
 import { landingColors } from '@barber/shared';
 import HomeRoundedIcon from '@mui/icons-material/HomeRounded';
+import { alpha, Box, Button, Container, Stack, Typography } from '@mui/material';
+import { useNavigate } from 'react-router-dom';
 
 export default function NotFoundPage() {
   const navigate = useNavigate();
@@ -50,7 +50,9 @@ export default function NotFoundPage() {
             <Typography sx={{ fontWeight: 1000, fontSize: { xs: 28, md: 36 }, letterSpacing: -1 }}>
               Page not found
             </Typography>
-            <Typography sx={{ color: landingColors.muted, fontSize: 18, fontWeight: 600, maxWidth: 400 }}>
+            <Typography
+              sx={{ color: landingColors.muted, fontSize: 18, fontWeight: 600, maxWidth: 400 }}
+            >
               The page you are looking for might have been moved or doesn't exist.
             </Typography>
           </Stack>

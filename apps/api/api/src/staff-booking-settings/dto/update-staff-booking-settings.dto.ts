@@ -1,11 +1,5 @@
-import {
-  IsBoolean,
-  IsInt,
-  IsOptional,
-  Min,
-  ValidateNested,
-} from 'class-validator';
 import { Type } from 'class-transformer';
+import { IsBoolean, IsInt, IsOptional, Min, ValidateNested } from 'class-validator';
 
 class BufferOverrideDto {
   @IsOptional()

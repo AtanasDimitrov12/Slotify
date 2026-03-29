@@ -1,6 +1,16 @@
-import * as React from 'react';
+import {
+  createMyStaffTimeOff,
+  deleteMyStaffTimeOff,
+  getMyStaffTimeOff,
+  landingColors,
+  premium,
+  useToast,
+} from '@barber/shared';
+import AddRoundedIcon from '@mui/icons-material/AddRounded';
+import CalendarMonthRoundedIcon from '@mui/icons-material/CalendarMonthRounded';
 import {
   Alert,
+  alpha,
   Box,
   Button,
   Card,
@@ -9,19 +19,10 @@ import {
   CircularProgress,
   Stack,
   Typography,
-  alpha,
 } from '@mui/material';
+import * as React from 'react';
 import TimeOffRequestDialog, { type TimeOffPayload } from './components/TimeOffRequestDialog';
 import type { TimeOffRequest } from './components/types';
-import {
-  createMyStaffTimeOff,
-  deleteMyStaffTimeOff,
-  getMyStaffTimeOff,
-} from '@barber/shared'; 
-import { landingColors, premium } from '@barber/shared'; 
-import AddRoundedIcon from '@mui/icons-material/AddRounded';
-import CalendarMonthRoundedIcon from '@mui/icons-material/CalendarMonthRounded';
-import { useToast } from '@barber/shared'; 
 
 function StatusChip({ status }: { status: TimeOffRequest['status'] }) {
   const map: Record<TimeOffRequest['status'], { label: string; color: string }> = {
@@ -119,7 +120,9 @@ export default function StaffTimeOffPage() {
       <Stack spacing={4}>
         <Stack direction="row" justifyContent="space-between" alignItems="flex-start" spacing={2}>
           <Box>
-            <Typography sx={{ fontWeight: 1000, fontSize: 36, letterSpacing: -1.5, color: '#0F172A' }}>
+            <Typography
+              sx={{ fontWeight: 1000, fontSize: 36, letterSpacing: -1.5, color: '#0F172A' }}
+            >
               Time Off
             </Typography>
             <Typography sx={{ color: '#64748B', fontWeight: 600, fontSize: 18 }}>
@@ -144,11 +147,23 @@ export default function StaffTimeOffPage() {
           </Button>
         </Stack>
 
-        {error ? <Alert severity="error" sx={{ borderRadius: 3 }}>{error}</Alert> : null}
+        {error ? (
+          <Alert severity="error" sx={{ borderRadius: 3 }}>
+            {error}
+          </Alert>
+        ) : null}
 
         <Stack spacing={2}>
           {items.length === 0 ? (
-            <Card sx={{ borderRadius: `${premium.rLg * 4}px`, border: '1px dashed', borderColor: '#CBD5E1', bgcolor: 'transparent', py: 6 }}>
+            <Card
+              sx={{
+                borderRadius: `${premium.rLg * 4}px`,
+                border: '1px dashed',
+                borderColor: '#CBD5E1',
+                bgcolor: 'transparent',
+                py: 6,
+              }}
+            >
               <CardContent sx={{ textAlign: 'center' }}>
                 <Box
                   sx={{
@@ -203,7 +218,16 @@ export default function StaffTimeOffPage() {
 
                   <Box sx={{ flex: 1 }}>
                     <Typography sx={{ fontWeight: 900, color: '#0F172A', fontSize: 17 }}>
-                      {new Date(r.startDate).toLocaleDateString([], { day: '2-digit', month: 'short' })} → {new Date(r.endDate).toLocaleDateString([], { day: '2-digit', month: 'short', year: 'numeric' })}
+                      {new Date(r.startDate).toLocaleDateString([], {
+                        day: '2-digit',
+                        month: 'short',
+                      })}{' '}
+                      →{' '}
+                      {new Date(r.endDate).toLocaleDateString([], {
+                        day: '2-digit',
+                        month: 'short',
+                        year: 'numeric',
+                      })}
                     </Typography>
 
                     <Typography sx={{ color: '#64748B', fontWeight: 600, fontSize: 14, mt: 0.5 }}>

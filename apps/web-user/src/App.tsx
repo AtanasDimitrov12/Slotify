@@ -1,10 +1,9 @@
-import { Routes, Route } from 'react-router-dom';
-import { Page } from '@barber/shared';
+import { Route, Routes } from 'react-router-dom';
 import AppShell from './layout/AppShell';
 import LandingPage from './pages/LandingPage';
 import NotFoundPage from './pages/NotFoundPage';
-import SalonsListPage from './pages/public/SalonsListPage';
 import SalonPublicPage from './pages/public/SalonPublicPage';
+import SalonsListPage from './pages/public/SalonsListPage';
 
 export default function App() {
   return (

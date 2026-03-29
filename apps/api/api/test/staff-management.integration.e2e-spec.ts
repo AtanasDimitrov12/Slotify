@@ -59,13 +59,18 @@ describe('Staff Management (Integration)', () => {
       // Verify DB state
       const user = await ctx.db.collection('users').findOne({ email: staffCreateDto.email });
       expect(user).toBeDefined();
+      if (!user) throw new Error('User not found');
 
       const profile = await ctx.db.collection('staffprofiles').findOne({ userId: user._id });
       expect(profile).toBeDefined();
+      if (!profile) throw new Error('Profile not found');
       expect(profile.displayName).toBe(staffCreateDto.name);
 
-      const availability = await ctx.db.collection('staffavailabilities').findOne({ userId: user._id });
+      const availability = await ctx.db
+        .collection('staffavailabilities')
+        .findOne({ userId: user._id });
       expect(availability).toBeDefined();
+      if (!availability) throw new Error('Availability not found');
       expect(availability.weeklyAvailability).toHaveLength(5); // Default Mon-Fri
     });
 
@@ -78,9 +83,10 @@ describe('Staff Management (Integration)', () => {
         .send(staffCreateDto);
 
       // 2. Login as Joe (staff)
-      const loginResponse = await request(ctx.app.getHttpServer())
-        .post('/auth/login')
-        .send({ email: staffCreateDto.email, password: staffCreateDto.password });
+      const loginResponse = await request(ctx.app.getHttpServer()).post('/auth/login').send({
+        email: staffCreateDto.email,
+        password: staffCreateDto.password,
+      });
       const joeToken = loginResponse.body.accessToken;
 
       // 3. Joe tries to onboard another staff member
@@ -102,9 +108,10 @@ describe('Staff Management (Integration)', () => {
         .set('Authorization', `Bearer ${ownerToken}`)
         .send(staffCreateDto);
 
-      const loginResponse = await request(ctx.app.getHttpServer())
-        .post('/auth/login')
-        .send({ email: staffCreateDto.email, password: staffCreateDto.password });
+      const loginResponse = await request(ctx.app.getHttpServer()).post('/auth/login').send({
+        email: staffCreateDto.email,
+        password: staffCreateDto.password,
+      });
       joeToken = loginResponse.body.accessToken;
     });
 
@@ -141,7 +148,12 @@ describe('Staff Management (Integration)', () => {
 
       const newAvailability = {
         weeklyAvailability: [
-          { dayOfWeek: 1, startTime: '10:00', endTime: '18:00', isAvailable: true },
+          {
+            dayOfWeek: 1,
+            startTime: '10:00',
+            endTime: '18:00',
+            isAvailable: true,
+          },
         ],
       };
 

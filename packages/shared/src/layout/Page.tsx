@@ -1,9 +1,9 @@
 import { Box } from '@mui/material';
 import type { SxProps } from '@mui/material/styles';
 import type { ReactNode } from 'react';
-import { useScrollMotion } from '../hooks/useScrollMotion';
-import { useRevealOnScroll } from '../hooks/useRevealOnScroll';
 import { Footer } from '../components/landing/Footer';
+import { useRevealOnScroll } from '../hooks/useRevealOnScroll';
+import { useScrollMotion } from '../hooks/useScrollMotion';
 
 const pageColors = {
   bg: '#F7F8FC',

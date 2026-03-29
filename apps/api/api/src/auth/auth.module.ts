@@ -1,14 +1,13 @@
 import { Module } from '@nestjs/common';
-import { JwtModule } from '@nestjs/jwt';
 import { ConfigModule, ConfigService } from '@nestjs/config';
+import { JwtModule } from '@nestjs/jwt';
 import type { SignOptions } from 'jsonwebtoken';
-
+import { MembershipsModule } from '../memberships/memberships.module';
+import { TenantsModule } from '../tenants/tenants.module';
+import { UsersModule } from '../users/users.module';
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
 import { JwtStrategy } from './jwt.strategy';
-import { MembershipsModule } from '../memberships/memberships.module';
-import { UsersModule } from '../users/users.module';
-import { TenantsModule } from '../tenants/tenants.module';
 
 @Module({
   imports: [
@@ -23,7 +22,8 @@ import { TenantsModule } from '../tenants/tenants.module';
         if (!secret) throw new Error('JWT_SECRET is not set');
 
         // ✅ typed correctly for jwt signOptions
-        const expiresIn = (config.get<string>('JWT_EXPIRES_IN') ?? '7d') as SignOptions['expiresIn'];
+        const expiresIn = (config.get<string>('JWT_EXPIRES_IN') ??
+          '7d') as SignOptions['expiresIn'];
 
         return {
           secret,
@@ -36,4 +36,4 @@ import { TenantsModule } from '../tenants/tenants.module';
   providers: [AuthService, JwtStrategy],
   exports: [JwtModule],
 })
-export class AuthModule { }
+export class AuthModule {}

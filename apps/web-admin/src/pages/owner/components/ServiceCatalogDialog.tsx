@@ -1,21 +1,20 @@
-import * as React from 'react';
+import { landingColors, useToast } from '@barber/shared';
 import {
+  alpha,
+  Box,
   Button,
   Dialog,
   DialogActions,
   DialogContent,
   DialogTitle,
+  Divider,
   Stack,
   TextField,
   Typography,
-  alpha,
   useMediaQuery,
   useTheme,
-  Divider,
-  Box,
 } from '@mui/material';
-import { landingColors } from '@barber/shared'; 
-import { useToast } from '@barber/shared'; 
+import * as React from 'react';
 
 export type CatalogServicePayload = {
   name: string;
@@ -39,12 +38,7 @@ type Props = {
   initialData?: InitialData;
 };
 
-export default function ServiceCatalogDialog({
-  open,
-  onClose,
-  onSave,
-  initialData = null,
-}: Props) {
+export default function ServiceCatalogDialog({ open, onClose, onSave, initialData = null }: Props) {
   const { showError, showSuccess } = useToast();
   const theme = useTheme();
   const fullScreen = useMediaQuery(theme.breakpoints.down('sm'));
@@ -70,10 +64,7 @@ export default function ServiceCatalogDialog({
     setDescription('');
   }, [open, initialData]);
 
-  const canSubmit =
-    name.trim().length > 0 &&
-    Number(durationMin) > 0 &&
-    Number(priceEUR) >= 0;
+  const canSubmit = name.trim().length > 0 && Number(durationMin) > 0 && Number(priceEUR) >= 0;
 
   async function handleSave() {
     if (!name.trim()) {
@@ -110,7 +101,7 @@ export default function ServiceCatalogDialog({
       fullScreen={fullScreen}
       maxWidth="sm"
       PaperProps={{
-        sx: { borderRadius: fullScreen ? 0 : 3, p: 0 }
+        sx: { borderRadius: fullScreen ? 0 : 3, p: 0 },
       }}
     >
       <DialogTitle sx={{ fontWeight: 1000, fontSize: 24, letterSpacing: -0.5, py: 3, px: 4 }}>
@@ -120,8 +111,8 @@ export default function ServiceCatalogDialog({
       <DialogContent sx={{ px: 4, pb: 4 }}>
         <Stack spacing={3}>
           <Typography sx={{ color: '#64748B', fontWeight: 600, fontSize: 15 }}>
-            {initialData 
-              ? 'Update the details for this global service offering.' 
+            {initialData
+              ? 'Update the details for this global service offering.'
               : 'Define a new service that will be available for barbers to choose.'}
           </Typography>
 

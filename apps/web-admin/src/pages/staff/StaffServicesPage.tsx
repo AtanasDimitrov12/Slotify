@@ -1,6 +1,18 @@
-import * as React from 'react';
+import {
+  createMyStaffService,
+  deleteMyStaffService,
+  getCatalogServices,
+  getMyStaffServices,
+  landingColors,
+  premium,
+  updateMyStaffService,
+  useToast,
+} from '@barber/shared';
+import AddRoundedIcon from '@mui/icons-material/AddRounded';
+import BuildCircleOutlinedIcon from '@mui/icons-material/BuildCircleOutlined';
 import {
   Alert,
+  alpha,
   Box,
   Button,
   Card,
@@ -9,21 +21,10 @@ import {
   Grid,
   Stack,
   Typography,
-  alpha,
 } from '@mui/material';
-import BuildCircleOutlinedIcon from '@mui/icons-material/BuildCircleOutlined';
-import AddRoundedIcon from '@mui/icons-material/AddRounded';
+import * as React from 'react';
 import ServiceEditorDialog, { type ServicePayload } from './components/ServiceEditorDialog';
 import type { CatalogServiceOption, StaffService } from './components/types';
-import {
-  createMyStaffService,
-  deleteMyStaffService,
-  getMyStaffServices,
-  updateMyStaffService,
-} from '@barber/shared'; 
-import { getCatalogServices } from '@barber/shared'; 
-import { landingColors, premium } from '@barber/shared'; 
-import { useToast } from '@barber/shared'; 
 
 export default function StaffServicesPage() {
   const { showError, showSuccess } = useToast();
@@ -86,9 +87,7 @@ export default function StaffServicesPage() {
           priceEUR: payload.priceEUR,
         });
 
-        setItems((prev) =>
-          prev.map((item) => (item.id === editingService.id ? updated : item)),
-        );
+        setItems((prev) => prev.map((item) => (item.id === editingService.id ? updated : item)));
         showSuccess('Service updated successfully.');
       } else {
         const created = await createMyStaffService({
@@ -142,7 +141,9 @@ export default function StaffServicesPage() {
       <Stack spacing={4}>
         <Stack direction="row" justifyContent="space-between" alignItems="flex-start" spacing={2}>
           <Box>
-            <Typography sx={{ fontWeight: 1000, fontSize: 36, letterSpacing: -1.5, color: '#0F172A' }}>
+            <Typography
+              sx={{ fontWeight: 1000, fontSize: 36, letterSpacing: -1.5, color: '#0F172A' }}
+            >
               Services & Prices
             </Typography>
             <Typography sx={{ color: '#64748B', fontWeight: 600, fontSize: 18 }}>
@@ -168,18 +169,44 @@ export default function StaffServicesPage() {
           </Button>
         </Stack>
 
-        {error ? <Alert severity="error" sx={{ borderRadius: 3 }}>{error}</Alert> : null}
+        {error ? (
+          <Alert severity="error" sx={{ borderRadius: 3 }}>
+            {error}
+          </Alert>
+        ) : null}
 
         {showNoCatalogMessage ? (
-          <Card sx={{ borderRadius: `${premium.rLg * 4}px`, border: '1px dashed', borderColor: '#CBD5E1', bgcolor: 'transparent', py: 8 }}>
+          <Card
+            sx={{
+              borderRadius: `${premium.rLg * 4}px`,
+              border: '1px dashed',
+              borderColor: '#CBD5E1',
+              bgcolor: 'transparent',
+              py: 8,
+            }}
+          >
             <CardContent>
               <Stack spacing={2} alignItems="center" textAlign="center">
-                <Box sx={{ width: 80, height: 80, borderRadius: 4, bgcolor: alpha(landingColors.purple, 0.06), display: 'grid', placeItems: 'center', color: landingColors.purple, mb: 1 }}>
+                <Box
+                  sx={{
+                    width: 80,
+                    height: 80,
+                    borderRadius: 4,
+                    bgcolor: alpha(landingColors.purple, 0.06),
+                    display: 'grid',
+                    placeItems: 'center',
+                    color: landingColors.purple,
+                    mb: 1,
+                  }}
+                >
                   <BuildCircleOutlinedIcon sx={{ fontSize: 40 }} />
                 </Box>
-                <Typography sx={{ fontWeight: 1000, fontSize: 24, color: '#0F172A' }}>No services available</Typography>
+                <Typography sx={{ fontWeight: 1000, fontSize: 24, color: '#0F172A' }}>
+                  No services available
+                </Typography>
                 <Typography sx={{ color: '#64748B', fontWeight: 600, maxWidth: 480 }}>
-                  The salon owner must first create the master service catalog before you can assign services to yourself.
+                  The salon owner must first create the master service catalog before you can assign
+                  services to yourself.
                 </Typography>
               </Stack>
             </CardContent>
@@ -187,14 +214,29 @@ export default function StaffServicesPage() {
         ) : null}
 
         {showNoAssignedServicesMessage ? (
-          <Card sx={{ borderRadius: `${premium.rLg * 4}px`, border: '1px dashed', borderColor: '#CBD5E1', bgcolor: 'transparent', py: 8 }}>
+          <Card
+            sx={{
+              borderRadius: `${premium.rLg * 4}px`,
+              border: '1px dashed',
+              borderColor: '#CBD5E1',
+              bgcolor: 'transparent',
+              py: 8,
+            }}
+          >
             <CardContent>
               <Stack spacing={2} alignItems="center" textAlign="center">
-                <Typography sx={{ fontWeight: 1000, fontSize: 24, color: '#0F172A' }}>No services assigned</Typography>
-                <Typography sx={{ color: '#64748B', fontWeight: 600, maxWidth: 480 }}>
-                  Your salon has catalog services, but you haven't added any to your personal profile yet.
+                <Typography sx={{ fontWeight: 1000, fontSize: 24, color: '#0F172A' }}>
+                  No services assigned
                 </Typography>
-                <Button variant="outlined" onClick={handleAddClick} sx={{ mt: 2, borderRadius: 999, fontWeight: 900 }}>
+                <Typography sx={{ color: '#64748B', fontWeight: 600, maxWidth: 480 }}>
+                  Your salon has catalog services, but you haven't added any to your personal
+                  profile yet.
+                </Typography>
+                <Button
+                  variant="outlined"
+                  onClick={handleAddClick}
+                  sx={{ mt: 2, borderRadius: 999, fontWeight: 900 }}
+                >
                   Assign your first service
                 </Button>
               </Stack>
@@ -224,21 +266,37 @@ export default function StaffServicesPage() {
                   <CardContent sx={{ p: 3.5 }}>
                     <Stack spacing={2.5}>
                       <Box>
-                        <Stack direction="row" justifyContent="space-between" alignItems="flex-start">
+                        <Stack
+                          direction="row"
+                          justifyContent="space-between"
+                          alignItems="flex-start"
+                        >
                           <Typography sx={{ fontWeight: 1000, fontSize: 20, color: '#0F172A' }}>
                             {s.name}
                           </Typography>
-                          <Typography sx={{ fontWeight: 900, fontSize: 18, color: landingColors.purple }}>
+                          <Typography
+                            sx={{ fontWeight: 900, fontSize: 18, color: landingColors.purple }}
+                          >
                             €{s.priceEUR}
                           </Typography>
                         </Stack>
-                        
-                        <Typography sx={{ color: '#64748B', fontWeight: 700, fontSize: 14, mt: 0.5 }}>
+
+                        <Typography
+                          sx={{ color: '#64748B', fontWeight: 700, fontSize: 14, mt: 0.5 }}
+                        >
                           {s.durationMin} minutes
                         </Typography>
 
                         {s.description ? (
-                          <Typography sx={{ mt: 2, color: '#475569', fontSize: 15, lineHeight: 1.6, fontWeight: 500 }}>
+                          <Typography
+                            sx={{
+                              mt: 2,
+                              color: '#475569',
+                              fontSize: 15,
+                              lineHeight: 1.6,
+                              fontWeight: 500,
+                            }}
+                          >
                             {s.description}
                           </Typography>
                         ) : null}

@@ -1,11 +1,11 @@
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
+import { BookingSettingsController } from './booking-settings.controller';
+import { BookingSettingsService } from './booking-settings.service';
 import {
   TenantBookingSettings,
   TenantBookingSettingsSchema,
 } from './tenant-booking-settings.schema';
-import { BookingSettingsService } from './booking-settings.service';
-import { BookingSettingsController } from './booking-settings.controller';
 
 @Module({
   imports: [

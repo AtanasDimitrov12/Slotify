@@ -1,8 +1,8 @@
-import { Box, Container, Grid, Stack, Typography } from '@mui/material';
-import { alpha } from '@mui/material/styles';
-import TrendingUpRoundedIcon from '@mui/icons-material/TrendingUpRounded';
 import AutoAwesomeRoundedIcon from '@mui/icons-material/AutoAwesomeRounded';
 import CalendarViewWeekRoundedIcon from '@mui/icons-material/CalendarViewWeekRounded';
+import TrendingUpRoundedIcon from '@mui/icons-material/TrendingUpRounded';
+import { Box, Container, Grid, Stack, Typography } from '@mui/material';
+import { alpha } from '@mui/material/styles';
 import { landingColors, premium } from './constants';
 import { SectionTitle } from './SectionTitle';
 
@@ -35,7 +35,9 @@ function ShowcaseVisual() {
 
       <Stack spacing={2.2} sx={{ position: 'relative', zIndex: 1 }}>
         <Stack direction="row" justifyContent="space-between" alignItems="center">
-          <Typography sx={{ color: landingColors.text, fontWeight: 950, letterSpacing: -0.5, fontSize: 22 }}>
+          <Typography
+            sx={{ color: landingColors.text, fontWeight: 950, letterSpacing: -0.5, fontSize: 22 }}
+          >
             SLOTIFY FLOW ENGINE
           </Typography>
           <Box
@@ -61,7 +63,9 @@ function ShowcaseVisual() {
             bgcolor: 'rgba(255,255,255,0.03)',
           }}
         >
-          <Typography sx={{ color: landingColors.muted, fontSize: 11, fontWeight: 800, letterSpacing: 1.2 }}>
+          <Typography
+            sx={{ color: landingColors.muted, fontSize: 11, fontWeight: 800, letterSpacing: 1.2 }}
+          >
             GAP OPPORTUNITY DETECTED
           </Typography>
 
@@ -115,7 +119,9 @@ function ShowcaseVisual() {
             bgcolor: 'rgba(16,22,43,0.75)',
           }}
         >
-          <Typography sx={{ color: landingColors.muted, fontSize: 11, fontWeight: 800, letterSpacing: 1.2 }}>
+          <Typography
+            sx={{ color: landingColors.muted, fontSize: 11, fontWeight: 800, letterSpacing: 1.2 }}
+          >
             RESERVATION LANE
           </Typography>
 

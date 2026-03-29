@@ -1,8 +1,8 @@
-import { Box, Container, Grid, Stack, Typography } from '@mui/material';
-import EventAvailableRoundedIcon from '@mui/icons-material/EventAvailableRounded';
 import BlockRoundedIcon from '@mui/icons-material/BlockRounded';
-import QueueRoundedIcon from '@mui/icons-material/QueueRounded';
+import EventAvailableRoundedIcon from '@mui/icons-material/EventAvailableRounded';
 import ManageAccountsRoundedIcon from '@mui/icons-material/ManageAccountsRounded';
+import QueueRoundedIcon from '@mui/icons-material/QueueRounded';
+import { Box, Container, Grid, Stack, Typography } from '@mui/material';
 import { alpha } from '@mui/material/styles';
 import { landingColors, premium } from './constants';
 
@@ -39,7 +39,9 @@ export function TrustStrip() {
             {items.map((item) => (
               <Grid item xs={12} sm={6} md={3} key={item.label}>
                 <Stack direction="row" spacing={1} alignItems="center" justifyContent="center">
-                  <Box sx={{ color: landingColors.purpleSoft, display: 'grid', placeItems: 'center' }}>
+                  <Box
+                    sx={{ color: landingColors.purpleSoft, display: 'grid', placeItems: 'center' }}
+                  >
                     {item.icon}
                   </Box>
                   <Typography sx={{ color: landingColors.text, fontWeight: 850, fontSize: 14.5 }}>

@@ -1,5 +1,7 @@
-import * as React from 'react';
-import { Outlet, useLocation, useNavigate } from 'react-router-dom';
+import { landingColors } from '@barber/shared';
+import DashboardRoundedIcon from '@mui/icons-material/DashboardRounded';
+import MenuRoundedIcon from '@mui/icons-material/MenuRounded';
+import StorefrontRoundedIcon from '@mui/icons-material/StorefrontRounded';
 import {
   AppBar,
   Box,
@@ -10,13 +12,11 @@ import {
   useMediaQuery,
   useTheme,
 } from '@mui/material';
-import DashboardRoundedIcon from '@mui/icons-material/DashboardRounded';
-import StorefrontRoundedIcon from '@mui/icons-material/StorefrontRounded';
-import MenuRoundedIcon from '@mui/icons-material/MenuRounded';
 import { alpha } from '@mui/material/styles';
-import { landingColors } from '@barber/shared'; 
+import * as React from 'react';
+import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 
-import { AdminSidebar, type AdminNavItem } from './AdminSidebar';
+import { type AdminNavItem, AdminSidebar } from './AdminSidebar';
 
 const drawerWidth = 280;
 
@@ -33,7 +33,8 @@ export default function AdminLayout() {
     { label: 'Tenants', to: '/admin/tenants', icon: <StorefrontRoundedIcon /> },
   ];
 
-  const isActive = (to: string) => location.pathname === to || location.pathname === to.replace(/\/$/, '');
+  const isActive = (to: string) =>
+    location.pathname === to || location.pathname === to.replace(/\/$/, '');
 
   const onNavigate = (to: string) => {
     navigate(to);
@@ -80,7 +81,9 @@ export default function AdminLayout() {
           )}
 
           <Box sx={{ flex: 1 }}>
-            <Typography sx={{ fontWeight: 1000, fontSize: 20, letterSpacing: -0.8, color: '#0F172A' }}>
+            <Typography
+              sx={{ fontWeight: 1000, fontSize: 20, letterSpacing: -0.8, color: '#0F172A' }}
+            >
               Admin Console
             </Typography>
             <Typography variant="body2" sx={{ color: '#64748B', fontWeight: 700 }}>
@@ -90,7 +93,9 @@ export default function AdminLayout() {
         </Toolbar>
       </AppBar>
 
-      <Box sx={{ display: 'grid', gridTemplateColumns: isDesktop ? `${drawerWidth}px 1fr` : '1fr' }}>
+      <Box
+        sx={{ display: 'grid', gridTemplateColumns: isDesktop ? `${drawerWidth}px 1fr` : '1fr' }}
+      >
         {isDesktop ? (
           <Box
             sx={{

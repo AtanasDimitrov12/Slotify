@@ -39,8 +39,11 @@ describe('Authentication (Integration)', () => {
       expect(response.body.account).toHaveProperty('tenantId');
 
       // Verify persistence in DB
-      const user = await ctx.db.collection('users').findOne({ email: registerDto.email.toLowerCase() });
+      const user = await ctx.db
+        .collection('users')
+        .findOne({ email: registerDto.email.toLowerCase() });
       expect(user).toBeDefined();
+      if (!user) throw new Error('User not found');
       expect(user.name).toBe(registerDto.name);
 
       const tenant = await ctx.db.collection('tenants').findOne({ name: registerDto.tenantName });
@@ -48,10 +51,7 @@ describe('Authentication (Integration)', () => {
     });
 
     it('should fail if email is already in use', async () => {
-      await request(ctx.app.getHttpServer())
-        .post('/auth/register')
-        .send(registerDto)
-        .expect(201);
+      await request(ctx.app.getHttpServer()).post('/auth/register').send(registerDto).expect(201);
 
       const response = await request(ctx.app.getHttpServer())
         .post('/auth/register')
@@ -74,10 +74,7 @@ describe('Authentication (Integration)', () => {
   describe('POST /auth/login', () => {
     beforeEach(async () => {
       // Register a user for login tests
-      await request(ctx.app.getHttpServer())
-        .post('/auth/register')
-        .send(registerDto)
-        .expect(201);
+      await request(ctx.app.getHttpServer()).post('/auth/register').send(registerDto).expect(201);
     });
 
     it('should login successfully and return access token', async () => {
@@ -116,16 +113,14 @@ describe('Authentication (Integration)', () => {
 
   describe('GET /auth/me (Guard check)', () => {
     it('should return 401 if no token provided', async () => {
-      await request(ctx.app.getHttpServer())
-        .get('/auth/me')
-        .expect(401);
+      await request(ctx.app.getHttpServer()).get('/auth/me').expect(401);
     });
 
     it('should return user info if valid token provided', async () => {
       const loginResponse = await request(ctx.app.getHttpServer())
         .post('/auth/register')
         .send(registerDto);
-      
+
       const token = loginResponse.body.accessToken;
 
       const response = await request(ctx.app.getHttpServer())

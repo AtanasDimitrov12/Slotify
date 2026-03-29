@@ -1,9 +1,20 @@
-import React, { useMemo, useState } from 'react';
-import { Box, Button, Card, CardContent, Container, Stack, TextField, Typography, alpha } from '@mui/material';
-import { useNavigate } from 'react-router-dom';
-import { useAuth, useToast, type Tenant, landingColors, premium } from '@barber/shared';
+import { landingColors, premium, type Tenant, useAuth, useToast } from '@barber/shared';
 import ArrowBackRoundedIcon from '@mui/icons-material/ArrowBackRounded';
 import LoginRoundedIcon from '@mui/icons-material/LoginRounded';
+import {
+  alpha,
+  Box,
+  Button,
+  Card,
+  CardContent,
+  Container,
+  Stack,
+  TextField,
+  Typography,
+} from '@mui/material';
+import type React from 'react';
+import { useMemo, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 function routeForRole(role?: string) {
   switch (role) {
@@ -96,13 +107,7 @@ function mapFriendlyError(message: string): string {
   return 'We could not sign you in. Please check your details and try again.';
 }
 
-function PageWrapper({
-  children,
-  onBack,
-}: {
-  children: React.ReactNode;
-  onBack: () => void;
-}) {
+function PageWrapper({ children, onBack }: { children: React.ReactNode; onBack: () => void }) {
   return (
     <Box
       sx={{
@@ -144,7 +149,9 @@ function PageWrapper({
 
           {children}
 
-          <Typography sx={{ color: landingColors.muted, fontSize: 13, fontWeight: 700, letterSpacing: 0.5 }}>
+          <Typography
+            sx={{ color: landingColors.muted, fontSize: 13, fontWeight: 700, letterSpacing: 0.5 }}
+          >
             SLOTIFY OS — MODERN RESERVATIONS FOR SALONS
           </Typography>
         </Stack>
@@ -161,7 +168,9 @@ export default function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [submitting, setSubmitting] = useState(false);
-  const [tenants, setTenants] = useState<Array<Partial<Tenant> & { _id: string; name?: string }> | null>(null);
+  const [tenants, setTenants] = useState<Array<
+    Partial<Tenant> & { _id: string; name?: string }
+  > | null>(null);
 
   const canSubmit = useMemo(() => {
     return email.trim().length > 0 && password.length > 0 && !submitting;
@@ -216,7 +225,9 @@ export default function LoginPage() {
           <CardContent sx={{ p: { xs: 3, md: 5 } }}>
             <Stack spacing={3}>
               <Stack spacing={1}>
-                <Typography sx={{ fontWeight: 1000, fontSize: 32, letterSpacing: -1, lineHeight: 1.1 }}>
+                <Typography
+                  sx={{ fontWeight: 1000, fontSize: 32, letterSpacing: -1, lineHeight: 1.1 }}
+                >
                   Select a salon
                 </Typography>
                 <Typography sx={{ color: landingColors.muted, fontWeight: 600, fontSize: 16 }}>
@@ -264,7 +275,9 @@ export default function LoginPage() {
         <CardContent sx={{ p: { xs: 3, md: 5 } }}>
           <Stack spacing={4}>
             <Stack spacing={1}>
-              <Typography sx={{ fontWeight: 1000, fontSize: 40, letterSpacing: -1.5, lineHeight: 1 }}>
+              <Typography
+                sx={{ fontWeight: 1000, fontSize: 40, letterSpacing: -1.5, lineHeight: 1 }}
+              >
                 Partner login
               </Typography>
               <Typography sx={{ color: landingColors.muted, fontWeight: 600, fontSize: 16 }}>

@@ -1,5 +1,5 @@
-import * as React from 'react';
 import { Box, Chip, Stack, TextField, Typography } from '@mui/material';
+import * as React from 'react';
 
 type Props = {
   value: string[];

@@ -1,5 +1,6 @@
-import React, { createContext, useContext, useState, useCallback } from 'react';
-import { Snackbar, Alert, type AlertColor } from '@mui/material';
+import { Alert, type AlertColor, Snackbar } from '@mui/material';
+import type React from 'react';
+import { createContext, useCallback, useContext, useState } from 'react';
 
 type ToastContextType = {
   showToast: (message: string, severity?: AlertColor) => void;
@@ -20,21 +21,27 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
     setOpen(true);
   }, []);
 
-  const showError = useCallback((error: any) => {
-    let msg = 'An unexpected error occurred';
-    if (typeof error === 'string') {
-      msg = error;
-    } else if (error instanceof Error) {
-      msg = error.message;
-    } else if (error?.message) {
-      msg = error.message;
-    }
-    showToast(msg, 'error');
-  }, [showToast]);
+  const showError = useCallback(
+    (error: any) => {
+      let msg = 'An unexpected error occurred';
+      if (typeof error === 'string') {
+        msg = error;
+      } else if (error instanceof Error) {
+        msg = error.message;
+      } else if (error?.message) {
+        msg = error.message;
+      }
+      showToast(msg, 'error');
+    },
+    [showToast],
+  );
 
-  const showSuccess = useCallback((msg: string) => {
-    showToast(msg, 'success');
-  }, [showToast]);
+  const showSuccess = useCallback(
+    (msg: string) => {
+      showToast(msg, 'success');
+    },
+    [showToast],
+  );
 
   const handleClose = (_?: React.SyntheticEvent | Event, reason?: string) => {
     if (reason === 'clickaway') return;
@@ -50,7 +57,12 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
         onClose={handleClose}
         anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
       >
-        <Alert onClose={handleClose} severity={severity} variant="filled" sx={{ width: '100%', borderRadius: 2, fontWeight: 600 }}>
+        <Alert
+          onClose={handleClose}
+          severity={severity}
+          variant="filled"
+          sx={{ width: '100%', borderRadius: 2, fontWeight: 600 }}
+        >
           {message}
         </Alert>
       </Snackbar>

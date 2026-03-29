@@ -1,8 +1,8 @@
 import { Module } from '@nestjs/common';
+import { TenantDetailsModule } from '../tenant-details/tenant-details.module';
+import { TenantsModule } from '../tenants/tenants.module';
 import { OwnerSettingsController } from './owner-settings.controller';
 import { OwnerSettingsService } from './owner-settings.service';
-import { TenantsModule } from '../tenants/tenants.module';
-import { TenantDetailsModule } from '../tenant-details/tenant-details.module';
 
 @Module({
   imports: [TenantsModule, TenantDetailsModule],

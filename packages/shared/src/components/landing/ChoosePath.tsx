@@ -1,10 +1,10 @@
-import { Box, Button, Card, CardContent, Container, Grid, Stack, Typography } from '@mui/material';
-import { alpha } from '@mui/material/styles';
 import ArrowForwardRoundedIcon from '@mui/icons-material/ArrowForwardRounded';
+import CalendarViewDayRoundedIcon from '@mui/icons-material/CalendarViewDayRounded';
+import QueryStatsRoundedIcon from '@mui/icons-material/QueryStatsRounded';
 import StorefrontRoundedIcon from '@mui/icons-material/StorefrontRounded';
 import TuneRoundedIcon from '@mui/icons-material/TuneRounded';
-import QueryStatsRoundedIcon from '@mui/icons-material/QueryStatsRounded';
-import CalendarViewDayRoundedIcon from '@mui/icons-material/CalendarViewDayRounded';
+import { Box, Button, Card, CardContent, Container, Grid, Stack, Typography } from '@mui/material';
+import { alpha } from '@mui/material/styles';
 import { useNavigate } from 'react-router-dom';
 import { landingColors, premium } from './constants';
 import { SectionTitle } from './SectionTitle';
@@ -46,7 +46,15 @@ function AudienceCard({
         <Stack spacing={2.2}>
           <Stack direction="row" justifyContent="space-between" alignItems="center">
             <Stack spacing={0.6}>
-              <Typography sx={{ color: landingColors.muted, fontWeight: 850, fontSize: 12, letterSpacing: 1.4, textTransform: 'uppercase' }}>
+              <Typography
+                sx={{
+                  color: landingColors.muted,
+                  fontWeight: 850,
+                  fontSize: 12,
+                  letterSpacing: 1.4,
+                  textTransform: 'uppercase',
+                }}
+              >
                 {eyebrow}
               </Typography>
               <Typography sx={{ fontWeight: 1000, fontSize: 28, letterSpacing: -1 }}>
@@ -62,7 +70,7 @@ function AudienceCard({
                 display: 'grid',
                 placeItems: 'center',
                 bgcolor: alpha(accent, 0.14),
-                border: `1px solid ${alpha(accent, 0.20)}`,
+                border: `1px solid ${alpha(accent, 0.2)}`,
                 color: accent,
               }}
             >
@@ -89,7 +97,9 @@ function AudienceCard({
                   bgcolor: 'rgba(255,255,255,0.03)',
                 }}
               >
-                <Box sx={{ color: accent, display: 'grid', placeItems: 'center' }}>{point.icon}</Box>
+                <Box sx={{ color: accent, display: 'grid', placeItems: 'center' }}>
+                  {point.icon}
+                </Box>
                 <Typography sx={{ color: landingColors.text, fontWeight: 850, fontSize: 14.5 }}>
                   {point.label}
                 </Typography>
@@ -155,7 +165,10 @@ export function ChoosePath() {
             icon={<QueryStatsRoundedIcon />}
             points={[
               { label: 'Calendar and rule control', icon: <TuneRoundedIcon fontSize="small" /> },
-              { label: 'Better schedule structure', icon: <CalendarViewDayRoundedIcon fontSize="small" /> },
+              {
+                label: 'Better schedule structure',
+                icon: <CalendarViewDayRoundedIcon fontSize="small" />,
+              },
               { label: 'Less manual admin work', icon: <StorefrontRoundedIcon fontSize="small" /> },
             ]}
           />

@@ -1,3 +1,5 @@
+import type { TenantAddress } from './types';
+
 const API_BASE_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:4000';
 
 export type OpeningTimeRange = {
@@ -8,14 +10,6 @@ export type OpeningTimeRange = {
 export type WeeklyOpeningHours = Partial<
   Record<'mon' | 'tue' | 'wed' | 'thu' | 'fri' | 'sat' | 'sun', OpeningTimeRange[]>
 >;
-
-export type TenantAddress = {
-  street?: string;
-  houseNumber?: string;
-  postalCode?: string;
-  city?: string;
-  country?: string;
-};
 
 export type PublicTenantDetails = {
   tenantId: string;

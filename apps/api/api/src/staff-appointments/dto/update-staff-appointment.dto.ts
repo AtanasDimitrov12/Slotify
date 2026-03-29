@@ -1,5 +1,13 @@
-import { IsEmail, IsISO8601, IsMongoId, IsOptional, IsString, Matches, MaxLength } from 'class-validator';
 import { Transform } from 'class-transformer';
+import {
+  IsEmail,
+  IsISO8601,
+  IsMongoId,
+  IsOptional,
+  IsString,
+  Matches,
+  MaxLength,
+} from 'class-validator';
 
 export class UpdateStaffAppointmentDto {
   @IsOptional()
@@ -26,7 +34,7 @@ export class UpdateStaffAppointmentDto {
   @IsOptional()
   @IsEmail()
   @MaxLength(200)
-  @Transform(({ value }) => typeof value === 'string' ? value.trim().toLowerCase() : value)
+  @Transform(({ value }) => (typeof value === 'string' ? value.trim().toLowerCase() : value))
   customerEmail?: string;
 
   @IsOptional()

@@ -1,9 +1,9 @@
-import { Test, TestingModule } from '@nestjs/testing';
+import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { getModelToken } from '@nestjs/mongoose';
-import { NotFoundException, BadRequestException } from '@nestjs/common';
+import { Test, type TestingModule } from '@nestjs/testing';
 import { Types } from 'mongoose';
-import { ServicesService } from './services.service';
 import { Service } from './service.schema';
+import { ServicesService } from './services.service';
 
 describe('ServicesService', () => {
   let service: ServicesService;
@@ -67,7 +67,9 @@ describe('ServicesService', () => {
     it('should throw BadRequestException if name is missing', async () => {
       const dto = { name: '', durationMin: 30, priceEUR: 25 };
 
-      await expect(service.createForTenant(new Types.ObjectId().toString(), dto)).rejects.toThrow(BadRequestException);
+      await expect(service.createForTenant(new Types.ObjectId().toString(), dto)).rejects.toThrow(
+        BadRequestException,
+      );
     });
   });
 
@@ -94,7 +96,7 @@ describe('ServicesService', () => {
 
       const result = await service.findOneForTenant(
         mockService.tenantId.toString(),
-        mockService._id.toString()
+        mockService._id.toString(),
       );
 
       expect(result).toEqual(mockService);
@@ -106,10 +108,7 @@ describe('ServicesService', () => {
       });
 
       await expect(
-        service.findOneForTenant(
-            new Types.ObjectId().toString(),
-            new Types.ObjectId().toString()
-        ),
+        service.findOneForTenant(new Types.ObjectId().toString(), new Types.ObjectId().toString()),
       ).rejects.toThrow(NotFoundException);
     });
   });
@@ -122,7 +121,7 @@ describe('ServicesService', () => {
 
       const result = await service.removeForTenant(
         mockService.tenantId.toString(),
-        mockService._id.toString()
+        mockService._id.toString(),
       );
 
       expect(result.message).toBe('Service removed successfully');
@@ -134,10 +133,7 @@ describe('ServicesService', () => {
       });
 
       await expect(
-        service.removeForTenant(
-            new Types.ObjectId().toString(),
-            new Types.ObjectId().toString()
-        ),
+        service.removeForTenant(new Types.ObjectId().toString(), new Types.ObjectId().toString()),
       ).rejects.toThrow(NotFoundException);
     });
   });

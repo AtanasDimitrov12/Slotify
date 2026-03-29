@@ -1,6 +1,13 @@
-import * as React from 'react';
+import {
+  getBookingRules,
+  landingColors,
+  premium,
+  saveBookingRules,
+  useToast,
+} from '@barber/shared';
 import {
   Alert,
+  alpha,
   Box,
   Button,
   Card,
@@ -8,13 +15,9 @@ import {
   CircularProgress,
   Stack,
   Typography,
-  alpha,
 } from '@mui/material';
-
+import * as React from 'react';
 import BookingRulesForm, { type BookingRulesValues } from './components/BookingRulesForm';
-import { getBookingRules, saveBookingRules } from '@barber/shared'; 
-import { landingColors, premium } from '@barber/shared'; 
-import { useToast } from '@barber/shared'; 
 
 const defaultRules: BookingRulesValues = {
   bufferBefore: { enabled: false, minutes: 0 },
@@ -45,10 +48,8 @@ export default function OwnerBookingRulesPage() {
         minimumNoticeMinutes: data.minimumNoticeMinutes ?? 60,
         maximumDaysInAdvance: data.maximumDaysInAdvance ?? 30,
         autoConfirmReservations: data.autoConfirmReservations ?? true,
-        allowBookingToEndAfterWorkingHours:
-          data.allowBookingToEndAfterWorkingHours ?? false,
-        allowCustomerChooseSpecificStaff:
-          data.allowCustomerChooseSpecificStaff ?? true,
+        allowBookingToEndAfterWorkingHours: data.allowBookingToEndAfterWorkingHours ?? false,
+        allowCustomerChooseSpecificStaff: data.allowCustomerChooseSpecificStaff ?? true,
       });
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load booking rules');
@@ -135,7 +136,11 @@ export default function OwnerBookingRulesPage() {
           </Box>
         </Box>
 
-        {error ? <Alert severity="error" sx={{ borderRadius: 3 }}>{error}</Alert> : null}
+        {error ? (
+          <Alert severity="error" sx={{ borderRadius: 3 }}>
+            {error}
+          </Alert>
+        ) : null}
 
         <Card
           sx={{

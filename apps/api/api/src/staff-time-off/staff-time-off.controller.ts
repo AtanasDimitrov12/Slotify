@@ -11,11 +11,11 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { Types } from 'mongoose';
-import { StaffTimeOffService } from './staff-time-off.service';
-import { CreateStaffTimeOffDto } from './dto/create-staff-time-off.dto';
-import { UpdateStaffTimeOffDto } from './dto/update-staff-time-off.dto';
-import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { CurrentUser } from '../auth/current-user.decorator';
+import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import type { CreateStaffTimeOffDto } from './dto/create-staff-time-off.dto';
+import type { UpdateStaffTimeOffDto } from './dto/update-staff-time-off.dto';
+import type { StaffTimeOffService } from './staff-time-off.service';
 
 @Controller('staff-time-off')
 @UseGuards(JwtAuthGuard)
@@ -40,9 +40,7 @@ export class StaffTimeOffController {
 
   private ensureOwnerOrManager(currentUser: any) {
     if (!['owner', 'manager'].includes(currentUser?.role ?? '')) {
-      throw new UnauthorizedException(
-        'You are not allowed to manage staff time off',
-      );
+      throw new UnauthorizedException('You are not allowed to manage staff time off');
     }
   }
 
@@ -52,10 +50,7 @@ export class StaffTimeOffController {
   }
 
   @Get()
-  findAllByStaff(
-    @Query('tenantId') tenantId: string,
-    @Query('userId') userId: string,
-  ) {
+  findAllByStaff(@Query('tenantId') tenantId: string, @Query('userId') userId: string) {
     return this.staffTimeOffService.findAllByStaff(tenantId, userId);
   }
 
@@ -72,23 +67,15 @@ export class StaffTimeOffController {
   @Get('owner/pending-counts')
   getPendingCounts(@CurrentUser() currentUser: any) {
     this.ensureOwnerOrManager(currentUser);
-    return this.staffTimeOffService.getPendingCountsByTenant(
-      this.getTenantId(currentUser),
-    );
+    return this.staffTimeOffService.getPendingCountsByTenant(this.getTenantId(currentUser));
   }
 
   @Get('owner/staff/:userId')
-  getAllForOwnerByStaff(
-    @CurrentUser() currentUser: any,
-    @Param('userId') userId: string,
-  ) {
+  getAllForOwnerByStaff(@CurrentUser() currentUser: any, @Param('userId') userId: string) {
     this.ensureOwnerOrManager(currentUser);
     this.validateUserId(userId);
 
-    return this.staffTimeOffService.findAllForOwnerByStaff(
-      this.getTenantId(currentUser),
-      userId,
-    );
+    return this.staffTimeOffService.findAllForOwnerByStaff(this.getTenantId(currentUser), userId);
   }
 
   @Patch('owner/:requestId/status')

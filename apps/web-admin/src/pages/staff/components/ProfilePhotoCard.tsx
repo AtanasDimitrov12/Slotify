@@ -1,7 +1,7 @@
-import * as React from 'react';
-import { Avatar, Box, Button, Card, CardContent, Stack, Typography, alpha } from '@mui/material';
-import { landingColors, premium } from '@barber/shared'; 
+import { landingColors, premium } from '@barber/shared';
 import CameraAltRoundedIcon from '@mui/icons-material/CameraAltRounded';
+import { Avatar, alpha, Box, Button, Card, CardContent, Stack, Typography } from '@mui/material';
+import * as React from 'react';
 
 type Props = {
   name: string;
@@ -45,7 +45,7 @@ export default function ProfilePhotoCard({ name, photoUrl, onChangePhoto }: Prop
             >
               {name?.trim()?.[0]?.toUpperCase() ?? 'S'}
             </Avatar>
-            
+
             <Box
               onClick={() => inputRef.current?.click()}
               sx={{
@@ -71,7 +71,8 @@ export default function ProfilePhotoCard({ name, photoUrl, onChangePhoto }: Prop
 
           <Box>
             <Typography sx={{ color: '#64748B', fontWeight: 600, fontSize: 14, mb: 2 }}>
-              Make sure your face is clearly visible. This photo will be shown to customers during booking.
+              Make sure your face is clearly visible. This photo will be shown to customers during
+              booking.
             </Typography>
 
             <input
@@ -88,7 +89,13 @@ export default function ProfilePhotoCard({ name, photoUrl, onChangePhoto }: Prop
             <Button
               variant="outlined"
               onClick={() => inputRef.current?.click()}
-              sx={{ borderRadius: 999, fontWeight: 900, px: 4, borderColor: 'rgba(15,23,42,0.12)', color: '#475569' }}
+              sx={{
+                borderRadius: 999,
+                fontWeight: 900,
+                px: 4,
+                borderColor: 'rgba(15,23,42,0.12)',
+                color: '#475569',
+              }}
             >
               Upload New
             </Button>

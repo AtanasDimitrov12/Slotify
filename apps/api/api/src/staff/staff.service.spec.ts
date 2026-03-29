@@ -1,16 +1,16 @@
-import { Test, TestingModule } from '@nestjs/testing';
-import { StaffService } from './staff.service';
-import { UsersService } from '../users/users.service';
-import { MembershipsService } from '../memberships/memberships.service';
-import { StaffProfilesService } from '../staff-profiles/staff-profiles.service';
-import { StaffAvailabilityService } from '../staff-availability/staff-availability.service';
-import { StaffTimeOffService } from '../staff-time-off/staff-time-off.service';
-import { StaffServiceAssignmentsService } from '../staff-service-assignments/staff-service-assignments.service';
-import { ServicesService } from '../services/services.service';
-import { StaffBookingSettingsService } from '../staff-booking-settings/staff-booking-settings.service';
-import { UnauthorizedException, BadRequestException, NotFoundException } from '@nestjs/common';
-import { Types } from 'mongoose';
+import { BadRequestException, NotFoundException, UnauthorizedException } from '@nestjs/common';
+import { Test, type TestingModule } from '@nestjs/testing';
 import * as bcrypt from 'bcryptjs';
+import { Types } from 'mongoose';
+import { MembershipsService } from '../memberships/memberships.service';
+import { ServicesService } from '../services/services.service';
+import { StaffAvailabilityService } from '../staff-availability/staff-availability.service';
+import { StaffBookingSettingsService } from '../staff-booking-settings/staff-booking-settings.service';
+import { StaffProfilesService } from '../staff-profiles/staff-profiles.service';
+import { StaffServiceAssignmentsService } from '../staff-service-assignments/staff-service-assignments.service';
+import { StaffTimeOffService } from '../staff-time-off/staff-time-off.service';
+import { UsersService } from '../users/users.service';
+import { StaffService } from './staff.service';
 
 jest.mock('bcryptjs');
 
@@ -55,9 +55,31 @@ describe('StaffService', () => {
             updateByTenantAndUser: jest.fn(),
           },
         },
-        { provide: StaffAvailabilityService, useValue: { create: jest.fn(), findByStaff: jest.fn(), upsertByStaff: jest.fn() } },
-        { provide: StaffTimeOffService, useValue: { findAllByStaff: jest.fn(), create: jest.fn(), remove: jest.fn() } },
-        { provide: StaffServiceAssignmentsService, useValue: { findAllByStaff: jest.fn(), create: jest.fn(), update: jest.fn(), remove: jest.fn() } },
+        {
+          provide: StaffAvailabilityService,
+          useValue: {
+            create: jest.fn(),
+            findByStaff: jest.fn(),
+            upsertByStaff: jest.fn(),
+          },
+        },
+        {
+          provide: StaffTimeOffService,
+          useValue: {
+            findAllByStaff: jest.fn(),
+            create: jest.fn(),
+            remove: jest.fn(),
+          },
+        },
+        {
+          provide: StaffServiceAssignmentsService,
+          useValue: {
+            findAllByStaff: jest.fn(),
+            create: jest.fn(),
+            update: jest.fn(),
+            remove: jest.fn(),
+          },
+        },
         { provide: ServicesService, useValue: { findOneForTenant: jest.fn() } },
         { provide: StaffBookingSettingsService, useValue: {} },
       ],
@@ -80,9 +102,16 @@ describe('StaffService', () => {
       // Arrange
       usersService.findByEmail.mockResolvedValue(null);
       (bcrypt.hash as jest.Mock).mockResolvedValue('hashed_pass');
-      const mockUser = { _id: new Types.ObjectId(), name: 'New Barber', email: 'barber@slotify.com' };
+      const mockUser = {
+        _id: new Types.ObjectId(),
+        name: 'New Barber',
+        email: 'barber@slotify.com',
+      };
       usersService.create.mockResolvedValue(mockUser as any);
-      membershipsService.create.mockResolvedValue({ _id: 'm1', role: 'staff' } as any);
+      membershipsService.create.mockResolvedValue({
+        _id: 'm1',
+        role: 'staff',
+      } as any);
       staffProfilesService.create.mockResolvedValue({ _id: 'p1' } as any);
 
       // Act
@@ -90,8 +119,12 @@ describe('StaffService', () => {
 
       // Assert
       expect(result.message).toContain('successfully');
-      expect(usersService.create).toHaveBeenCalledWith(expect.objectContaining({ email: onboardDto.email.toLowerCase() }));
-      expect(membershipsService.create).toHaveBeenCalledWith(expect.objectContaining({ role: 'staff', tenantId: mockTenantId }));
+      expect(usersService.create).toHaveBeenCalledWith(
+        expect.objectContaining({ email: onboardDto.email.toLowerCase() }),
+      );
+      expect(membershipsService.create).toHaveBeenCalledWith(
+        expect.objectContaining({ role: 'staff', tenantId: mockTenantId }),
+      );
       expect(staffProfilesService.create).toHaveBeenCalled();
     });
 
@@ -111,7 +144,10 @@ describe('StaffService', () => {
       const userId = new Types.ObjectId().toString();
       const userContext = { tenantId: mockTenantId, userId };
 
-      usersService.findById.mockResolvedValue({ name: 'John', email: 'john@doe.com' } as any);
+      usersService.findById.mockResolvedValue({
+        name: 'John',
+        email: 'john@doe.com',
+      } as any);
       staffProfilesService.findByTenantAndUser.mockResolvedValue({
         _id: new Types.ObjectId(),
         tenantId: new Types.ObjectId(mockTenantId),
@@ -138,10 +174,12 @@ describe('StaffService', () => {
       membershipsService.findByTenantAndRole.mockResolvedValue([
         { userId: new Types.ObjectId(), role: 'staff' },
       ] as any);
-      
+
       // Mock subsequent calls for the one staff found
       usersService.findById.mockResolvedValue({ name: 'Staff 1' } as any);
-      staffProfilesService.findByTenantAndUser.mockResolvedValue({ displayName: 'Profile 1' } as any);
+      staffProfilesService.findByTenantAndUser.mockResolvedValue({
+        displayName: 'Profile 1',
+      } as any);
 
       const result = await service.listStaff(mockOwnerUser);
 

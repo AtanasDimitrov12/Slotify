@@ -1,9 +1,9 @@
-import { Box, Container, Grid, Stack, Typography } from '@mui/material';
-import { alpha } from '@mui/material/styles';
-import QueueRoundedIcon from '@mui/icons-material/QueueRounded';
-import NotificationsActiveRoundedIcon from '@mui/icons-material/NotificationsActiveRounded';
 import AutoFixHighRoundedIcon from '@mui/icons-material/AutoFixHighRounded';
 import CheckCircleRoundedIcon from '@mui/icons-material/CheckCircleRounded';
+import NotificationsActiveRoundedIcon from '@mui/icons-material/NotificationsActiveRounded';
+import QueueRoundedIcon from '@mui/icons-material/QueueRounded';
+import { Box, Container, Grid, Stack, Typography } from '@mui/material';
+import { alpha } from '@mui/material/styles';
 import { landingColors, premium } from './constants';
 import { SectionTitle } from './SectionTitle';
 
@@ -22,7 +22,9 @@ function WaitlistVisual() {
       }}
     >
       <Stack spacing={1.5}>
-        <Typography sx={{ color: landingColors.muted, fontSize: 11, fontWeight: 850, letterSpacing: 1.2 }}>
+        <Typography
+          sx={{ color: landingColors.muted, fontSize: 11, fontWeight: 850, letterSpacing: 1.2 }}
+        >
           SMART WAITLIST
         </Typography>
 
@@ -34,7 +36,14 @@ function WaitlistVisual() {
             border: `1px solid ${alpha(landingColors.purple, 0.18)}`,
           }}
         >
-          <Typography sx={{ color: landingColors.purpleSoft, fontWeight: 850, fontSize: 12, letterSpacing: 1.2 }}>
+          <Typography
+            sx={{
+              color: landingColors.purpleSoft,
+              fontWeight: 850,
+              fontSize: 12,
+              letterSpacing: 1.2,
+            }}
+          >
             DAY FULL • AUTO-RECOVERY ACTIVE
           </Typography>
           <Typography sx={{ mt: 0.7, color: landingColors.text, fontWeight: 1000, fontSize: 22 }}>
@@ -43,9 +52,24 @@ function WaitlistVisual() {
         </Box>
 
         {[
-          { name: 'Martin D.', service: 'Haircut', state: 'Best match', accent: landingColors.success },
-          { name: 'Alex P.', service: 'Fade + Beard', state: 'Flexible time', accent: landingColors.blue },
-          { name: 'Chris N.', service: 'Buzz Cut', state: 'Queued', accent: landingColors.purpleSoft },
+          {
+            name: 'Martin D.',
+            service: 'Haircut',
+            state: 'Best match',
+            accent: landingColors.success,
+          },
+          {
+            name: 'Alex P.',
+            service: 'Fade + Beard',
+            state: 'Flexible time',
+            accent: landingColors.blue,
+          },
+          {
+            name: 'Chris N.',
+            service: 'Buzz Cut',
+            state: 'Queued',
+            accent: landingColors.purpleSoft,
+          },
         ].map((item) => (
           <Stack
             key={item.name}

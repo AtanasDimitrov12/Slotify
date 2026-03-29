@@ -1,5 +1,5 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { HydratedDocument, Types } from 'mongoose';
+import { type HydratedDocument, Types } from 'mongoose';
 
 export type StaffBookingSettingsDocument = HydratedDocument<StaffBookingSettings>;
 
@@ -12,8 +12,7 @@ export class BookingBufferOverride {
   minutes?: number;
 }
 
-const BookingBufferOverrideSchema =
-  SchemaFactory.createForClass(BookingBufferOverride);
+const BookingBufferOverrideSchema = SchemaFactory.createForClass(BookingBufferOverride);
 
 @Schema({ _id: false })
 export class StaffBookingSettingsOverrides {
@@ -39,8 +38,9 @@ export class StaffBookingSettingsOverrides {
   allowCustomerChooseSpecificStaff?: boolean;
 }
 
-const StaffBookingSettingsOverridesSchema =
-  SchemaFactory.createForClass(StaffBookingSettingsOverrides);
+const StaffBookingSettingsOverridesSchema = SchemaFactory.createForClass(
+  StaffBookingSettingsOverrides,
+);
 
 @Schema({ timestamps: true })
 export class StaffBookingSettings {
@@ -57,7 +57,6 @@ export class StaffBookingSettings {
   overrides!: StaffBookingSettingsOverrides;
 }
 
-export const StaffBookingSettingsSchema =
-  SchemaFactory.createForClass(StaffBookingSettings);
+export const StaffBookingSettingsSchema = SchemaFactory.createForClass(StaffBookingSettings);
 
 StaffBookingSettingsSchema.index({ tenantId: 1, userId: 1 }, { unique: true });

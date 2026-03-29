@@ -1,21 +1,20 @@
-import * as React from 'react';
+import { landingColors, useToast } from '@barber/shared';
 import {
+  alpha,
   Box,
   Button,
   Dialog,
   DialogActions,
   DialogContent,
   DialogTitle,
+  Divider,
   Stack,
   TextField,
   Typography,
-  alpha,
   useMediaQuery,
   useTheme,
-  Divider,
 } from '@mui/material';
-import { landingColors } from '@barber/shared'; 
-import { useToast } from '@barber/shared'; 
+import * as React from 'react';
 
 export type TimeOffPayload = {
   startDate: string;
@@ -40,10 +39,7 @@ export default function TimeOffRequestDialog({ open, onClose, onSubmit }: Props)
   const [isSubmitting, setIsSubmitting] = React.useState(false);
 
   const canSubmit =
-    startDate.trim() !== '' &&
-    endDate.trim() !== '' &&
-    startDate <= endDate &&
-    !isSubmitting;
+    startDate.trim() !== '' && endDate.trim() !== '' && startDate <= endDate && !isSubmitting;
 
   const reset = React.useCallback(() => {
     setStartDate('');
@@ -81,8 +77,7 @@ export default function TimeOffRequestDialog({ open, onClose, onSubmit }: Props)
       showSuccess('Time off request submitted.');
       onClose();
     } catch (err: unknown) {
-      const message =
-        err instanceof Error ? err.message : 'Failed to submit time off request.';
+      const message = err instanceof Error ? err.message : 'Failed to submit time off request.';
       showError(message);
     } finally {
       setIsSubmitting(false);
@@ -118,8 +113,8 @@ export default function TimeOffRequestDialog({ open, onClose, onSubmit }: Props)
       <DialogContent sx={{ px: 4, pb: 4 }}>
         <Stack spacing={3}>
           <Typography sx={{ color: '#64748B', fontWeight: 600, fontSize: 15 }}>
-            Submit a leave request. The salon owner will receive a notification to
-            review and approve it.
+            Submit a leave request. The salon owner will receive a notification to review and
+            approve it.
           </Typography>
 
           <Stack spacing={2.5}>
@@ -168,8 +163,8 @@ export default function TimeOffRequestDialog({ open, onClose, onSubmit }: Props)
                   fontWeight: 700,
                 }}
               >
-                Note: Once approved, your availability for these dates will be
-                automatically blocked.
+                Note: Once approved, your availability for these dates will be automatically
+                blocked.
               </Typography>
             </Box>
           </Stack>

@@ -1,11 +1,11 @@
-import { Test, TestingModule } from '@nestjs/testing';
+import { BadRequestException, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { UnauthorizedException, BadRequestException } from '@nestjs/common';
-import { AuthService } from './auth.service';
-import { MembershipsService } from '../memberships/memberships.service';
-import { UsersService } from '../users/users.service';
-import { TenantsService } from '../tenants/tenants.service';
+import { Test, type TestingModule } from '@nestjs/testing';
 import * as bcrypt from 'bcryptjs';
+import { MembershipsService } from '../memberships/memberships.service';
+import { TenantsService } from '../tenants/tenants.service';
+import { UsersService } from '../users/users.service';
+import { AuthService } from './auth.service';
 
 jest.mock('bcryptjs');
 
@@ -57,7 +57,12 @@ describe('AuthService (Security & Multi-tenancy)', () => {
   });
 
   describe('Login Logic', () => {
-    const mockUser = { _id: 'user-123', email: 'test@example.com', password: 'hashed-password', name: 'John' };
+    const mockUser = {
+      _id: 'user-123',
+      email: 'test@example.com',
+      password: 'hashed-password',
+      name: 'John',
+    };
     const loginDto = { email: 'test@example.com', password: 'password123' };
 
     it('should throw UnauthorizedException for non-existent user', async () => {
@@ -92,7 +97,7 @@ describe('AuthService (Security & Multi-tenancy)', () => {
       (bcrypt.compare as jest.Mock).mockResolvedValue(true);
       (membershipsService.findActiveByUserIdAndTenantId as jest.Mock).mockResolvedValue({
         tenantId: 't1',
-        role: 'owner'
+        role: 'owner',
       });
 
       const result = await service.login({ ...loginDto, tenantId: 't1' });
@@ -107,18 +112,22 @@ describe('AuthService (Security & Multi-tenancy)', () => {
       name: 'Jane',
       email: 'jane@example.com',
       password: 'password123',
-      tenantName: 'Jane Salon'
+      tenantName: 'Jane Salon',
     };
 
     it('should throw BadRequestException if email is already in use', async () => {
-      (usersService.findByEmail as jest.Mock).mockResolvedValue({ _id: 'existing' });
+      (usersService.findByEmail as jest.Mock).mockResolvedValue({
+        _id: 'existing',
+      });
 
       await expect(service.register(registerDto)).rejects.toThrow(BadRequestException);
     });
 
     it('should throw BadRequestException if tenant name is taken', async () => {
       (usersService.findByEmail as jest.Mock).mockResolvedValue(null);
-      (tenantsService.findByName as jest.Mock).mockResolvedValue({ _id: 'existing-tenant' });
+      (tenantsService.findByName as jest.Mock).mockResolvedValue({
+        _id: 'existing-tenant',
+      });
 
       await expect(service.register(registerDto)).rejects.toThrow(BadRequestException);
     });
@@ -126,19 +135,29 @@ describe('AuthService (Security & Multi-tenancy)', () => {
     it('should orchestrate user and tenant creation correctly', async () => {
       (usersService.findByEmail as jest.Mock).mockResolvedValue(null);
       (tenantsService.findByName as jest.Mock).mockResolvedValue(null);
-      
+
       const mockTenant = { _id: 'new-t-id', name: 'Jane Salon' };
-      const mockUser = { _id: 'new-u-id', name: 'Jane', email: 'jane@example.com' };
-      
+      const mockUser = {
+        _id: 'new-u-id',
+        name: 'Jane',
+        email: 'jane@example.com',
+      };
+
       (tenantsService.create as jest.Mock).mockResolvedValue(mockTenant);
       (usersService.create as jest.Mock).mockResolvedValue(mockUser);
-      (membershipsService.create as jest.Mock).mockResolvedValue({ role: 'owner' });
+      (membershipsService.create as jest.Mock).mockResolvedValue({
+        role: 'owner',
+      });
 
       const result = await service.register(registerDto);
 
-      expect(tenantsService.create).toHaveBeenCalledWith({ name: 'Jane Salon' });
+      expect(tenantsService.create).toHaveBeenCalledWith({
+        name: 'Jane Salon',
+      });
       expect(usersService.create).toHaveBeenCalled();
-      expect(membershipsService.create).toHaveBeenCalledWith(expect.objectContaining({ role: 'owner' }));
+      expect(membershipsService.create).toHaveBeenCalledWith(
+        expect.objectContaining({ role: 'owner' }),
+      );
       expect(result).toHaveProperty('accessToken');
     });
   });

@@ -1,13 +1,11 @@
 import { Body, Controller, Delete, Get, Param, Patch, Post, Query } from '@nestjs/common';
-import { StaffServiceAssignmentsService } from './staff-service-assignments.service';
-import { CreateStaffServiceAssignmentDto } from './dto/create-staff-service-assignment.dto';
-import { UpdateStaffServiceAssignmentDto } from './dto/update-staff-service-assignment.dto';
+import type { CreateStaffServiceAssignmentDto } from './dto/create-staff-service-assignment.dto';
+import type { UpdateStaffServiceAssignmentDto } from './dto/update-staff-service-assignment.dto';
+import type { StaffServiceAssignmentsService } from './staff-service-assignments.service';
 
 @Controller('staff-service-assignments')
 export class StaffServiceAssignmentsController {
-  constructor(
-    private readonly staffServiceAssignmentsService: StaffServiceAssignmentsService,
-  ) {}
+  constructor(private readonly staffServiceAssignmentsService: StaffServiceAssignmentsService) {}
 
   @Post()
   create(@Body() dto: CreateStaffServiceAssignmentDto) {
@@ -15,10 +13,7 @@ export class StaffServiceAssignmentsController {
   }
 
   @Get()
-  findAllByStaff(
-    @Query('tenantId') tenantId: string,
-    @Query('userId') userId: string,
-  ) {
+  findAllByStaff(@Query('tenantId') tenantId: string, @Query('userId') userId: string) {
     return this.staffServiceAssignmentsService.findAllByStaff(tenantId, userId);
   }
 

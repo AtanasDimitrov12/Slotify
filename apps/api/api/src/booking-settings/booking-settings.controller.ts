@@ -1,14 +1,14 @@
-import { Body, Controller, Get, Put, UseGuards, UnauthorizedException } from '@nestjs/common';
+import { Body, Controller, Get, Put, UnauthorizedException, UseGuards } from '@nestjs/common';
 import { Types } from 'mongoose';
-import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { CurrentUser } from '../auth/current-user.decorator';
-import { BookingSettingsService } from './booking-settings.service';
-import { UpsertTenantBookingSettingsDto } from './dto/upsert-tenant-booking-settings.dto';
+import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import type { BookingSettingsService } from './booking-settings.service';
+import type { UpsertTenantBookingSettingsDto } from './dto/upsert-tenant-booking-settings.dto';
 
 @Controller('owner/settings/booking')
 @UseGuards(JwtAuthGuard)
 export class BookingSettingsController {
-  constructor(private readonly bookingSettingsService: BookingSettingsService) { }
+  constructor(private readonly bookingSettingsService: BookingSettingsService) {}
 
   private getTenantId(currentUser: any): string {
     const tenantId = currentUser?.tenantId;
@@ -31,10 +31,7 @@ export class BookingSettingsController {
   }
 
   @Put()
-  updateSettings(
-    @CurrentUser() currentUser: any,
-    @Body() dto: UpsertTenantBookingSettingsDto,
-  ) {
+  updateSettings(@CurrentUser() currentUser: any, @Body() dto: UpsertTenantBookingSettingsDto) {
     const tenantId = this.getTenantId(currentUser);
     return this.bookingSettingsService.upsertByTenantId(tenantId, dto);
   }

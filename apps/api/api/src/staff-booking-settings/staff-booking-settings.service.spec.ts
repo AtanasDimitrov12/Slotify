@@ -1,9 +1,9 @@
-import { Test, TestingModule } from '@nestjs/testing';
 import { getModelToken } from '@nestjs/mongoose';
+import { Test, type TestingModule } from '@nestjs/testing';
 import { Types } from 'mongoose';
-import { StaffBookingSettingsService } from './staff-booking-settings.service';
-import { StaffBookingSettings } from './staff-booking-settings.schema';
 import { BookingSettingsService } from '../booking-settings/booking-settings.service';
+import { StaffBookingSettings } from './staff-booking-settings.schema';
+import { StaffBookingSettingsService } from './staff-booking-settings.service';
 
 describe('StaffBookingSettingsService (Hierarchy Logic)', () => {
   let service: StaffBookingSettingsService;
@@ -26,8 +26,14 @@ describe('StaffBookingSettingsService (Hierarchy Logic)', () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         StaffBookingSettingsService,
-        { provide: getModelToken(StaffBookingSettings.name), useValue: mockStaffBookingSettingsModel },
-        { provide: BookingSettingsService, useValue: mockBookingSettingsService },
+        {
+          provide: getModelToken(StaffBookingSettings.name),
+          useValue: mockStaffBookingSettingsModel,
+        },
+        {
+          provide: BookingSettingsService,
+          useValue: mockBookingSettingsService,
+        },
       ],
     }).compile();
 
@@ -47,10 +53,12 @@ describe('StaffBookingSettingsService (Hierarchy Logic)', () => {
   describe('getEffectiveSettings', () => {
     it('should return global settings if staff has useGlobalSettings = true', async () => {
       mockBookingSettingsService.getOrCreateByTenantId.mockResolvedValue(globalSettings);
-      mockStaffBookingSettingsModel.findOneAndUpdate.mockReturnValue(mockQuery({
-        useGlobalSettings: true,
-        overrides: {}
-      }));
+      mockStaffBookingSettingsModel.findOneAndUpdate.mockReturnValue(
+        mockQuery({
+          useGlobalSettings: true,
+          overrides: {},
+        }),
+      );
 
       const result = await service.getEffectiveSettings(tenantId, userId);
 
@@ -60,22 +68,24 @@ describe('StaffBookingSettingsService (Hierarchy Logic)', () => {
     });
 
     it('should correctly merge overrides when useGlobalSettings = false', async () => {
-        mockBookingSettingsService.getOrCreateByTenantId.mockResolvedValue(globalSettings);
-        mockStaffBookingSettingsModel.findOneAndUpdate.mockReturnValue(mockQuery({
+      mockBookingSettingsService.getOrCreateByTenantId.mockResolvedValue(globalSettings);
+      mockStaffBookingSettingsModel.findOneAndUpdate.mockReturnValue(
+        mockQuery({
           useGlobalSettings: false,
           overrides: {
             minimumNoticeMinutes: 30, // Override
-            bufferAfter: { minutes: 20 } // Nested Override
-          }
-        }));
-  
-        const result = await service.getEffectiveSettings(tenantId, userId);
-  
-        expect(result.source).toBe('custom');
-        expect(result.effectiveSettings.minimumNoticeMinutes).toBe(30);
-        expect(result.effectiveSettings.bufferAfter.minutes).toBe(20);
-        // Ensure properties not overridden remain from global
-        expect(result.effectiveSettings.autoConfirmReservations).toBe(true);
-      });
+            bufferAfter: { minutes: 20 }, // Nested Override
+          },
+        }),
+      );
+
+      const result = await service.getEffectiveSettings(tenantId, userId);
+
+      expect(result.source).toBe('custom');
+      expect(result.effectiveSettings.minimumNoticeMinutes).toBe(30);
+      expect(result.effectiveSettings.bufferAfter.minutes).toBe(20);
+      // Ensure properties not overridden remain from global
+      expect(result.effectiveSettings.autoConfirmReservations).toBe(true);
+    });
   });
 });

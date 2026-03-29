@@ -52,7 +52,10 @@ export async function createMembership(payload: CreateMembershipPayload): Promis
   return res.json();
 }
 
-export async function updateMembership(id: string, payload: UpdateMembershipPayload): Promise<Membership> {
+export async function updateMembership(
+  id: string,
+  payload: UpdateMembershipPayload,
+): Promise<Membership> {
   const res = await fetch(`/api/memberships/${id}`, {
     method: 'PATCH',
     headers: { 'Content-Type': 'application/json' },

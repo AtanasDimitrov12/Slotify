@@ -1,18 +1,10 @@
+import { Box, Card, CardContent, Stack, Typography } from '@mui/material';
 import * as React from 'react';
-import { Card, CardContent, Stack, Typography, Box } from '@mui/material';
 import type { StaffAppointment } from '../../../api/staffAppointments';
 
-const PRODUCTIVE_STATUSES: StaffAppointment['status'][] = [
-  'pending',
-  'confirmed',
-  'completed',
-];
+const PRODUCTIVE_STATUSES: StaffAppointment['status'][] = ['pending', 'confirmed', 'completed'];
 
-export default function DayOverviewCard({
-  appointments,
-}: {
-  appointments: StaffAppointment[];
-}) {
+export default function DayOverviewCard({ appointments }: { appointments: StaffAppointment[] }) {
   const productiveAppointments = appointments.filter((item) =>
     PRODUCTIVE_STATUSES.includes(item.status),
   );
@@ -22,10 +14,7 @@ export default function DayOverviewCard({
     0,
   );
 
-  const estimatedRevenue = productiveAppointments.reduce(
-    (sum, item) => sum + item.priceEUR,
-    0,
-  );
+  const estimatedRevenue = productiveAppointments.reduce((sum, item) => sum + item.priceEUR, 0);
 
   const noShows = appointments.filter((item) => item.status === 'no-show').length;
 
@@ -52,11 +41,15 @@ export default function DayOverviewCard({
         <Stack spacing={1.5}>
           <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <Typography sx={{ color: '#475569', fontWeight: 600 }}>Appointments</Typography>
-            <Typography sx={{ fontWeight: 900, color: '#7C6CFF' }}>{productiveAppointments.length}</Typography>
+            <Typography sx={{ fontWeight: 900, color: '#7C6CFF' }}>
+              {productiveAppointments.length}
+            </Typography>
           </Box>
           <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <Typography sx={{ color: '#475569', fontWeight: 600 }}>Booked time</Typography>
-            <Typography sx={{ fontWeight: 900, color: '#111827' }}>{totalBookedMinutes} min</Typography>
+            <Typography sx={{ fontWeight: 900, color: '#111827' }}>
+              {totalBookedMinutes} min
+            </Typography>
           </Box>
           <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <Typography sx={{ color: '#475569', fontWeight: 600 }}>Estimated revenue</Typography>

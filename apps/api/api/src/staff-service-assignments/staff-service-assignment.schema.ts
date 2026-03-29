@@ -1,8 +1,8 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { HydratedDocument, Types } from 'mongoose';
+import { type HydratedDocument, Types } from 'mongoose';
+import { Service } from '../services/service.schema';
 import { Tenant } from '../tenants/tenant.schema';
 import { User } from '../users/user.schema';
-import { Service } from '../services/service.schema';
 
 export type StaffServiceAssignmentDocument = HydratedDocument<StaffServiceAssignment>;
 
@@ -14,7 +14,12 @@ export class StaffServiceAssignment {
   @Prop({ type: Types.ObjectId, ref: User.name, required: true, index: true })
   userId!: Types.ObjectId;
 
-  @Prop({ type: Types.ObjectId, ref: Service.name, required: true, index: true })
+  @Prop({
+    type: Types.ObjectId,
+    ref: Service.name,
+    required: true,
+    index: true,
+  })
   serviceId!: Types.ObjectId;
 
   @Prop({ min: 1 })
@@ -27,10 +32,6 @@ export class StaffServiceAssignment {
   isOffered!: boolean;
 }
 
-export const StaffServiceAssignmentSchema =
-  SchemaFactory.createForClass(StaffServiceAssignment);
+export const StaffServiceAssignmentSchema = SchemaFactory.createForClass(StaffServiceAssignment);
 
-StaffServiceAssignmentSchema.index(
-  { tenantId: 1, userId: 1, serviceId: 1 },
-  { unique: true },
-);
+StaffServiceAssignmentSchema.index({ tenantId: 1, userId: 1, serviceId: 1 }, { unique: true });

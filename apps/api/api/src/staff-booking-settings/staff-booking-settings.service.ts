@@ -1,12 +1,12 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model, Types } from 'mongoose';
+import { type Model, Types } from 'mongoose';
+import type { BookingSettingsService } from '../booking-settings/booking-settings.service';
+import type { UpdateStaffBookingSettingsDto } from './dto/update-staff-booking-settings.dto';
 import {
   StaffBookingSettings,
-  StaffBookingSettingsDocument,
+  type StaffBookingSettingsDocument,
 } from './staff-booking-settings.schema';
-import { UpdateStaffBookingSettingsDto } from './dto/update-staff-booking-settings.dto';
-import { BookingSettingsService } from '../booking-settings/booking-settings.service';
 
 @Injectable()
 export class StaffBookingSettingsService {
@@ -14,7 +14,7 @@ export class StaffBookingSettingsService {
     @InjectModel(StaffBookingSettings.name)
     private readonly staffBookingSettingsModel: Model<StaffBookingSettingsDocument>,
     private readonly bookingSettingsService: BookingSettingsService,
-  ) { }
+  ) {}
 
   async getOrCreateByStaff(tenantId: string, userId: string) {
     return this.staffBookingSettingsModel
@@ -40,11 +40,7 @@ export class StaffBookingSettingsService {
       .lean();
   }
 
-  async updateByStaff(
-    tenantId: string,
-    userId: string,
-    dto: UpdateStaffBookingSettingsDto,
-  ) {
+  async updateByStaff(tenantId: string, userId: string, dto: UpdateStaffBookingSettingsDto) {
     const setPayload: Record<string, unknown> = {};
 
     if (dto.useGlobalSettings !== undefined) {
@@ -104,8 +100,7 @@ export class StaffBookingSettingsService {
   }
 
   async getEffectiveSettings(tenantId: string, userId: string) {
-    const globalSettings =
-      await this.bookingSettingsService.getOrCreateByTenantId(tenantId);
+    const globalSettings = await this.bookingSettingsService.getOrCreateByTenantId(tenantId);
 
     const staffSettings = await this.getOrCreateByStaff(tenantId, userId);
 
@@ -122,10 +117,7 @@ export class StaffBookingSettingsService {
       source: 'custom',
       globalSettings,
       staffSettings,
-      effectiveSettings: this.mergeWithGlobalSettings(
-        globalSettings,
-        staffSettings.overrides,
-      ),
+      effectiveSettings: this.mergeWithGlobalSettings(globalSettings, staffSettings.overrides),
     };
   }
 

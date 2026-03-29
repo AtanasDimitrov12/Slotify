@@ -1,16 +1,8 @@
+import type { StaffAppointment } from '@barber/shared';
+import { landingColors, premium } from '@barber/shared';
+import { alpha, Box, Card, CardContent, CircularProgress, Stack, Typography } from '@mui/material';
 import * as React from 'react';
-import {
-  Box,
-  Card,
-  CardContent,
-  CircularProgress,
-  Stack,
-  Typography,
-  alpha,
-} from '@mui/material';
-import type { StaffAppointment } from '@barber/shared'; 
 import AppointmentStatusChip from './AppointmentStatusChip';
-import { landingColors, premium } from '@barber/shared'; 
 
 const HOURS = Array.from({ length: 11 }, (_, i) => 8 + i);
 const SLOT_HEIGHT = 80;
@@ -84,8 +76,7 @@ function buildLayout(appointments: StaffAppointment[]): LayoutItem[] {
   if (!appointments.length) return [];
 
   const sorted = [...appointments].sort((a, b) => {
-    const timeDiff =
-      new Date(a.startTime).getTime() - new Date(b.startTime).getTime();
+    const timeDiff = new Date(a.startTime).getTime() - new Date(b.startTime).getTime();
     if (timeDiff !== 0) return timeDiff;
 
     const priorityDiff = getStatusPriority(a.status) - getStatusPriority(b.status);
@@ -129,8 +120,7 @@ function buildLayout(appointments: StaffAppointment[]): LayoutItem[] {
       const priorityDiff = getStatusPriority(a.status) - getStatusPriority(b.status);
       if (priorityDiff !== 0) return priorityDiff;
 
-      const timeDiff =
-        new Date(a.startTime).getTime() - new Date(b.startTime).getTime();
+      const timeDiff = new Date(a.startTime).getTime() - new Date(b.startTime).getTime();
       if (timeDiff !== 0) return timeDiff;
 
       return a.customerName.localeCompare(b.customerName);
@@ -191,10 +181,7 @@ export default function ScheduleCalendar({
   loading: boolean;
   selectedAppointmentId: string | null;
   onSelectAppointment: (id: string) => void;
-  onMoveAppointment: (
-    appointment: StaffAppointment,
-    nextStartIso: string,
-  ) => Promise<void>;
+  onMoveAppointment: (appointment: StaffAppointment, nextStartIso: string) => Promise<void>;
 }) {
   const containerRef = React.useRef<HTMLDivElement | null>(null);
   const [draggingId, setDraggingId] = React.useState<string | null>(null);
@@ -226,10 +213,7 @@ export default function ScheduleCalendar({
     return () => observer.disconnect();
   }, []);
 
-  function handleMouseDown(
-    event: React.MouseEvent<HTMLDivElement>,
-    appointment: StaffAppointment,
-  ) {
+  function handleMouseDown(event: React.MouseEvent<HTMLDivElement>, appointment: StaffAppointment) {
     if (!isDraggableStatus(appointment.status)) {
       onSelectAppointment(appointment.id);
       return;
@@ -262,14 +246,10 @@ export default function ScheduleCalendar({
 
       const containerRect = containerRef.current.getBoundingClientRect();
       const rawTop = event.clientY - containerRect.top - meta.offsetY;
-      const maxTop =
-        HOURS.length * SLOT_HEIGHT - getAppointmentHeight(appointment.durationMin);
+      const maxTop = HOURS.length * SLOT_HEIGHT - getAppointmentHeight(appointment.durationMin);
       const clampedTop = clamp(rawTop, 0, maxTop);
 
-      const minutesFromStart = roundToStep(
-        clampedTop / PIXELS_PER_MINUTE,
-        SNAP_MINUTES,
-      );
+      const minutesFromStart = roundToStep(clampedTop / PIXELS_PER_MINUTE, SNAP_MINUTES);
       const totalMinutes = CALENDAR_START_HOUR * 60 + minutesFromStart;
       const hours = Math.floor(totalMinutes / 60);
       const minutes = totalMinutes % 60;
@@ -295,14 +275,10 @@ export default function ScheduleCalendar({
 
       const containerRect = containerRef.current.getBoundingClientRect();
       const rawTop = event.clientY - containerRect.top - meta.offsetY;
-      const maxTop =
-        HOURS.length * SLOT_HEIGHT - getAppointmentHeight(appointment.durationMin);
+      const maxTop = HOURS.length * SLOT_HEIGHT - getAppointmentHeight(appointment.durationMin);
       const clampedTop = clamp(rawTop, 0, maxTop);
 
-      const minutesFromStart = roundToStep(
-        clampedTop / PIXELS_PER_MINUTE,
-        SNAP_MINUTES,
-      );
+      const minutesFromStart = roundToStep(clampedTop / PIXELS_PER_MINUTE, SNAP_MINUTES);
       const snappedTop = minutesFromStart * PIXELS_PER_MINUTE;
 
       setPreviewTopById((prev) => ({
@@ -322,8 +298,7 @@ export default function ScheduleCalendar({
 
   const layoutItems = React.useMemo(() => buildLayout(appointments), [appointments]);
 
-  const totalHorizontalSpace =
-    contentWidth - APPOINTMENT_LEFT - APPOINTMENT_RIGHT_GAP;
+  const totalHorizontalSpace = contentWidth - APPOINTMENT_LEFT - APPOINTMENT_RIGHT_GAP;
 
   return (
     <Card
@@ -346,7 +321,9 @@ export default function ScheduleCalendar({
             bgcolor: alpha(landingColors.purple, 0.02),
           }}
         >
-          <Typography sx={{ fontWeight: 1000, fontSize: 20, color: '#0F172A', letterSpacing: -0.5 }}>
+          <Typography
+            sx={{ fontWeight: 1000, fontSize: 20, color: '#0F172A', letterSpacing: -0.5 }}
+          >
             Daily Timeline
           </Typography>
         </Box>
@@ -431,8 +408,7 @@ export default function ScheduleCalendar({
                 Math.floor((totalHorizontalSpace - innerGapTotal) / laneCount),
               );
 
-              const left =
-                APPOINTMENT_LEFT + laneIndex * (laneWidth + APPOINTMENT_GAP);
+              const left = APPOINTMENT_LEFT + laneIndex * (laneWidth + APPOINTMENT_GAP);
 
               const dense = laneCount > 1 || laneWidth < 280 || height < 64;
               const veryDense = laneWidth < 200 || height < 50;
@@ -484,7 +460,12 @@ export default function ScheduleCalendar({
                     gap: 0.5,
                   }}
                 >
-                  <Stack direction="row" justifyContent="space-between" alignItems="center" spacing={1}>
+                  <Stack
+                    direction="row"
+                    justifyContent="space-between"
+                    alignItems="center"
+                    spacing={1}
+                  >
                     <Typography
                       sx={{
                         fontWeight: 900,
@@ -498,10 +479,8 @@ export default function ScheduleCalendar({
                     >
                       {formatTimeOnly(appointment.startTime)} · {appointment.customerName}
                     </Typography>
-                    
-                    {!veryDense && (
-                      <AppointmentStatusChip status={appointment.status} />
-                    )}
+
+                    {!veryDense && <AppointmentStatusChip status={appointment.status} />}
                   </Stack>
 
                   {showMetaLine && (

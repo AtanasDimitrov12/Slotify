@@ -1,9 +1,9 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { Types } from 'mongoose';
-import { TenantsService } from '../tenants/tenants.service';
-import { TenantDetailsService } from '../tenant-details/tenant-details.service';
-import { UpdateBusinessGeneralDto } from './dto/update-business-general.dto';
-import { UpdateOpeningHoursDto } from './dto/update-opening-hours.dto';
+import type { TenantDetailsService } from '../tenant-details/tenant-details.service';
+import type { TenantsService } from '../tenants/tenants.service';
+import type { UpdateBusinessGeneralDto } from './dto/update-business-general.dto';
+import type { UpdateOpeningHoursDto } from './dto/update-opening-hours.dto';
 
 @Injectable()
 export class OwnerSettingsService {
@@ -61,7 +61,9 @@ export class OwnerSettingsService {
     const tenantId = this.getTenantId(currentUser);
 
     if (dto.salonName?.trim()) {
-      await this.tenantsService.update(tenantId, { name: dto.salonName.trim() });
+      await this.tenantsService.update(tenantId, {
+        name: dto.salonName.trim(),
+      });
     }
 
     const details = await this.tenantDetailsService.upsertByTenantId(tenantId, {

@@ -1,4 +1,4 @@
-import * as React from 'react';
+import { landingColors } from '@barber/shared';
 import {
   Avatar,
   Box,
@@ -11,7 +11,7 @@ import {
   Typography,
 } from '@mui/material';
 import { alpha } from '@mui/material/styles';
-import { landingColors } from '@barber/shared'; 
+import * as React from 'react';
 
 export type AdminNavItem = {
   label: string;
@@ -44,7 +44,7 @@ export function AdminSidebar({ items, isActive, onNavigate }: Props) {
             fontWeight: 1000,
             bgcolor: alpha(landingColors.purple, 0.12),
             color: landingColors.purple,
-            border: `1px solid ${alpha(landingColors.purple, 0.20)}`,
+            border: `1px solid ${alpha(landingColors.purple, 0.2)}`,
             boxShadow: `0 8px 24px ${alpha(landingColors.purple, 0.16)}`,
           }}
         >
@@ -52,7 +52,15 @@ export function AdminSidebar({ items, isActive, onNavigate }: Props) {
         </Avatar>
 
         <Box>
-          <Typography sx={{ fontWeight: 1000, letterSpacing: -0.4, lineHeight: 1, fontSize: 18, color: '#0F172A' }}>
+          <Typography
+            sx={{
+              fontWeight: 1000,
+              letterSpacing: -0.4,
+              lineHeight: 1,
+              fontSize: 18,
+              color: '#0F172A',
+            }}
+          >
             Admin
           </Typography>
           <Typography variant="body2" sx={{ color: '#64748B', fontWeight: 700, mt: 0.4 }}>
@@ -82,7 +90,9 @@ export function AdminSidebar({ items, isActive, onNavigate }: Props) {
                 bgcolor: active ? alpha(landingColors.purple, 0.08) : 'transparent',
                 transition: 'all 0.2s ease',
                 '&:hover': {
-                  bgcolor: active ? alpha(landingColors.purple, 0.12) : alpha(landingColors.purple, 0.04),
+                  bgcolor: active
+                    ? alpha(landingColors.purple, 0.12)
+                    : alpha(landingColors.purple, 0.04),
                   transform: 'translateX(4px)',
                 },
                 '&.Mui-selected': {

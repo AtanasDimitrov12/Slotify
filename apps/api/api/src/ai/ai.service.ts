@@ -1,6 +1,6 @@
+import { GoogleGenAI } from '@google/genai';
 import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { GoogleGenAI } from '@google/genai';
 
 type ExtractedService = {
   name: string;
@@ -87,25 +87,27 @@ Rules:
         throw new InternalServerErrorException('Gemini response was not a valid array');
       }
 
-      return parsed.map((item: unknown) => {
-        const service = item as Record<string, unknown>;
+      return parsed
+        .map((item: unknown) => {
+          const service = item as Record<string, unknown>;
 
-        return {
-          name: typeof service.name === 'string' ? service.name.trim() : '',
-          priceEUR:
-            typeof service.priceEUR === 'number'
-              ? service.priceEUR
-              : Number(service.priceEUR ?? 0) || 0,
-          durationMin:
-            typeof service.durationMin === 'number'
-              ? Math.max(1, service.durationMin)
-              : Number(service.durationMin) || 30,
-          description:
-            typeof service.description === 'string' && service.description.trim().length > 0
-              ? service.description.trim()
-              : null,
-        };
-      }).filter((service) => service.name.length > 0);
+          return {
+            name: typeof service.name === 'string' ? service.name.trim() : '',
+            priceEUR:
+              typeof service.priceEUR === 'number'
+                ? service.priceEUR
+                : Number(service.priceEUR ?? 0) || 0,
+            durationMin:
+              typeof service.durationMin === 'number'
+                ? Math.max(1, service.durationMin)
+                : Number(service.durationMin) || 30,
+            description:
+              typeof service.description === 'string' && service.description.trim().length > 0
+                ? service.description.trim()
+                : null,
+          };
+        })
+        .filter((service) => service.name.length > 0);
     } catch (error) {
       console.error('Gemini error:', error);
       throw new InternalServerErrorException('Error processing file with AI');

@@ -1,21 +1,12 @@
-import * as React from 'react';
-import {
-  Button,
-  Card,
-  CardContent,
-  Divider,
-  Stack,
-  Typography,
-  alpha,
-  Box,
-} from '@mui/material';
+import type { StaffAppointment } from '@barber/shared';
+import { landingColors, premium } from '@barber/shared';
 import AccessTimeRoundedIcon from '@mui/icons-material/AccessTimeRounded';
-import PersonRoundedIcon from '@mui/icons-material/PersonRounded';
 import ContentCutRoundedIcon from '@mui/icons-material/ContentCutRounded';
 import NotesRoundedIcon from '@mui/icons-material/NotesRounded';
-import type { StaffAppointment } from '@barber/shared'; 
+import PersonRoundedIcon from '@mui/icons-material/PersonRounded';
+import { alpha, Box, Button, Card, CardContent, Divider, Stack, Typography } from '@mui/material';
+import * as React from 'react';
 import AppointmentStatusChip from './AppointmentStatusChip';
-import { landingColors, premium } from '@barber/shared'; 
 
 function formatTimeOnly(value: string) {
   return new Date(value).toLocaleTimeString([], {
@@ -87,7 +78,8 @@ export default function SelectedAppointmentCard({
                   <AccessTimeRoundedIcon fontSize="small" />
                 </Box>
                 <Typography sx={{ fontWeight: 800, fontSize: 15, color: '#475569' }}>
-                  {formatTimeOnly(selectedAppointment.startTime)} · {selectedAppointment.durationMin} min
+                  {formatTimeOnly(selectedAppointment.startTime)} ·{' '}
+                  {selectedAppointment.durationMin} min
                 </Typography>
               </Stack>
 
@@ -111,10 +103,19 @@ export default function SelectedAppointmentCard({
 
               {selectedAppointment.notes ? (
                 <Stack direction="row" spacing={1.5} alignItems="flex-start">
-                  <Box sx={{ color: landingColors.purple, display: 'grid', placeItems: 'center', mt: 0.3 }}>
+                  <Box
+                    sx={{
+                      color: landingColors.purple,
+                      display: 'grid',
+                      placeItems: 'center',
+                      mt: 0.3,
+                    }}
+                  >
                     <NotesRoundedIcon fontSize="small" />
                   </Box>
-                  <Typography sx={{ fontWeight: 500, fontSize: 14, color: '#64748B', lineHeight: 1.5 }}>
+                  <Typography
+                    sx={{ fontWeight: 500, fontSize: 14, color: '#64748B', lineHeight: 1.5 }}
+                  >
                     {selectedAppointment.notes}
                   </Typography>
                 </Stack>
@@ -123,7 +124,15 @@ export default function SelectedAppointmentCard({
           </Box>
 
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-            <Typography sx={{ fontWeight: 800, fontSize: 12, color: '#94A3B8', textTransform: 'uppercase', letterSpacing: 0.5 }}>
+            <Typography
+              sx={{
+                fontWeight: 800,
+                fontSize: 12,
+                color: '#94A3B8',
+                textTransform: 'uppercase',
+                letterSpacing: 0.5,
+              }}
+            >
               Status:
             </Typography>
             <AppointmentStatusChip status={selectedAppointment.status} />
@@ -137,7 +146,12 @@ export default function SelectedAppointmentCard({
                 variant="outlined"
                 fullWidth
                 onClick={onEdit}
-                sx={{ borderRadius: 999, fontWeight: 900, borderColor: 'rgba(15,23,42,0.12)', color: '#475569' }}
+                sx={{
+                  borderRadius: 999,
+                  fontWeight: 900,
+                  borderColor: 'rgba(15,23,42,0.12)',
+                  color: '#475569',
+                }}
               >
                 Edit
               </Button>
@@ -148,7 +162,12 @@ export default function SelectedAppointmentCard({
                   color="error"
                   fullWidth
                   onClick={onCancel}
-                  sx={{ borderRadius: 999, fontWeight: 900, borderColor: alpha('#F43F5E', 0.2), color: '#F43F5E' }}
+                  sx={{
+                    borderRadius: 999,
+                    fontWeight: 900,
+                    borderColor: alpha('#F43F5E', 0.2),
+                    color: '#F43F5E',
+                  }}
                 >
                   Cancel
                 </Button>

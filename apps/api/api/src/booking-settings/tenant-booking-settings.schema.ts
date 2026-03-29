@@ -1,5 +1,5 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { HydratedDocument, Types } from 'mongoose';
+import { type HydratedDocument, Types } from 'mongoose';
 
 export type TenantBookingSettingsDocument = HydratedDocument<TenantBookingSettings>;
 
@@ -16,13 +16,25 @@ const BookingBufferConfigSchema = SchemaFactory.createForClass(BookingBufferConf
 
 @Schema({ timestamps: true })
 export class TenantBookingSettings {
-  @Prop({ type: Types.ObjectId, ref: 'Tenant', required: true, unique: true, index: true })
+  @Prop({
+    type: Types.ObjectId,
+    ref: 'Tenant',
+    required: true,
+    unique: true,
+    index: true,
+  })
   tenantId!: Types.ObjectId;
 
-  @Prop({ type: BookingBufferConfigSchema, default: () => ({ enabled: false, minutes: 0 }) })
+  @Prop({
+    type: BookingBufferConfigSchema,
+    default: () => ({ enabled: false, minutes: 0 }),
+  })
   bufferBefore!: BookingBufferConfig;
 
-  @Prop({ type: BookingBufferConfigSchema, default: () => ({ enabled: true, minutes: 5 }) })
+  @Prop({
+    type: BookingBufferConfigSchema,
+    default: () => ({ enabled: true, minutes: 5 }),
+  })
   bufferAfter!: BookingBufferConfig;
 
   @Prop({ default: 60, min: 0 })
@@ -41,5 +53,4 @@ export class TenantBookingSettings {
   allowCustomerChooseSpecificStaff!: boolean;
 }
 
-export const TenantBookingSettingsSchema =
-  SchemaFactory.createForClass(TenantBookingSettings);
+export const TenantBookingSettingsSchema = SchemaFactory.createForClass(TenantBookingSettings);

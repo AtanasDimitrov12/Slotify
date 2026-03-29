@@ -70,7 +70,7 @@ describe('Staff Time-Off (Integration)', () => {
     // 4. Verify initial availability (should have slots)
     const initialAvail = await request(ctx.app.getHttpServer())
       .get(`/public/tenants/${slug}/availability`)
-      .query({ serviceId, date: '2026-03-23' })
+      .query({ serviceId, date: '2026-04-06' })
       .expect(200);
     expect(initialAvail.body.slots.length).toBeGreaterThan(0);
 
@@ -79,12 +79,12 @@ describe('Staff Time-Off (Integration)', () => {
       .post('/staff/me/time-off')
       .set('Authorization', `Bearer ${staffToken}`)
       .send({
-        startDate: '2026-03-23T09:00:00Z',
-        endDate: '2026-03-23T12:00:00Z',
+        startDate: '2026-04-06T09:00:00Z',
+        endDate: '2026-04-06T12:00:00Z',
         reason: 'Dentist appointment',
       })
       .expect(201);
-    
+
     const requestId = timeOffResponse.body.id;
 
     // 5.5 Owner approves the request
@@ -97,18 +97,18 @@ describe('Staff Time-Off (Integration)', () => {
     // 6. Verify availability is blocked for that period
     const afterTimeOffAvail = await request(ctx.app.getHttpServer())
       .get(`/public/tenants/${slug}/availability`)
-      .query({ serviceId, date: '2026-03-23' })
+      .query({ serviceId, date: '2026-04-06' })
       .expect(200);
 
     // Slot starting at 09:00Z should be blocked
     const blockedSlot = afterTimeOffAvail.body.slots.find(
-      (s: any) => s.startTime === '2026-03-23T09:00:00.000Z'
+      (s: any) => s.startTime === '2026-04-06T09:00:00.000Z',
     );
     expect(blockedSlot).toBeUndefined();
 
     // Afternoon slots (e.g., 13:00Z) should still be there
     const afternoonSlot = afterTimeOffAvail.body.slots.find(
-        (s: any) => new Date(s.startTime).getUTCHours() >= 13
+      (s: any) => new Date(s.startTime).getUTCHours() >= 13,
     );
     expect(afternoonSlot).toBeDefined();
   });

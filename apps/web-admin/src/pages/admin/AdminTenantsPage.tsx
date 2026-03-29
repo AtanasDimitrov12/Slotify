@@ -1,15 +1,9 @@
-import * as React from 'react';
-import { Box, Button, Stack, Typography, alpha } from '@mui/material';
+import { landingColors, listTenants, register, type Tenant, updateTenant } from '@barber/shared';
 import AddRoundedIcon from '@mui/icons-material/AddRounded';
+import { alpha, Box, Button, Stack, Typography } from '@mui/material';
+import * as React from 'react';
 import TenantFormDialog, { type TenantFormValues } from './components/TenantFormDialog';
 import TenantsTable from './components/TenantsTable';
-import {
-  register,
-  landingColors,
-  listTenants,
-  updateTenant,
-  type Tenant,
-} from '@barber/shared';
 
 export default function AdminTenantsPage() {
   const [rows, setRows] = React.useState<Tenant[]>([]);
@@ -59,9 +53,7 @@ export default function AdminTenantsPage() {
           ownerEmail: values.email,
         });
 
-        setRows((prev) =>
-          prev.map((row) => (row._id === editingTenant._id ? updated : row))
-        );
+        setRows((prev) => prev.map((row) => (row._id === editingTenant._id ? updated : row)));
       } else {
         await register({
           name: values.name.trim(),
@@ -87,9 +79,7 @@ export default function AdminTenantsPage() {
       status: nextStatus,
     });
 
-    setRows((prev) =>
-      prev.map((item) => (item._id === row._id ? updated : item))
-    );
+    setRows((prev) => prev.map((item) => (item._id === row._id ? updated : item)));
   }
 
   return (
@@ -102,7 +92,9 @@ export default function AdminTenantsPage() {
         sx={{ mb: 5 }}
       >
         <Box>
-          <Typography sx={{ fontWeight: 1000, fontSize: 36, letterSpacing: -1.5, color: '#0F172A' }}>
+          <Typography
+            sx={{ fontWeight: 1000, fontSize: 36, letterSpacing: -1.5, color: '#0F172A' }}
+          >
             Tenants
           </Typography>
           <Typography sx={{ color: '#64748B', fontWeight: 600, fontSize: 18 }}>

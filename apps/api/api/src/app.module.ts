@@ -3,22 +3,22 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { TenantsModule } from './tenants/tenants.module';
-import { TenantDetailsModule } from './tenant-details/tenant-details.module';
 import { AuthModule } from './auth/auth.module';
-import { MembershipsModule } from './memberships/memberships.module';
-import { StaffProfilesModule } from './staff-profiles/staff-profiles.module';
-import { StaffAvailabilityModule } from './staff-availability/staff-availability.module';
-import { StaffTimeOffModule } from './staff-time-off/staff-time-off.module';
-import { ServicesModule } from './services/services.module';
-import { StaffServiceAssignmentsModule } from './staff-service-assignments/staff-service-assignments.module';
-import { StaffModule } from './staff/staff.module';
-import { OwnerModule } from './owner/owner.module';
 import { BookingSettingsModule } from './booking-settings/booking-settings.module';
-import { StaffBookingSettingsModule } from './staff-booking-settings/staff-booking-settings.module';
+import { MembershipsModule } from './memberships/memberships.module';
+import { OwnerModule } from './owner/owner.module';
 import { PublicBookingModule } from './public-booking/public-booking.module';
 import { ReservationsModule } from './reservations/reservations.module';
+import { ServicesModule } from './services/services.module';
+import { StaffModule } from './staff/staff.module';
 import { StaffAppointmentsModule } from './staff-appointments/staff-appointments.module';
+import { StaffAvailabilityModule } from './staff-availability/staff-availability.module';
+import { StaffBookingSettingsModule } from './staff-booking-settings/staff-booking-settings.module';
+import { StaffProfilesModule } from './staff-profiles/staff-profiles.module';
+import { StaffServiceAssignmentsModule } from './staff-service-assignments/staff-service-assignments.module';
+import { StaffTimeOffModule } from './staff-time-off/staff-time-off.module';
+import { TenantDetailsModule } from './tenant-details/tenant-details.module';
+import { TenantsModule } from './tenants/tenants.module';
 
 @Module({
   imports: [
@@ -52,4 +52,4 @@ import { StaffAppointmentsModule } from './staff-appointments/staff-appointments
   controllers: [AppController],
   providers: [AppService],
 })
-export class AppModule { }
+export class AppModule {}

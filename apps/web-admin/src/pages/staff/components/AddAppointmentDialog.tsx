@@ -1,21 +1,20 @@
-import * as React from 'react';
+import { landingColors, useToast } from '@barber/shared';
 import {
+  alpha,
   Button,
   Dialog,
   DialogActions,
   DialogContent,
   DialogTitle,
+  Divider,
   MenuItem,
   Stack,
   TextField,
   Typography,
-  alpha,
   useMediaQuery,
   useTheme,
-  Divider,
 } from '@mui/material';
-import { landingColors } from '@barber/shared'; 
-import { useToast } from '@barber/shared'; 
+import * as React from 'react';
 
 type ServiceOption = {
   id: string;
@@ -67,10 +66,10 @@ export default function AddAppointmentDialog({
   const validateEmail = (email: string) => {
     if (!email) return true;
     return String(email)
-        .toLowerCase()
-        .match(
-            /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
-        );
+      .toLowerCase()
+      .match(
+        /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/,
+      );
   };
 
   const validatePhone = (phone: string) => {
@@ -122,7 +121,7 @@ export default function AddAppointmentDialog({
       fullScreen={fullScreen}
       maxWidth="sm"
       PaperProps={{
-        sx: { borderRadius: fullScreen ? 0 : 3, p: 0 }
+        sx: { borderRadius: fullScreen ? 0 : 3, p: 0 },
       }}
     >
       <DialogTitle sx={{ fontWeight: 1000, fontSize: 24, letterSpacing: -0.5, py: 3, px: 4 }}>

@@ -1,3 +1,4 @@
+import { Type } from 'class-transformer';
 import {
   IsArray,
   IsBoolean,
@@ -7,7 +8,6 @@ import {
   Matches,
   ValidateNested,
 } from 'class-validator';
-import { Type } from 'class-transformer';
 
 export class OpeningHoursDayDto {
   @IsEnum(['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'])

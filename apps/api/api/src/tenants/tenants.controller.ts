@@ -9,12 +9,12 @@ import {
   Post,
   UseGuards,
 } from '@nestjs/common';
-import { CreateTenantDto } from './dto/create-tenant.dto';
-import { UpdateTenantDto } from './dto/update-tenant.dto';
-import { TenantsService } from './tenants.service';
-import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { CurrentUser } from '../auth/current-user.decorator';
 import type { JwtPayload } from '../auth/jwt.strategy';
+import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import type { CreateTenantDto } from './dto/create-tenant.dto';
+import type { UpdateTenantDto } from './dto/update-tenant.dto';
+import type { TenantsService } from './tenants.service';
 
 @UseGuards(JwtAuthGuard)
 @Controller('tenants')

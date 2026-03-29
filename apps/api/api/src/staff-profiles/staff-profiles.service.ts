@@ -1,16 +1,16 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model, Types } from 'mongoose';
-import { StaffProfile, StaffProfileDocument } from './staff-profile.schema';
-import { CreateStaffProfileDto } from './dto/create-staff-profile.dto';
-import { UpdateStaffProfileDto } from './dto/update-staff-profile.dto';
+import { type Model, Types } from 'mongoose';
+import type { CreateStaffProfileDto } from './dto/create-staff-profile.dto';
+import type { UpdateStaffProfileDto } from './dto/update-staff-profile.dto';
+import { StaffProfile, type StaffProfileDocument } from './staff-profile.schema';
 
 @Injectable()
 export class StaffProfilesService {
   constructor(
     @InjectModel(StaffProfile.name)
     private readonly staffProfileModel: Model<StaffProfileDocument>,
-  ) { }
+  ) {}
 
   create(dto: CreateStaffProfileDto) {
     if (!Types.ObjectId.isValid(dto.tenantId)) {
@@ -41,11 +41,13 @@ export class StaffProfilesService {
       throw new BadRequestException('Invalid tenantId or userId');
     }
 
-    return this.staffProfileModel.findOne({
-      tenantId: new Types.ObjectId(tenantId),
-      userId: new Types.ObjectId(userId),
-      isActive: true,
-    }).lean();
+    return this.staffProfileModel
+      .findOne({
+        tenantId: new Types.ObjectId(tenantId),
+        userId: new Types.ObjectId(userId),
+        isActive: true,
+      })
+      .lean();
   }
 
   async update(id: string, dto: UpdateStaffProfileDto) {
@@ -57,20 +59,18 @@ export class StaffProfilesService {
     return updated;
   }
 
-  async updateByTenantAndUser(
-    tenantId: string,
-    userId: string,
-    dto: UpdateStaffProfileDto,
-  ) {
-    const updated = await this.staffProfileModel.findOneAndUpdate(
-      {
-        tenantId: new Types.ObjectId(tenantId),
-        userId: new Types.ObjectId(userId),
-        isActive: true,
-      },
-      { $set: dto },
-      { new: true },
-    ).lean();
+  async updateByTenantAndUser(tenantId: string, userId: string, dto: UpdateStaffProfileDto) {
+    const updated = await this.staffProfileModel
+      .findOneAndUpdate(
+        {
+          tenantId: new Types.ObjectId(tenantId),
+          userId: new Types.ObjectId(userId),
+          isActive: true,
+        },
+        { $set: dto },
+        { new: true },
+      )
+      .lean();
 
     if (!updated) throw new NotFoundException('Staff profile not found');
 

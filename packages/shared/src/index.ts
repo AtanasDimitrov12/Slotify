@@ -13,27 +13,25 @@ export * from './api/staffServices';
 export * from './api/staffTimeOff';
 export * from './api/tenantDetails';
 export * from './api/tenants';
-
-// Hooks
-export * from './hooks/useRevealOnScroll';
-export * from './hooks/useScrollMotion';
-
+export * from './api/types';
 // Auth
 export * from './auth/AuthProvider';
 export * from './auth/RequireAuth';
-
-// Components
-export { ToastProvider, useToast } from './components/ToastProvider';
-export { default as RequireRole } from './components/RequireRole';
-export * from './components/landing/constants';
-export * from './components/landing/SectionTitle';
-export * from './components/landing/TrustStrip';
-export * from './components/landing/Showcase';
-export * from './components/landing/Features';
+export { default as BookingDialog } from './components/booking/BookingDialog';
 export * from './components/landing/ChoosePath';
-export * from './components/landing/SmartSpotlight';
+export * from './components/landing/constants';
+export * from './components/landing/Features';
 export * from './components/landing/FinalCTA';
 export * from './components/landing/Footer';
 export * from './components/landing/Hero';
+export * from './components/landing/SectionTitle';
+export * from './components/landing/Showcase';
+export * from './components/landing/SmartSpotlight';
+export * from './components/landing/TrustStrip';
+export { default as RequireRole } from './components/RequireRole';
+// Components
+export { ToastProvider, useToast } from './components/ToastProvider';
+// Hooks
+export * from './hooks/useRevealOnScroll';
+export * from './hooks/useScrollMotion';
 export * from './layout/Page';
-export { default as BookingDialog } from './components/booking/BookingDialog';

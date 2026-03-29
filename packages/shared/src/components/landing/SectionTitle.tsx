@@ -9,13 +9,7 @@ type Props = {
   light?: boolean;
 };
 
-export function SectionTitle({
-  eyebrow,
-  title,
-  desc,
-  align = 'left',
-  light = false,
-}: Props) {
+export function SectionTitle({ eyebrow, title, desc, align = 'left', light = false }: Props) {
   const centered = align === 'center';
 
   return (

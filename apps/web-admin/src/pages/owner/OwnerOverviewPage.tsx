@@ -1,3 +1,4 @@
+import { landingColors, premium } from '@barber/shared';
 import { alpha, Box, Card, CardContent, Grid, Stack, Typography } from '@mui/material';
 import {
   CartesianGrid,
@@ -8,7 +9,6 @@ import {
   XAxis,
   YAxis,
 } from 'recharts';
-import { landingColors, premium } from '@barber/shared'; 
 
 const kpis = [
   { label: 'Bookings (7d)', value: '128', color: landingColors.purple },
@@ -42,10 +42,20 @@ function StatCard({ label, value, color }: { label: string; value: string; color
       }}
     >
       <CardContent sx={{ p: 3.5 }}>
-        <Typography sx={{ color: '#64748B', fontWeight: 800, fontSize: 13, letterSpacing: 0.5, textTransform: 'uppercase' }}>
+        <Typography
+          sx={{
+            color: '#64748B',
+            fontWeight: 800,
+            fontSize: 13,
+            letterSpacing: 0.5,
+            textTransform: 'uppercase',
+          }}
+        >
           {label}
         </Typography>
-        <Typography sx={{ fontWeight: 1000, fontSize: 36, letterSpacing: -1, color: '#0F172A', mt: 1 }}>
+        <Typography
+          sx={{ fontWeight: 1000, fontSize: 36, letterSpacing: -1, color: '#0F172A', mt: 1 }}
+        >
           {value}
         </Typography>
       </CardContent>
@@ -92,11 +102,15 @@ export default function OwnerOverviewPage() {
                 <LineChart data={data}>
                   <defs>
                     <linearGradient id="lineGradient" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor={landingColors.purple} stopOpacity={0.1}/>
-                      <stop offset="95%" stopColor={landingColors.purple} stopOpacity={0}/>
+                      <stop offset="5%" stopColor={landingColors.purple} stopOpacity={0.1} />
+                      <stop offset="95%" stopColor={landingColors.purple} stopOpacity={0} />
                     </linearGradient>
                   </defs>
-                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(15,23,42,0.04)" />
+                  <CartesianGrid
+                    strokeDasharray="3 3"
+                    vertical={false}
+                    stroke="rgba(15,23,42,0.04)"
+                  />
                   <XAxis
                     dataKey="day"
                     axisLine={false}

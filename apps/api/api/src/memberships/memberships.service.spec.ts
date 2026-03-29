@@ -1,9 +1,9 @@
-import { Test, TestingModule } from '@nestjs/testing';
-import { getModelToken } from '@nestjs/mongoose';
 import { BadRequestException } from '@nestjs/common';
+import { getModelToken } from '@nestjs/mongoose';
+import { Test, type TestingModule } from '@nestjs/testing';
 import { Types } from 'mongoose';
-import { MembershipsService } from './memberships.service';
 import { Membership } from './membership.schema';
+import { MembershipsService } from './memberships.service';
 
 describe('MembershipsService', () => {
   let service: MembershipsService;
@@ -50,7 +50,7 @@ describe('MembershipsService', () => {
   });
 
   describe('create', () => {
-    it('should create a new membership if it doesn\'t exist', async () => {
+    it("should create a new membership if it doesn't exist", async () => {
       mockMembershipModel.findOne.mockResolvedValue(null);
       mockMembershipModel.create.mockResolvedValue(mockMembership);
 
@@ -111,7 +111,9 @@ describe('MembershipsService', () => {
 
       const result = await service.listByTenant('tenant-id');
 
-      expect(mockMembershipModel.find).toHaveBeenCalledWith({ tenantId: 'tenant-id' });
+      expect(mockMembershipModel.find).toHaveBeenCalledWith({
+        tenantId: 'tenant-id',
+      });
       expect(result).toHaveLength(1);
     });
   });

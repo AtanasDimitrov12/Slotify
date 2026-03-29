@@ -63,7 +63,6 @@ export async function listTenants(): Promise<Tenant[]> {
   return handleResponse<Tenant[]>(res);
 }
 
-
 export async function updateTenant(id: string, payload: UpdateTenantPayload): Promise<Tenant> {
   const res = await fetch(`${API_BASE_URL}/admin/tenants/${id}`, {
     method: 'PATCH',

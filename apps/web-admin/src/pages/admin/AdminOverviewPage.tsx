@@ -1,6 +1,6 @@
-import * as React from 'react';
+import { landingColors, premium } from '@barber/shared';
 import { alpha, Box, Card, CardContent, Grid, Stack, Typography } from '@mui/material';
-import { landingColors, premium } from '@barber/shared'; 
+import * as React from 'react';
 
 type OverviewStats = {
   tenantsTotal: number;
@@ -12,7 +12,17 @@ type OverviewStats = {
   last24hLogins: number;
 };
 
-function StatCard({ label, value, hint, accent = landingColors.purple }: { label: string; value: string | number; hint?: string; accent?: string }) {
+function StatCard({
+  label,
+  value,
+  hint,
+  accent = landingColors.purple,
+}: {
+  label: string;
+  value: string | number;
+  hint?: string;
+  accent?: string;
+}) {
   return (
     <Card
       sx={{
@@ -32,10 +42,26 @@ function StatCard({ label, value, hint, accent = landingColors.purple }: { label
     >
       <CardContent sx={{ p: 3.5 }}>
         <Stack spacing={1.5}>
-          <Typography sx={{ color: '#64748B', fontWeight: 800, fontSize: 13, letterSpacing: 0.5, textTransform: 'uppercase' }}>
+          <Typography
+            sx={{
+              color: '#64748B',
+              fontWeight: 800,
+              fontSize: 13,
+              letterSpacing: 0.5,
+              textTransform: 'uppercase',
+            }}
+          >
             {label}
           </Typography>
-          <Typography sx={{ fontWeight: 1000, fontSize: 44, letterSpacing: -1.5, color: '#0F172A', lineHeight: 1 }}>
+          <Typography
+            sx={{
+              fontWeight: 1000,
+              fontSize: 44,
+              letterSpacing: -1.5,
+              color: '#0F172A',
+              lineHeight: 1,
+            }}
+          >
             {value}
           </Typography>
           {hint ? (
@@ -76,16 +102,36 @@ export default function AdminOverviewPage() {
 
       <Grid container spacing={3}>
         <Grid item xs={12} sm={6} lg={3}>
-          <StatCard label="Tenants registered" value={stats.tenantsTotal} hint="All salons created in the system" accent={landingColors.purple} />
+          <StatCard
+            label="Tenants registered"
+            value={stats.tenantsTotal}
+            hint="All salons created in the system"
+            accent={landingColors.purple}
+          />
         </Grid>
         <Grid item xs={12} sm={6} lg={3}>
-          <StatCard label="Active tenants" value={stats.tenantsActive} hint="Operational & public" accent={landingColors.success} />
+          <StatCard
+            label="Active tenants"
+            value={stats.tenantsActive}
+            hint="Operational & public"
+            accent={landingColors.success}
+          />
         </Grid>
         <Grid item xs={12} sm={6} lg={3}>
-          <StatCard label="Pending tenants" value={stats.tenantsPending} hint="Awaiting activation" accent={landingColors.blue} />
+          <StatCard
+            label="Pending tenants"
+            value={stats.tenantsPending}
+            hint="Awaiting activation"
+            accent={landingColors.blue}
+          />
         </Grid>
         <Grid item xs={12} sm={6} lg={3}>
-          <StatCard label="Logins (24h)" value={stats.last24hLogins} hint="Across all tenant accounts" accent={landingColors.purple} />
+          <StatCard
+            label="Logins (24h)"
+            value={stats.last24hLogins}
+            hint="Across all tenant accounts"
+            accent={landingColors.purple}
+          />
         </Grid>
 
         <Grid item xs={12} sm={6} lg={4}>
@@ -128,7 +174,8 @@ export default function AdminOverviewPage() {
                     What's next?
                   </Typography>
                   <Typography sx={{ color: '#64748B', fontWeight: 600 }}>
-                    We'll soon add revenue tracking, busiest salons analysis, and detailed audit logs.
+                    We'll soon add revenue tracking, busiest salons analysis, and detailed audit
+                    logs.
                   </Typography>
                 </Box>
               </Stack>

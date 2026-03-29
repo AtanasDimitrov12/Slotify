@@ -1,6 +1,20 @@
-import * as React from 'react';
+import {
+  type CatalogServiceItem,
+  createBulkCatalogServices,
+  createCatalogService,
+  deleteCatalogService,
+  extractServicesFromAI,
+  getCatalogServices,
+  landingColors,
+  premium,
+  updateCatalogService,
+} from '@barber/shared';
+import AddRoundedIcon from '@mui/icons-material/AddRounded';
+import AutoFixHighRoundedIcon from '@mui/icons-material/AutoFixHighRounded';
+import ContentCutRoundedIcon from '@mui/icons-material/ContentCutRounded';
 import {
   Alert,
+  alpha,
   Box,
   Button,
   Card,
@@ -9,27 +23,14 @@ import {
   Grid,
   Snackbar,
   Stack,
-  Typography,
-  alpha,
   Tooltip,
+  Typography,
 } from '@mui/material';
-import AddRoundedIcon from '@mui/icons-material/AddRounded';
-import ContentCutRoundedIcon from '@mui/icons-material/ContentCutRounded';
-import AutoFixHighRoundedIcon from '@mui/icons-material/AutoFixHighRounded';
+import * as React from 'react';
+import ReviewAIServicesDialog from './components/ReviewAIServicesDialog';
 import ServiceCatalogDialog, {
   type CatalogServicePayload,
 } from './components/ServiceCatalogDialog';
-import ReviewAIServicesDialog from './components/ReviewAIServicesDialog';
-import {
-  createCatalogService,
-  deleteCatalogService,
-  getCatalogServices,
-  updateCatalogService,
-  extractServicesFromAI,
-  createBulkCatalogServices,
-  type CatalogServiceItem,
-} from '@barber/shared'; 
-import { landingColors, premium } from '@barber/shared'; 
 
 export default function OwnerServicesPage() {
   const [items, setItems] = React.useState<CatalogServiceItem[]>([]);
@@ -42,7 +43,7 @@ export default function OwnerServicesPage() {
   const [reviewOpen, setReviewOpen] = React.useState(false);
   const [editingItem, setEditingItem] = React.useState<CatalogServiceItem | null>(null);
   const [extractedServices, setExtractedServices] = React.useState<CatalogServicePayload[]>([]);
-  
+
   const fileInputRef = React.useRef<HTMLInputElement>(null);
 
   const loadData = React.useCallback(async () => {
@@ -170,7 +171,9 @@ export default function OwnerServicesPage() {
       <Stack spacing={4}>
         <Stack direction="row" justifyContent="space-between" alignItems="flex-start" spacing={2}>
           <Box>
-            <Typography sx={{ fontWeight: 1000, fontSize: 36, letterSpacing: -1.5, color: '#0F172A' }}>
+            <Typography
+              sx={{ fontWeight: 1000, fontSize: 36, letterSpacing: -1.5, color: '#0F172A' }}
+            >
               Services Catalog
             </Typography>
             <Typography sx={{ color: '#64748B', fontWeight: 600, fontSize: 18 }}>
@@ -186,11 +189,17 @@ export default function OwnerServicesPage() {
               accept="image/*,.pdf"
               onChange={handleFileChange}
             />
-            
+
             <Tooltip title="Upload a photo or PDF of your pricelist and let AI extract the services for you!">
               <Button
                 variant="outlined"
-                startIcon={extracting ? <CircularProgress size={20} color="inherit" /> : <AutoFixHighRoundedIcon />}
+                startIcon={
+                  extracting ? (
+                    <CircularProgress size={20} color="inherit" />
+                  ) : (
+                    <AutoFixHighRoundedIcon />
+                  )
+                }
                 onClick={handleScanClick}
                 disabled={extracting || saving}
                 sx={{
@@ -231,7 +240,11 @@ export default function OwnerServicesPage() {
           </Stack>
         </Stack>
 
-        {error ? <Alert severity="error" sx={{ borderRadius: 3 }}>{error}</Alert> : null}
+        {error ? (
+          <Alert severity="error" sx={{ borderRadius: 3 }}>
+            {error}
+          </Alert>
+        ) : null}
 
         {showEmptyState ? (
           <Card
@@ -265,9 +278,10 @@ export default function OwnerServicesPage() {
                 </Typography>
 
                 <Typography sx={{ color: '#64748B', fontWeight: 600, maxWidth: 480 }}>
-                  Create the services your salon offers (e.g., Haircut, Beard Trim) so your team can add them to their profiles.
+                  Create the services your salon offers (e.g., Haircut, Beard Trim) so your team can
+                  add them to their profiles.
                 </Typography>
-                
+
                 <Button
                   variant="text"
                   startIcon={<AutoFixHighRoundedIcon />}
@@ -303,21 +317,37 @@ export default function OwnerServicesPage() {
                   <CardContent sx={{ p: 3.5 }}>
                     <Stack spacing={2.5}>
                       <Box>
-                        <Stack direction="row" justifyContent="space-between" alignItems="flex-start">
+                        <Stack
+                          direction="row"
+                          justifyContent="space-between"
+                          alignItems="flex-start"
+                        >
                           <Typography sx={{ fontWeight: 1000, fontSize: 20, color: '#0F172A' }}>
                             {item.name}
                           </Typography>
-                          <Typography sx={{ fontWeight: 900, fontSize: 18, color: landingColors.purple }}>
+                          <Typography
+                            sx={{ fontWeight: 900, fontSize: 18, color: landingColors.purple }}
+                          >
                             €{item.priceEUR}
                           </Typography>
                         </Stack>
-                        
-                        <Typography sx={{ color: '#64748B', fontWeight: 700, fontSize: 14, mt: 0.5 }}>
+
+                        <Typography
+                          sx={{ color: '#64748B', fontWeight: 700, fontSize: 14, mt: 0.5 }}
+                        >
                           {item.durationMin} minutes
                         </Typography>
 
                         {item.description ? (
-                          <Typography sx={{ mt: 2, color: '#475569', fontSize: 15, lineHeight: 1.6, fontWeight: 500 }}>
+                          <Typography
+                            sx={{
+                              mt: 2,
+                              color: '#475569',
+                              fontSize: 15,
+                              lineHeight: 1.6,
+                              fontWeight: 500,
+                            }}
+                          >
                             {item.description}
                           </Typography>
                         ) : null}
@@ -378,12 +408,13 @@ export default function OwnerServicesPage() {
         />
       </Stack>
 
-      <Snackbar
-        open={Boolean(success)}
-        autoHideDuration={3000}
-        onClose={() => setSuccess('')}
-      >
-        <Alert onClose={() => setSuccess('')} severity="success" variant="filled" sx={{ borderRadius: 3, fontWeight: 800 }}>
+      <Snackbar open={Boolean(success)} autoHideDuration={3000} onClose={() => setSuccess('')}>
+        <Alert
+          onClose={() => setSuccess('')}
+          severity="success"
+          variant="filled"
+          sx={{ borderRadius: 3, fontWeight: 800 }}
+        >
           {success}
         </Alert>
       </Snackbar>

@@ -1,9 +1,9 @@
+import AutoAwesomeRoundedIcon from '@mui/icons-material/AutoAwesomeRounded';
+import BoltRoundedIcon from '@mui/icons-material/BoltRounded';
+import CalendarMonthRoundedIcon from '@mui/icons-material/CalendarMonthRounded';
+import GroupsRoundedIcon from '@mui/icons-material/GroupsRounded';
 import { Box, Card, CardContent, Container, Grid, Stack, Typography } from '@mui/material';
 import { alpha } from '@mui/material/styles';
-import BoltRoundedIcon from '@mui/icons-material/BoltRounded';
-import GroupsRoundedIcon from '@mui/icons-material/GroupsRounded';
-import CalendarMonthRoundedIcon from '@mui/icons-material/CalendarMonthRounded';
-import AutoAwesomeRoundedIcon from '@mui/icons-material/AutoAwesomeRounded';
 import { landingColors, premium } from './constants';
 import { SectionTitle } from './SectionTitle';
 

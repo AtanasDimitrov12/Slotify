@@ -1,6 +1,13 @@
-import * as React from 'react';
+import {
+  getOwnerStaffTimeOffRequests,
+  landingColors,
+  type OwnerStaffTimeOffItem,
+  reviewOwnerStaffTimeOffRequest,
+  useToast,
+} from '@barber/shared';
 import {
   Alert,
+  alpha,
   Box,
   Button,
   Chip,
@@ -10,15 +17,8 @@ import {
   DialogTitle,
   Stack,
   Typography,
-  alpha,
 } from '@mui/material';
-import {
-  getOwnerStaffTimeOffRequests,
-  reviewOwnerStaffTimeOffRequest,
-  type OwnerStaffTimeOffItem,
-} from '@barber/shared'; 
-import { landingColors } from '@barber/shared'; 
-import { useToast } from '@barber/shared'; 
+import * as React from 'react';
 
 type Props = {
   open: boolean;
@@ -30,7 +30,11 @@ type Props = {
 
 function formatDateRange(startDate: string, endDate: string) {
   const start = new Date(startDate).toLocaleDateString([], { day: '2-digit', month: 'short' });
-  const end = new Date(endDate).toLocaleDateString([], { day: '2-digit', month: 'short', year: 'numeric' });
+  const end = new Date(endDate).toLocaleDateString([], {
+    day: '2-digit',
+    month: 'short',
+    year: 'numeric',
+  });
   return `${start} → ${end}`;
 }
 
@@ -90,7 +94,7 @@ export default function ManageStaffTimeOffDialog({
       fullWidth
       maxWidth="md"
       PaperProps={{
-        sx: { borderRadius: 8, p: 1 }
+        sx: { borderRadius: 8, p: 1 },
       }}
     >
       <DialogTitle sx={{ fontWeight: 1000, fontSize: 24, letterSpacing: -0.5, py: 3, px: 4 }}>
@@ -104,7 +108,16 @@ export default function ManageStaffTimeOffDialog({
           ) : (
             <>
               <Box>
-                <Typography sx={{ fontWeight: 900, fontSize: 14, textTransform: 'uppercase', letterSpacing: 1, color: landingColors.purple, mb: 2 }}>
+                <Typography
+                  sx={{
+                    fontWeight: 900,
+                    fontSize: 14,
+                    textTransform: 'uppercase',
+                    letterSpacing: 1,
+                    color: landingColors.purple,
+                    mb: 2,
+                  }}
+                >
                   Pending Requests
                 </Typography>
 
@@ -126,7 +139,14 @@ export default function ManageStaffTimeOffDialog({
                         }}
                       >
                         <Stack spacing={2}>
-                          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 2 }}>
+                          <Box
+                            sx={{
+                              display: 'flex',
+                              justifyContent: 'space-between',
+                              alignItems: 'flex-start',
+                              gap: 2,
+                            }}
+                          >
                             <Box>
                               <Typography sx={{ fontWeight: 900, fontSize: 17, color: '#0F172A' }}>
                                 {formatDateRange(item.startDate, item.endDate)}
@@ -170,7 +190,10 @@ export default function ManageStaffTimeOffDialog({
                                 fontWeight: 900,
                                 px: 3,
                                 bgcolor: landingColors.purple,
-                                '&:hover': { bgcolor: landingColors.purple, filter: 'brightness(1.05)' },
+                                '&:hover': {
+                                  bgcolor: landingColors.purple,
+                                  filter: 'brightness(1.05)',
+                                },
                               }}
                             >
                               Approve
@@ -184,7 +207,16 @@ export default function ManageStaffTimeOffDialog({
               </Box>
 
               <Box>
-                <Typography sx={{ fontWeight: 900, fontSize: 14, textTransform: 'uppercase', letterSpacing: 1, color: '#64748B', mb: 2 }}>
+                <Typography
+                  sx={{
+                    fontWeight: 900,
+                    fontSize: 14,
+                    textTransform: 'uppercase',
+                    letterSpacing: 1,
+                    color: '#64748B',
+                    mb: 2,
+                  }}
+                >
                   History
                 </Typography>
 
@@ -205,7 +237,14 @@ export default function ManageStaffTimeOffDialog({
                           bgcolor: alpha('#F8FAFC', 0.5),
                         }}
                       >
-                        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 2 }}>
+                        <Box
+                          sx={{
+                            display: 'flex',
+                            justifyContent: 'space-between',
+                            alignItems: 'center',
+                            gap: 2,
+                          }}
+                        >
                           <Box>
                             <Typography sx={{ fontWeight: 800, fontSize: 15, color: '#475569' }}>
                               {formatDateRange(item.startDate, item.endDate)}
@@ -222,7 +261,10 @@ export default function ManageStaffTimeOffDialog({
                               fontWeight: 1000,
                               fontSize: 10,
                               letterSpacing: 0.8,
-                              bgcolor: item.status === 'approved' ? alpha(landingColors.success, 0.1) : alpha('#F43F5E', 0.1),
+                              bgcolor:
+                                item.status === 'approved'
+                                  ? alpha(landingColors.success, 0.1)
+                                  : alpha('#F43F5E', 0.1),
                               color: item.status === 'approved' ? landingColors.success : '#F43F5E',
                               border: `1px solid ${item.status === 'approved' ? alpha(landingColors.success, 0.2) : alpha('#F43F5E', 0.2)}`,
                             }}

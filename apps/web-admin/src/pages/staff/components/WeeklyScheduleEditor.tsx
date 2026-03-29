@@ -1,7 +1,17 @@
+import { landingColors } from '@barber/shared';
+import {
+  alpha,
+  Box,
+  Card,
+  CardContent,
+  Grid,
+  Stack,
+  Switch,
+  TextField,
+  Typography,
+} from '@mui/material';
 import * as React from 'react';
-import { Box, Card, CardContent, Grid, Stack, Switch, TextField, Typography, alpha } from '@mui/material';
 import type { DaySchedule } from './types';
-import { landingColors } from '@barber/shared'; 
 
 type Props = {
   value: DaySchedule[];
@@ -53,10 +63,18 @@ export default function WeeklyScheduleEditor({ value, onChange }: Props) {
                       onChange={(e) => patch(d.dayOfWeek, { enabled: e.target.checked })}
                       sx={{
                         '& .MuiSwitch-switchBase.Mui-checked': { color: landingColors.purple },
-                        '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': { bgcolor: landingColors.purple },
+                        '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': {
+                          bgcolor: landingColors.purple,
+                        },
                       }}
                     />
-                    <Typography sx={{ fontWeight: 900, fontSize: 16, color: d.enabled ? '#0F172A' : '#94A3B8' }}>
+                    <Typography
+                      sx={{
+                        fontWeight: 900,
+                        fontSize: 16,
+                        color: d.enabled ? '#0F172A' : '#94A3B8',
+                      }}
+                    >
                       {d.label}
                     </Typography>
                   </Stack>

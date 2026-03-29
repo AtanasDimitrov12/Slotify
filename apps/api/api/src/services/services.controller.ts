@@ -1,28 +1,28 @@
 import {
+  BadRequestException,
   Body,
   Controller,
   Delete,
+  FileTypeValidator,
   Get,
+  MaxFileSizeValidator,
   Param,
+  ParseFilePipe,
   Patch,
   Post,
-  UseGuards,
-  BadRequestException,
   UnauthorizedException,
-  UseInterceptors,
   UploadedFile,
-  ParseFilePipe,
-  MaxFileSizeValidator,
-  FileTypeValidator,
+  UseGuards,
+  UseInterceptors,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { Types } from 'mongoose';
-import { ServicesService } from './services.service';
-import { CreateServiceDto } from './dto/create-service.dto';
-import { UpdateServiceDto } from './dto/update-service.dto';
-import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import type { AIService } from '../ai/ai.service';
 import { CurrentUser } from '../auth/current-user.decorator';
-import { AIService } from '../ai/ai.service';
+import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import type { CreateServiceDto } from './dto/create-service.dto';
+import type { UpdateServiceDto } from './dto/update-service.dto';
+import type { ServicesService } from './services.service';
 
 type AuthUser = {
   tenantId?: string;
@@ -49,9 +49,7 @@ export class ServicesController {
 
   private ensureOwnerOrManager(currentUser: AuthUser) {
     if (!['owner', 'manager'].includes(currentUser?.role ?? '')) {
-      throw new UnauthorizedException(
-        'You are not allowed to manage the services catalog',
-      );
+      throw new UnauthorizedException('You are not allowed to manage the services catalog');
     }
   }
 
@@ -64,10 +62,7 @@ export class ServicesController {
   }
 
   @Post('bulk')
-  async createBulk(
-    @CurrentUser() currentUser: AuthUser,
-    @Body() dtos: CreateServiceDto[],
-  ) {
+  async createBulk(@CurrentUser() currentUser: AuthUser, @Body() dtos: CreateServiceDto[]) {
     this.ensureOwnerOrManager(currentUser);
 
     if (!Array.isArray(dtos) || dtos.length === 0) {

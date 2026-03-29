@@ -1,25 +1,25 @@
-import { Routes, Route, Navigate } from 'react-router-dom';
-import { RequireRole, Page } from '@barber/shared';
+import { RequireRole } from '@barber/shared';
+import { Navigate, Route, Routes } from 'react-router-dom';
 import AppShell from './layout/AppShell';
-import LandingPage from './pages/LandingPage';
-import LoginPage from './pages/LoginPage';
 import AdminLayout from './pages/admin/AdminLayout';
 import AdminOverviewPage from './pages/admin/AdminOverviewPage';
 import AdminTenantsPage from './pages/admin/AdminTenantsPage';
+import LandingPage from './pages/LandingPage';
+import LoginPage from './pages/LoginPage';
 import NotFoundPage from './pages/NotFoundPage';
+import OwnerBookingRulesPage from './pages/owner/OwnerBookingRulesPage';
 import OwnerLayout from './pages/owner/OwnerLayout';
 import OwnerOverviewPage from './pages/owner/OwnerOverviewPage';
-import OwnerTeamPage from './pages/owner/OwnerTeamPage';
 import OwnerServicesPage from './pages/owner/OwnerServicesPage';
 import OwnerSettingsPage from './pages/owner/OwnerSettingsPage';
-import OwnerBookingRulesPage from './pages/owner/OwnerBookingRulesPage';
-import StaffLayout from './pages/staff/StaffLayout';
-import StaffDashboardPage from './pages/staff/StaffDashboardPage';
-import StaffProfilePage from './pages/staff/StaffProfilePage';
+import OwnerTeamPage from './pages/owner/OwnerTeamPage';
 import StaffAvailabilityPage from './pages/staff/StaffAvailabilityPage';
-import StaffTimeOffPage from './pages/staff/StaffTimeOffPage';
-import StaffServicesPage from './pages/staff/StaffServicesPage';
 import StaffBookingRulesPage from './pages/staff/StaffBookingRulesPage';
+import StaffDashboardPage from './pages/staff/StaffDashboardPage';
+import StaffLayout from './pages/staff/StaffLayout';
+import StaffProfilePage from './pages/staff/StaffProfilePage';
+import StaffServicesPage from './pages/staff/StaffServicesPage';
+import StaffTimeOffPage from './pages/staff/StaffTimeOffPage';
 
 export default function App() {
   return (

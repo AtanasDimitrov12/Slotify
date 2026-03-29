@@ -1,9 +1,9 @@
-import { Test, TestingModule } from '@nestjs/testing';
-import { getModelToken } from '@nestjs/mongoose';
 import { BadRequestException } from '@nestjs/common';
+import { getModelToken } from '@nestjs/mongoose';
+import { Test, type TestingModule } from '@nestjs/testing';
 import { Types } from 'mongoose';
-import { UsersService } from './users.service';
 import { User } from './user.schema';
+import { UsersService } from './users.service';
 
 describe('UsersService', () => {
   let service: UsersService;
@@ -58,7 +58,7 @@ describe('UsersService', () => {
 
       const result = await service.create(dto);
 
-      expect(mockUserModel.findOne).toHaveBeenCalledWith({ email: dto.email });
+      expect((mockUserModel as any).findOne).toHaveBeenCalledWith({ email: dto.email });
       expect(result).toBeDefined();
     });
 
@@ -83,7 +83,9 @@ describe('UsersService', () => {
 
       const result = await service.findByEmail('test@example.com');
 
-      expect(mockUserModel.findOne).toHaveBeenCalledWith({ email: 'test@example.com' });
+      expect((mockUserModel as any).findOne).toHaveBeenCalledWith({
+        email: 'test@example.com',
+      });
       expect(result).toEqual(mockUser);
     });
   });
@@ -96,7 +98,7 @@ describe('UsersService', () => {
 
       const result = await service.findById(mockUser._id.toString());
 
-      expect(mockUserModel.findById).toHaveBeenCalledWith(mockUser._id.toString());
+      expect((mockUserModel as any).findById).toHaveBeenCalledWith(mockUser._id.toString());
       expect(result).toEqual(mockUser);
     });
   });

@@ -1,9 +1,9 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
-import LoginPage from '../LoginPage';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { useAuth } from '../../auth/AuthProvider';
 import { useToast } from '../../components/ToastProvider';
+import LoginPage from '../LoginPage';
 
 // Mock the hooks
 vi.mock('../../auth/AuthProvider', () => ({
@@ -29,15 +29,15 @@ describe('LoginPage', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    (useAuth as any).mockReturnValue({ login: mockLogin });
-    (useToast as any).mockReturnValue({ showError: mockShowError });
+    vi.mocked(useAuth).mockReturnValue({ login: mockLogin } as any);
+    vi.mocked(useToast).mockReturnValue({ showError: mockShowError } as any);
   });
 
   it('renders login form correctly', () => {
     render(
       <MemoryRouter>
         <LoginPage />
-      </MemoryRouter>
+      </MemoryRouter>,
     );
 
     expect(screen.getByText(/Partner login/i)).toBeInTheDocument();
@@ -50,7 +50,7 @@ describe('LoginPage', () => {
     render(
       <MemoryRouter>
         <LoginPage />
-      </MemoryRouter>
+      </MemoryRouter>,
     );
 
     fireEvent.change(screen.getByLabelText(/Email/i), { target: { value: 'test@example.com' } });
@@ -68,7 +68,7 @@ describe('LoginPage', () => {
     render(
       <MemoryRouter>
         <LoginPage />
-      </MemoryRouter>
+      </MemoryRouter>,
     );
 
     fireEvent.change(screen.getByLabelText(/Email/i), { target: { value: 'owner@example.com' } });
@@ -87,7 +87,7 @@ describe('LoginPage', () => {
     render(
       <MemoryRouter>
         <LoginPage />
-      </MemoryRouter>
+      </MemoryRouter>,
     );
 
     fireEvent.change(screen.getByLabelText(/Email/i), { target: { value: 'wrong@example.com' } });
@@ -95,33 +95,35 @@ describe('LoginPage', () => {
     fireEvent.click(screen.getByRole('button', { name: /Sign in/i }));
 
     await waitFor(() => {
-      expect(mockShowError).toHaveBeenCalledWith(expect.stringContaining('Incorrect email or password'));
+      expect(mockShowError).toHaveBeenCalledWith(
+        expect.stringContaining('Incorrect email or password'),
+      );
     });
   });
 
   it('shows tenant selection when multiple tenants are returned', async () => {
-      mockLogin.mockResolvedValue({
-          kind: 'pickTenant',
-          tenants: [
-              { _id: 't1', name: 'Salon A' },
-              { _id: 't2', name: 'Salon B' }
-          ]
-      });
+    mockLogin.mockResolvedValue({
+      kind: 'pickTenant',
+      tenants: [
+        { _id: 't1', name: 'Salon A' },
+        { _id: 't2', name: 'Salon B' },
+      ],
+    });
 
-      render(
-        <MemoryRouter>
-          <LoginPage />
-        </MemoryRouter>
-      );
+    render(
+      <MemoryRouter>
+        <LoginPage />
+      </MemoryRouter>,
+    );
 
-      fireEvent.change(screen.getByLabelText(/Email/i), { target: { value: 'multi@example.com' } });
-      fireEvent.change(screen.getByLabelText(/Password/i), { target: { value: 'password123' } });
-      fireEvent.click(screen.getByRole('button', { name: /Sign in/i }));
+    fireEvent.change(screen.getByLabelText(/Email/i), { target: { value: 'multi@example.com' } });
+    fireEvent.change(screen.getByLabelText(/Password/i), { target: { value: 'password123' } });
+    fireEvent.click(screen.getByRole('button', { name: /Sign in/i }));
 
-      await waitFor(() => {
-          expect(screen.getByText(/Select a salon/i)).toBeInTheDocument();
-          expect(screen.getByText(/Salon A/i)).toBeInTheDocument();
-          expect(screen.getByText(/Salon B/i)).toBeInTheDocument();
-      });
+    await waitFor(() => {
+      expect(screen.getByText(/Select a salon/i)).toBeInTheDocument();
+      expect(screen.getByText(/Salon A/i)).toBeInTheDocument();
+      expect(screen.getByText(/Salon B/i)).toBeInTheDocument();
+    });
   });
 });

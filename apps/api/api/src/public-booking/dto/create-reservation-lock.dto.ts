@@ -1,12 +1,5 @@
-import {
-  IsDateString,
-  IsEmail,
-  IsMongoId,
-  IsOptional,
-  IsString,
-  Length,
-} from 'class-validator';
 import { Transform } from 'class-transformer';
+import { IsDateString, IsEmail, IsMongoId, IsOptional, IsString, Length } from 'class-validator';
 
 export class CreateReservationLockDto {
   @IsMongoId()
@@ -26,6 +19,6 @@ export class CreateReservationLockDto {
   @IsOptional()
   @IsEmail()
   @Length(0, 200)
-  @Transform(({ value }) => typeof value === 'string' ? value.trim().toLowerCase() : value)
+  @Transform(({ value }) => (typeof value === 'string' ? value.trim().toLowerCase() : value))
   customerEmail?: string;
 }

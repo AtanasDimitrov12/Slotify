@@ -1,5 +1,5 @@
-import { Test, TestingModule } from '@nestjs/testing';
 import { getModelToken } from '@nestjs/mongoose';
+import { Test, type TestingModule } from '@nestjs/testing';
 import { Types } from 'mongoose';
 import { BookingSettingsService } from './booking-settings.service';
 import { TenantBookingSettings } from './tenant-booking-settings.schema';

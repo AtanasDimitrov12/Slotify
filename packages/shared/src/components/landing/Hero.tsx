@@ -1,6 +1,6 @@
-import { Box, Button, Chip, Container, Stack, Typography } from '@mui/material';
 import ArrowForwardRoundedIcon from '@mui/icons-material/ArrowForwardRounded';
 import AutoAwesomeRoundedIcon from '@mui/icons-material/AutoAwesomeRounded';
+import { Box, Button, Chip, Container, Stack, Typography } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import { premium } from './constants';
 
@@ -149,11 +149,7 @@ export function Hero({
             {description}
           </Typography>
 
-          <Stack
-            direction={{ xs: 'column', sm: 'row' }}
-            spacing={1.6}
-            sx={{ pt: 1.2 }}
-          >
+          <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1.6} sx={{ pt: 1.2 }}>
             <Button
               variant="contained"
               onClick={() => navigate(primaryCtaLink)}

@@ -1,9 +1,9 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { HydratedDocument, Types } from 'mongoose';
-import { Tenant } from '../tenants/tenant.schema';
-import { User } from '../users/user.schema';
+import { type HydratedDocument, Types } from 'mongoose';
 import { Service } from '../services/service.schema';
 import { StaffServiceAssignment } from '../staff-service-assignments/staff-service-assignment.schema';
+import { Tenant } from '../tenants/tenant.schema';
+import { User } from '../users/user.schema';
 
 export type ReservationLockDocument = HydratedDocument<ReservationLock>;
 
@@ -23,7 +23,12 @@ export class ReservationLock {
   })
   staffServiceAssignmentId!: Types.ObjectId;
 
-  @Prop({ type: Types.ObjectId, ref: Service.name, required: true, index: true })
+  @Prop({
+    type: Types.ObjectId,
+    ref: Service.name,
+    required: true,
+    index: true,
+  })
   serviceId!: Types.ObjectId;
 
   @Prop({ required: true, index: true })
@@ -48,7 +53,12 @@ export class ReservationLock {
 export const ReservationLockSchema = SchemaFactory.createForClass(ReservationLock);
 
 ReservationLockSchema.index({ expiresAt: 1 }, { expireAfterSeconds: 0 });
-ReservationLockSchema.index({ tenantId: 1, staffId: 1, startTime: 1, endTime: 1 });
+ReservationLockSchema.index({
+  tenantId: 1,
+  staffId: 1,
+  startTime: 1,
+  endTime: 1,
+});
 ReservationLockSchema.index({
   tenantId: 1,
   staffId: 1,

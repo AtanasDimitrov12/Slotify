@@ -18,7 +18,9 @@ export function Footer() {
           justifyContent="space-between"
           alignItems={{ xs: 'flex-start', md: 'center' }}
         >
-          <Typography sx={{ color: landingColors.text, fontWeight: 1000, letterSpacing: -0.5, fontSize: 18 }}>
+          <Typography
+            sx={{ color: landingColors.text, fontWeight: 1000, letterSpacing: -0.5, fontSize: 18 }}
+          >
             SLOTIFY
           </Typography>
 

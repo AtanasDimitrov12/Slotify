@@ -4,8 +4,8 @@ import {
   StaffServiceAssignment,
   StaffServiceAssignmentSchema,
 } from './staff-service-assignment.schema';
-import { StaffServiceAssignmentsService } from './staff-service-assignments.service';
 import { StaffServiceAssignmentsController } from './staff-service-assignments.controller';
+import { StaffServiceAssignmentsService } from './staff-service-assignments.service';
 
 @Module({
   imports: [

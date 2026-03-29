@@ -1,8 +1,15 @@
-import * as React from 'react';
-import { Outlet, useLocation, useNavigate } from 'react-router-dom';
+import { landingColors } from '@barber/shared';
+import ContentCutRoundedIcon from '@mui/icons-material/ContentCutRounded';
+import DashboardRoundedIcon from '@mui/icons-material/DashboardRounded';
+import EventAvailableRoundedIcon from '@mui/icons-material/EventAvailableRounded';
+import GroupsRoundedIcon from '@mui/icons-material/GroupsRounded';
+import MenuRoundedIcon from '@mui/icons-material/MenuRounded';
+import SettingsRoundedIcon from '@mui/icons-material/SettingsRounded';
 import {
   AppBar,
+  Avatar,
   Box,
+  Divider,
   Drawer,
   IconButton,
   List,
@@ -14,17 +21,10 @@ import {
   Typography,
   useMediaQuery,
   useTheme,
-  Avatar,
-  Divider,
 } from '@mui/material';
-import MenuRoundedIcon from '@mui/icons-material/MenuRounded';
-import DashboardRoundedIcon from '@mui/icons-material/DashboardRounded';
-import GroupsRoundedIcon from '@mui/icons-material/GroupsRounded';
-import SettingsRoundedIcon from '@mui/icons-material/SettingsRounded';
-import ContentCutRoundedIcon from '@mui/icons-material/ContentCutRounded';
-import EventAvailableRoundedIcon from '@mui/icons-material/EventAvailableRounded';
 import { alpha } from '@mui/material/styles';
-import { landingColors } from '@barber/shared'; 
+import * as React from 'react';
+import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 
 const drawerWidth = 280;
 
@@ -63,7 +63,7 @@ export default function OwnerLayout() {
             fontWeight: 1000,
             bgcolor: alpha(landingColors.purple, 0.12),
             color: landingColors.purple,
-            border: `1px solid ${alpha(landingColors.purple, 0.20)}`,
+            border: `1px solid ${alpha(landingColors.purple, 0.2)}`,
             boxShadow: `0 8px 24px ${alpha(landingColors.purple, 0.16)}`,
           }}
         >
@@ -71,7 +71,15 @@ export default function OwnerLayout() {
         </Avatar>
 
         <Box>
-          <Typography sx={{ fontWeight: 1000, letterSpacing: -0.4, lineHeight: 1, fontSize: 18, color: '#0F172A' }}>
+          <Typography
+            sx={{
+              fontWeight: 1000,
+              letterSpacing: -0.4,
+              lineHeight: 1,
+              fontSize: 18,
+              color: '#0F172A',
+            }}
+          >
             Salon Console
           </Typography>
           <Typography variant="body2" sx={{ color: '#64748B', fontWeight: 700, mt: 0.4 }}>
@@ -86,7 +94,8 @@ export default function OwnerLayout() {
         {items.map((it) => {
           const active =
             location.pathname === it.to ||
-            (it.to.endsWith('/overview') && (location.pathname === '/owner' || location.pathname === '/owner/'));
+            (it.to.endsWith('/overview') &&
+              (location.pathname === '/owner' || location.pathname === '/owner/'));
 
           return (
             <ListItemButton
@@ -106,7 +115,9 @@ export default function OwnerLayout() {
                 bgcolor: active ? alpha(landingColors.purple, 0.08) : 'transparent',
                 transition: 'all 0.2s ease',
                 '&:hover': {
-                  bgcolor: active ? alpha(landingColors.purple, 0.12) : alpha(landingColors.purple, 0.04),
+                  bgcolor: active
+                    ? alpha(landingColors.purple, 0.12)
+                    : alpha(landingColors.purple, 0.04),
                   transform: 'translateX(4px)',
                 },
                 '&.Mui-selected': {
@@ -177,7 +188,9 @@ export default function OwnerLayout() {
           )}
 
           <Box sx={{ flex: 1 }}>
-            <Typography sx={{ fontWeight: 1000, fontSize: 20, letterSpacing: -0.8, color: '#0F172A' }}>
+            <Typography
+              sx={{ fontWeight: 1000, fontSize: 20, letterSpacing: -0.8, color: '#0F172A' }}
+            >
               Management
             </Typography>
             <Typography variant="body2" sx={{ color: '#64748B', fontWeight: 700 }}>
@@ -187,7 +200,9 @@ export default function OwnerLayout() {
         </Toolbar>
       </AppBar>
 
-      <Box sx={{ display: 'grid', gridTemplateColumns: isDesktop ? `${drawerWidth}px 1fr` : '1fr' }}>
+      <Box
+        sx={{ display: 'grid', gridTemplateColumns: isDesktop ? `${drawerWidth}px 1fr` : '1fr' }}
+      >
         {isDesktop ? (
           <Box
             sx={{

@@ -1,15 +1,9 @@
-import { useMemo, useState } from 'react';
-import type { ReactNode } from 'react';
-import {
-  CloseRounded,
-  MenuRounded,
-  HomeRounded,
-  StorefrontRounded,
-} from '@mui/icons-material';
+import { CloseRounded, HomeRounded, MenuRounded, StorefrontRounded } from '@mui/icons-material';
 import {
   AppBar,
   Box,
   Button,
+  ButtonBase,
   Container,
   Divider,
   Drawer,
@@ -21,9 +15,10 @@ import {
   Stack,
   Toolbar,
   Typography,
-  ButtonBase,
 } from '@mui/material';
 import { alpha } from '@mui/material/styles';
+import type { ReactNode } from 'react';
+import { useMemo, useState } from 'react';
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 
 type NavItem = {
@@ -108,12 +103,7 @@ export default function AppShell() {
               gap: 2,
             }}
           >
-            <Stack
-              direction="row"
-              spacing={1.5}
-              alignItems="center"
-              sx={{ flex: 1, minWidth: 0 }}
-            >
+            <Stack direction="row" spacing={1.5} alignItems="center" sx={{ flex: 1, minWidth: 0 }}>
               <ButtonBase
                 onClick={() => go('/')}
                 sx={{
@@ -172,7 +162,7 @@ export default function AppShell() {
                         py: 0.22,
                         borderRadius: 999,
                         bgcolor: alpha(shellColors.purple, 0.12),
-                        border: `1px solid ${alpha(shellColors.purple, 0.20)}`,
+                        border: `1px solid ${alpha(shellColors.purple, 0.2)}`,
                         display: { xs: 'none', sm: 'inline-flex' },
                       }}
                     >

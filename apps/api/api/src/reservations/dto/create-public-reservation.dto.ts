@@ -1,3 +1,4 @@
+import { Transform } from 'class-transformer';
 import {
   IsDateString,
   IsEmail,
@@ -7,7 +8,6 @@ import {
   Length,
   Matches,
 } from 'class-validator';
-import { Transform } from 'class-transformer';
 
 export class CreatePublicReservationDto {
   @IsMongoId()
@@ -38,7 +38,7 @@ export class CreatePublicReservationDto {
   @IsOptional()
   @IsEmail()
   @Length(0, 200)
-  @Transform(({ value }) => typeof value === 'string' ? value.trim().toLowerCase() : value)
+  @Transform(({ value }) => (typeof value === 'string' ? value.trim().toLowerCase() : value))
   customerEmail?: string;
 
   @IsOptional()

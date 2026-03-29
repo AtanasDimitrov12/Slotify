@@ -1,9 +1,9 @@
 import { Body, Controller, Get, Put, UseGuards } from '@nestjs/common';
-import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { CurrentUser } from '../auth/current-user.decorator';
-import { OwnerSettingsService } from './owner-settings.service';
-import { UpdateBusinessGeneralDto } from './dto/update-business-general.dto';
-import { UpdateOpeningHoursDto } from './dto/update-opening-hours.dto';
+import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import type { UpdateBusinessGeneralDto } from './dto/update-business-general.dto';
+import type { UpdateOpeningHoursDto } from './dto/update-opening-hours.dto';
+import type { OwnerSettingsService } from './owner-settings.service';
 
 @Controller('owner/settings')
 @UseGuards(JwtAuthGuard)
@@ -16,18 +16,12 @@ export class OwnerSettingsController {
   }
 
   @Put('general')
-  updateGeneral(
-    @CurrentUser() currentUser: any,
-    @Body() dto: UpdateBusinessGeneralDto,
-  ) {
+  updateGeneral(@CurrentUser() currentUser: any, @Body() dto: UpdateBusinessGeneralDto) {
     return this.ownerSettingsService.updateGeneral(currentUser, dto);
   }
 
   @Put('opening-hours')
-  updateOpeningHours(
-    @CurrentUser() currentUser: any,
-    @Body() dto: UpdateOpeningHoursDto,
-  ) {
+  updateOpeningHours(@CurrentUser() currentUser: any, @Body() dto: UpdateOpeningHoursDto) {
     return this.ownerSettingsService.updateOpeningHours(currentUser, dto);
   }
 }

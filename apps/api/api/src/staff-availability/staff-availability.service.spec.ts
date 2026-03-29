@@ -1,9 +1,9 @@
-import { Test, TestingModule } from '@nestjs/testing';
-import { getModelToken } from '@nestjs/mongoose';
 import { NotFoundException } from '@nestjs/common';
+import { getModelToken } from '@nestjs/mongoose';
+import { Test, type TestingModule } from '@nestjs/testing';
 import { Types } from 'mongoose';
-import { StaffAvailabilityService } from './staff-availability.service';
 import { StaffAvailability } from './staff-availability.schema';
+import { StaffAvailabilityService } from './staff-availability.service';
 
 describe('StaffAvailabilityService', () => {
   let service: StaffAvailabilityService;
@@ -77,7 +77,7 @@ describe('StaffAvailabilityService', () => {
 
       const result = await service.findByStaff(
         mockAvailability.tenantId.toString(),
-        mockAvailability.userId.toString()
+        mockAvailability.userId.toString(),
       );
 
       expect(mockAvailabilityModel.findOne).toHaveBeenCalled();
@@ -91,10 +91,9 @@ describe('StaffAvailabilityService', () => {
         lean: jest.fn().mockResolvedValue(mockAvailability),
       });
 
-      const result = await service.update(
-        mockAvailability._id.toString(),
-        { weeklyAvailability: [] }
-      );
+      const result = await service.update(mockAvailability._id.toString(), {
+        weeklyAvailability: [],
+      });
 
       expect(mockAvailabilityModel.findByIdAndUpdate).toHaveBeenCalled();
       expect(result).toEqual(mockAvailability);
@@ -106,7 +105,9 @@ describe('StaffAvailabilityService', () => {
       });
 
       await expect(
-        service.update(new Types.ObjectId().toString(), { weeklyAvailability: [] }),
+        service.update(new Types.ObjectId().toString(), {
+          weeklyAvailability: [],
+        }),
       ).rejects.toThrow(NotFoundException);
     });
   });

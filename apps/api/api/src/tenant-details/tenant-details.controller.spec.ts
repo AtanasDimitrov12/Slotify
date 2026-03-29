@@ -23,7 +23,7 @@ describe('TenantDetailsController', () => {
     }).compile();
 
     controller = moduleRef.get(TenantDetailsController);
-    service = moduleRef.get(TenantDetailsService) as jest.Mocked<TenantDetailsService>;
+    service = moduleRef.get(TenantDetailsService);
   });
 
   afterEach(() => {
@@ -50,7 +50,10 @@ describe('TenantDetailsController', () => {
   });
 
   it('patch calls service.updateByTenantId', async () => {
-    service.updateByTenantId.mockResolvedValue({ tenantId: 't1', contactPhone: '123' } as any);
+    service.updateByTenantId.mockResolvedValue({
+      tenantId: 't1',
+      contactPhone: '123',
+    } as any);
 
     const dto: any = { contactPhone: '123' };
     const res = await controller.patch('t1', dto);
@@ -60,7 +63,10 @@ describe('TenantDetailsController', () => {
   });
 
   it('upsert calls service.upsertByTenantId', async () => {
-    service.upsertByTenantId.mockResolvedValue({ tenantId: 't1', contactEmail: 'a@b.com' } as any);
+    service.upsertByTenantId.mockResolvedValue({
+      tenantId: 't1',
+      contactEmail: 'a@b.com',
+    } as any);
 
     const dto: any = { contactEmail: 'a@b.com' };
     const res = await controller.upsert('t1', dto);

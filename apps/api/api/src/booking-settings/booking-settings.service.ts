@@ -1,18 +1,18 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model, Types } from 'mongoose';
+import { type Model, Types } from 'mongoose';
+import type { UpsertTenantBookingSettingsDto } from './dto/upsert-tenant-booking-settings.dto';
 import {
   TenantBookingSettings,
-  TenantBookingSettingsDocument,
+  type TenantBookingSettingsDocument,
 } from './tenant-booking-settings.schema';
-import { UpsertTenantBookingSettingsDto } from './dto/upsert-tenant-booking-settings.dto';
 
 @Injectable()
 export class BookingSettingsService {
   constructor(
     @InjectModel(TenantBookingSettings.name)
     private readonly tenantBookingSettingsModel: Model<TenantBookingSettingsDocument>,
-  ) { }
+  ) {}
 
   async upsertByTenantId(tenantId: string, dto: UpsertTenantBookingSettingsDto) {
     const updated = await this.tenantBookingSettingsModel

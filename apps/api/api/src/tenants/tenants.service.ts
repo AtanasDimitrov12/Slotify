@@ -1,30 +1,33 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
-import { CreateTenantDto } from './dto/create-tenant.dto';
-import { UpdateTenantDto } from './dto/update-tenant.dto';
-import { Tenant, TenantDocument } from './tenant.schema';
-import { BookingSettingsService } from '../booking-settings/booking-settings.service';
+import type { Model } from 'mongoose';
+import type { BookingSettingsService } from '../booking-settings/booking-settings.service';
+import type { CreateTenantDto } from './dto/create-tenant.dto';
+import type { UpdateTenantDto } from './dto/update-tenant.dto';
+import { Tenant, type TenantDocument } from './tenant.schema';
 
 function slugify(input: string): string {
-  return input
-    .trim()
-    .toLowerCase()
-    // replace non-alphanumeric with dash
-    .replace(/[^a-z0-9]+/g, '-')
-    // trim dashes
-    .replace(/^-+|-+$/g, '')
-    // collapse multiple dashes
-    .replace(/-+/g, '-')
-    .slice(0, 60);
+  return (
+    input
+      .trim()
+      .toLowerCase()
+      // replace non-alphanumeric with dash
+      .replace(/[^a-z0-9]+/g, '-')
+      // trim dashes
+      .replace(/^-+|-+$/g, '')
+      // collapse multiple dashes
+      .replace(/-+/g, '-')
+      .slice(0, 60)
+  );
 }
 
 @Injectable()
 export class TenantsService {
   constructor(
-    @InjectModel(Tenant.name) private readonly tenantModel: Model<TenantDocument>,
+    @InjectModel(Tenant.name)
+    private readonly tenantModel: Model<TenantDocument>,
     private readonly bookingSettingsService: BookingSettingsService,
-  ) { }
+  ) {}
 
   private async generateUniqueSlug(name: string): Promise<string> {
     const base = slugify(name) || 'tenant';
@@ -33,7 +36,7 @@ export class TenantsService {
 
     // Ensure uniqueness (fast enough for MVP)
     // If you expect high concurrency, we can also handle duplicate-key error retry.
-    // eslint-disable-next-line no-constant-condition
+
     while (true) {
       const exists = await this.tenantModel.exists({ slug });
       if (!exists) return slug;
@@ -83,11 +86,13 @@ export class TenantsService {
   }
 
   async findPublishedBySlug(slug: string) {
-    return this.tenantModel.findOne({
-      slug,
-      isPublished: true,
-      status: 'active',
-    }).lean();
+    return this.tenantModel
+      .findOne({
+        slug,
+        isPublished: true,
+        status: 'active',
+      })
+      .lean();
   }
 
   async update(id: string, dto: UpdateTenantDto) {

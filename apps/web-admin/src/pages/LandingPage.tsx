@@ -1,15 +1,15 @@
-import { Box } from '@mui/material';
 import {
   ChoosePath,
   Features,
   FinalCTA,
   Footer,
   Hero,
+  Page,
   Showcase,
   SmartSpotlight,
   TrustStrip,
-  Page,
 } from '@barber/shared';
+import { Box } from '@mui/material';
 
 export default function LandingPage() {
   return (

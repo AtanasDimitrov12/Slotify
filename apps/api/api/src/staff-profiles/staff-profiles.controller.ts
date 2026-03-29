@@ -1,7 +1,7 @@
-import { Body, Controller, Get, Param, Patch, Post, Delete, Query } from '@nestjs/common';
-import { StaffProfilesService } from './staff-profiles.service';
-import { CreateStaffProfileDto } from './dto/create-staff-profile.dto';
-import { UpdateStaffProfileDto } from './dto/update-staff-profile.dto';
+import { Body, Controller, Delete, Get, Param, Patch, Post, Query } from '@nestjs/common';
+import type { CreateStaffProfileDto } from './dto/create-staff-profile.dto';
+import type { UpdateStaffProfileDto } from './dto/update-staff-profile.dto';
+import type { StaffProfilesService } from './staff-profiles.service';
 
 @Controller('staff-profiles')
 export class StaffProfilesController {

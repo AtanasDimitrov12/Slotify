@@ -1,6 +1,13 @@
-import * as React from 'react';
+import {
+  getMyStaffProfile,
+  landingColors,
+  premium,
+  updateMyStaffProfile,
+  useToast,
+} from '@barber/shared';
 import {
   Alert,
+  alpha,
   Box,
   Button,
   Card,
@@ -10,14 +17,11 @@ import {
   Stack,
   TextField,
   Typography,
-  alpha,
 } from '@mui/material';
-import ProfilePhotoCard from './components/ProfilePhotoCard';
+import * as React from 'react';
 import ExpertiseChipsInput from './components/ExpertiseChipsInput';
+import ProfilePhotoCard from './components/ProfilePhotoCard';
 import type { StaffProfile } from './components/types';
-import { getMyStaffProfile, updateMyStaffProfile } from '@barber/shared'; 
-import { landingColors, premium } from '@barber/shared'; 
-import { useToast } from '@barber/shared'; 
 
 const emptyProfile: StaffProfile = {
   name: '',
@@ -92,7 +96,9 @@ export default function StaffProfilePage() {
     <>
       <Stack spacing={4}>
         <Box>
-          <Typography sx={{ fontWeight: 1000, fontSize: 36, letterSpacing: -1.5, color: '#0F172A' }}>
+          <Typography
+            sx={{ fontWeight: 1000, fontSize: 36, letterSpacing: -1.5, color: '#0F172A' }}
+          >
             Profile
           </Typography>
           <Typography sx={{ color: '#64748B', fontWeight: 600, fontSize: 18 }}>
@@ -100,7 +106,11 @@ export default function StaffProfilePage() {
           </Typography>
         </Box>
 
-        {error ? <Alert severity="error" sx={{ borderRadius: 3 }}>{error}</Alert> : null}
+        {error ? (
+          <Alert severity="error" sx={{ borderRadius: 3 }}>
+            {error}
+          </Alert>
+        ) : null}
 
         <Grid container spacing={3}>
           <Grid item xs={12} md={4}>
