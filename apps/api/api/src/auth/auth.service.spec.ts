@@ -11,7 +11,6 @@ jest.mock('bcryptjs');
 
 describe('AuthService (Security & Multi-tenancy)', () => {
   let service: AuthService;
-  let jwtService: JwtService;
   let membershipsService: MembershipsService;
   let usersService: UsersService;
   let tenantsService: TenantsService;
@@ -50,7 +49,6 @@ describe('AuthService (Security & Multi-tenancy)', () => {
     }).compile();
 
     service = module.get<AuthService>(AuthService);
-    jwtService = module.get<JwtService>(JwtService);
     membershipsService = module.get<MembershipsService>(MembershipsService);
     usersService = module.get<UsersService>(UsersService);
     tenantsService = module.get<TenantsService>(TenantsService);
@@ -86,10 +84,10 @@ describe('AuthService (Security & Multi-tenancy)', () => {
         { tenantId: { _id: 't2', name: 'Tenant 2' }, role: 'staff' },
       ]);
 
-      const result = await service.login(loginDto);
+      const result = (await service.login(loginDto)) as any;
 
       expect(result).toHaveProperty('tenants');
-      expect(result['tenants']).toHaveLength(2);
+      expect(result.tenants).toHaveLength(2);
     });
 
     it('should finalize login if a valid tenantId is provided', async () => {
@@ -100,10 +98,10 @@ describe('AuthService (Security & Multi-tenancy)', () => {
         role: 'owner',
       });
 
-      const result = await service.login({ ...loginDto, tenantId: 't1' });
+      const result = (await service.login({ ...loginDto, tenantId: 't1' })) as any;
 
       expect(result).toHaveProperty('accessToken');
-      expect(result['account'].tenantId).toBe('t1');
+      expect(result.account.tenantId).toBe('t1');
     });
   });
 

@@ -28,7 +28,9 @@ export class AuthService {
     private readonly tenantsService: TenantsService,
   ) {}
 
-  private getId(value: string | Types.ObjectId | { _id: Types.ObjectId } | { id: string } | null | undefined): string {
+  private getId(
+    value: string | Types.ObjectId | { _id: Types.ObjectId } | { id: string } | null | undefined,
+  ): string {
     if (!value) return '';
 
     if (typeof value === 'string') return value;

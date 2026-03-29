@@ -16,7 +16,9 @@ export function useRevealOnScroll() {
 
     const reduceMotion = window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches;
     if (reduceMotion) {
-      elements.forEach((el) => el.setAttribute('data-reveal-state', 'in'));
+      elements.forEach((el) => {
+        el.setAttribute('data-reveal-state', 'in');
+      });
       return;
     }
 
@@ -32,7 +34,9 @@ export function useRevealOnScroll() {
       { threshold: 0.12, rootMargin: '60px 0px -10% 0px' },
     );
 
-    elements.forEach((el) => io.observe(el));
+    elements.forEach((el) => {
+      io.observe(el);
+    });
     return () => io.disconnect();
   }, [ready]);
 }

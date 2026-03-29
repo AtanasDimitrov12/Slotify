@@ -1,4 +1,4 @@
-import { test, expect, type APIRequestContext } from '@playwright/test';
+import { type APIRequestContext, expect, test } from '@playwright/test';
 
 test.describe('Public Booking Journey', () => {
   const timestamp = Date.now();
@@ -9,7 +9,6 @@ test.describe('Public Booking Journey', () => {
   const salonSlug = `e2e-salon-${timestamp}`;
 
   async function setupEnvironment(request: APIRequestContext) {
-
     const registerRes = await request.post('http://localhost:4000/auth/register', {
       data: {
         name: 'E2E Owner',

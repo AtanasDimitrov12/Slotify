@@ -46,6 +46,34 @@
           }
         }
       }
+    },
+    {
+      "includes": ["**/*.spec.ts", "**/*.test.ts", "**/*.e2e-spec.ts"],
+      "linter": {
+        "rules": {
+          "suspicious": {
+            "noExplicitAny": "off",
+            "noImplicitAnyLet": "off",
+            "noThenProperty": "off"
+          },
+          "correctness": {
+            "noUnusedVariables": "off"
+          },
+          "complexity": {
+            "useLiteralKeys": "off"
+          }
+        }
+      }
+    },
+    {
+      "includes": ["apps/web-admin/src/App.tsx"],
+      "linter": {
+        "rules": {
+          "a11y": {
+            "useValidAriaRole": "off"
+          }
+        }
+      }
     }
   ],
   "javascript": {

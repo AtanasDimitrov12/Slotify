@@ -2,6 +2,7 @@ import { BadRequestException, NotFoundException, UnauthorizedException } from '@
 import { Test, type TestingModule } from '@nestjs/testing';
 import * as bcrypt from 'bcryptjs';
 import { Types } from 'mongoose';
+import type { JwtPayload } from '../auth/jwt.strategy';
 import { MembershipsService } from '../memberships/memberships.service';
 import { ServicesService } from '../services/services.service';
 import { StaffAvailabilityService } from '../staff-availability/staff-availability.service';
@@ -22,10 +23,11 @@ describe('StaffService', () => {
 
   const mockTenantId = new Types.ObjectId().toString();
   const mockOwnerId = new Types.ObjectId().toString();
-  const mockOwnerUser = {
+  const mockOwnerUser: JwtPayload = {
     tenantId: mockTenantId,
     role: 'owner',
-    userId: mockOwnerId,
+    sub: mockOwnerId,
+    email: 'owner@test.com',
   };
 
   beforeEach(async () => {
@@ -129,7 +131,10 @@ describe('StaffService', () => {
     });
 
     it('should throw UnauthorizedException if requester is not an owner or manager', async () => {
-      const staffUser = { ...mockOwnerUser, role: 'staff' };
+      const staffUser: JwtPayload = {
+        ...mockOwnerUser,
+        role: 'staff',
+      };
       await expect(service.onboard(staffUser, onboardDto)).rejects.toThrow(UnauthorizedException);
     });
 
@@ -142,7 +147,12 @@ describe('StaffService', () => {
   describe('getMyProfile', () => {
     it('should return combined user and profile data', async () => {
       const userId = new Types.ObjectId().toString();
-      const userContext = { tenantId: mockTenantId, userId };
+      const userContext: JwtPayload = {
+        sub: userId,
+        tenantId: mockTenantId,
+        role: 'staff',
+        email: 'staff@test.com',
+      };
 
       usersService.findById.mockResolvedValue({
         name: 'John',

@@ -1,7 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import { BookingSettingsService } from '../booking-settings/booking-settings.service';
 import { CreateTenantDto } from './dto/create-tenant.dto';
 import { UpdateTenantDto } from './dto/update-tenant.dto';
 import { Tenant, type TenantDocument } from './tenant.schema';
@@ -26,7 +25,6 @@ export class TenantsService {
   constructor(
     @InjectModel(Tenant.name)
     private readonly tenantModel: Model<TenantDocument>,
-    private readonly bookingSettingsService: BookingSettingsService,
   ) {}
 
   private async generateUniqueSlug(name: string): Promise<string> {

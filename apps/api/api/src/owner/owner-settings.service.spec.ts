@@ -1,7 +1,10 @@
 import { UnauthorizedException } from '@nestjs/common';
 import { Test, type TestingModule } from '@nestjs/testing';
 import { Types } from 'mongoose';
+import type { JwtPayload } from '../auth/jwt.strategy';
+import type { TenantDetailsDocument } from '../tenant-details/tenant-details.schema';
 import { TenantDetailsService } from '../tenant-details/tenant-details.service';
+import type { TenantDocument } from '../tenants/tenant.schema';
 import { TenantsService } from '../tenants/tenants.service';
 import { OwnerSettingsService } from './owner-settings.service';
 
@@ -11,9 +14,12 @@ describe('OwnerSettingsService', () => {
   let tenantDetailsService: jest.Mocked<TenantDetailsService>;
 
   const mockTenantId = new Types.ObjectId().toString();
-  const mockUser = {
+  const mockUserId = new Types.ObjectId().toString();
+  const mockUser: JwtPayload = {
+    sub: mockUserId,
     tenantId: mockTenantId,
     role: 'owner',
+    email: 'owner@test.com',
   };
 
   beforeEach(async () => {
@@ -44,12 +50,16 @@ describe('OwnerSettingsService', () => {
 
   describe('Authorization Context', () => {
     it('should throw UnauthorizedException if role is staff', async () => {
-      const staffUser = { ...mockUser, role: 'staff' };
+      const staffUser: JwtPayload = { ...mockUser, role: 'staff' };
       await expect(service.getSettings(staffUser)).rejects.toThrow(UnauthorizedException);
     });
 
     it('should throw UnauthorizedException if tenantId is missing', async () => {
-      const badUser = { role: 'owner' };
+      const badUser = {
+        role: 'owner',
+        sub: mockUserId,
+        email: 'owner@test.com',
+      } as unknown as JwtPayload;
       await expect(service.getSettings(badUser)).rejects.toThrow(UnauthorizedException);
     });
   });
@@ -102,17 +112,24 @@ describe('OwnerSettingsService', () => {
 
   describe('getSettings', () => {
     it('should provide default values for missing details', async () => {
-      tenantsService.findOne.mockResolvedValue({ name: 'Salon X' } as any);
+      tenantsService.findOne.mockResolvedValue({
+        _id: new Types.ObjectId(),
+        name: 'Salon X',
+        __v: 0,
+      } as never);
+
       tenantDetailsService.findByTenantId.mockResolvedValue({
+        _id: new Types.ObjectId(),
+        tenantId: new Types.ObjectId(mockTenantId),
         contactEmail: 'x@x.com',
-        // Address missing
-      } as any);
+        __v: 0,
+      } as never);
 
       const result = await service.getSettings(mockUser);
 
       expect(result.salonName).toBe('Salon X');
-      expect(result.timezone).toBe('Europe/Amsterdam'); // Default fallback
-      expect(result.city).toBe(''); // Empty fallback
+      expect(result.timezone).toBe('Europe/Amsterdam');
+      expect(result.city).toBe('');
     });
   });
 });

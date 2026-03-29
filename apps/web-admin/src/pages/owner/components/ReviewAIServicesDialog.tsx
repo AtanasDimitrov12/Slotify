@@ -147,9 +147,11 @@ export default function ReviewAIServicesDialog({
                 const nameError = !service.name.trim();
                 const durationError = !service.durationMin || service.durationMin < 1;
 
+                const serviceKey = `${service.name}-${service.durationMin}-${service.priceEUR}-${index}`;
+
                 return (
                   <Card
-                    key={index}
+                    key={serviceKey}
                     elevation={0}
                     sx={{
                       borderRadius: 3,

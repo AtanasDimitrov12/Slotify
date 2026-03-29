@@ -12,7 +12,6 @@ import { MembershipsService } from '../memberships/memberships.service';
 import { ServicesService } from '../services/services.service';
 import { UpdateStaffAvailabilityDto } from '../staff-availability/dto/update-staff-availability.dto';
 import { StaffAvailabilityService } from '../staff-availability/staff-availability.service';
-import { StaffBookingSettingsService } from '../staff-booking-settings/staff-booking-settings.service';
 import { UpdateStaffProfileDto } from '../staff-profiles/dto/update-staff-profile.dto';
 import { StaffProfilesService } from '../staff-profiles/staff-profiles.service';
 import { StaffServiceAssignmentsService } from '../staff-service-assignments/staff-service-assignments.service';
@@ -80,7 +79,6 @@ export class StaffService {
     private readonly staffTimeOffService: StaffTimeOffService,
     private readonly staffServiceAssignmentsService: StaffServiceAssignmentsService,
     private readonly servicesService: ServicesService,
-    private readonly staffBookingSettingsService: StaffBookingSettingsService,
   ) {}
 
   private getTenantIdOrThrow(currentUser: JwtPayload): string {
@@ -105,10 +103,6 @@ export class StaffService {
 
   private toIsoDateOnly(value: Date | string): string {
     return new Date(value).toISOString().slice(0, 10);
-  }
-
-  private toIsoDateTime(value: Date | string): string {
-    return new Date(value).toISOString();
   }
 
   async getMyProfile(currentUser: JwtPayload) {

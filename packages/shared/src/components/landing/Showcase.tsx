@@ -134,7 +134,7 @@ function ShowcaseVisual() {
               { w: '18%', c: landingColors.success },
             ].map((item, i) => (
               <Box
-                key={i}
+                key={`${item.w}-${item.c}`}
                 sx={{
                   width: item.w,
                   height: 18,

@@ -32,7 +32,7 @@ export class OwnerSettingsService {
 
     const tenant = await this.tenantsService.findOne(tenantId);
 
-    let details;
+    let details: Awaited<ReturnType<TenantDetailsService['findByTenantId']>> | null = null;
     try {
       details = await this.tenantDetailsService.findByTenantId(tenantId);
     } catch {

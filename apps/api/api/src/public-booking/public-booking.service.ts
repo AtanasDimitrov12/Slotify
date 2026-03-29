@@ -28,11 +28,7 @@ import {
   startOfDay,
   subtractRanges,
 } from './public-booking.utils';
-import {
-  AvailabilitySlot,
-  EffectiveBookingSettings,
-  TimeRange,
-} from './types/availability.types';
+import { AvailabilitySlot, EffectiveBookingSettings, TimeRange } from './types/availability.types';
 
 @Injectable()
 export class PublicBookingService {
