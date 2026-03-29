@@ -12,17 +12,18 @@ import {
 } from '@nestjs/common';
 import { Types } from 'mongoose';
 import { CurrentUser } from '../auth/current-user.decorator';
+import type { JwtPayload } from '../auth/jwt.strategy';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
-import type { CreateStaffTimeOffDto } from './dto/create-staff-time-off.dto';
-import type { UpdateStaffTimeOffDto } from './dto/update-staff-time-off.dto';
-import type { StaffTimeOffService } from './staff-time-off.service';
+import { CreateStaffTimeOffDto } from './dto/create-staff-time-off.dto';
+import { UpdateStaffTimeOffDto } from './dto/update-staff-time-off.dto';
+import { StaffTimeOffService } from './staff-time-off.service';
 
 @Controller('staff-time-off')
 @UseGuards(JwtAuthGuard)
 export class StaffTimeOffController {
   constructor(private readonly staffTimeOffService: StaffTimeOffService) {}
 
-  private getTenantId(currentUser: any): string {
+  private getTenantId(currentUser: JwtPayload): string {
     const tenantId = currentUser?.tenantId;
 
     if (!tenantId || !Types.ObjectId.isValid(tenantId)) {
@@ -38,7 +39,7 @@ export class StaffTimeOffController {
     }
   }
 
-  private ensureOwnerOrManager(currentUser: any) {
+  private ensureOwnerOrManager(currentUser: JwtPayload) {
     if (!['owner', 'manager'].includes(currentUser?.role ?? '')) {
       throw new UnauthorizedException('You are not allowed to manage staff time off');
     }
@@ -65,13 +66,13 @@ export class StaffTimeOffController {
   }
 
   @Get('owner/pending-counts')
-  getPendingCounts(@CurrentUser() currentUser: any) {
+  getPendingCounts(@CurrentUser() currentUser: JwtPayload) {
     this.ensureOwnerOrManager(currentUser);
     return this.staffTimeOffService.getPendingCountsByTenant(this.getTenantId(currentUser));
   }
 
   @Get('owner/staff/:userId')
-  getAllForOwnerByStaff(@CurrentUser() currentUser: any, @Param('userId') userId: string) {
+  getAllForOwnerByStaff(@CurrentUser() currentUser: JwtPayload, @Param('userId') userId: string) {
     this.ensureOwnerOrManager(currentUser);
     this.validateUserId(userId);
 
@@ -80,7 +81,7 @@ export class StaffTimeOffController {
 
   @Patch('owner/:requestId/status')
   reviewRequest(
-    @CurrentUser() currentUser: any,
+    @CurrentUser() currentUser: JwtPayload,
     @Param('requestId') requestId: string,
     @Body() body: { status: 'approved' | 'denied' },
   ) {

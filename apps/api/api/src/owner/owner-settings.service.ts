@@ -1,9 +1,10 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { Types } from 'mongoose';
-import type { TenantDetailsService } from '../tenant-details/tenant-details.service';
-import type { TenantsService } from '../tenants/tenants.service';
-import type { UpdateBusinessGeneralDto } from './dto/update-business-general.dto';
-import type { UpdateOpeningHoursDto } from './dto/update-opening-hours.dto';
+import type { JwtPayload } from '../auth/jwt.strategy';
+import { TenantDetailsService } from '../tenant-details/tenant-details.service';
+import { TenantsService } from '../tenants/tenants.service';
+import { UpdateBusinessGeneralDto } from './dto/update-business-general.dto';
+import { UpdateOpeningHoursDto } from './dto/update-opening-hours.dto';
 
 @Injectable()
 export class OwnerSettingsService {
@@ -12,7 +13,7 @@ export class OwnerSettingsService {
     private readonly tenantDetailsService: TenantDetailsService,
   ) {}
 
-  private getTenantId(currentUser: any): string {
+  private getTenantId(currentUser: JwtPayload): string {
     const tenantId = currentUser?.tenantId;
 
     if (!tenantId || !Types.ObjectId.isValid(tenantId)) {
@@ -26,7 +27,7 @@ export class OwnerSettingsService {
     return tenantId;
   }
 
-  async getSettings(currentUser: any) {
+  async getSettings(currentUser: JwtPayload) {
     const tenantId = this.getTenantId(currentUser);
 
     const tenant = await this.tenantsService.findOne(tenantId);
@@ -57,7 +58,7 @@ export class OwnerSettingsService {
     };
   }
 
-  async updateGeneral(currentUser: any, dto: UpdateBusinessGeneralDto) {
+  async updateGeneral(currentUser: JwtPayload, dto: UpdateBusinessGeneralDto) {
     const tenantId = this.getTenantId(currentUser);
 
     if (dto.salonName?.trim()) {
@@ -92,7 +93,7 @@ export class OwnerSettingsService {
     };
   }
 
-  async updateOpeningHours(currentUser: any, dto: UpdateOpeningHoursDto) {
+  async updateOpeningHours(currentUser: JwtPayload, dto: UpdateOpeningHoursDto) {
     const tenantId = this.getTenantId(currentUser);
 
     const openingHours = dto.days.reduce<Record<string, { start: string; end: string }[]>>(

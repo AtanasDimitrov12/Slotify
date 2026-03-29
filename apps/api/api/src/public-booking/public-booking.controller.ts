@@ -1,8 +1,8 @@
 import { Body, Controller, Get, Param, Post, Query } from '@nestjs/common';
-import type { CreatePublicReservationDto } from '../reservations/dto/create-public-reservation.dto';
-import type { CreateReservationLockDto } from './dto/create-reservation-lock.dto';
-import type { GetAvailabilityDto } from './dto/get-availability.dto';
-import type { PublicBookingService } from './public-booking.service';
+import { CreatePublicReservationDto } from '../reservations/dto/create-public-reservation.dto';
+import { CreateReservationLockDto } from './dto/create-reservation-lock.dto';
+import { GetAvailabilityDto } from './dto/get-availability.dto';
+import { PublicBookingService } from './public-booking.service';
 
 @Controller('public/tenants/:slug')
 export class PublicBookingController {

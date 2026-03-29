@@ -1,8 +1,8 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { type Model, Types } from 'mongoose';
-import type { CreateStaffTimeOffDto } from './dto/create-staff-time-off.dto';
-import type { UpdateStaffTimeOffDto } from './dto/update-staff-time-off.dto';
+import { CreateStaffTimeOffDto } from './dto/create-staff-time-off.dto';
+import { UpdateStaffTimeOffDto } from './dto/update-staff-time-off.dto';
 import { StaffTimeOff, type StaffTimeOffDocument } from './staff-time-off.schema';
 
 @Injectable()

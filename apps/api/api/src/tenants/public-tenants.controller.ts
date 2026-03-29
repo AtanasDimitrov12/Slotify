@@ -1,6 +1,6 @@
 import { Controller, Get, NotFoundException, Param } from '@nestjs/common';
-import type { TenantDetailsService } from '../tenant-details/tenant-details.service';
-import type { TenantsService } from './tenants.service';
+import { TenantDetailsService } from '../tenant-details/tenant-details.service';
+import { TenantsService } from './tenants.service';
 
 @Controller('public/tenants')
 export class PublicTenantsController {

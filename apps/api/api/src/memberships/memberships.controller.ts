@@ -1,8 +1,8 @@
 import { Body, Controller, Get, Param, Patch, Post, UseGuards } from '@nestjs/common';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
-import type { CreateMembershipDto } from './dto/create-membership.dto';
-import type { UpdateMembershipDto } from './dto/update-membership.dto';
-import type { MembershipsService } from './memberships.service';
+import { CreateMembershipDto } from './dto/create-membership.dto';
+import { UpdateMembershipDto } from './dto/update-membership.dto';
+import { MembershipsService } from './memberships.service';
 
 @Controller('memberships')
 @UseGuards(JwtAuthGuard)

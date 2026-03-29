@@ -7,27 +7,18 @@ import {
 import * as bcrypt from 'bcryptjs';
 import { Types } from 'mongoose';
 
-import type { MembershipsService } from '../memberships/memberships.service';
-import type { ServicesService } from '../services/services.service';
-import type { UpdateStaffAvailabilityDto } from '../staff-availability/dto/update-staff-availability.dto';
-import type { StaffAvailabilityService } from '../staff-availability/staff-availability.service';
-import type { StaffBookingSettingsService } from '../staff-booking-settings/staff-booking-settings.service';
-import type { UpdateStaffProfileDto } from '../staff-profiles/dto/update-staff-profile.dto';
-import type { StaffProfilesService } from '../staff-profiles/staff-profiles.service';
-import type { StaffServiceAssignmentsService } from '../staff-service-assignments/staff-service-assignments.service';
-import type { StaffTimeOffService } from '../staff-time-off/staff-time-off.service';
-import type { UsersService } from '../users/users.service';
-import type { CreateStaffAccountDto } from './dto/create-staff-account.dto';
-
-type AuthUser = {
-  sub?: string;
-  userId?: string;
-  _id?: string;
-  id?: string;
-  tenantId?: string;
-  role?: string;
-  email?: string;
-};
+import type { JwtPayload } from '../auth/jwt.strategy';
+import { MembershipsService } from '../memberships/memberships.service';
+import { ServicesService } from '../services/services.service';
+import { UpdateStaffAvailabilityDto } from '../staff-availability/dto/update-staff-availability.dto';
+import { StaffAvailabilityService } from '../staff-availability/staff-availability.service';
+import { StaffBookingSettingsService } from '../staff-booking-settings/staff-booking-settings.service';
+import { UpdateStaffProfileDto } from '../staff-profiles/dto/update-staff-profile.dto';
+import { StaffProfilesService } from '../staff-profiles/staff-profiles.service';
+import { StaffServiceAssignmentsService } from '../staff-service-assignments/staff-service-assignments.service';
+import { StaffTimeOffService } from '../staff-time-off/staff-time-off.service';
+import { UsersService } from '../users/users.service';
+import { CreateStaffAccountDto } from './dto/create-staff-account.dto';
 
 type StaffTimeOffResponseItem = {
   id: string;
@@ -92,7 +83,7 @@ export class StaffService {
     private readonly staffBookingSettingsService: StaffBookingSettingsService,
   ) {}
 
-  private getTenantIdOrThrow(currentUser: AuthUser): string {
+  private getTenantIdOrThrow(currentUser: JwtPayload): string {
     const tenantId = currentUser?.tenantId;
 
     if (!tenantId || !Types.ObjectId.isValid(tenantId)) {
@@ -102,8 +93,8 @@ export class StaffService {
     return tenantId;
   }
 
-  private getUserIdOrThrow(currentUser: AuthUser): string {
-    const userId = currentUser?.sub ?? currentUser?.userId ?? currentUser?._id ?? currentUser?.id;
+  private getUserIdOrThrow(currentUser: JwtPayload): string {
+    const userId = currentUser?.sub;
 
     if (!userId || !Types.ObjectId.isValid(userId)) {
       throw new UnauthorizedException('Invalid user context');
@@ -120,7 +111,7 @@ export class StaffService {
     return new Date(value).toISOString();
   }
 
-  async getMyProfile(currentUser: AuthUser) {
+  async getMyProfile(currentUser: JwtPayload) {
     const tenantId = this.getTenantIdOrThrow(currentUser);
     const userId = this.getUserIdOrThrow(currentUser);
 
@@ -146,7 +137,7 @@ export class StaffService {
     };
   }
 
-  async updateMyProfile(currentUser: AuthUser, dto: UpdateStaffProfileDto) {
+  async updateMyProfile(currentUser: JwtPayload, dto: UpdateStaffProfileDto) {
     const tenantId = this.getTenantIdOrThrow(currentUser);
     const userId = this.getUserIdOrThrow(currentUser);
 
@@ -169,7 +160,7 @@ export class StaffService {
     };
   }
 
-  async onboard(currentUser: AuthUser, dto: CreateStaffAccountDto) {
+  async onboard(currentUser: JwtPayload, dto: CreateStaffAccountDto) {
     const tenantId = this.getTenantIdOrThrow(currentUser);
 
     if (!['owner', 'manager'].includes(currentUser?.role ?? '')) {
@@ -275,7 +266,7 @@ export class StaffService {
     };
   }
 
-  async listStaff(currentUser: AuthUser) {
+  async listStaff(currentUser: JwtPayload) {
     const tenantId = this.getTenantIdOrThrow(currentUser);
 
     if (!['owner'].includes(currentUser?.role ?? '')) {
@@ -312,7 +303,7 @@ export class StaffService {
     return result;
   }
 
-  async getMyAvailability(currentUser: AuthUser) {
+  async getMyAvailability(currentUser: JwtPayload) {
     const tenantId = this.getTenantIdOrThrow(currentUser);
     const userId = this.getUserIdOrThrow(currentUser);
 
@@ -330,7 +321,7 @@ export class StaffService {
     };
   }
 
-  async updateMyAvailability(currentUser: AuthUser, dto: UpdateStaffAvailabilityDto) {
+  async updateMyAvailability(currentUser: JwtPayload, dto: UpdateStaffAvailabilityDto) {
     const tenantId = this.getTenantIdOrThrow(currentUser);
     const userId = this.getUserIdOrThrow(currentUser);
 
@@ -344,7 +335,7 @@ export class StaffService {
     };
   }
 
-  async getMyTimeOff(currentUser: AuthUser): Promise<StaffTimeOffResponseItem[]> {
+  async getMyTimeOff(currentUser: JwtPayload): Promise<StaffTimeOffResponseItem[]> {
     const tenantId = this.getTenantIdOrThrow(currentUser);
     const userId = this.getUserIdOrThrow(currentUser);
 
@@ -362,7 +353,7 @@ export class StaffService {
   }
 
   async createMyTimeOff(
-    currentUser: AuthUser,
+    currentUser: JwtPayload,
     dto: CreateMyTimeOffDto,
   ): Promise<StaffTimeOffResponseItem> {
     const tenantId = this.getTenantIdOrThrow(currentUser);
@@ -389,7 +380,7 @@ export class StaffService {
     };
   }
 
-  async removeMyTimeOff(currentUser: AuthUser, id: string) {
+  async removeMyTimeOff(currentUser: JwtPayload, id: string) {
     const tenantId = this.getTenantIdOrThrow(currentUser);
     const userId = this.getUserIdOrThrow(currentUser);
 
@@ -424,7 +415,7 @@ export class StaffService {
     return typeof value === 'object' && value !== null && 'name' in value;
   }
 
-  async getMyServices(currentUser: AuthUser): Promise<StaffServiceResponseItem[]> {
+  async getMyServices(currentUser: JwtPayload): Promise<StaffServiceResponseItem[]> {
     const tenantId = this.getTenantIdOrThrow(currentUser);
     const userId = this.getUserIdOrThrow(currentUser);
 
@@ -434,7 +425,7 @@ export class StaffService {
   }
 
   async createMyService(
-    currentUser: AuthUser,
+    currentUser: JwtPayload,
     dto: CreateMyStaffServiceDto,
   ): Promise<StaffServiceResponseItem> {
     const tenantId = this.getTenantIdOrThrow(currentUser);
@@ -461,7 +452,7 @@ export class StaffService {
   }
 
   async updateMyService(
-    currentUser: AuthUser,
+    currentUser: JwtPayload,
     id: string,
     dto: UpdateMyStaffServiceDto,
   ): Promise<StaffServiceResponseItem> {
@@ -485,7 +476,7 @@ export class StaffService {
     return this.mapStaffServiceAssignment(updated as StaffServiceAssignmentView);
   }
 
-  async removeMyService(currentUser: AuthUser, id: string) {
+  async removeMyService(currentUser: JwtPayload, id: string) {
     const tenantId = this.getTenantIdOrThrow(currentUser);
     const userId = this.getUserIdOrThrow(currentUser);
 

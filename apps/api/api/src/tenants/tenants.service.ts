@@ -1,9 +1,9 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import type { Model } from 'mongoose';
-import type { BookingSettingsService } from '../booking-settings/booking-settings.service';
-import type { CreateTenantDto } from './dto/create-tenant.dto';
-import type { UpdateTenantDto } from './dto/update-tenant.dto';
+import { Model } from 'mongoose';
+import { BookingSettingsService } from '../booking-settings/booking-settings.service';
+import { CreateTenantDto } from './dto/create-tenant.dto';
+import { UpdateTenantDto } from './dto/update-tenant.dto';
 import { Tenant, type TenantDocument } from './tenant.schema';
 
 function slugify(input: string): string {

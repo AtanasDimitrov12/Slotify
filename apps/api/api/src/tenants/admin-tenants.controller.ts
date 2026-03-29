@@ -1,8 +1,8 @@
 import { Body, Controller, Delete, Get, Param, Patch, Post, UseGuards } from '@nestjs/common';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
-import type { CreateTenantDto } from './dto/create-tenant.dto';
-import type { UpdateTenantDto } from './dto/update-tenant.dto';
-import type { TenantsService } from './tenants.service';
+import { CreateTenantDto } from './dto/create-tenant.dto';
+import { UpdateTenantDto } from './dto/update-tenant.dto';
+import { TenantsService } from './tenants.service';
 
 @UseGuards(JwtAuthGuard)
 @Controller('admin/tenants')

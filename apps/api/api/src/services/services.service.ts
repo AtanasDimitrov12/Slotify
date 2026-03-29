@@ -1,8 +1,8 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { type Model, Types } from 'mongoose';
-import type { CreateServiceDto } from './dto/create-service.dto';
-import type { UpdateServiceDto } from './dto/update-service.dto';
+import { CreateServiceDto } from './dto/create-service.dto';
+import { UpdateServiceDto } from './dto/update-service.dto';
 import { Service, type ServiceDocument } from './service.schema';
 
 @Injectable()

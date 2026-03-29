@@ -1,8 +1,8 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { type Model, Types } from 'mongoose';
-import type { CreateStaffServiceAssignmentDto } from './dto/create-staff-service-assignment.dto';
-import type { UpdateStaffServiceAssignmentDto } from './dto/update-staff-service-assignment.dto';
+import { CreateStaffServiceAssignmentDto } from './dto/create-staff-service-assignment.dto';
+import { UpdateStaffServiceAssignmentDto } from './dto/update-staff-service-assignment.dto';
 import {
   StaffServiceAssignment,
   type StaffServiceAssignmentDocument,

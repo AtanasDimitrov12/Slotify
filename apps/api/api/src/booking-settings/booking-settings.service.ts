@@ -1,7 +1,7 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { type Model, Types } from 'mongoose';
-import type { UpsertTenantBookingSettingsDto } from './dto/upsert-tenant-booking-settings.dto';
+import { UpsertTenantBookingSettingsDto } from './dto/upsert-tenant-booking-settings.dto';
 import {
   TenantBookingSettings,
   type TenantBookingSettingsDocument,

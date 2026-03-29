@@ -9,16 +9,17 @@ import {
 } from '@nestjs/common';
 import { Types } from 'mongoose';
 import { CurrentUser } from '../auth/current-user.decorator';
+import type { JwtPayload } from '../auth/jwt.strategy';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
-import type { UpdateStaffBookingSettingsDto } from './dto/update-staff-booking-settings.dto';
-import type { StaffBookingSettingsService } from './staff-booking-settings.service';
+import { UpdateStaffBookingSettingsDto } from './dto/update-staff-booking-settings.dto';
+import { StaffBookingSettingsService } from './staff-booking-settings.service';
 
 @Controller('staff-booking-settings')
 @UseGuards(JwtAuthGuard)
 export class StaffBookingSettingsController {
   constructor(private readonly staffBookingSettingsService: StaffBookingSettingsService) {}
 
-  private getTenantId(currentUser: any): string {
+  private getTenantId(currentUser: JwtPayload): string {
     const tenantId = currentUser?.tenantId;
 
     if (!tenantId || !Types.ObjectId.isValid(tenantId)) {
@@ -34,16 +35,16 @@ export class StaffBookingSettingsController {
     }
   }
 
-  private ensureOwnerOrManager(currentUser: any) {
+  private ensureOwnerOrManager(currentUser: JwtPayload) {
     if (!['owner', 'manager'].includes(currentUser?.role)) {
       throw new UnauthorizedException('You are not allowed to manage staff booking settings');
     }
   }
 
   @Get('me/current')
-  async getMyCurrentSettings(@CurrentUser() currentUser: any) {
+  async getMyCurrentSettings(@CurrentUser() currentUser: JwtPayload) {
     const tenantId = this.getTenantId(currentUser);
-    const userId = currentUser?.sub ?? currentUser?.userId ?? currentUser?._id ?? currentUser?.id;
+    const userId = currentUser.sub;
 
     this.validateUserId(userId);
 
@@ -52,11 +53,11 @@ export class StaffBookingSettingsController {
 
   @Put('me/current')
   async updateMyCurrentSettings(
-    @CurrentUser() currentUser: any,
+    @CurrentUser() currentUser: JwtPayload,
     @Body() dto: UpdateStaffBookingSettingsDto,
   ) {
     const tenantId = this.getTenantId(currentUser);
-    const userId = currentUser?.sub ?? currentUser?.userId ?? currentUser?._id ?? currentUser?.id;
+    const userId = currentUser.sub;
 
     this.validateUserId(userId);
 
@@ -72,7 +73,7 @@ export class StaffBookingSettingsController {
   }
 
   @Get(':userId')
-  async getForStaff(@CurrentUser() currentUser: any, @Param('userId') userId: string) {
+  async getForStaff(@CurrentUser() currentUser: JwtPayload, @Param('userId') userId: string) {
     this.ensureOwnerOrManager(currentUser);
     this.validateUserId(userId);
 
@@ -84,7 +85,7 @@ export class StaffBookingSettingsController {
 
   @Put(':userId')
   async updateForStaff(
-    @CurrentUser() currentUser: any,
+    @CurrentUser() currentUser: JwtPayload,
     @Param('userId') userId: string,
     @Body() dto: UpdateStaffBookingSettingsDto,
   ) {

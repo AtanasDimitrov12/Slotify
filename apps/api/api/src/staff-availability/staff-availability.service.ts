@@ -1,8 +1,8 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { type Model, Types } from 'mongoose';
-import type { CreateStaffAvailabilityDto } from './dto/create-staff-availability.dto';
-import type { UpdateStaffAvailabilityDto } from './dto/update-staff-availability.dto';
+import { CreateStaffAvailabilityDto } from './dto/create-staff-availability.dto';
+import { UpdateStaffAvailabilityDto } from './dto/update-staff-availability.dto';
 import { StaffAvailability, type StaffAvailabilityDocument } from './staff-availability.schema';
 
 @Injectable()

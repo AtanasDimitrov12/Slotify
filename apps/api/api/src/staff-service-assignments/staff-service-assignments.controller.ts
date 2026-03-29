@@ -1,7 +1,7 @@
 import { Body, Controller, Delete, Get, Param, Patch, Post, Query } from '@nestjs/common';
-import type { CreateStaffServiceAssignmentDto } from './dto/create-staff-service-assignment.dto';
-import type { UpdateStaffServiceAssignmentDto } from './dto/update-staff-service-assignment.dto';
-import type { StaffServiceAssignmentsService } from './staff-service-assignments.service';
+import { CreateStaffServiceAssignmentDto } from './dto/create-staff-service-assignment.dto';
+import { UpdateStaffServiceAssignmentDto } from './dto/update-staff-service-assignment.dto';
+import { StaffServiceAssignmentsService } from './staff-service-assignments.service';
 
 @Controller('staff-service-assignments')
 export class StaffServiceAssignmentsController {

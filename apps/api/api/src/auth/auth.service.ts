@@ -1,12 +1,15 @@
 import { BadRequestException, Injectable, UnauthorizedException } from '@nestjs/common';
-import type { JwtService } from '@nestjs/jwt';
+import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcryptjs';
+import { Types } from 'mongoose';
 
+import { MembershipDocument } from '../memberships/membership.schema';
 import { MembershipsService } from '../memberships/memberships.service';
 import { TenantsService } from '../tenants/tenants.service';
+import { UserDocument } from '../users/user.schema';
 import { UsersService } from '../users/users.service';
-import type { LoginDto } from './dto/login.dto';
-import type { RegisterDto } from './dto/register.dto';
+import { LoginDto } from './dto/login.dto';
+import { RegisterDto } from './dto/register.dto';
 
 type JwtPayload = {
   sub: string;
@@ -25,14 +28,16 @@ export class AuthService {
     private readonly tenantsService: TenantsService,
   ) {}
 
-  private getId(value: any): string {
+  private getId(value: string | Types.ObjectId | { _id: Types.ObjectId } | { id: string } | null | undefined): string {
     if (!value) return '';
 
     if (typeof value === 'string') return value;
 
-    if (value._id) return value._id.toString();
+    if (value instanceof Types.ObjectId) return value.toString();
 
-    if (value.id && typeof value.id === 'string') return value.id;
+    if ('_id' in value && value._id) return value._id.toString();
+
+    if ('id' in value && typeof value.id === 'string') return value.id;
 
     return String(value);
   }
@@ -77,14 +82,14 @@ export class AuthService {
     }
 
     return {
-      tenants: memberships.map((m: any) => ({
+      tenants: memberships.map((m: MembershipDocument & { tenantId: { name?: string } }) => ({
         _id: this.getId(m.tenantId),
         name: m.tenantId?.name ?? undefined,
       })),
     };
   }
 
-  private async finalizeLogin(user: any, membership: any) {
+  private async finalizeLogin(user: UserDocument, membership: MembershipDocument) {
     const userId = this.getId(user._id);
     const tenantId = this.getId(membership.tenantId);
 

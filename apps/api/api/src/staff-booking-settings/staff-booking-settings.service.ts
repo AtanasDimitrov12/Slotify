@@ -1,11 +1,13 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { type Model, Types } from 'mongoose';
-import type { BookingSettingsService } from '../booking-settings/booking-settings.service';
-import type { UpdateStaffBookingSettingsDto } from './dto/update-staff-booking-settings.dto';
+import { Model, Types } from 'mongoose';
+import { BookingSettingsService } from '../booking-settings/booking-settings.service';
+import { TenantBookingSettings } from '../booking-settings/tenant-booking-settings.schema';
+import { UpdateStaffBookingSettingsDto } from './dto/update-staff-booking-settings.dto';
 import {
   StaffBookingSettings,
-  type StaffBookingSettingsDocument,
+  StaffBookingSettingsDocument,
+  StaffBookingSettingsOverrides,
 } from './staff-booking-settings.schema';
 
 @Injectable()
@@ -80,7 +82,10 @@ export class StaffBookingSettingsService {
   //TODO: When useGlobalSettings is true, overrides remain stored
   //TODO: so staff can later switch back to custom settings without losing them.
 
-  private mergeWithGlobalSettings(globalSettings: any, overrides: any) {
+  private mergeWithGlobalSettings(
+    globalSettings: TenantBookingSettings,
+    overrides: StaffBookingSettingsOverrides,
+  ) {
     if (!overrides) return globalSettings;
 
     return {
@@ -117,7 +122,10 @@ export class StaffBookingSettingsService {
       source: 'custom',
       globalSettings,
       staffSettings,
-      effectiveSettings: this.mergeWithGlobalSettings(globalSettings, staffSettings.overrides),
+      effectiveSettings: this.mergeWithGlobalSettings(
+        globalSettings as unknown as TenantBookingSettings,
+        staffSettings.overrides as unknown as StaffBookingSettingsOverrides,
+      ),
     };
   }
 

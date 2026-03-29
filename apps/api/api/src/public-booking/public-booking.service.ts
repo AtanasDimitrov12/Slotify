@@ -2,7 +2,7 @@ import { BadRequestException, Injectable, NotFoundException } from '@nestjs/comm
 import { InjectModel } from '@nestjs/mongoose';
 import { type Model, Types } from 'mongoose';
 import { TenantBookingSettings } from '../booking-settings/tenant-booking-settings.schema';
-import type { CreatePublicReservationDto } from '../reservations/dto/create-public-reservation.dto';
+import { CreatePublicReservationDto } from '../reservations/dto/create-public-reservation.dto';
 import { Reservation, type ReservationDocument } from '../reservations/reservation.schema';
 import {
   ReservationLock,
@@ -16,8 +16,8 @@ import { StaffServiceAssignment } from '../staff-service-assignments/staff-servi
 import { StaffTimeOff } from '../staff-time-off/staff-time-off.schema';
 import { TenantDetails, type WeeklyOpeningHours } from '../tenant-details/tenant-details.schema';
 import { Tenant } from '../tenants/tenant.schema';
-import type { CreateReservationLockDto } from './dto/create-reservation-lock.dto';
-import type { GetAvailabilityDto } from './dto/get-availability.dto';
+import { CreateReservationLockDto } from './dto/create-reservation-lock.dto';
+import { GetAvailabilityDto } from './dto/get-availability.dto';
 import {
   addMinutes,
   buildDateTimeOnDay,
@@ -28,7 +28,7 @@ import {
   startOfDay,
   subtractRanges,
 } from './public-booking.utils';
-import type {
+import {
   AvailabilitySlot,
   EffectiveBookingSettings,
   TimeRange,

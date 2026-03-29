@@ -1,8 +1,8 @@
 import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import type { Model } from 'mongoose';
-import type { CreateTenantDetailsDto } from './dto/create-tenant-details.dto';
-import type { UpdateTenantDetailsDto } from './dto/update-tenant-details.dto';
+import { Model } from 'mongoose';
+import { CreateTenantDetailsDto } from './dto/create-tenant-details.dto';
+import { UpdateTenantDetailsDto } from './dto/update-tenant-details.dto';
 import { TenantDetails, type TenantDetailsDocument } from './tenant-details.schema';
 
 @Injectable()

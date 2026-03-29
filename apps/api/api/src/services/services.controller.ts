@@ -17,17 +17,13 @@ import {
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { Types } from 'mongoose';
-import type { AIService } from '../ai/ai.service';
+import { AIService } from '../ai/ai.service';
 import { CurrentUser } from '../auth/current-user.decorator';
+import type { JwtPayload } from '../auth/jwt.strategy';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
-import type { CreateServiceDto } from './dto/create-service.dto';
-import type { UpdateServiceDto } from './dto/update-service.dto';
-import type { ServicesService } from './services.service';
-
-type AuthUser = {
-  tenantId?: string;
-  role?: string;
-};
+import { CreateServiceDto } from './dto/create-service.dto';
+import { UpdateServiceDto } from './dto/update-service.dto';
+import { ServicesService } from './services.service';
 
 @Controller('services')
 @UseGuards(JwtAuthGuard)
@@ -37,7 +33,7 @@ export class ServicesController {
     private readonly aiService: AIService,
   ) {}
 
-  private getTenantIdOrThrow(currentUser: AuthUser): string {
+  private getTenantIdOrThrow(currentUser: JwtPayload): string {
     const tenantId = currentUser?.tenantId;
 
     if (!tenantId || !Types.ObjectId.isValid(tenantId)) {
@@ -47,14 +43,14 @@ export class ServicesController {
     return tenantId;
   }
 
-  private ensureOwnerOrManager(currentUser: AuthUser) {
+  private ensureOwnerOrManager(currentUser: JwtPayload) {
     if (!['owner', 'manager'].includes(currentUser?.role ?? '')) {
       throw new UnauthorizedException('You are not allowed to manage the services catalog');
     }
   }
 
   @Post()
-  create(@CurrentUser() currentUser: AuthUser, @Body() dto: CreateServiceDto) {
+  create(@CurrentUser() currentUser: JwtPayload, @Body() dto: CreateServiceDto) {
     this.ensureOwnerOrManager(currentUser);
     const tenantId = this.getTenantIdOrThrow(currentUser);
 
@@ -62,7 +58,7 @@ export class ServicesController {
   }
 
   @Post('bulk')
-  async createBulk(@CurrentUser() currentUser: AuthUser, @Body() dtos: CreateServiceDto[]) {
+  async createBulk(@CurrentUser() currentUser: JwtPayload, @Body() dtos: CreateServiceDto[]) {
     this.ensureOwnerOrManager(currentUser);
 
     if (!Array.isArray(dtos) || dtos.length === 0) {
@@ -77,7 +73,7 @@ export class ServicesController {
   @Post('extract-ai')
   @UseInterceptors(FileInterceptor('file'))
   async extractAI(
-    @CurrentUser() currentUser: AuthUser,
+    @CurrentUser() currentUser: JwtPayload,
     @UploadedFile(
       new ParseFilePipe({
         validators: [
@@ -103,13 +99,13 @@ export class ServicesController {
   }
 
   @Get('catalog')
-  getCatalog(@CurrentUser() currentUser: AuthUser) {
+  getCatalog(@CurrentUser() currentUser: JwtPayload) {
     const tenantId = this.getTenantIdOrThrow(currentUser);
     return this.servicesService.findAllByTenant(tenantId);
   }
 
   @Get(':id')
-  findOne(@CurrentUser() currentUser: AuthUser, @Param('id') id: string) {
+  findOne(@CurrentUser() currentUser: JwtPayload, @Param('id') id: string) {
     const tenantId = this.getTenantIdOrThrow(currentUser);
 
     if (!Types.ObjectId.isValid(id)) {
@@ -121,7 +117,7 @@ export class ServicesController {
 
   @Patch(':id')
   update(
-    @CurrentUser() currentUser: AuthUser,
+    @CurrentUser() currentUser: JwtPayload,
     @Param('id') id: string,
     @Body() dto: UpdateServiceDto,
   ) {
@@ -136,7 +132,7 @@ export class ServicesController {
   }
 
   @Delete(':id')
-  remove(@CurrentUser() currentUser: AuthUser, @Param('id') id: string) {
+  remove(@CurrentUser() currentUser: JwtPayload, @Param('id') id: string) {
     this.ensureOwnerOrManager(currentUser);
     const tenantId = this.getTenantIdOrThrow(currentUser);
 

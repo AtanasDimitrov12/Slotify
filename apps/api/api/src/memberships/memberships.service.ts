@@ -1,8 +1,8 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { type Model, Types } from 'mongoose';
-import type { CreateMembershipDto } from './dto/create-membership.dto';
-import type { UpdateMembershipDto } from './dto/update-membership.dto';
+import { type Model } from 'mongoose';
+import { CreateMembershipDto } from './dto/create-membership.dto';
+import { UpdateMembershipDto } from './dto/update-membership.dto';
 import { Membership, type MembershipDocument } from './membership.schema';
 
 @Injectable()

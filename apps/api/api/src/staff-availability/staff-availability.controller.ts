@@ -1,7 +1,7 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post, Query } from '@nestjs/common';
-import type { CreateStaffAvailabilityDto } from './dto/create-staff-availability.dto';
-import type { UpdateStaffAvailabilityDto } from './dto/update-staff-availability.dto';
-import type { StaffAvailabilityService } from './staff-availability.service';
+import { Body, Controller, Delete, Param, Patch, Post } from '@nestjs/common';
+import { CreateStaffAvailabilityDto } from './dto/create-staff-availability.dto';
+import { UpdateStaffAvailabilityDto } from './dto/update-staff-availability.dto';
+import { StaffAvailabilityService } from './staff-availability.service';
 
 @Controller('staff-availability')
 export class StaffAvailabilityController {
