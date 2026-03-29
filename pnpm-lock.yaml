@@ -60,6 +60,9 @@ importers:
       jsonwebtoken:
         specifier: ^9.0.3
         version: 9.0.3
+      mongodb:
+        specifier: ^7.1.1
+        version: 7.1.1(@aws-sdk/credential-providers@3.1019.0)(gcp-metadata@7.0.1)(kerberos@7.0.0)(mongodb-client-encryption@7.0.0)(socks@2.8.7)
       mongoose:
         specifier: ^9.2.1
         version: 9.2.1(@aws-sdk/credential-providers@3.1019.0)(gcp-metadata@7.0.1)(kerberos@7.0.0)(mongodb-client-encryption@7.0.0)(socks@2.8.7)
@@ -11876,7 +11879,7 @@ snapshots:
       bson: 7.2.0
       cli-table: 0.3.11
       js-yaml: 4.1.1
-      mongodb: 7.0.0(@aws-sdk/credential-providers@3.1019.0)(gcp-metadata@7.0.1)(kerberos@7.0.0)(mongodb-client-encryption@7.0.0)(socks@2.8.7)
+      mongodb: 7.1.1(@aws-sdk/credential-providers@3.1019.0)(gcp-metadata@7.0.1)(kerberos@7.0.0)(mongodb-client-encryption@7.0.0)(socks@2.8.7)
       mongodb-ns: 3.1.7
       numeral: 2.0.6
       progress: 2.0.3
