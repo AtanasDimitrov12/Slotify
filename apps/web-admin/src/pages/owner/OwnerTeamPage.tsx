@@ -34,37 +34,62 @@ type StaffMember = {
   pendingTimeOffCount: number;
 };
 
+type StaffListItem = {
+  userId: string;
+  name: string;
+  email: string;
+  role: string;
+};
+
+type PendingTimeOffCount = {
+  userId: string;
+  pendingCount: number;
+};
+
+function getErrorMessage(error: unknown): string {
+  if (error instanceof Error && error.message) {
+    return error.message;
+  }
+
+  return 'Something went wrong. Please try again.';
+}
+
 export default function OwnerTeamPage() {
   const { showError } = useToast();
   const [items, setItems] = React.useState<StaffMember[]>([]);
+  const [error, setError] = React.useState<string | null>(null);
   const [open, setOpen] = React.useState(false);
   const [creating, setCreating] = React.useState(false);
-
   const [timeOffDialogOpen, setTimeOffDialogOpen] = React.useState(false);
-
   const [selectedStaffId, setSelectedStaffId] = React.useState<string | null>(null);
   const [selectedStaffName, setSelectedStaffName] = React.useState('');
 
   const loadStaff = React.useCallback(async () => {
     try {
+      setError(null);
+
       const [staff, pendingCounts] = await Promise.all([
-        listStaff(),
-        getOwnerPendingTimeOffCounts(),
+        listStaff() as Promise<StaffListItem[]>,
+        getOwnerPendingTimeOffCounts() as Promise<PendingTimeOffCount[]>,
       ]);
 
-      const pendingMap = new Map(pendingCounts.map((item) => [item.userId, item.pendingCount]));
+      const pendingMap = new Map(
+        pendingCounts.map((item) => [item.userId, item.pendingCount] as const),
+      );
 
-      const mapped: StaffMember[] = staff.map((m: any) => ({
-        id: m.userId,
-        name: m.name,
-        email: m.email,
-        role: m.role === 'manager' ? 'manager' : 'staff',
-        pendingTimeOffCount: pendingMap.get(m.userId) ?? 0,
+      const mapped: StaffMember[] = staff.map((member) => ({
+        id: member.userId,
+        name: member.name,
+        email: member.email,
+        role: member.role === 'manager' ? 'manager' : 'staff',
+        pendingTimeOffCount: pendingMap.get(member.userId) ?? 0,
       }));
 
       setItems(mapped);
-    } catch (err) {
-      showError(err);
+    } catch (caughtError: unknown) {
+      const message = getErrorMessage(caughtError);
+      setError(message);
+      showError(caughtError);
     }
   }, [showError]);
 
@@ -76,6 +101,8 @@ export default function OwnerTeamPage() {
     setCreating(true);
 
     try {
+      setError(null);
+
       const result = await createStaff({
         name: payload.name.trim(),
         email: payload.email.trim().toLowerCase(),
@@ -92,9 +119,11 @@ export default function OwnerTeamPage() {
 
       setItems((prev) => [newItem, ...prev]);
       setOpen(false);
-    } catch (err) {
-      showError(err);
-      throw err;
+    } catch (caughtError: unknown) {
+      const message = getErrorMessage(caughtError);
+      setError(message);
+      showError(caughtError);
+      throw caughtError;
     } finally {
       setCreating(false);
     }
@@ -166,8 +195,8 @@ export default function OwnerTeamPage() {
               </Card>
             </Grid>
           ) : (
-            items.map((m) => (
-              <Grid item xs={12} lg={6} key={m.id}>
+            items.map((member) => (
+              <Grid item xs={12} lg={6} key={member.id}>
                 <Card
                   sx={{
                     borderRadius: `${premium.rLg * 4}px`,
@@ -197,7 +226,7 @@ export default function OwnerTeamPage() {
                             border: `1px solid ${alpha(landingColors.purple, 0.15)}`,
                           }}
                         >
-                          {m.name.charAt(0).toUpperCase()}
+                          {member.name.charAt(0).toUpperCase()}
                         </Avatar>
 
                         <Box sx={{ minWidth: 0 }}>
@@ -209,15 +238,15 @@ export default function OwnerTeamPage() {
                               lineHeight: 1.2,
                             }}
                           >
-                            {m.name}
+                            {member.name}
                           </Typography>
                           <Typography
                             sx={{ color: '#64748B', fontWeight: 600, fontSize: 14, mt: 0.5 }}
                           >
-                            {m.email}
+                            {member.email}
                           </Typography>
                           <Chip
-                            label={m.role.toUpperCase()}
+                            label={member.role.toUpperCase()}
                             size="small"
                             sx={{
                               mt: 1.5,
@@ -249,14 +278,17 @@ export default function OwnerTeamPage() {
                         <Button
                           variant="outlined"
                           endIcon={<EastRoundedIcon />}
-                          onClick={() => handleOpenTimeOffDialog(m)}
+                          onClick={() => handleOpenTimeOffDialog(member)}
                           sx={{
                             borderRadius: 999,
                             fontWeight: 900,
                             borderColor: 'rgba(15,23,42,0.12)',
                             color: '#475569',
                             px: 3,
-                            '&:hover': { bgcolor: '#FFF', borderColor: landingColors.purple },
+                            '&:hover': {
+                              bgcolor: '#FFF',
+                              borderColor: landingColors.purple,
+                            },
                           }}
                         >
                           Requests
@@ -267,13 +299,14 @@ export default function OwnerTeamPage() {
                             mt: 1.5,
                             fontWeight: 800,
                             fontSize: 12,
-                            color: m.pendingTimeOffCount > 0 ? landingColors.warning : '#94A3B8',
+                            color:
+                              member.pendingTimeOffCount > 0 ? landingColors.warning : '#94A3B8',
                             textTransform: 'uppercase',
                             letterSpacing: 0.5,
                           }}
                         >
-                          {m.pendingTimeOffCount > 0
-                            ? `${m.pendingTimeOffCount} pending`
+                          {member.pendingTimeOffCount > 0
+                            ? `${member.pendingTimeOffCount} pending`
                             : 'No pending'}
                         </Typography>
                       </Box>
@@ -288,7 +321,9 @@ export default function OwnerTeamPage() {
         <AddStaffDialog
           open={open}
           onClose={() => {
-            if (!creating) setOpen(false);
+            if (!creating) {
+              setOpen(false);
+            }
           }}
           onCreate={handleCreateStaff}
         />
