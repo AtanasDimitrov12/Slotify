@@ -2,9 +2,8 @@ import { UnauthorizedException } from '@nestjs/common';
 import { Test, type TestingModule } from '@nestjs/testing';
 import { Types } from 'mongoose';
 import type { JwtPayload } from '../auth/jwt.strategy';
-import type { TenantDetailsDocument } from '../tenant-details/tenant-details.schema';
 import { TenantDetailsService } from '../tenant-details/tenant-details.service';
-import type { TenantDocument } from '../tenants/tenant.schema';
+
 import { TenantsService } from '../tenants/tenants.service';
 import { OwnerSettingsService } from './owner-settings.service';
 
@@ -20,6 +19,7 @@ describe('OwnerSettingsService', () => {
     tenantId: mockTenantId,
     role: 'owner',
     email: 'owner@test.com',
+    accountType: 'internal',
   };
 
   beforeEach(async () => {

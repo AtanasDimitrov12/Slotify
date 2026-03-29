@@ -28,6 +28,7 @@ describe('StaffService', () => {
     role: 'owner',
     sub: mockOwnerId,
     email: 'owner@test.com',
+    accountType: 'internal',
   };
 
   beforeEach(async () => {
@@ -122,7 +123,10 @@ describe('StaffService', () => {
       // Assert
       expect(result.message).toContain('successfully');
       expect(usersService.create).toHaveBeenCalledWith(
-        expect.objectContaining({ email: onboardDto.email.toLowerCase() }),
+        expect.objectContaining({
+          email: onboardDto.email.toLowerCase(),
+          accountType: 'internal',
+        }),
       );
       expect(membershipsService.create).toHaveBeenCalledWith(
         expect.objectContaining({ role: 'staff', tenantId: mockTenantId }),
@@ -152,6 +156,7 @@ describe('StaffService', () => {
         tenantId: mockTenantId,
         role: 'staff',
         email: 'staff@test.com',
+        accountType: 'internal',
       };
 
       usersService.findById.mockResolvedValue({

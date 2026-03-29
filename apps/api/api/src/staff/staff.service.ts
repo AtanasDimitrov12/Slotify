@@ -174,6 +174,7 @@ export class StaffService {
       name: dto.name.trim(),
       email,
       password: passwordHash,
+      accountType: 'internal',
     });
 
     const userId = user._id.toString();

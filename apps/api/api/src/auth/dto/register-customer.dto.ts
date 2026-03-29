@@ -1,7 +1,7 @@
 import { Transform } from 'class-transformer';
-import { IsEmail, IsEnum, IsNotEmpty, IsString, Length } from 'class-validator';
+import { IsEmail, IsNotEmpty, IsString, Length, Matches } from 'class-validator';
 
-export class CreateUserDto {
+export class RegisterCustomerDto {
   @IsString()
   @IsNotEmpty()
   @Length(2, 50)
@@ -19,6 +19,8 @@ export class CreateUserDto {
 
   @IsString()
   @IsNotEmpty()
-  @IsEnum(['internal', 'customer'])
-  accountType!: 'internal' | 'customer';
+  @Matches(/^\+?[1-9]\d{1,14}$/, {
+    message: 'Phone must be a valid E.164 phone number',
+  })
+  phone!: string;
 }

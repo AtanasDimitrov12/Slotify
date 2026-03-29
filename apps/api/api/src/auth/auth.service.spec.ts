@@ -2,6 +2,7 @@ import { BadRequestException, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { Test, type TestingModule } from '@nestjs/testing';
 import * as bcrypt from 'bcryptjs';
+import { CustomerProfilesService } from '../customer-profiles/customer-profiles.service';
 import { MembershipsService } from '../memberships/memberships.service';
 import { TenantsService } from '../tenants/tenants.service';
 import { UsersService } from '../users/users.service';
@@ -14,6 +15,7 @@ describe('AuthService (Security & Multi-tenancy)', () => {
   let membershipsService: MembershipsService;
   let usersService: UsersService;
   let tenantsService: TenantsService;
+  let customerProfilesService: CustomerProfilesService;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -36,6 +38,7 @@ describe('AuthService (Security & Multi-tenancy)', () => {
           useValue: {
             findByEmail: jest.fn(),
             create: jest.fn(),
+            findById: jest.fn(),
           },
         },
         {
@@ -45,6 +48,13 @@ describe('AuthService (Security & Multi-tenancy)', () => {
             create: jest.fn(),
           },
         },
+        {
+          provide: CustomerProfilesService,
+          useValue: {
+            create: jest.fn(),
+            findByUserId: jest.fn(),
+          },
+        },
       ],
     }).compile();
 
@@ -52,6 +62,7 @@ describe('AuthService (Security & Multi-tenancy)', () => {
     membershipsService = module.get<MembershipsService>(MembershipsService);
     usersService = module.get<UsersService>(UsersService);
     tenantsService = module.get<TenantsService>(TenantsService);
+    customerProfilesService = module.get<CustomerProfilesService>(CustomerProfilesService);
   });
 
   describe('Login Logic', () => {
@@ -60,6 +71,7 @@ describe('AuthService (Security & Multi-tenancy)', () => {
       email: 'test@example.com',
       password: 'hashed-password',
       name: 'John',
+      accountType: 'internal',
     };
     const loginDto = { email: 'test@example.com', password: 'password123' };
 
@@ -102,6 +114,22 @@ describe('AuthService (Security & Multi-tenancy)', () => {
 
       expect(result).toHaveProperty('accessToken');
       expect(result.account.tenantId).toBe('t1');
+      expect(result.account.accountType).toBe('internal');
+    });
+
+    it('should login customer successfully', async () => {
+      const customerUser = {
+        ...mockUser,
+        accountType: 'customer',
+      };
+      (usersService.findByEmail as jest.Mock).mockResolvedValue(customerUser);
+      (bcrypt.compare as jest.Mock).mockResolvedValue(true);
+
+      const result = (await service.login(loginDto)) as any;
+
+      expect(result).toHaveProperty('accessToken');
+      expect(result.account.accountType).toBe('customer');
+      expect(result.account.role).toBe('customer');
     });
   });
 
@@ -139,12 +167,14 @@ describe('AuthService (Security & Multi-tenancy)', () => {
         _id: 'new-u-id',
         name: 'Jane',
         email: 'jane@example.com',
+        accountType: 'internal',
       };
 
       (tenantsService.create as jest.Mock).mockResolvedValue(mockTenant);
       (usersService.create as jest.Mock).mockResolvedValue(mockUser);
       (membershipsService.create as jest.Mock).mockResolvedValue({
         role: 'owner',
+        tenantId: 'new-t-id',
       });
 
       const result = await service.register(registerDto);
@@ -152,11 +182,42 @@ describe('AuthService (Security & Multi-tenancy)', () => {
       expect(tenantsService.create).toHaveBeenCalledWith({
         name: 'Jane Salon',
       });
-      expect(usersService.create).toHaveBeenCalled();
+      expect(usersService.create).toHaveBeenCalledWith(
+        expect.objectContaining({ accountType: 'internal' }),
+      );
       expect(membershipsService.create).toHaveBeenCalledWith(
         expect.objectContaining({ role: 'owner' }),
       );
       expect(result).toHaveProperty('accessToken');
+    });
+
+    it('should register customer correctly', async () => {
+      const customerDto = {
+        name: 'Customer',
+        email: 'customer@test.com',
+        password: 'password123',
+        phone: '+1234567890',
+      };
+
+      (usersService.findByEmail as jest.Mock).mockResolvedValue(null);
+      const mockUser = {
+        _id: 'new-u-id',
+        name: 'Customer',
+        email: 'customer@test.com',
+        accountType: 'customer',
+      };
+      (usersService.create as jest.Mock).mockResolvedValue(mockUser);
+
+      const result = await service.registerCustomer(customerDto);
+
+      expect(usersService.create).toHaveBeenCalledWith(
+        expect.objectContaining({ accountType: 'customer' }),
+      );
+      expect(customerProfilesService.create).toHaveBeenCalledWith(
+        expect.objectContaining({ phone: '+1234567890', userId: 'new-u-id' }),
+      );
+      expect(result).toHaveProperty('accessToken');
+      expect(result.account.accountType).toBe('customer');
     });
   });
 });

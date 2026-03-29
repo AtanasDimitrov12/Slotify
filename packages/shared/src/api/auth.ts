@@ -2,7 +2,11 @@ import { apiFetch } from './http';
 import type { Membership } from './memberships';
 import type { Tenant } from './tenants';
 
-export type AuthUser = Membership;
+export type AuthUser = Partial<Membership> & {
+  accountType: 'internal' | 'customer';
+  phone?: string;
+  role?: Membership['role'] | 'customer';
+};
 
 export type LoginResponse =
   | {
@@ -23,6 +27,13 @@ export type RegisterPayload = {
   tenantName: string;
 };
 
+export type RegisterCustomerPayload = {
+  name: string;
+  email: string;
+  password: string;
+  phone: string;
+};
+
 export type RegisterResponse = {
   accessToken: string;
   account: AuthUser;
@@ -41,6 +52,13 @@ export async function me() {
 
 export async function register(payload: RegisterPayload) {
   return apiFetch<RegisterResponse>('/auth/register', {
+    method: 'POST',
+    body: JSON.stringify(payload),
+  });
+}
+
+export async function registerCustomer(payload: RegisterCustomerPayload) {
+  return apiFetch<RegisterResponse>('/auth/register-customer', {
     method: 'POST',
     body: JSON.stringify(payload),
   });

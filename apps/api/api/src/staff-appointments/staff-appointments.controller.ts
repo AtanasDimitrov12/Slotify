@@ -25,6 +25,9 @@ export class StaffAppointmentsController {
 
   @Get('services')
   listServices(@CurrentUser() user: JwtPayload) {
+    if (user.tenantId === undefined) {
+      throw new Error('Tenant ID is required to list bookable services for staff');
+    }
     return this.staffAppointmentsService.listBookableServicesForStaff({
       tenantId: user.tenantId,
       userId: user.sub,
@@ -33,6 +36,9 @@ export class StaffAppointmentsController {
 
   @Get()
   list(@CurrentUser() user: JwtPayload, @Query() query: ListStaffAppointmentsDto) {
+    if (user.tenantId === undefined) {
+      throw new Error('Tenant ID is required to list bookable services for staff');
+    }
     return this.staffAppointmentsService.listForDay({
       tenantId: user.tenantId,
       userId: user.sub,
@@ -42,6 +48,9 @@ export class StaffAppointmentsController {
 
   @Post()
   create(@CurrentUser() user: JwtPayload, @Body() body: CreateStaffAppointmentDto) {
+    if (user.tenantId === undefined) {
+      throw new Error('Tenant ID is required to list bookable services for staff');
+    }
     return this.staffAppointmentsService.createForStaff({
       tenantId: user.tenantId,
       userId: user.sub,
@@ -55,6 +64,10 @@ export class StaffAppointmentsController {
     @Param('id') id: string,
     @Body() body: UpdateStaffAppointmentDto,
   ) {
+    if (user.tenantId === undefined) {
+      throw new Error('Tenant ID is required to list bookable services for staff');
+    }
+
     return this.staffAppointmentsService.updateForStaff({
       tenantId: user.tenantId,
       userId: user.sub,
@@ -69,6 +82,10 @@ export class StaffAppointmentsController {
     @Param('id') id: string,
     @Body() body: UpdateStaffAppointmentStatusDto,
   ) {
+    if (user.tenantId === undefined) {
+      throw new Error('Tenant ID is required to list bookable services for staff');
+    }
+
     return this.staffAppointmentsService.updateStatusForStaff({
       tenantId: user.tenantId,
       userId: user.sub,
@@ -79,6 +96,10 @@ export class StaffAppointmentsController {
 
   @Delete(':id')
   cancel(@CurrentUser() user: JwtPayload, @Param('id') id: string) {
+    if (user.tenantId === undefined) {
+      throw new Error('Tenant ID is required to list bookable services for staff');
+    }
+
     return this.staffAppointmentsService.cancelForStaff({
       tenantId: user.tenantId,
       userId: user.sub,

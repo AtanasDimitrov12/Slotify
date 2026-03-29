@@ -3,20 +3,23 @@ import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcryptjs';
 import { Types } from 'mongoose';
 
+import { CustomerProfilesService } from '../customer-profiles/customer-profiles.service';
 import { MembershipDocument } from '../memberships/membership.schema';
 import { MembershipsService } from '../memberships/memberships.service';
 import { TenantsService } from '../tenants/tenants.service';
 import { UserDocument } from '../users/user.schema';
 import { UsersService } from '../users/users.service';
 import { LoginDto } from './dto/login.dto';
+import { RegisterCustomerDto } from './dto/register-customer.dto';
 import { RegisterDto } from './dto/register.dto';
 
 type JwtPayload = {
   sub: string;
   userId: string;
-  tenantId: string;
-  role: 'owner' | 'manager' | 'staff';
+  tenantId?: string;
+  role?: 'owner' | 'manager' | 'staff' | 'customer';
   email: string;
+  accountType: 'internal' | 'customer';
 };
 
 @Injectable()
@@ -26,6 +29,7 @@ export class AuthService {
     private readonly membershipsService: MembershipsService,
     private readonly usersService: UsersService,
     private readonly tenantsService: TenantsService,
+    private readonly customerProfilesService: CustomerProfilesService,
   ) {}
 
   private getId(
@@ -37,9 +41,11 @@ export class AuthService {
 
     if (value instanceof Types.ObjectId) return value.toString();
 
-    if ('_id' in value && value._id) return value._id.toString();
+    if (value && typeof value === 'object' && '_id' in value && value._id)
+      return value._id.toString();
 
-    if ('id' in value && typeof value.id === 'string') return value.id;
+    if (value && typeof value === 'object' && 'id' in value && typeof value.id === 'string')
+      return value.id;
 
     return String(value);
   }
@@ -59,6 +65,10 @@ export class AuthService {
     }
 
     const userId = this.getId(user._id);
+
+    if (user.accountType === 'customer') {
+      return this.finalizeCustomerLogin(user);
+    }
 
     if (tenantId) {
       const membership = await this.membershipsService.findActiveByUserIdAndTenantId(
@@ -105,6 +115,7 @@ export class AuthService {
       tenantId,
       role: membership.role,
       email: user.email,
+      accountType: 'internal',
     };
 
     const accessToken = await this.jwtService.signAsync(payload);
@@ -117,6 +128,32 @@ export class AuthService {
         email: user.email,
         role: membership.role,
         tenantId,
+        accountType: 'internal',
+      },
+    };
+  }
+
+  private async finalizeCustomerLogin(user: UserDocument) {
+    const userId = this.getId(user._id);
+
+    const payload: JwtPayload = {
+      sub: userId,
+      userId: userId,
+      email: user.email,
+      role: 'customer',
+      accountType: 'customer',
+    };
+
+    const accessToken = await this.jwtService.signAsync(payload);
+
+    return {
+      accessToken,
+      account: {
+        _id: userId,
+        name: user.name,
+        email: user.email,
+        role: 'customer',
+        accountType: 'customer',
       },
     };
   }
@@ -148,6 +185,7 @@ export class AuthService {
       name: userName,
       email,
       password: passwordHash,
+      accountType: 'internal',
     });
 
     const userId = this.getId(user._id);
@@ -164,6 +202,7 @@ export class AuthService {
       tenantId,
       role: membership.role,
       email: user.email,
+      accountType: 'internal',
     };
 
     const accessToken = await this.jwtService.signAsync(payload);
@@ -176,7 +215,36 @@ export class AuthService {
         email: user.email,
         role: membership.role,
         tenantId,
+        accountType: 'internal',
       },
     };
+  }
+
+  async registerCustomer(dto: RegisterCustomerDto) {
+    const email = dto.email.trim().toLowerCase();
+    const userName = dto.name.trim();
+
+    const existing = await this.usersService.findByEmail(email);
+    if (existing) {
+      throw new BadRequestException('Email already in use');
+    }
+
+    const passwordHash = await bcrypt.hash(dto.password, 10);
+
+    const user = await this.usersService.create({
+      name: userName,
+      email,
+      password: passwordHash,
+      accountType: 'customer',
+    });
+
+    const userId = this.getId(user._id);
+
+    await this.customerProfilesService.create({
+      userId,
+      phone: dto.phone,
+    });
+
+    return this.finalizeCustomerLogin(user);
   }
 }

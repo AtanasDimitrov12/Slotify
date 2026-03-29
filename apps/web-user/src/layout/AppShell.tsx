@@ -1,4 +1,12 @@
-import { CloseRounded, HomeRounded, MenuRounded, StorefrontRounded } from '@mui/icons-material';
+import {
+  CloseRounded,
+  HomeRounded,
+  LoginRounded,
+  LogoutRounded,
+  MenuRounded,
+  PersonAddRounded,
+  StorefrontRounded,
+} from '@mui/icons-material';
 import {
   AppBar,
   Box,
@@ -20,6 +28,7 @@ import { alpha } from '@mui/material/styles';
 import type { ReactNode } from 'react';
 import { useMemo, useState } from 'react';
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
+import { useAuth } from '@barber/shared';
 
 type NavItem = {
   label: string;
@@ -50,6 +59,7 @@ export default function AppShell() {
   const navigate = useNavigate();
   const location = useLocation();
   const [mobileOpen, setMobileOpen] = useState(false);
+  const { user, logout } = useAuth();
 
   const navItems: NavItem[] = useMemo(
     () => [
@@ -62,6 +72,12 @@ export default function AppShell() {
   const go = (to: string) => {
     navigate(to);
     setMobileOpen(false);
+  };
+
+  const handleLogout = () => {
+    logout();
+    setMobileOpen(false);
+    navigate('/');
   };
 
   const isActive = (to: string) => {
@@ -235,6 +251,72 @@ export default function AppShell() {
             </Stack>
 
             <Stack direction="row" spacing={1} alignItems="center">
+              {user ? (
+                <>
+                  <Typography
+                    sx={{
+                      display: { xs: 'none', sm: 'block' },
+                      fontWeight: 800,
+                      fontSize: 14,
+                      color: shellColors.textSoft,
+                      mr: 1,
+                    }}
+                  >
+                    Hi, {user.name}
+                  </Typography>
+                  <Button
+                    onClick={handleLogout}
+                    sx={{
+                      borderRadius: 999,
+                      height: 44,
+                      px: 2,
+                      textTransform: 'none',
+                      fontWeight: 900,
+                      color: shellColors.textSoft,
+                    }}
+                  >
+                    Logout
+                  </Button>
+                </>
+              ) : (
+                <>
+                  <Button
+                    onClick={() => go('/login')}
+                    sx={{
+                      borderRadius: 999,
+                      height: 44,
+                      px: 2,
+                      textTransform: 'none',
+                      fontWeight: 900,
+                      color: shellColors.textSoft,
+                      display: { xs: 'none', sm: 'inline-flex' },
+                    }}
+                  >
+                    Login
+                  </Button>
+                  <Button
+                    variant="outlined"
+                    onClick={() => go('/register')}
+                    sx={{
+                      borderRadius: 999,
+                      height: 44,
+                      px: 2.4,
+                      textTransform: 'none',
+                      fontWeight: 900,
+                      borderColor: shellColors.purple,
+                      color: shellColors.purple,
+                      display: { xs: 'none', sm: 'inline-flex' },
+                      '&:hover': {
+                        borderColor: '#6B5CFA',
+                        bgcolor: alpha(shellColors.purple, 0.04),
+                      },
+                    }}
+                  >
+                    Sign Up
+                  </Button>
+                </>
+              )}
+
               <Button
                 variant="contained"
                 onClick={() => go('/salons')}
@@ -417,6 +499,69 @@ export default function AppShell() {
               </ListItemButton>
             );
           })}
+
+          <Divider sx={{ my: 1.5, borderColor: shellColors.drawerBorder }} />
+
+          {user ? (
+            <ListItemButton
+              onClick={handleLogout}
+              sx={{
+                minHeight: 52,
+                borderRadius: 4,
+                mb: 0.8,
+                color: shellColors.textSoft,
+                '&:hover': { bgcolor: alpha('#ef4444', 0.08), color: '#ef4444' },
+              }}
+            >
+              <ListItemIcon sx={{ minWidth: 38, color: 'inherit' }}>
+                <LogoutRounded fontSize="small" />
+              </ListItemIcon>
+              <ListItemText
+                primary={`Logout (${user.name})`}
+                primaryTypographyProps={{ fontWeight: 850, fontSize: 15 }}
+              />
+            </ListItemButton>
+          ) : (
+            <>
+              <ListItemButton
+                onClick={() => go('/login')}
+                sx={{
+                  minHeight: 52,
+                  borderRadius: 4,
+                  mb: 0.8,
+                  color: shellColors.textSoft,
+                  '&:hover': { bgcolor: shellColors.navHover },
+                }}
+              >
+                <ListItemIcon sx={{ minWidth: 38, color: 'inherit' }}>
+                  <LoginRounded fontSize="small" />
+                </ListItemIcon>
+                <ListItemText
+                  primary="Login"
+                  primaryTypographyProps={{ fontWeight: 850, fontSize: 15 }}
+                />
+              </ListItemButton>
+              <ListItemButton
+                onClick={() => go('/register')}
+                sx={{
+                  minHeight: 52,
+                  borderRadius: 4,
+                  mb: 0.8,
+                  color: shellColors.purple,
+                  bgcolor: alpha(shellColors.purple, 0.05),
+                  '&:hover': { bgcolor: alpha(shellColors.purple, 0.1) },
+                }}
+              >
+                <ListItemIcon sx={{ minWidth: 38, color: 'inherit' }}>
+                  <PersonAddRounded fontSize="small" />
+                </ListItemIcon>
+                <ListItemText
+                  primary="Sign Up"
+                  primaryTypographyProps={{ fontWeight: 850, fontSize: 15 }}
+                />
+              </ListItemButton>
+            </>
+          )}
         </List>
 
         <Box sx={{ px: 2, pb: 2, pt: 0.5, mt: 'auto' }}>

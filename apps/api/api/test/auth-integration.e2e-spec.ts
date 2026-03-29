@@ -35,6 +35,7 @@ describe('Authentication (Integration)', () => {
         name: registerDto.name,
         email: registerDto.email,
         role: 'owner',
+        accountType: 'internal',
       });
       expect(response.body.account).toHaveProperty('tenantId');
 
@@ -45,6 +46,7 @@ describe('Authentication (Integration)', () => {
       expect(user).toBeDefined();
       if (!user) throw new Error('User not found');
       expect(user.name).toBe(registerDto.name);
+      expect(user.accountType).toBe('internal');
 
       const tenant = await ctx.db.collection('tenants').findOne({ name: registerDto.tenantName });
       expect(tenant).toBeDefined();
@@ -71,6 +73,68 @@ describe('Authentication (Integration)', () => {
     });
   });
 
+  describe('POST /auth/register-customer', () => {
+    const customerDto = {
+      name: 'Customer User',
+      email: 'customer@gmail.com',
+      password: 'password123',
+      phone: '+1234567890',
+    };
+
+    it('should register a new customer successfully', async () => {
+      const response = await request(ctx.app.getHttpServer())
+        .post('/auth/register-customer')
+        .send(customerDto)
+        .expect(201);
+
+      expect(response.body).toHaveProperty('accessToken');
+      expect(response.body.account).toMatchObject({
+        name: customerDto.name,
+        email: customerDto.email,
+        role: 'customer',
+        accountType: 'customer',
+      });
+      expect(response.body.account).not.toHaveProperty('tenantId');
+
+      // Verify persistence in DB
+      const user = await ctx.db
+        .collection('users')
+        .findOne({ email: customerDto.email.toLowerCase() });
+      expect(user).toBeDefined();
+      if (!user) throw new Error('User not found');
+      expect(user.accountType).toBe('customer');
+
+      // Verify customer profile
+      const profile = await ctx.db.collection('customerprofiles').findOne({ userId: user._id });
+      expect(profile).toBeDefined();
+      if (!profile) throw new Error('Profile not found');
+      expect(profile.phone).toBe(customerDto.phone);
+    });
+
+    it('should fail if email is already in use', async () => {
+      await request(ctx.app.getHttpServer())
+        .post('/auth/register-customer')
+        .send(customerDto)
+        .expect(201);
+
+      const response = await request(ctx.app.getHttpServer())
+        .post('/auth/register-customer')
+        .send(customerDto)
+        .expect(400);
+
+      expect(response.body.message).toContain('Email already in use');
+    });
+
+    it('should fail with invalid phone', async () => {
+      const response = await request(ctx.app.getHttpServer())
+        .post('/auth/register-customer')
+        .send({ ...customerDto, phone: 'invalid' })
+        .expect(400);
+
+      expect(response.body.message[0]).toContain('Phone must be a valid E.164 phone number');
+    });
+  });
+
   describe('POST /auth/login', () => {
     beforeEach(async () => {
       // Register a user for login tests
@@ -88,6 +152,33 @@ describe('Authentication (Integration)', () => {
 
       expect(response.body).toHaveProperty('accessToken');
       expect(response.body.account.email).toBe(registerDto.email);
+      expect(response.body.account.accountType).toBe('internal');
+    });
+
+    it('should login customer successfully', async () => {
+      const customerDto = {
+        name: 'Customer User',
+        email: 'customer-login@gmail.com',
+        password: 'password123',
+        phone: '+1234567890',
+      };
+      await request(ctx.app.getHttpServer())
+        .post('/auth/register-customer')
+        .send(customerDto)
+        .expect(201);
+
+      const response = await request(ctx.app.getHttpServer())
+        .post('/auth/login')
+        .send({
+          email: customerDto.email,
+          password: customerDto.password,
+        })
+        .expect(201);
+
+      expect(response.body).toHaveProperty('accessToken');
+      expect(response.body.account.email).toBe(customerDto.email);
+      expect(response.body.account.accountType).toBe('customer');
+      expect(response.body.account.role).toBe('customer');
     });
 
     it('should fail with incorrect password', async () => {
@@ -131,6 +222,32 @@ describe('Authentication (Integration)', () => {
       expect(response.body).toMatchObject({
         email: registerDto.email,
         role: 'owner',
+        accountType: 'internal',
+      });
+    });
+
+    it('should return customer info if valid token provided', async () => {
+      const customerDto = {
+        name: 'Customer Me',
+        email: 'customer-me@gmail.com',
+        password: 'password123',
+        phone: '+1234567890',
+      };
+      const loginResponse = await request(ctx.app.getHttpServer())
+        .post('/auth/register-customer')
+        .send(customerDto);
+
+      const token = loginResponse.body.accessToken;
+
+      const response = await request(ctx.app.getHttpServer())
+        .get('/auth/me')
+        .set('Authorization', `Bearer ${token}`)
+        .expect(200);
+
+      expect(response.body).toMatchObject({
+        email: customerDto.email,
+        role: 'customer',
+        accountType: 'customer',
       });
     });
   });

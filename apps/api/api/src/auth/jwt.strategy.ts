@@ -5,10 +5,11 @@ import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
 
 export type JwtPayload = {
-  sub: string; // accountId
-  tenantId: string; // tenant scope
-  role: 'owner' | 'manager' | 'staff';
+  sub: string; // userId
+  tenantId?: string; // tenant scope, optional for customer
+  role: 'owner' | 'manager' | 'staff' | 'customer';
   email: string;
+  accountType: 'internal' | 'customer';
 };
 
 @Injectable()
@@ -28,8 +29,12 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
   }
 
   async validate(payload: JwtPayload) {
-    if (!payload?.sub || !payload?.tenantId) {
+    if (!payload?.sub) {
       throw new UnauthorizedException();
+    }
+
+    if (payload.accountType === 'internal' && !payload.tenantId) {
+      throw new UnauthorizedException('Internal accounts must have a tenantId');
     }
 
     return payload;

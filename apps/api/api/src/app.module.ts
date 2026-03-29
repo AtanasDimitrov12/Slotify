@@ -5,6 +5,7 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { AuthModule } from './auth/auth.module';
 import { BookingSettingsModule } from './booking-settings/booking-settings.module';
+import { CustomerProfilesModule } from './customer-profiles/customer-profiles.module';
 import { MembershipsModule } from './memberships/memberships.module';
 import { OwnerModule } from './owner/owner.module';
 import { PublicBookingModule } from './public-booking/public-booking.module';
@@ -48,6 +49,7 @@ import { TenantsModule } from './tenants/tenants.module';
     ReservationsModule,
     PublicBookingModule,
     StaffAppointmentsModule,
+    CustomerProfilesModule,
   ],
   controllers: [AppController],
   providers: [AppService],

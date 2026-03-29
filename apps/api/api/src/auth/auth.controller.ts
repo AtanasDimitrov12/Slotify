@@ -4,6 +4,7 @@ import { AuthService } from './auth.service';
 import { CurrentUser } from './current-user.decorator';
 import { LoginDto } from './dto/login.dto';
 import { RegisterDto } from './dto/register.dto';
+import { RegisterCustomerDto } from './dto/register-customer.dto';
 import type { JwtPayload } from './jwt.strategy';
 import { JwtAuthGuard } from './jwt-auth.guard';
 
@@ -25,5 +26,15 @@ export class AuthController {
   @Post('register')
   register(@Body() dto: RegisterDto) {
     return this.authService.register(dto);
+  }
+
+  @Get('test-route')
+  testRoute() {
+    return { ok: true };
+  }
+
+  @Post('register-customer')
+  registerCustomer(@Body() dto: RegisterCustomerDto) {
+    return this.authService.registerCustomer(dto);
   }
 }

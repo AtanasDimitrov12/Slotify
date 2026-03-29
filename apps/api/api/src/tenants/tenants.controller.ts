@@ -33,6 +33,10 @@ export class TenantsController {
 
   @Get('me')
   getMyTenant(@CurrentUser() user: JwtPayload) {
+    if (user.tenantId === undefined) {
+      throw new Error('Tenant ID is required to list bookable services for staff');
+    }
+
     return this.tenantsService.findOne(user.tenantId);
   }
 

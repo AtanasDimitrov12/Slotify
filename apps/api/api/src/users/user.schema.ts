@@ -20,6 +20,13 @@ export class User {
   @Prop({ required: true })
   password!: string; // must be hashed
 
+  @Prop({
+    required: true,
+    enum: ['internal', 'customer'],
+    default: 'internal',
+  })
+  accountType!: 'internal' | 'customer';
+
   @Prop({ default: false })
   emailVerified!: boolean;
 

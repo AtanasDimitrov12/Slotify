@@ -1,8 +1,7 @@
+import { useAuth, useToast } from '@barber/shared';
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { useAuth } from '../../auth/AuthProvider';
-import { useToast } from '../../components/ToastProvider';
 import LoginPage from '../LoginPage';
 
 // Mock the hooks
