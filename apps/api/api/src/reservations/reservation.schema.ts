@@ -69,6 +69,22 @@ export class Reservation {
 
   @Prop({ trim: true, maxlength: 64, default: 'public-booking' })
   source!: string;
+
+  @Prop({
+    type: {
+      rating: { type: Number, min: 0, max: 5 },
+      comment: { type: String, trim: true, maxlength: 2000 },
+      pictures: { type: [String], default: [] },
+      createdAt: { type: Date, default: Date.now },
+    },
+    default: null,
+  })
+  review?: {
+    rating: number;
+    comment?: string;
+    pictures?: string[];
+    createdAt: Date;
+  } | null;
 }
 
 export const ReservationSchema = SchemaFactory.createForClass(Reservation);

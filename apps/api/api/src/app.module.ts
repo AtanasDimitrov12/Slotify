@@ -6,6 +6,7 @@ import { AppService } from './app.service';
 import { AuthModule } from './auth/auth.module';
 import { BookingSettingsModule } from './booking-settings/booking-settings.module';
 import { CustomerProfilesModule } from './customer-profiles/customer-profiles.module';
+import { CustomerReservationsModule } from './customer-reservations/customer-reservations.module';
 import { MembershipsModule } from './memberships/memberships.module';
 import { OwnerModule } from './owner/owner.module';
 import { PublicBookingModule } from './public-booking/public-booking.module';
@@ -50,6 +51,7 @@ import { TenantsModule } from './tenants/tenants.module';
     PublicBookingModule,
     StaffAppointmentsModule,
     CustomerProfilesModule,
+    CustomerReservationsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

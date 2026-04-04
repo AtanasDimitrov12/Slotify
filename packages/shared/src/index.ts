@@ -1,6 +1,8 @@
 // API
 export * from './api/auth';
 export * from './api/bookingRules';
+export * from './api/customerProfile';
+export * from './api/customerReservations';
 export * from './api/http';
 export * from './api/memberships';
 export * from './api/ownerSettings';
@@ -14,6 +16,7 @@ export * from './api/staffTimeOff';
 export * from './api/tenantDetails';
 export * from './api/tenants';
 export * from './api/types';
+export * from './constants/locations';
 // Auth
 export * from './auth/AuthProvider';
 export * from './auth/RequireAuth';
