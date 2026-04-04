@@ -25,7 +25,7 @@ import { TenantsModule } from './tenants/tenants.module';
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
-      envFilePath: '.env',
+      envFilePath: process.env.NODE_ENV === 'test' ? ['.env.test', '.env'] : ['.env'],
     }),
     MongooseModule.forRootAsync({
       inject: [ConfigService],
