@@ -6,6 +6,8 @@ import { ExtractJwt, Strategy } from 'passport-jwt';
 
 export type JwtPayload = {
   sub: string; // userId
+  _id: string; // same as sub, for consistency
+  name: string;
   tenantId?: string; // tenant scope, optional for customer
   role: 'owner' | 'manager' | 'staff' | 'customer';
   email: string;

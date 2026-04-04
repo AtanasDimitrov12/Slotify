@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Post, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Param, Patch, Post, UseGuards } from '@nestjs/common';
 import { CurrentUser } from '../auth/current-user.decorator';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import type { JwtPayload } from '../auth/jwt.strategy';
@@ -18,6 +18,12 @@ export class CustomerReservationsController {
   async getMyReservations(@CurrentUser() user: JwtPayload) {
     const profile = await this.customerProfilesService.findByUserId(user.sub);
     return this.customerReservationsService.findAllByContact(user.email, profile?.phone);
+  }
+
+  @Patch(':id/cancel')
+  async cancelReservation(@Param('id') reservationId: string, @CurrentUser() user: JwtPayload) {
+    const profile = await this.customerProfilesService.findByUserId(user.sub);
+    return this.customerReservationsService.cancelReservation(reservationId, user.email, profile?.phone);
   }
 
   @Post(':id/review')

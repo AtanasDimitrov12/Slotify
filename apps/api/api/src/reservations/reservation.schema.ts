@@ -16,6 +16,12 @@ export class Reservation {
   @Prop({ type: Types.ObjectId, ref: User.name, required: true, index: true })
   staffId!: Types.ObjectId;
 
+  @Prop({ trim: true, maxlength: 120 })
+  staffName?: string;
+
+  @Prop({ trim: true, default: '' })
+  staffAvatarUrl?: string;
+
   @Prop({
     type: Types.ObjectId,
     ref: StaffServiceAssignment.name,

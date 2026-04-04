@@ -415,6 +415,8 @@ export class PublicBookingService {
     const created = await this.reservationModel.create({
       tenantId,
       staffId,
+      staffName: staffProfile.displayName,
+      staffAvatarUrl: staffProfile.avatarUrl || '',
       staffServiceAssignmentId: assignment._id,
       serviceId: service._id,
       serviceName: service.name,

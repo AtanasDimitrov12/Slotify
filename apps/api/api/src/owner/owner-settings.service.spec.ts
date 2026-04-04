@@ -16,6 +16,8 @@ describe('OwnerSettingsService', () => {
   const mockUserId = new Types.ObjectId().toString();
   const mockUser: JwtPayload = {
     sub: mockUserId,
+    _id: mockUserId,
+    name: 'Test Owner',
     tenantId: mockTenantId,
     role: 'owner',
     email: 'owner@test.com',

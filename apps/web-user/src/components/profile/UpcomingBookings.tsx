@@ -1,5 +1,6 @@
 import {
   Box,
+  Button,
   Card,
   CardContent,
   Chip,
@@ -14,11 +15,14 @@ import {
   LocationOnRounded,
   PersonRounded,
   ContentCutRounded,
+  CancelRounded,
 } from '@mui/icons-material';
-import { type CustomerReservation } from '@barber/shared';
+import { type CustomerReservation, cancelReservation } from '@barber/shared';
+import { useState } from 'react';
 
 interface Props {
   reservations: CustomerReservation[];
+  onCancelled: () => void;
 }
 
 const statusColors = {
@@ -29,7 +33,26 @@ const statusColors = {
   'no-show': '#6B7280',
 };
 
-export default function UpcomingBookings({ reservations }: Props) {
+export default function UpcomingBookings({ reservations, onCancelled }: Props) {
+  const [cancellingId, setCancellingId] = useState<string | null>(null);
+
+  const getStaffName = (res: CustomerReservation) => {
+    return res.staffName || 'Professional';
+  };
+
+  const handleCancel = async (id: string) => {
+    if (!window.confirm('Are you sure you want to cancel this appointment?')) return;
+    try {
+      setCancellingId(id);
+      await cancelReservation(id);
+      onCancelled();
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setCancellingId(null);
+    }
+  };
+
   if (reservations.length === 0) {
     return (
       <Box sx={{ py: 8, textAlign: 'center' }}>
@@ -141,7 +164,7 @@ export default function UpcomingBookings({ reservations }: Props) {
                       </Typography>
                       <Stack direction="row" spacing={1} alignItems="center">
                         <PersonRounded sx={{ fontSize: 18, color: '#64748B' }} />
-                        <Typography sx={{ fontWeight: 700 }}>{res.staffId.displayName}</Typography>
+                        <Typography sx={{ fontWeight: 700 }}>{getStaffName(res)}</Typography>
                       </Stack>
                     </Box>
                     {res.notes && (
@@ -160,6 +183,20 @@ export default function UpcomingBookings({ reservations }: Props) {
                   </Stack>
                 </Grid>
               </Grid>
+            </Box>
+
+            <Divider sx={{ opacity: 0.5 }} />
+            <Box sx={{ px: 3, py: 1.5, display: 'flex', justifyContent: 'flex-end', bgcolor: alpha('#FFF', 0.5) }}>
+              <Button
+                size="small"
+                color="error"
+                startIcon={<CancelRounded />}
+                disabled={cancellingId === res._id}
+                onClick={() => handleCancel(res._id)}
+                sx={{ textTransform: 'none', fontWeight: 700 }}
+              >
+                {cancellingId === res._id ? 'Cancelling...' : 'Cancel Appointment'}
+              </Button>
             </Box>
           </CardContent>
         </Card>

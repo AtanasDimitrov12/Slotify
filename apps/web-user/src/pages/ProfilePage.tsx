@@ -8,24 +8,20 @@ import {
   useAuth,
   useToast,
 } from '@barber/shared';
-import {
-  CalendarMonthRounded,
-  HistoryRounded,
-  SettingsRounded,
-} from '@mui/icons-material';
+import { CalendarMonthRounded, HistoryRounded, SettingsRounded } from '@mui/icons-material';
 import {
   Avatar,
   alpha,
   Box,
+  Card,
+  CardContent,
   CircularProgress,
   Container,
+  Divider,
   Stack,
   Tab,
   Tabs,
   Typography,
-  Card,
-  CardContent,
-  Divider,
 } from '@mui/material';
 import { useCallback, useEffect, useState } from 'react';
 import BookingHistory from '../components/profile/BookingHistory';
@@ -44,7 +40,18 @@ function Stat({ label, value }: { label: string; value: string | number }) {
   return (
     <Box>
       <Typography sx={{ fontSize: 24, fontWeight: 1000, lineHeight: 1 }}>{value}</Typography>
-      <Typography sx={{ fontSize: 12, fontWeight: 800, color: 'rgba(255,255,255,0.5)', textTransform: 'uppercase', mt: 0.5, letterSpacing: 0.5 }}>{label}</Typography>
+      <Typography
+        sx={{
+          fontSize: 12,
+          fontWeight: 800,
+          color: 'rgba(255,255,255,0.5)',
+          textTransform: 'uppercase',
+          mt: 0.5,
+          letterSpacing: 0.5,
+        }}
+      >
+        {label}
+      </Typography>
     </Box>
   );
 }
@@ -162,11 +169,15 @@ export default function ProfilePage() {
                 <Typography sx={{ color: 'rgba(255,255,255,0.6)', fontWeight: 600, mb: 3 }}>
                   {user?.email}
                 </Typography>
-                
-                <Stack direction="row" spacing={3} justifyContent={{ xs: 'center', md: 'flex-start' }}>
+
+                <Stack
+                  direction="row"
+                  spacing={3}
+                  justifyContent={{ xs: 'center', md: 'flex-start' }}
+                >
                   <Stat label="Bookings" value={reservations.length} />
                   <Stat label="Upcoming" value={upcoming.length} />
-                  <Stat label="Reviews" value={reservations.filter(r => r.review).length} />
+                  <Stat label="Reviews" value={reservations.filter((r) => r.review).length} />
                 </Stack>
               </Box>
             </Stack>
@@ -197,8 +208,16 @@ export default function ProfilePage() {
               },
             }}
           >
-            <Tab icon={<CalendarMonthRounded sx={{ fontSize: 22 }} />} iconPosition="start" label="My Bookings" />
-            <Tab icon={<SettingsRounded sx={{ fontSize: 22 }} />} iconPosition="start" label="Account Settings" />
+            <Tab
+              icon={<CalendarMonthRounded sx={{ fontSize: 22 }} />}
+              iconPosition="start"
+              label="My Bookings"
+            />
+            <Tab
+              icon={<SettingsRounded sx={{ fontSize: 22 }} />}
+              iconPosition="start"
+              label="Account Settings"
+            />
           </Tabs>
         </Box>
 
@@ -214,7 +233,7 @@ export default function ProfilePage() {
                   <CalendarMonthRounded sx={{ color: profileColors.purple }} /> Upcoming
                   Appointments
                 </Typography>
-                <UpcomingBookings reservations={upcoming} />
+                <UpcomingBookings reservations={upcoming} onCancelled={loadData} />
               </Box>
 
               <Divider />

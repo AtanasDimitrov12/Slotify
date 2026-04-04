@@ -1,6 +1,8 @@
+import AutoAwesomeRoundedIcon from '@mui/icons-material/AutoAwesomeRounded';
 import CheckCircleRoundedIcon from '@mui/icons-material/CheckCircleRounded';
 import ContentCutRoundedIcon from '@mui/icons-material/ContentCutRounded';
 import EventAvailableRoundedIcon from '@mui/icons-material/EventAvailableRounded';
+import FavoriteRoundedIcon from '@mui/icons-material/FavoriteRounded';
 import PersonRoundedIcon from '@mui/icons-material/PersonRounded';
 import {
   Alert,
@@ -24,6 +26,7 @@ import {
   useTheme,
 } from '@mui/material';
 import * as React from 'react';
+import { type CustomerProfile, getMyCustomerProfile } from '../../api/customerProfile';
 import {
   type AvailabilitySlot,
   type BookingOptionService,
@@ -32,6 +35,7 @@ import {
   getAvailability,
   getBookingOptions,
 } from '../../api/publicTenants';
+import { useAuth } from '../../auth/AuthProvider';
 import { landingColors } from '../landing/constants';
 import { useToast } from '../ToastProvider';
 
@@ -99,27 +103,107 @@ function isQuarterHourSlot(slot: AvailabilitySlot) {
   return minutes % 15 === 0;
 }
 
-function groupSlots(allSlots: AvailabilitySlot[]) {
-  const sortedByScore = [...allSlots].sort((a, b) => b.score - a.score);
+function calculateCustomerBonus(slot: AvailabilitySlot, profile: CustomerProfile | null): number {
+  if (!profile) return 0;
+  let bonus = 0;
 
-  // Logic: If there are slots with score >= 800 (perfect fit), show them.
-  // This now uses ALL slots, including those not on the 15-minute mark.
-  let recommended = sortedByScore.filter((s) => s.score >= 800);
-  if (recommended.length === 0 && sortedByScore.length > 0) {
-    recommended = sortedByScore.filter((s) => s.score > 0).slice(0, 3);
-  } else {
-    recommended = recommended.slice(0, 4);
+  const date = new Date(slot.startTime);
+  const hour = date.getHours();
+  const day = date.getDay();
+
+  // Match preferred time of day
+  if (profile.preferredTimeOfDay === 'morning' && hour < 12) bonus += 500;
+  if (profile.preferredTimeOfDay === 'afternoon' && hour >= 12 && hour < 17) bonus += 500;
+  if (profile.preferredTimeOfDay === 'evening' && hour >= 17) bonus += 500;
+
+  // Match preferred days
+  if (profile.preferredDaysOfWeek?.includes(day)) bonus += 300;
+
+  // Match specific slots
+  if (profile.preferredBookingSlots) {
+    for (const pSlot of profile.preferredBookingSlots) {
+      if (pSlot.dayOfWeek === day) {
+        if (pSlot.timeSlot === 'morning' && hour < 12) bonus += 1000;
+        else if (pSlot.timeSlot === 'afternoon' && hour >= 12 && hour < 17) bonus += 1000;
+        else if (pSlot.timeSlot === 'evening' && hour >= 17) bonus += 1000;
+        else if (pSlot.timeSlot === 'All Day') bonus += 1000;
+        else if (pSlot.timeSlot.includes(' - ')) {
+          const [start, end] = pSlot.timeSlot.split(' - ');
+          const currentTime = `${hour.toString().padStart(2, '0')}:${date.getMinutes().toString().padStart(2, '0')}`;
+          if (currentTime >= start && currentTime <= end) bonus += 1500;
+        }
+      }
+    }
   }
 
-  const groups: Record<'Recommended' | 'Morning' | 'Afternoon' | 'Evening', AvailabilitySlot[]> = {
-    Recommended: recommended,
+  return bonus;
+}
+
+function groupSlots(allSlots: AvailabilitySlot[], profile: CustomerProfile | null) {
+  const slotsWithAdjustedScore = allSlots.map((s) => {
+    const customerBonus = calculateCustomerBonus(s, profile);
+    return {
+      ...s,
+      combinedScore: s.score + customerBonus,
+      isCustomerPreferred: customerBonus > 0,
+      isStaffOptimized: s.score >= 1000,
+      customerBonus,
+    };
+  });
+
+  const sortedByCombined = [...slotsWithAdjustedScore].sort(
+    (a, b) => b.combinedScore - a.combinedScore,
+  );
+
+  // Diverse recommendations:
+  // 1. Top absolute combined fits
+  // 2. Top customer-only fits (if not in top 4)
+  // 3. Top staff-only fits (if not in top 4)
+  const recommendedSet = new Set<string>();
+  const recommended: (AvailabilitySlot & {
+    isCustomerPreferred: boolean;
+    isStaffOptimized: boolean;
+  })[] = [];
+
+  const addRecommended = (s: any) => {
+    const key = `${s.staffId}-${s.startTime}`;
+    if (!recommendedSet.has(key) && recommended.length < 6) {
+      recommendedSet.add(key);
+      recommended.push(s);
+    }
+  };
+
+  // Add top 3 combined
+  sortedByCombined.slice(0, 3).forEach(addRecommended);
+
+  // Ensure at least one customer favorite if exists
+  const topCustomer = sortedByCombined
+    .filter((s) => s.isCustomerPreferred)
+    .sort((a, b) => b.customerBonus - a.customerBonus)[0];
+  if (topCustomer) addRecommended(topCustomer);
+
+  // Ensure at least one staff optimized if exists
+  const topStaff = sortedByCombined
+    .filter((s) => s.isStaffOptimized)
+    .sort((a, b) => b.score - a.score)[0];
+  if (topStaff) addRecommended(topStaff);
+
+  // Fill up to 4 if still room
+  sortedByCombined.slice(0, 4).forEach(addRecommended);
+
+  const groups: Record<
+    'Recommended' | 'Morning' | 'Afternoon' | 'Evening',
+    (AvailabilitySlot & { isCustomerPreferred: boolean; isStaffOptimized: boolean })[]
+  > = {
+    Recommended: recommended.sort(
+      (a, b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime(),
+    ),
     Morning: [],
     Afternoon: [],
     Evening: [],
   };
 
-  // For the main lists, we only show quarter-hour slots to keep the UI clean
-  const filteredSlots = allSlots.filter(isQuarterHourSlot);
+  const filteredSlots = slotsWithAdjustedScore.filter(isQuarterHourSlot);
 
   filteredSlots.forEach((slot) => {
     const hour = new Date(slot.startTime).getHours();
@@ -144,6 +228,7 @@ export default function BookingDialog({ open, slug, salonName, onClose }: Bookin
   const theme = useTheme();
   const fullScreen = useMediaQuery(theme.breakpoints.down('md'));
   const { showError } = useToast();
+  const { user } = useAuth();
 
   const [step, setStep] = React.useState<number>(STEP_SERVICE);
 
@@ -152,6 +237,7 @@ export default function BookingDialog({ open, slug, salonName, onClose }: Bookin
   const [services, setServices] = React.useState<BookingOptionService[]>([]);
   const [staff, setStaff] = React.useState<BookingOptionStaff[]>([]);
   const [maxDays, setMaxDays] = React.useState(14);
+  const [profile, setProfile] = React.useState<CustomerProfile | null>(null);
 
   const [selectedServiceId, setSelectedServiceId] = React.useState('');
   const [selectedStaffId, setSelectedStaffId] = React.useState('');
@@ -170,7 +256,7 @@ export default function BookingDialog({ open, slug, salonName, onClose }: Bookin
   const [successMessage, setSuccessMessage] = React.useState('');
 
   const nextDays = React.useMemo(() => getNextDays(Math.max(maxDays, 14)), [maxDays]);
-  const groupedSlots = React.useMemo(() => groupSlots(slots), [slots]);
+  const groupedSlots = React.useMemo(() => groupSlots(slots, profile), [slots, profile]);
 
   const selectedService = services.find((item) => item._id === selectedServiceId);
 
@@ -184,17 +270,46 @@ export default function BookingDialog({ open, slug, salonName, onClose }: Bookin
         setSuccessMessage('');
         setStep(STEP_SERVICE);
 
-        const result = await getBookingOptions(slug);
+        const [result, profileData] = await Promise.all([
+          getBookingOptions(slug),
+          user ? getMyCustomerProfile().catch(() => null) : Promise.resolve(null),
+        ]);
+
         setServices(result.services);
         setStaff(result.staff);
         setMaxDays(result.maximumDaysInAdvance);
+        setProfile(profileData);
 
-        if (result.services.length === 1) {
-          setSelectedServiceId(result.services[0]._id);
-        }
+        if (profileData) {
+          // Auto-fill credentials
+          setCustomerName(user?.name || '');
+          setCustomerEmail(user?.email || '');
+          setCustomerPhone(profileData.phone || '');
 
-        if (result.staff.length === 1) {
-          setSelectedStaffId(result.staff[0]._id);
+          // Smart preference match for service
+          if (profileData.preferredServiceIds?.length) {
+            const match = result.services.find((s) =>
+              profileData.preferredServiceIds?.includes(s._id),
+            );
+            if (match) setSelectedServiceId(match._id);
+          } else if (result.services.length === 1) {
+            setSelectedServiceId(result.services[0]._id);
+          }
+
+          // Smart preference match for staff
+          if (profileData.preferredStaffIds?.length) {
+            const match = result.staff.find((s) => profileData.preferredStaffIds?.includes(s._id));
+            if (match) setSelectedStaffId(match._id);
+          } else if (result.staff.length === 1) {
+            setSelectedStaffId(result.staff[0]._id);
+          }
+        } else {
+          if (result.services.length === 1) {
+            setSelectedServiceId(result.services[0]._id);
+          }
+          if (result.staff.length === 1) {
+            setSelectedStaffId(result.staff[0]._id);
+          }
         }
       } catch (err) {
         const msg = err instanceof Error ? err.message : 'Failed to load booking options';
@@ -206,7 +321,7 @@ export default function BookingDialog({ open, slug, salonName, onClose }: Bookin
     }
 
     void loadOptions();
-  }, [open, slug, showError]);
+  }, [open, slug, showError, user]);
 
   React.useEffect(() => {
     if (!open || !selectedServiceId || !selectedDate) {
@@ -248,9 +363,9 @@ export default function BookingDialog({ open, slug, salonName, onClose }: Bookin
     setSelectedDate(formatDateInput(new Date()));
     setSlots([]);
     setSelectedSlot(null);
-    setCustomerName('');
-    setCustomerPhone('');
-    setCustomerEmail('');
+    setCustomerName(user?.name || '');
+    setCustomerPhone(profile?.phone || '');
+    setCustomerEmail(user?.email || '');
     setNotes('');
     setSuccessMessage('');
     setOptionsError('');
@@ -281,7 +396,12 @@ export default function BookingDialog({ open, slug, salonName, onClose }: Bookin
     }
     if (step === STEP_TIME) {
       if (!selectedSlot) return;
-      setStep(STEP_DETAILS);
+      // Skip details step if already logged in and filled
+      if (user && customerName && customerPhone) {
+        handleConfirm();
+      } else {
+        setStep(STEP_DETAILS);
+      }
     }
   }
 
@@ -298,23 +418,21 @@ export default function BookingDialog({ open, slug, salonName, onClose }: Bookin
   };
 
   async function handleConfirm() {
-    if (!selectedServiceId || !selectedSlot) {
+    const finalSlot = selectedSlot;
+    if (!selectedServiceId || !finalSlot) {
       showError('Please choose a service and a time slot.');
       return;
     }
 
     if (!customerName.trim()) {
+      setStep(STEP_DETAILS);
       showError('Please fill in your full name.');
       return;
     }
 
     if (!customerPhone.trim() || !validatePhone(customerPhone)) {
-      showError('Please provide a valid phone number (at least 5 digits).');
-      return;
-    }
-
-    if (customerEmail.trim() && !validateEmail(customerEmail)) {
-      showError('Please provide a valid email address.');
+      setStep(STEP_DETAILS);
+      showError('Please provide a valid phone number.');
       return;
     }
 
@@ -323,8 +441,8 @@ export default function BookingDialog({ open, slug, salonName, onClose }: Bookin
 
       await createReservation(slug, {
         serviceId: selectedServiceId,
-        staffId: selectedSlot.staffId,
-        startTime: selectedSlot.startTime,
+        staffId: finalSlot.staffId,
+        startTime: finalSlot.startTime,
         customerName: customerName.trim(),
         customerPhone: customerPhone.trim(),
         customerEmail: customerEmail.trim().toLowerCase() || undefined,
@@ -424,6 +542,7 @@ export default function BookingDialog({ open, slug, salonName, onClose }: Bookin
         <Stack spacing={1.5}>
           {services.map((service) => {
             const selected = selectedServiceId === service._id;
+            const isPreferred = profile?.preferredServiceIds?.includes(service._id);
             return (
               <Card
                 key={service._id}
@@ -434,11 +553,30 @@ export default function BookingDialog({ open, slug, salonName, onClose }: Bookin
                   borderColor: selected ? landingColors.purple : 'rgba(15,23,42,0.08)',
                   bgcolor: selected ? alpha(landingColors.purple, 0.02) : '#FFFFFF',
                   transition: 'all 0.2s ease',
+                  position: 'relative',
                   '&:hover': {
                     borderColor: landingColors.purple,
                   },
                 }}
               >
+                {isPreferred && (
+                  <Chip
+                    icon={<FavoriteRoundedIcon sx={{ fontSize: '12px !important' }} />}
+                    label="Preferred"
+                    size="small"
+                    sx={{
+                      position: 'absolute',
+                      top: 10,
+                      right: 10,
+                      height: 20,
+                      fontSize: 10,
+                      fontWeight: 800,
+                      bgcolor: alpha(landingColors.purple, 0.1),
+                      color: landingColors.purple,
+                      border: `1px solid ${alpha(landingColors.purple, 0.2)}`,
+                    }}
+                  />
+                )}
                 <CardActionArea onClick={() => setSelectedServiceId(service._id)}>
                   <CardContent sx={{ p: 2 }}>
                     <Stack
@@ -518,6 +656,7 @@ export default function BookingDialog({ open, slug, salonName, onClose }: Bookin
 
           {staff.map((member) => {
             const selected = selectedStaffId === member._id;
+            const isPreferred = profile?.preferredStaffIds?.includes(member._id);
             return (
               <Card
                 key={member._id}
@@ -528,8 +667,27 @@ export default function BookingDialog({ open, slug, salonName, onClose }: Bookin
                   borderColor: selected ? landingColors.purple : 'rgba(15,23,42,0.08)',
                   bgcolor: selected ? alpha(landingColors.purple, 0.02) : '#FFFFFF',
                   transition: 'all 0.2s ease',
+                  position: 'relative',
                 }}
               >
+                {isPreferred && (
+                  <Chip
+                    icon={<FavoriteRoundedIcon sx={{ fontSize: '12px !important' }} />}
+                    label="Preferred"
+                    size="small"
+                    sx={{
+                      position: 'absolute',
+                      top: 10,
+                      right: 10,
+                      height: 20,
+                      fontSize: 10,
+                      fontWeight: 800,
+                      bgcolor: alpha(landingColors.purple, 0.1),
+                      color: landingColors.purple,
+                      border: `1px solid ${alpha(landingColors.purple, 0.2)}`,
+                    }}
+                  />
+                )}
                 <CardActionArea onClick={() => setSelectedStaffId(member._id)}>
                   <CardContent sx={{ p: 2 }}>
                     <Typography sx={{ fontWeight: 800, fontSize: 16, color: '#0F172A' }}>
@@ -580,6 +738,7 @@ export default function BookingDialog({ open, slug, salonName, onClose }: Bookin
             {nextDays.map((date) => {
               const day = formatDayChip(date);
               const selected = selectedDate === day.value;
+              const isPreferred = profile?.preferredDaysOfWeek?.includes(date.getDay());
               return (
                 <Box
                   key={day.value}
@@ -595,12 +754,26 @@ export default function BookingDialog({ open, slug, salonName, onClose }: Bookin
                     textAlign: 'center',
                     cursor: 'pointer',
                     transition: 'all 0.2s ease',
+                    position: 'relative',
                     '&:hover': {
                       borderColor: landingColors.purple,
                       bgcolor: selected ? landingColors.purple : alpha(landingColors.purple, 0.02),
                     },
                   }}
                 >
+                  {isPreferred && (
+                    <Box
+                      sx={{
+                        position: 'absolute',
+                        top: 4,
+                        right: 4,
+                        width: 6,
+                        height: 6,
+                        borderRadius: '50%',
+                        bgcolor: selected ? '#FFF' : landingColors.purple,
+                      }}
+                    />
+                  )}
                   <Typography
                     sx={{
                       fontSize: 11,
@@ -655,24 +828,55 @@ export default function BookingDialog({ open, slug, salonName, onClose }: Bookin
                 if (!items.length) return null;
                 return (
                   <Box key={groupName}>
-                    <Typography
+                    <Box
                       sx={{
-                        fontWeight: 800,
-                        fontSize: 12,
-                        color: groupName === 'Recommended' ? landingColors.purple : '#94A3B8',
-                        textTransform: 'uppercase',
-                        letterSpacing: 0.5,
                         mb: 1.5,
                         display: 'flex',
+                        justifyContent: 'space-between',
                         alignItems: 'center',
-                        gap: 1,
                       }}
                     >
-                      {groupName === 'Recommended' && (
+                      <Typography
+                        sx={{
+                          fontWeight: 800,
+                          fontSize: 12,
+                          color: landingColors.purple,
+                          textTransform: 'uppercase',
+                          letterSpacing: 0.5,
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: 1,
+                        }}
+                      >
                         <CheckCircleRoundedIcon sx={{ fontSize: 16 }} />
+                        Recommended Slots
+                      </Typography>
+
+                      {user && groupName === 'Recommended' && (
+                        <Stack direction="row" spacing={1.5}>
+                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                            <FavoriteRoundedIcon
+                              sx={{ fontSize: 12, color: landingColors.purple }}
+                            />
+                            <Typography
+                              sx={{ fontSize: 10, fontWeight: 700, color: 'text.secondary' }}
+                            >
+                              For You
+                            </Typography>
+                          </Box>
+                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                            <AutoAwesomeRoundedIcon
+                              sx={{ fontSize: 12, color: landingColors.success }}
+                            />
+                            <Typography
+                              sx={{ fontSize: 10, fontWeight: 700, color: 'text.secondary' }}
+                            >
+                              Expert Fit
+                            </Typography>
+                          </Box>
+                        </Stack>
                       )}
-                      {groupName} {groupName === 'Recommended' && 'Slots'}
-                    </Typography>
+                    </Box>
                     <Box
                       sx={{
                         display: 'grid',
@@ -699,8 +903,15 @@ export default function BookingDialog({ open, slug, salonName, onClose }: Bookin
                               px: 1,
                               textTransform: 'none',
                               bgcolor: selected ? landingColors.purple : 'transparent',
-                              borderColor: selected ? landingColors.purple : 'rgba(15,23,42,0.1)',
+                              borderColor: selected
+                                ? landingColors.purple
+                                : slot.isCustomerPreferred
+                                  ? alpha(landingColors.purple, 0.3)
+                                  : 'rgba(15,23,42,0.1)',
                               color: selected ? '#FFFFFF' : '#0F172A',
+                              display: 'flex',
+                              flexDirection: 'column',
+                              gap: 0.5,
                               '&:hover': {
                                 bgcolor: selected
                                   ? landingColors.purple
@@ -712,6 +923,24 @@ export default function BookingDialog({ open, slug, salonName, onClose }: Bookin
                             <Typography sx={{ fontWeight: 700, fontSize: 14 }}>
                               {formatSlotTime(slot.startTime)}
                             </Typography>
+                            <Stack direction="row" spacing={0.5}>
+                              {slot.isCustomerPreferred && (
+                                <FavoriteRoundedIcon
+                                  sx={{
+                                    fontSize: 10,
+                                    color: selected ? '#FFF' : landingColors.purple,
+                                  }}
+                                />
+                              )}
+                              {slot.isStaffOptimized && (
+                                <AutoAwesomeRoundedIcon
+                                  sx={{
+                                    fontSize: 10,
+                                    color: selected ? '#FFF' : landingColors.success,
+                                  }}
+                                />
+                              )}
+                            </Stack>
                           </Button>
                         );
                       })}
@@ -746,6 +975,7 @@ export default function BookingDialog({ open, slug, salonName, onClose }: Bookin
             onChange={(event) => setCustomerName(event.target.value)}
             fullWidth
             required
+            disabled={!!user}
           />
 
           <TextField
@@ -763,6 +993,7 @@ export default function BookingDialog({ open, slug, salonName, onClose }: Bookin
             value={customerEmail}
             onChange={(event) => setCustomerEmail(event.target.value)}
             fullWidth
+            disabled={!!user}
           />
 
           <TextField
@@ -941,7 +1172,11 @@ export default function BookingDialog({ open, slug, salonName, onClose }: Bookin
     if (step === STEP_TIME) {
       return (
         <Button variant="contained" onClick={handleNext} disabled={!canContinueFromTime} sx={btnSx}>
-          Enter Details
+          {user && customerPhone
+            ? submitLoading
+              ? 'Booking...'
+              : 'Confirm Booking'
+            : 'Enter Details'}
         </Button>
       );
     }

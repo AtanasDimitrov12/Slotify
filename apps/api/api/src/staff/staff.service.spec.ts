@@ -24,9 +24,11 @@ describe('StaffService', () => {
   const mockTenantId = new Types.ObjectId().toString();
   const mockOwnerId = new Types.ObjectId().toString();
   const mockOwnerUser: JwtPayload = {
+    sub: mockOwnerId,
+    _id: mockOwnerId,
+    name: 'Test Owner',
     tenantId: mockTenantId,
     role: 'owner',
-    sub: mockOwnerId,
     email: 'owner@test.com',
     accountType: 'internal',
   };
@@ -153,6 +155,8 @@ describe('StaffService', () => {
       const userId = new Types.ObjectId().toString();
       const userContext: JwtPayload = {
         sub: userId,
+        _id: userId,
+        name: 'John Doe',
         tenantId: mockTenantId,
         role: 'staff',
         email: 'staff@test.com',

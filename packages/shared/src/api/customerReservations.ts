@@ -16,12 +16,9 @@ export type CustomerReservation = {
     name: string;
     slug: string;
   };
-  staffId: {
-    _id: string;
-    name: string;
-    displayName: string;
-    avatarUrl?: string;
-  };
+  staffId: string | { _id: string; name: string };
+  staffName: string;
+  staffAvatarUrl?: string;
   serviceName: string;
   durationMin: number;
   priceEUR: number;
@@ -46,6 +43,12 @@ export type CreateReviewPayload = {
 export async function getMyReservations(): Promise<CustomerReservation[]> {
   return apiFetch<CustomerReservation[]>('/customer-reservations', {
     method: 'GET',
+  });
+}
+
+export async function cancelReservation(reservationId: string): Promise<CustomerReservation> {
+  return apiFetch<CustomerReservation>(`/customer-reservations/${reservationId}/cancel`, {
+    method: 'PATCH',
   });
 }
 

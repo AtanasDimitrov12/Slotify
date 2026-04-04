@@ -15,7 +15,9 @@ import { RegisterCustomerDto } from './dto/register-customer.dto';
 
 type JwtPayload = {
   sub: string;
+  _id: string;
   userId: string;
+  name: string;
   tenantId?: string;
   role?: 'owner' | 'manager' | 'staff' | 'customer';
   email: string;
@@ -111,7 +113,9 @@ export class AuthService {
 
     const payload: JwtPayload = {
       sub: userId,
+      _id: userId,
       userId: userId,
+      name: user.name,
       tenantId,
       role: membership.role,
       email: user.email,
@@ -138,7 +142,9 @@ export class AuthService {
 
     const payload: JwtPayload = {
       sub: userId,
+      _id: userId,
       userId: userId,
+      name: user.name,
       email: user.email,
       role: 'customer',
       accountType: 'customer',
@@ -198,7 +204,9 @@ export class AuthService {
 
     const payload: JwtPayload = {
       sub: userId,
+      _id: userId,
       userId: userId,
+      name: user.name,
       tenantId,
       role: membership.role,
       email: user.email,

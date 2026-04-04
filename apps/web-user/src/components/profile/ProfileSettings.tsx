@@ -65,7 +65,11 @@ interface Props {
   onProfileUpdated: (updated: CustomerProfile) => void;
 }
 
-export default function ProfileSettings({ profile: initialProfile, allSalons, onProfileUpdated }: Props) {
+export default function ProfileSettings({
+  profile: initialProfile,
+  allSalons,
+  onProfileUpdated,
+}: Props) {
   const { showSuccess, showError } = useToast();
   const [profile, setProfile] = useState<CustomerProfile>(initialProfile);
   const [savingSection, setSavingSection] = useState<string | null>(null);
@@ -146,6 +150,26 @@ export default function ProfileSettings({ profile: initialProfile, allSalons, on
     const current = [...(profile.preferredBookingSlots || [])];
     current[index] = { ...current[index], [field]: value };
     setProfile({ ...profile, preferredBookingSlots: current });
+  };
+
+  const handleNotificationChange = async (field: string, val: boolean) => {
+    const nextPrefs = { ...profile.notificationPreferences, [field]: val };
+    setProfile((prev) => ({
+      ...prev,
+      notificationPreferences: nextPrefs,
+    }));
+
+    try {
+      setSavingSection('notifications');
+      const updated = await updateMyCustomerProfile({
+        notificationPreferences: nextPrefs,
+      });
+      onProfileUpdated(updated);
+    } catch (err) {
+      showError(err);
+    } finally {
+      setSavingSection(null);
+    }
   };
 
   return (
@@ -542,9 +566,7 @@ export default function ProfileSettings({ profile: initialProfile, allSalons, on
                 ))}
               </Box>
             ) : (
-              <Typography
-                sx={{ color: profileColors.textSoft, fontSize: 14, fontStyle: 'italic' }}
-              >
+              <Typography sx={{ color: profileColors.textSoft, fontSize: 14, fontStyle: 'italic' }}>
                 No preferred services yet. They appear here as you book.
               </Typography>
             )}
@@ -586,9 +608,7 @@ export default function ProfileSettings({ profile: initialProfile, allSalons, on
                 ))}
               </Box>
             ) : (
-              <Typography
-                sx={{ color: profileColors.textSoft, fontSize: 14, fontStyle: 'italic' }}
-              >
+              <Typography sx={{ color: profileColors.textSoft, fontSize: 14, fontStyle: 'italic' }}>
                 No preferred staff members yet.
               </Typography>
             )}
@@ -600,12 +620,9 @@ export default function ProfileSettings({ profile: initialProfile, allSalons, on
       <Section
         title="Notifications"
         icon={<NotificationsRounded />}
-        onSave={() =>
-          handleSaveSection('notifications', {
-            notificationPreferences: profile.notificationPreferences,
-          })
-        }
+        onSave={() => {}} // No-op as we auto-save
         isSaving={savingSection === 'notifications'}
+        hideSaveButton
       >
         <FormGroup>
           <Stack spacing={1}>
@@ -613,39 +630,21 @@ export default function ProfileSettings({ profile: initialProfile, allSalons, on
               label="Appointment Reminders"
               description="Get notified about your upcoming bookings"
               checked={profile.notificationPreferences?.remindersEnabled}
-              onChange={(val) =>
-                setProfile((prev) => ({
-                  ...prev,
-                  notificationPreferences: { ...prev.notificationPreferences, remindersEnabled: val },
-                }))
-              }
+              onChange={(val) => handleNotificationChange('remindersEnabled', val)}
             />
             <Divider sx={{ my: 1, opacity: 0.5 }} />
             <NotificationToggle
               label="Promotions & News"
               description="Receive special offers and salon updates"
               checked={profile.notificationPreferences?.promotionsEnabled}
-              onChange={(val) =>
-                setProfile((prev) => ({
-                  ...prev,
-                  notificationPreferences: { ...prev.notificationPreferences, promotionsEnabled: val },
-                }))
-              }
+              onChange={(val) => handleNotificationChange('promotionsEnabled', val)}
             />
             <Divider sx={{ my: 1, opacity: 0.5 }} />
             <NotificationToggle
               label="Last-minute Deals"
               description="Be the first to know about cancelled slots and discounts"
               checked={profile.notificationPreferences?.lastMinuteDealsEnabled}
-              onChange={(val) =>
-                setProfile((prev) => ({
-                  ...prev,
-                  notificationPreferences: {
-                    ...prev.notificationPreferences,
-                    lastMinuteDealsEnabled: val,
-                  },
-                }))
-              }
+              onChange={(val) => handleNotificationChange('lastMinuteDealsEnabled', val)}
             />
           </Stack>
         </FormGroup>
@@ -660,12 +659,14 @@ function Section({
   children,
   onSave,
   isSaving,
+  hideSaveButton,
 }: {
   title: string;
   icon: React.ReactNode;
   children: React.ReactNode;
   onSave: () => void;
   isSaving: boolean;
+  hideSaveButton?: boolean;
 }) {
   return (
     <Card
@@ -673,30 +674,48 @@ function Section({
       sx={{ borderRadius: 4, border: `1px solid ${profileColors.border}`, bgcolor: '#FFF' }}
     >
       <CardContent sx={{ p: { xs: 2.5, md: 4 } }}>
-        <Stack direction="row" spacing={1.5} alignItems="center" justifyContent="space-between" sx={{ mb: 3 }}>
+        <Stack
+          direction="row"
+          spacing={1.5}
+          alignItems="center"
+          justifyContent="space-between"
+          sx={{ mb: 3 }}
+        >
           <Stack direction="row" spacing={1.5} alignItems="center">
             <Box sx={{ color: profileColors.purple, display: 'flex' }}>{icon}</Box>
             <Typography variant="h6" sx={{ fontWeight: 800, color: profileColors.text }}>
               {title}
             </Typography>
           </Stack>
-          <Button
-            variant="contained"
-            size="small"
-            onClick={onSave}
-            disabled={isSaving}
-            startIcon={isSaving ? <CircularProgress size={16} color="inherit" /> : <SaveRounded />}
-            sx={{
-              borderRadius: 2,
-              bgcolor: profileColors.purple,
-              fontWeight: 700,
-              textTransform: 'none',
-              boxShadow: `0 4px 12px ${alpha(profileColors.purple, 0.2)}`,
-              '&:hover': { bgcolor: '#6B5CFA' },
-            }}
-          >
-            {isSaving ? 'Saving...' : 'Save'}
-          </Button>
+          {!hideSaveButton && (
+            <Button
+              variant="contained"
+              size="small"
+              onClick={onSave}
+              disabled={isSaving}
+              startIcon={
+                isSaving ? <CircularProgress size={16} color="inherit" /> : <SaveRounded />
+              }
+              sx={{
+                borderRadius: 2,
+                bgcolor: profileColors.purple,
+                fontWeight: 700,
+                textTransform: 'none',
+                boxShadow: `0 4px 12px ${alpha(profileColors.purple, 0.2)}`,
+                '&:hover': { bgcolor: '#6B5CFA' },
+              }}
+            >
+              {isSaving ? 'Saving...' : 'Save'}
+            </Button>
+          )}
+          {hideSaveButton && isSaving && (
+            <Stack direction="row" spacing={1} alignItems="center">
+              <CircularProgress size={14} sx={{ color: profileColors.purple }} />
+              <Typography sx={{ fontSize: 12, fontWeight: 700, color: profileColors.purple }}>
+                Saving...
+              </Typography>
+            </Stack>
+          )}
         </Stack>
         {children}
       </CardContent>

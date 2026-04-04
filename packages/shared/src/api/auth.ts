@@ -3,6 +3,8 @@ import type { Membership } from './memberships';
 import type { Tenant } from './tenants';
 
 export type AuthUser = Partial<Membership> & {
+  name: string;
+  email: string;
   accountType: 'internal' | 'customer';
   phone?: string;
   role?: Membership['role'] | 'customer';
