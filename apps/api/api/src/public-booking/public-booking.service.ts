@@ -102,6 +102,39 @@ export class PublicBookingService {
       .sort({ name: 1 })
       .lean();
 
+    const servicesById = new Map(services.map((s) => [String(s._id), s]));
+
+    const staffWithOptions = staffProfiles.map((staff) => {
+      const staffIdStr = String(staff.userId);
+      const staffAssignments = filteredAssignments.filter((a) => String(a.userId) === staffIdStr);
+
+      const staffServices = staffAssignments
+        .map((assignment) => {
+          const baseService = servicesById.get(String(assignment.serviceId));
+          if (!baseService) return null;
+
+          return {
+            _id: `${baseService._id}:${assignment.customPrice ?? baseService.priceEUR}:${assignment.customDurationMinutes ?? baseService.durationMin}`,
+            originalServiceId: String(baseService._id),
+            name: baseService.name,
+            durationMin: assignment.customDurationMinutes ?? baseService.durationMin,
+            priceEUR: assignment.customPrice ?? baseService.priceEUR,
+            description: baseService.description,
+          };
+        })
+        .filter((s): s is NonNullable<typeof s> => s !== null);
+
+      return {
+        _id: staff.userId,
+        displayName: staff.displayName,
+        bio: staff.bio,
+        experienceYears: staff.experienceYears,
+        avatarUrl: staff.avatarUrl,
+        expertise: staff.expertise,
+        services: staffServices,
+      };
+    });
+
     return {
       tenant: {
         _id: tenant._id,
@@ -109,40 +142,14 @@ export class PublicBookingService {
         slug: tenant.slug,
       },
       details,
-      services: services.map((service) => {
-        const serviceIdStr = String(service._id);
-        const relevantAssignments = filteredAssignments.filter(
-          (a) => String(a.serviceId) === serviceIdStr,
-        );
-
-        let durationMin = service.durationMin;
-        let priceEUR = service.priceEUR;
-
-        if (relevantAssignments.length > 0) {
-          const effectiveDurations = relevantAssignments.map(
-            (a) => a.customDurationMinutes ?? service.durationMin,
-          );
-          durationMin = Math.min(...effectiveDurations);
-
-          const effectivePrices = relevantAssignments.map((a) => a.customPrice ?? service.priceEUR);
-          priceEUR = Math.min(...effectivePrices);
-        }
-
-        return {
-          _id: service._id,
-          name: service.name,
-          durationMin,
-          priceEUR,
-          description: service.description,
-        };
-      }),
-      staff: staffProfiles.map((staff) => ({
-        _id: staff.userId,
-        displayName: staff.displayName,
-        bio: staff.bio,
-        avatarUrl: staff.avatarUrl,
-        expertise: staff.expertise,
+      services: services.map((s) => ({
+        _id: s._id,
+        name: s.name,
+        durationMin: s.durationMin,
+        priceEUR: s.priceEUR,
+        description: s.description,
       })),
+      staff: staffWithOptions,
       maximumDaysInAdvance: bookingSettings?.maximumDaysInAdvance ?? 30,
     };
   }
@@ -155,13 +162,24 @@ export class PublicBookingService {
     }
 
     const tenantId = new Types.ObjectId(String(tenant._id));
-    const serviceId = new Types.ObjectId(query.serviceId);
     const requestedDate = new Date(query.date);
 
     if (Number.isNaN(requestedDate.getTime())) {
       throw new BadRequestException('Invalid date');
     }
 
+    let actualServiceId = query.serviceId;
+    let targetPrice: number | undefined;
+    let targetDuration: number | undefined;
+
+    if (query.serviceId.includes(':')) {
+      const [id, price, duration] = query.serviceId.split(':');
+      actualServiceId = id;
+      targetPrice = Number(price);
+      targetDuration = Number(duration);
+    }
+
+    const serviceId = new Types.ObjectId(actualServiceId);
     const service = await this.serviceModel
       .findOne({
         _id: serviceId,
@@ -174,7 +192,13 @@ export class PublicBookingService {
       throw new NotFoundException('Service not found');
     }
 
-    const assignments = await this.resolveCandidateAssignments(tenantId, serviceId, query.staffId);
+    const assignments = await this.resolveCandidateAssignments(
+      tenantId,
+      serviceId,
+      query.staffId,
+      targetPrice,
+      targetDuration,
+    );
 
     if (assignments.length === 0) {
       return {
@@ -183,7 +207,7 @@ export class PublicBookingService {
       };
     }
 
-    const allSlots: AvailabilitySlot[] = [];
+    let allSlots: AvailabilitySlot[] = [];
 
     for (const assignment of assignments) {
       const staffId = String(assignment.userId);
@@ -210,6 +234,19 @@ export class PublicBookingService {
       allSlots.push(...staffSlots);
     }
 
+    // If staffId is NOT provided, we must de-duplicate slots by startTime
+    // and pick the one with the best businessScore
+    if (!query.staffId) {
+      const bestSlots = new Map<string, AvailabilitySlot>();
+      for (const slot of allSlots) {
+        const existing = bestSlots.get(slot.startTime);
+        if (!existing || slot.businessScore > existing.businessScore) {
+          bestSlots.set(slot.startTime, slot);
+        }
+      }
+      allSlots = Array.from(bestSlots.values());
+    }
+
     allSlots.sort((a, b) => {
       if (a.score !== b.score) {
         return b.score - a.score;
@@ -223,7 +260,13 @@ export class PublicBookingService {
       nextAvailableDate:
         allSlots.length > 0
           ? requestedDate.toISOString()
-          : await this.findNextAvailableDate(tenantId, serviceId, query.staffId),
+          : await this.findNextAvailableDate(
+              tenantId,
+              serviceId,
+              query.staffId,
+              targetPrice,
+              targetDuration,
+            ),
     };
   }
 
@@ -236,7 +279,12 @@ export class PublicBookingService {
 
     const tenantId = new Types.ObjectId(String(tenant._id));
     const staffId = new Types.ObjectId(dto.staffId);
-    const serviceId = new Types.ObjectId(dto.serviceId);
+
+    let actualServiceId = dto.serviceId;
+    if (dto.serviceId.includes(':')) {
+      actualServiceId = dto.serviceId.split(':')[0];
+    }
+    const serviceId = new Types.ObjectId(actualServiceId);
     const startTime = new Date(dto.startTime);
 
     if (Number.isNaN(startTime.getTime())) {
@@ -330,7 +378,12 @@ export class PublicBookingService {
 
     const tenantId = new Types.ObjectId(String(tenant._id));
     const staffId = new Types.ObjectId(dto.staffId);
-    const serviceId = new Types.ObjectId(dto.serviceId);
+
+    let actualServiceId = dto.serviceId;
+    if (dto.serviceId.includes(':')) {
+      actualServiceId = dto.serviceId.split(':')[0];
+    }
+    const serviceId = new Types.ObjectId(actualServiceId);
     const startTime = new Date(dto.startTime);
 
     if (Number.isNaN(startTime.getTime())) {
@@ -463,6 +516,8 @@ export class PublicBookingService {
     tenantId: Types.ObjectId,
     serviceId: Types.ObjectId,
     requestedStaffId?: string,
+    price?: number,
+    duration?: number,
   ): Promise<StaffServiceAssignment[]> {
     const assignmentQuery: Record<string, unknown> = {
       tenantId,
@@ -474,7 +529,41 @@ export class PublicBookingService {
       assignmentQuery.userId = new Types.ObjectId(requestedStaffId);
     }
 
+    if (price !== undefined) {
+      assignmentQuery.customPrice = price;
+    }
+
+    if (duration !== undefined) {
+      assignmentQuery.customDurationMinutes = duration;
+    }
+
     const assignments = await this.staffServiceAssignmentModel.find(assignmentQuery).lean();
+
+    // If we filtered by price/duration and found none, maybe they are using defaults
+    if (assignments.length === 0 && (price !== undefined || duration !== undefined)) {
+      const service = await this.serviceModel.findById(serviceId).lean();
+      if (service) {
+        const fallbackQuery: Record<string, unknown> = {
+          tenantId,
+          serviceId,
+          isOffered: true,
+        };
+        if (requestedStaffId) {
+          fallbackQuery.userId = new Types.ObjectId(requestedStaffId);
+        }
+        if (price !== undefined && price === service.priceEUR) {
+          fallbackQuery.customPrice = { $exists: false };
+        }
+        if (duration !== undefined && duration === service.durationMin) {
+          fallbackQuery.customDurationMinutes = { $exists: false };
+        }
+
+        const fallbackAssignments = await this.staffServiceAssignmentModel
+          .find(fallbackQuery)
+          .lean();
+        assignments.push(...fallbackAssignments);
+      }
+    }
 
     if (assignments.length === 0) {
       return [];
@@ -587,39 +676,43 @@ export class PublicBookingService {
     const dayEnd = endOfDay(requestedDate);
     const weekday = requestedDate.getDay();
 
-    const [tenantDetails, availability, timeOffEntries, reservations, locks] = await Promise.all([
-      this.tenantDetailsModel.findOne({ tenantId: String(tenantId), isPublished: true }).lean(),
-      this.staffAvailabilityModel.findOne({ tenantId, userId: new Types.ObjectId(staffId) }).lean(),
-      this.staffTimeOffModel
-        .find({
-          tenantId,
-          userId: new Types.ObjectId(staffId),
-          status: 'approved',
-          startDate: { $lt: dayEnd },
-          endDate: { $gt: dayStart },
-        })
-        .lean(),
-      this.reservationModel
-        .find({
-          tenantId,
-          staffId: new Types.ObjectId(staffId),
-          status: { $in: ['pending', 'confirmed'] },
-          startTime: { $lt: dayEnd },
-          endTime: { $gt: dayStart },
-        })
-        .sort({ startTime: 1 })
-        .lean(),
-      this.reservationLockModel
-        .find({
-          tenantId,
-          staffId: new Types.ObjectId(staffId),
-          expiresAt: { $gt: new Date() },
-          startTime: { $lt: dayEnd },
-          endTime: { $gt: dayStart },
-        })
-        .sort({ startTime: 1 })
-        .lean(),
-    ]);
+    const [tenantDetails, availability, timeOffEntries, reservations, locks, staffProfile] =
+      await Promise.all([
+        this.tenantDetailsModel.findOne({ tenantId: String(tenantId), isPublished: true }).lean(),
+        this.staffAvailabilityModel
+          .findOne({ tenantId, userId: new Types.ObjectId(staffId) })
+          .lean(),
+        this.staffTimeOffModel
+          .find({
+            tenantId,
+            userId: new Types.ObjectId(staffId),
+            status: 'approved',
+            startDate: { $lt: dayEnd },
+            endDate: { $gt: dayStart },
+          })
+          .lean(),
+        this.reservationModel
+          .find({
+            tenantId,
+            staffId: new Types.ObjectId(staffId),
+            status: { $in: ['pending', 'confirmed'] },
+            startTime: { $lt: dayEnd },
+            endTime: { $gt: dayStart },
+          })
+          .sort({ startTime: 1 })
+          .lean(),
+        this.reservationLockModel
+          .find({
+            tenantId,
+            staffId: new Types.ObjectId(staffId),
+            expiresAt: { $gt: new Date() },
+            startTime: { $lt: dayEnd },
+            endTime: { $gt: dayStart },
+          })
+          .sort({ startTime: 1 })
+          .lean(),
+        this.staffProfileModel.findOne({ tenantId, userId: new Types.ObjectId(staffId) }).lean(),
+      ]);
 
     const staffDayEntries =
       availability?.weeklyAvailability?.filter(
@@ -629,6 +722,9 @@ export class PublicBookingService {
     if (staffDayEntries.length === 0) {
       return [];
     }
+
+    const reservationsTodayCount = reservations.length;
+    const experienceYears = staffProfile?.experienceYears ?? 0;
 
     const salonWindows = this.extractTenantOpeningWindowsForDate(
       requestedDate,
@@ -724,11 +820,18 @@ export class PublicBookingService {
 
         const score = this.scoreCandidate(gapBefore, gapAfter);
 
+        // Advanced Business Intelligence Score:
+        // 1. PERFECT GAP FIT (Staff Optimization): High base score (1000+)
+        // 2. LOYALTY BALANCE: Fewer reservations today is slightly better for throughput
+        // 3. EXPERIENCE FACTOR: Per user request, less experience years gets priority for general bookings
+        const businessScore = score + (50 - reservationsTodayCount * 5) - experienceYears * 2;
+
         slots.push({
           staffId,
           startTime: candidateStart.toISOString(),
           endTime: candidateEnd.toISOString(),
           score,
+          businessScore,
         });
       }
     }
@@ -850,6 +953,8 @@ export class PublicBookingService {
     tenantId: Types.ObjectId,
     serviceId: Types.ObjectId,
     requestedStaffId?: string,
+    price?: number,
+    duration?: number,
   ): Promise<string | null> {
     const today = startOfDay(new Date());
 
@@ -861,6 +966,8 @@ export class PublicBookingService {
         serviceId,
         requestedStaffId,
         date,
+        price,
+        duration,
       );
 
       if (result.length > 0) {
@@ -876,6 +983,8 @@ export class PublicBookingService {
     serviceId: Types.ObjectId,
     requestedStaffId: string | undefined,
     requestedDate: Date,
+    price?: number,
+    duration?: number,
   ): Promise<AvailabilitySlot[]> {
     const service = await this.serviceModel
       .findOne({ _id: serviceId, tenantId, isActive: true })
@@ -889,9 +998,11 @@ export class PublicBookingService {
       tenantId,
       serviceId,
       requestedStaffId,
+      price,
+      duration,
     );
 
-    const slots: AvailabilitySlot[] = [];
+    let slots: AvailabilitySlot[] = [];
 
     for (const assignment of assignments) {
       const staffId = String(assignment.userId);
@@ -916,6 +1027,19 @@ export class PublicBookingService {
       });
 
       slots.push(...generated);
+    }
+
+    // If staffId is NOT provided, we must de-duplicate slots by startTime
+    // and pick the one with the best businessScore
+    if (!requestedStaffId) {
+      const bestSlots = new Map<string, AvailabilitySlot>();
+      for (const slot of slots) {
+        const existing = bestSlots.get(slot.startTime);
+        if (!existing || slot.businessScore > existing.businessScore) {
+          bestSlots.set(slot.startTime, slot);
+        }
+      }
+      slots = Array.from(bestSlots.values());
     }
 
     return slots;

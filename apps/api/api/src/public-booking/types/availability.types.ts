@@ -8,6 +8,7 @@ export type AvailabilitySlot = {
   startTime: string;
   endTime: string;
   score: number;
+  businessScore: number;
 };
 
 export type EffectiveBookingSettings = {

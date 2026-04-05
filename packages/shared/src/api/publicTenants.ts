@@ -59,12 +59,18 @@ export type BookingOptionService = {
   description?: string;
 };
 
+export type BookingOptionStaffService = BookingOptionService & {
+  originalServiceId: string;
+};
+
 export type BookingOptionStaff = {
   _id: string;
   displayName: string;
   bio?: string;
   avatarUrl?: string;
   expertise?: string[];
+  experienceYears?: number;
+  services: BookingOptionStaffService[];
 };
 
 export type BookingOptionsResponse = {
@@ -84,6 +90,7 @@ export type AvailabilitySlot = {
   startTime: string;
   endTime: string;
   score: number;
+  businessScore?: number;
 };
 
 export type AvailabilityResponse = {

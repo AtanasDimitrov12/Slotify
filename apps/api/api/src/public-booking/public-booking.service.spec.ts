@@ -111,6 +111,9 @@ describe('PublicBookingService (Production Logic)', () => {
       mockModels.staffProfile.find.mockReturnValue(
         mockQuery([{ userId, isBookable: true, isActive: true }]),
       );
+      mockModels.staffProfile.findOne.mockReturnValue(
+        mockQuery({ userId, experienceYears: 5, isBookable: true, isActive: true }),
+      );
       mockModels.tenantBookingSettings.findOne.mockReturnValue(
         mockQuery({ minimumNoticeMinutes: 0, maximumDaysInAdvance: 30 }),
       );

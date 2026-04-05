@@ -1,7 +1,7 @@
-import { IsDateString, IsMongoId, IsOptional } from 'class-validator';
+import { IsDateString, IsMongoId, IsOptional, IsString } from 'class-validator';
 
 export class GetAvailabilityDto {
-  @IsMongoId()
+  @IsString()
   serviceId!: string;
 
   @IsOptional()

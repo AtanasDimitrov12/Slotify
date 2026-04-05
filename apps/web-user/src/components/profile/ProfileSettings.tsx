@@ -439,13 +439,14 @@ export default function ProfileSettings({
                           size="small"
                           label="Time Type"
                           value={isCustom ? 'custom' : slot.timeSlot}
-                          onChange={(e) =>
-                            updatePreferredSlot(
-                              slot.id,
-                              'timeSlot',
-                              `${customStart} - ${e.target.value}`,
-                            )
-                          }
+                          onChange={(e) => {
+                            const val = e.target.value;
+                            if (val === 'custom') {
+                              updatePreferredSlot(slot.id, 'timeSlot', '09:00 - 17:00');
+                            } else {
+                              updatePreferredSlot(slot.id, 'timeSlot', val);
+                            }
+                          }}
                         >
                           {TIME_PRESETS.map((p) => (
                             <MenuItem key={p.value} value={p.value}>
