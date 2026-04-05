@@ -40,6 +40,7 @@ export default function StaffLayout() {
 
   const items: NavItem[] = [
     { label: 'Dashboard', to: '/staff/dashboard', icon: <DashboardRoundedIcon /> },
+    { label: 'Schedule', to: '/staff/schedule', icon: <ScheduleRoundedIcon /> },
     { label: 'Profile', to: '/staff/profile', icon: <PersonRoundedIcon /> },
     { label: 'Availability', to: '/staff/availability', icon: <ScheduleRoundedIcon /> },
     { label: 'Time off', to: '/staff/time-off', icon: <BeachAccessRoundedIcon /> },

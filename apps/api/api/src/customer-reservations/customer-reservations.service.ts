@@ -43,7 +43,11 @@ export class CustomerReservationsService {
       {
         $addFields: {
           staffName: {
-            $ifNull: [{ $arrayElemAt: ['$staffProfile.displayName', 0] }, '$staffName', 'Professional'],
+            $ifNull: [
+              { $arrayElemAt: ['$staffProfile.displayName', 0] },
+              '$staffName',
+              'Professional',
+            ],
           },
           staffAvatarUrl: {
             $ifNull: [{ $arrayElemAt: ['$staffProfile.avatarUrl', 0] }, '$staffAvatarUrl', ''],
@@ -78,7 +82,9 @@ export class CustomerReservationsService {
     }
 
     if (reservation.status === 'cancelled' || reservation.status === 'completed') {
-      throw new ForbiddenException(`Cannot cancel a reservation that is already ${reservation.status}`);
+      throw new ForbiddenException(
+        `Cannot cancel a reservation that is already ${reservation.status}`,
+      );
     }
 
     reservation.status = 'cancelled';

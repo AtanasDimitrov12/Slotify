@@ -56,15 +56,25 @@ export async function listStaffServices(): Promise<StaffServiceOption[]> {
   return parseJson<StaffServiceOption[]>(res);
 }
 
-export async function listStaffAppointments(date: string): Promise<StaffAppointment[]> {
-  const res = await fetch(
-    `${API_BASE_URL}/staff/me/appointments?date=${encodeURIComponent(
-      new Date(`${date}T12:00:00`).toISOString(),
-    )}`,
-    {
-      headers: getAuthHeaders(),
-    },
-  );
+export async function listStaffAppointments(params: {
+  date?: string;
+  startDate?: string;
+  endDate?: string;
+}): Promise<StaffAppointment[]> {
+  const query = new URLSearchParams();
+  if (params.date) {
+    query.set('date', new Date(`${params.date}T12:00:00`).toISOString());
+  }
+  if (params.startDate) {
+    query.set('startDate', new Date(`${params.startDate}T12:00:00`).toISOString());
+  }
+  if (params.endDate) {
+    query.set('endDate', new Date(`${params.endDate}T12:00:00`).toISOString());
+  }
+
+  const res = await fetch(`${API_BASE_URL}/staff/me/appointments?${query.toString()}`, {
+    headers: getAuthHeaders(),
+  });
 
   return parseJson<StaffAppointment[]>(res);
 }

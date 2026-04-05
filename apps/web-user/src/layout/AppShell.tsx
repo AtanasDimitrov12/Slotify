@@ -5,11 +5,8 @@ import {
   CloseRounded,
   ExitToAppRounded,
   HomeRounded,
-  LoginRounded,
   LogoutRounded,
   MenuRounded,
-  PersonAddRounded,
-  SettingsRounded,
   StorefrontRounded,
 } from '@mui/icons-material';
 import {
@@ -94,12 +91,12 @@ export default function AppShell() {
         }}
       >
         <Toolbar sx={{ height: 74 }}>
-          <Container maxWidth="lg" sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <Container
+            maxWidth="lg"
+            sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}
+          >
             {/* LOGO */}
-            <ButtonBase
-              onClick={() => go('/')}
-              sx={{ borderRadius: 2, px: 1, py: 0.5, gap: 1.5 }}
-            >
+            <ButtonBase onClick={() => go('/')} sx={{ borderRadius: 2, px: 1, py: 0.5, gap: 1.5 }}>
               <Box
                 sx={{
                   width: 36,
@@ -121,9 +118,25 @@ export default function AppShell() {
             </ButtonBase>
 
             {/* DESKTOP NAV */}
-            <Stack direction="row" spacing={1} sx={{ display: { xs: 'none', md: 'flex' }, alignItems: 'center' }}>
-              <NavButton active={isActive('/')} onClick={() => go('/')} icon={<HomeRounded fontSize="small" />}>Home</NavButton>
-              <NavButton active={isActive('/salons')} onClick={() => go('/salons')} icon={<StorefrontRounded fontSize="small" />}>Salons</NavButton>
+            <Stack
+              direction="row"
+              spacing={1}
+              sx={{ display: { xs: 'none', md: 'flex' }, alignItems: 'center' }}
+            >
+              <NavButton
+                active={isActive('/')}
+                onClick={() => go('/')}
+                icon={<HomeRounded fontSize="small" />}
+              >
+                Home
+              </NavButton>
+              <NavButton
+                active={isActive('/salons')}
+                onClick={() => go('/salons')}
+                icon={<StorefrontRounded fontSize="small" />}
+              >
+                Salons
+              </NavButton>
             </Stack>
 
             {/* ACTIONS */}
@@ -175,13 +188,38 @@ export default function AppShell() {
                       },
                     }}
                   >
-                    <Typography sx={{ px: 2, py: 1, fontSize: 12, fontWeight: 800, color: 'text.secondary', textTransform: 'uppercase' }}>
+                    <Typography
+                      sx={{
+                        px: 2,
+                        py: 1,
+                        fontSize: 12,
+                        fontWeight: 800,
+                        color: 'text.secondary',
+                        textTransform: 'uppercase',
+                      }}
+                    >
                       Account
                     </Typography>
-                    <UserMenuItem icon={<AccountCircleRounded fontSize="small" />} onClick={() => go('/profile')}>Profile</UserMenuItem>
-                    <UserMenuItem icon={<CalendarMonthRounded fontSize="small" />} onClick={() => go('/profile')}>My Bookings</UserMenuItem>
+                    <UserMenuItem
+                      icon={<AccountCircleRounded fontSize="small" />}
+                      onClick={() => go('/profile')}
+                    >
+                      Profile
+                    </UserMenuItem>
+                    <UserMenuItem
+                      icon={<CalendarMonthRounded fontSize="small" />}
+                      onClick={() => go('/profile')}
+                    >
+                      My Bookings
+                    </UserMenuItem>
                     <Divider sx={{ my: 1, opacity: 0.5 }} />
-                    <UserMenuItem icon={<LogoutRounded fontSize="small" />} onClick={handleLogout} color="#ef4444">Logout</UserMenuItem>
+                    <UserMenuItem
+                      icon={<LogoutRounded fontSize="small" />}
+                      onClick={handleLogout}
+                      color="#ef4444"
+                    >
+                      Logout
+                    </UserMenuItem>
                   </Menu>
                 </>
               ) : (
@@ -216,7 +254,10 @@ export default function AppShell() {
               )}
 
               <IconButton
-                sx={{ display: { xs: 'flex', md: 'none' }, border: `1px solid ${shellColors.navBorder}` }}
+                sx={{
+                  display: { xs: 'flex', md: 'none' },
+                  border: `1px solid ${shellColors.navBorder}`,
+                }}
                 onClick={() => setMobileOpen(true)}
               >
                 <MenuRounded />
@@ -235,12 +276,31 @@ export default function AppShell() {
       >
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
           <Typography sx={{ fontWeight: 900, fontSize: 20 }}>Menu</Typography>
-          <IconButton onClick={() => setMobileOpen(false)}><CloseRounded /></IconButton>
+          <IconButton onClick={() => setMobileOpen(false)}>
+            <CloseRounded />
+          </IconButton>
         </Box>
         <List spacing={1}>
-          <MobileNavItem active={isActive('/')} icon={<HomeRounded />} label="Home" onClick={() => go('/')} />
-          <MobileNavItem active={isActive('/salons')} icon={<StorefrontRounded />} label="Salons" onClick={() => go('/salons')} />
-          {user && <MobileNavItem active={isActive('/profile')} icon={<AccountCircleRounded />} label="Profile" onClick={() => go('/profile')} />}
+          <MobileNavItem
+            active={isActive('/')}
+            icon={<HomeRounded />}
+            label="Home"
+            onClick={() => go('/')}
+          />
+          <MobileNavItem
+            active={isActive('/salons')}
+            icon={<StorefrontRounded />}
+            label="Salons"
+            onClick={() => go('/salons')}
+          />
+          {user && (
+            <MobileNavItem
+              active={isActive('/profile')}
+              icon={<AccountCircleRounded />}
+              label="Profile"
+              onClick={() => go('/profile')}
+            />
+          )}
         </List>
         <Box sx={{ mt: 'auto', pt: 2 }}>
           {user ? (
@@ -254,8 +314,27 @@ export default function AppShell() {
             </Button>
           ) : (
             <Stack spacing={1.5}>
-              <Button fullWidth variant="outlined" onClick={() => go('/login')} sx={{ borderRadius: 99, fontWeight: 800, textTransform: 'none' }}>Login</Button>
-              <Button fullWidth variant="contained" onClick={() => go('/register')} sx={{ borderRadius: 99, fontWeight: 800, textTransform: 'none', bgcolor: shellColors.purple }}>Sign Up</Button>
+              <Button
+                fullWidth
+                variant="outlined"
+                onClick={() => go('/login')}
+                sx={{ borderRadius: 99, fontWeight: 800, textTransform: 'none' }}
+              >
+                Login
+              </Button>
+              <Button
+                fullWidth
+                variant="contained"
+                onClick={() => go('/register')}
+                sx={{
+                  borderRadius: 99,
+                  fontWeight: 800,
+                  textTransform: 'none',
+                  bgcolor: shellColors.purple,
+                }}
+              >
+                Sign Up
+              </Button>
             </Stack>
           )}
         </Box>
@@ -268,7 +347,17 @@ export default function AppShell() {
   );
 }
 
-function NavButton({ children, active, onClick, icon }: { children: string; active: boolean; onClick: () => void; icon: React.ReactNode }) {
+function NavButton({
+  children,
+  active,
+  onClick,
+  icon,
+}: {
+  children: string;
+  active: boolean;
+  onClick: () => void;
+  icon: React.ReactNode;
+}) {
   return (
     <Button
       startIcon={icon}
@@ -288,7 +377,17 @@ function NavButton({ children, active, onClick, icon }: { children: string; acti
   );
 }
 
-function UserMenuItem({ children, icon, onClick, color }: { children: string; icon: React.ReactNode; onClick: () => void; color?: string }) {
+function UserMenuItem({
+  children,
+  icon,
+  onClick,
+  color,
+}: {
+  children: string;
+  icon: React.ReactNode;
+  onClick: () => void;
+  color?: string;
+}) {
   return (
     <MenuItem
       onClick={onClick}
@@ -308,7 +407,17 @@ function UserMenuItem({ children, icon, onClick, color }: { children: string; ic
   );
 }
 
-function MobileNavItem({ active, icon, label, onClick }: { active: boolean; icon: React.ReactNode; label: string; onClick: () => void }) {
+function MobileNavItem({
+  active,
+  icon,
+  label,
+  onClick,
+}: {
+  active: boolean;
+  icon: React.ReactNode;
+  label: string;
+  onClick: () => void;
+}) {
   return (
     <ListItemButton
       onClick={onClick}

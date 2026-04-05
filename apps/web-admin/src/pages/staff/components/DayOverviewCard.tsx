@@ -1,6 +1,6 @@
+import { type StaffAppointment } from '@barber/shared';
 import { Box, Card, CardContent, Stack, Typography } from '@mui/material';
 import * as React from 'react';
-import type { StaffAppointment } from '../../../api/staffAppointments';
 
 const PRODUCTIVE_STATUSES: StaffAppointment['status'][] = ['pending', 'confirmed', 'completed'];
 

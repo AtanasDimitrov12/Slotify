@@ -34,7 +34,9 @@ export type CustomerProfile = {
   updatedAt: string;
 };
 
-export type UpdateCustomerProfilePayload = Partial<Omit<CustomerProfile, '_id' | 'userId' | 'createdAt' | 'updatedAt'>>;
+export type UpdateCustomerProfilePayload = Partial<
+  Omit<CustomerProfile, '_id' | 'userId' | 'createdAt' | 'updatedAt'>
+>;
 
 export async function getMyCustomerProfile(): Promise<CustomerProfile> {
   return apiFetch<CustomerProfile>('/customer-profiles/me', {
@@ -42,7 +44,9 @@ export async function getMyCustomerProfile(): Promise<CustomerProfile> {
   });
 }
 
-export async function updateMyCustomerProfile(payload: UpdateCustomerProfilePayload): Promise<CustomerProfile> {
+export async function updateMyCustomerProfile(
+  payload: UpdateCustomerProfilePayload,
+): Promise<CustomerProfile> {
   return apiFetch<CustomerProfile>('/customer-profiles/me', {
     method: 'PATCH',
     body: JSON.stringify(payload),

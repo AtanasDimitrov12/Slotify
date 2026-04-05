@@ -1,7 +1,6 @@
 import {
   COUNTRIES,
   type CustomerProfile,
-  getMyCustomerProfile,
   type PreferredBookingSlot,
   type PublicTenantListItem,
   updateMyCustomerProfile,
@@ -31,6 +30,7 @@ import {
   Card,
   CardContent,
   Chip,
+  CircularProgress,
   Divider,
   FormGroup,
   Grid,
@@ -41,7 +41,7 @@ import {
   TextField,
   Typography,
 } from '@mui/material';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 
 const profileColors = {
   purple: '#7C6CFF',
@@ -65,13 +65,29 @@ interface Props {
   onProfileUpdated: (updated: CustomerProfile) => void;
 }
 
+type EditablePreferredBookingSlot = PreferredBookingSlot & {
+  id: string;
+};
+
+type EditableCustomerProfile = Omit<CustomerProfile, 'preferredBookingSlots'> & {
+  preferredBookingSlots?: EditablePreferredBookingSlot[];
+};
+
+const createSlotId = () => crypto.randomUUID();
+
 export default function ProfileSettings({
   profile: initialProfile,
   allSalons,
   onProfileUpdated,
 }: Props) {
   const { showSuccess, showError } = useToast();
-  const [profile, setProfile] = useState<CustomerProfile>(initialProfile);
+  const [profile, setProfile] = useState<EditableCustomerProfile>({
+    ...initialProfile,
+    preferredBookingSlots: (initialProfile.preferredBookingSlots || []).map((slot) => ({
+      ...slot,
+      id: createSlotId(),
+    })),
+  });
   const [savingSection, setSavingSection] = useState<string | null>(null);
 
   const validatePhone = (phone: string) => {
@@ -110,7 +126,13 @@ export default function ProfileSettings({
     try {
       setSavingSection(sectionId);
       const updated = await updateMyCustomerProfile(payload);
-      setProfile(updated);
+      setProfile({
+        ...updated,
+        preferredBookingSlots: (updated.preferredBookingSlots || []).map((slot) => ({
+          ...slot,
+          id: createSlotId(),
+        })),
+      });
       onProfileUpdated(updated);
       showSuccess('Changes saved successfully');
     } catch (err) {
@@ -134,22 +156,33 @@ export default function ProfileSettings({
     const current = profile.preferredBookingSlots || [];
     setProfile({
       ...profile,
-      preferredBookingSlots: [...current, { dayOfWeek: 1, timeSlot: 'All Day' }],
+      preferredBookingSlots: [
+        ...current,
+        { id: createSlotId(), dayOfWeek: 1, timeSlot: 'All Day' },
+      ],
     });
   };
 
-  const removePreferredSlot = (index: number) => {
+  const removePreferredSlot = (id: string) => {
     const current = profile.preferredBookingSlots || [];
     setProfile({
       ...profile,
-      preferredBookingSlots: current.filter((_, i) => i !== index),
+      preferredBookingSlots: current.filter((slot) => slot.id !== id),
     });
   };
 
-  const updatePreferredSlot = (index: number, field: keyof PreferredBookingSlot, value: any) => {
-    const current = [...(profile.preferredBookingSlots || [])];
-    current[index] = { ...current[index], [field]: value };
-    setProfile({ ...profile, preferredBookingSlots: current });
+  const updatePreferredSlot = (
+    id: string,
+    field: keyof PreferredBookingSlot,
+    value: string | number,
+  ) => {
+    const current = profile.preferredBookingSlots || [];
+    setProfile({
+      ...profile,
+      preferredBookingSlots: current.map((slot) =>
+        slot.id === id ? { ...slot, [field]: value } : slot,
+      ),
+    });
   };
 
   const handleNotificationChange = async (field: string, val: boolean) => {
@@ -164,6 +197,15 @@ export default function ProfileSettings({
       const updated = await updateMyCustomerProfile({
         notificationPreferences: nextPrefs,
       });
+
+      setProfile({
+        ...updated,
+        preferredBookingSlots: (updated.preferredBookingSlots || []).map((slot) => ({
+          ...slot,
+          id: createSlotId(),
+        })),
+      });
+
       onProfileUpdated(updated);
     } catch (err) {
       showError(err);
@@ -276,7 +318,9 @@ export default function ProfileSettings({
         icon={<SettingsRounded />}
         onSave={() =>
           handleSaveSection('booking', {
-            preferredBookingSlots: profile.preferredBookingSlots,
+            preferredBookingSlots: (profile.preferredBookingSlots || []).map(
+              ({ id, ...slot }) => slot,
+            ),
           })
         }
         isSaving={savingSection === 'booking'}
@@ -341,13 +385,13 @@ export default function ProfileSettings({
                   </Typography>
                 </Box>
               )}
-              {(profile.preferredBookingSlots || []).map((slot, index) => {
+              {(profile.preferredBookingSlots || []).map((slot) => {
                 const isCustom = slot.timeSlot.includes('-');
                 const [customStart, customEnd] = isCustom ? slot.timeSlot.split(' - ') : ['', ''];
 
                 return (
                   <Card
-                    key={index}
+                    key={slot.id}
                     elevation={0}
                     sx={{
                       p: 2,
@@ -370,7 +414,7 @@ export default function ProfileSettings({
                           label="Day"
                           value={slot.dayOfWeek}
                           onChange={(e) =>
-                            updatePreferredSlot(index, 'dayOfWeek', Number(e.target.value))
+                            updatePreferredSlot(slot.id, 'dayOfWeek', Number(e.target.value))
                           }
                         >
                           {[
@@ -395,14 +439,13 @@ export default function ProfileSettings({
                           size="small"
                           label="Time Type"
                           value={isCustom ? 'custom' : slot.timeSlot}
-                          onChange={(e) => {
-                            const val = e.target.value;
-                            if (val === 'custom') {
-                              updatePreferredSlot(index, 'timeSlot', '09:00 - 10:00');
-                            } else {
-                              updatePreferredSlot(index, 'timeSlot', val);
-                            }
-                          }}
+                          onChange={(e) =>
+                            updatePreferredSlot(
+                              slot.id,
+                              'timeSlot',
+                              `${customStart} - ${e.target.value}`,
+                            )
+                          }
                         >
                           {TIME_PRESETS.map((p) => (
                             <MenuItem key={p.value} value={p.value}>
@@ -421,7 +464,7 @@ export default function ProfileSettings({
                               value={customStart}
                               onChange={(e) =>
                                 updatePreferredSlot(
-                                  index,
+                                  slot.id,
                                   'timeSlot',
                                   `${e.target.value} - ${customEnd}`,
                                 )
@@ -436,7 +479,7 @@ export default function ProfileSettings({
                               value={customEnd}
                               onChange={(e) =>
                                 updatePreferredSlot(
-                                  index,
+                                  slot.id,
                                   'timeSlot',
                                   `${customStart} - ${e.target.value}`,
                                 )
@@ -457,7 +500,7 @@ export default function ProfileSettings({
                         <IconButton
                           color="error"
                           size="small"
-                          onClick={() => removePreferredSlot(index)}
+                          onClick={() => removePreferredSlot(slot.id)}
                           sx={{
                             bgcolor: alpha('#EF4444', 0.05),
                             '&:hover': { bgcolor: alpha('#EF4444', 0.1) },
@@ -513,19 +556,23 @@ export default function ProfileSettings({
               }}
               renderInput={(params) => <TextField {...params} placeholder="Search salons..." />}
               renderTags={(value, getTagProps) =>
-                value.map((option, index) => (
-                  <Chip
-                    key={option._id}
-                    label={option.name}
-                    {...getTagProps({ index })}
-                    sx={{
-                      bgcolor: alpha(profileColors.purple, 0.1),
-                      color: profileColors.purple,
-                      fontWeight: 700,
-                      borderRadius: 2,
-                    }}
-                  />
-                ))
+                value.map((option, index) => {
+                  const { key, ...tagProps } = getTagProps({ index });
+
+                  return (
+                    <Chip
+                      key={key}
+                      label={option.name}
+                      {...tagProps}
+                      sx={{
+                        bgcolor: alpha(profileColors.purple, 0.1),
+                        color: profileColors.purple,
+                        fontWeight: 700,
+                        borderRadius: 2,
+                      }}
+                    />
+                  );
+                })
               }
             />
           </Box>

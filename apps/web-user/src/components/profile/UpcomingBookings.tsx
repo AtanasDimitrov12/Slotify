@@ -1,4 +1,13 @@
+import { type CustomerReservation, cancelReservation } from '@barber/shared';
 import {
+  CalendarMonthRounded,
+  CancelRounded,
+  ContentCutRounded,
+  LocationOnRounded,
+  PersonRounded,
+} from '@mui/icons-material';
+import {
+  alpha,
   Box,
   Button,
   Card,
@@ -8,16 +17,7 @@ import {
   Grid,
   Stack,
   Typography,
-  alpha,
 } from '@mui/material';
-import {
-  CalendarMonthRounded,
-  LocationOnRounded,
-  PersonRounded,
-  ContentCutRounded,
-  CancelRounded,
-} from '@mui/icons-material';
-import { type CustomerReservation, cancelReservation } from '@barber/shared';
 import { useState } from 'react';
 
 interface Props {
@@ -104,7 +104,11 @@ export default function UpcomingBookings({ reservations, onCancelled }: Props) {
                   })}
                 </Typography>
                 <Typography sx={{ fontWeight: 600, fontSize: 15, color: 'text.secondary' }}>
-                  at {new Date(res.startTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                  at{' '}
+                  {new Date(res.startTime).toLocaleTimeString([], {
+                    hour: '2-digit',
+                    minute: '2-digit',
+                  })}
                 </Typography>
               </Stack>
               <Chip
@@ -127,7 +131,13 @@ export default function UpcomingBookings({ reservations, onCancelled }: Props) {
                     <Box>
                       <Typography
                         variant="caption"
-                        sx={{ fontWeight: 800, color: 'text.secondary', textTransform: 'uppercase', mb: 0.5, display: 'block' }}
+                        sx={{
+                          fontWeight: 800,
+                          color: 'text.secondary',
+                          textTransform: 'uppercase',
+                          mb: 0.5,
+                          display: 'block',
+                        }}
                       >
                         Salon
                       </Typography>
@@ -139,7 +149,13 @@ export default function UpcomingBookings({ reservations, onCancelled }: Props) {
                     <Box>
                       <Typography
                         variant="caption"
-                        sx={{ fontWeight: 800, color: 'text.secondary', textTransform: 'uppercase', mb: 0.5, display: 'block' }}
+                        sx={{
+                          fontWeight: 800,
+                          color: 'text.secondary',
+                          textTransform: 'uppercase',
+                          mb: 0.5,
+                          display: 'block',
+                        }}
                       >
                         Service
                       </Typography>
@@ -158,7 +174,13 @@ export default function UpcomingBookings({ reservations, onCancelled }: Props) {
                     <Box>
                       <Typography
                         variant="caption"
-                        sx={{ fontWeight: 800, color: 'text.secondary', textTransform: 'uppercase', mb: 0.5, display: 'block' }}
+                        sx={{
+                          fontWeight: 800,
+                          color: 'text.secondary',
+                          textTransform: 'uppercase',
+                          mb: 0.5,
+                          display: 'block',
+                        }}
                       >
                         Professional
                       </Typography>
@@ -171,11 +193,19 @@ export default function UpcomingBookings({ reservations, onCancelled }: Props) {
                       <Box>
                         <Typography
                           variant="caption"
-                          sx={{ fontWeight: 800, color: 'text.secondary', textTransform: 'uppercase', mb: 0.5, display: 'block' }}
+                          sx={{
+                            fontWeight: 800,
+                            color: 'text.secondary',
+                            textTransform: 'uppercase',
+                            mb: 0.5,
+                            display: 'block',
+                          }}
                         >
                           Notes
                         </Typography>
-                        <Typography sx={{ fontSize: 14, fontStyle: 'italic', color: 'text.secondary' }}>
+                        <Typography
+                          sx={{ fontSize: 14, fontStyle: 'italic', color: 'text.secondary' }}
+                        >
                           "{res.notes}"
                         </Typography>
                       </Box>
@@ -186,7 +216,15 @@ export default function UpcomingBookings({ reservations, onCancelled }: Props) {
             </Box>
 
             <Divider sx={{ opacity: 0.5 }} />
-            <Box sx={{ px: 3, py: 1.5, display: 'flex', justifyContent: 'flex-end', bgcolor: alpha('#FFF', 0.5) }}>
+            <Box
+              sx={{
+                px: 3,
+                py: 1.5,
+                display: 'flex',
+                justifyContent: 'flex-end',
+                bgcolor: alpha('#FFF', 0.5),
+              }}
+            >
               <Button
                 size="small"
                 color="error"

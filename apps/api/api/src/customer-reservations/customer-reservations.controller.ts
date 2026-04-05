@@ -1,7 +1,7 @@
 import { Body, Controller, Get, Param, Patch, Post, UseGuards } from '@nestjs/common';
 import { CurrentUser } from '../auth/current-user.decorator';
-import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import type { JwtPayload } from '../auth/jwt.strategy';
+import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { CustomerProfilesService } from '../customer-profiles/customer-profiles.service';
 import { CustomerReservationsService } from './customer-reservations.service';
 import { CreateReviewDto } from './dto/create-review.dto';
@@ -23,7 +23,11 @@ export class CustomerReservationsController {
   @Patch(':id/cancel')
   async cancelReservation(@Param('id') reservationId: string, @CurrentUser() user: JwtPayload) {
     const profile = await this.customerProfilesService.findByUserId(user.sub);
-    return this.customerReservationsService.cancelReservation(reservationId, user.email, profile?.phone);
+    return this.customerReservationsService.cancelReservation(
+      reservationId,
+      user.email,
+      profile?.phone,
+    );
   }
 
   @Post(':id/review')
@@ -33,6 +37,11 @@ export class CustomerReservationsController {
     @CurrentUser() user: JwtPayload,
   ) {
     const profile = await this.customerProfilesService.findByUserId(user.sub);
-    return this.customerReservationsService.addReview(reservationId, dto, user.email, profile?.phone);
+    return this.customerReservationsService.addReview(
+      reservationId,
+      dto,
+      user.email,
+      profile?.phone,
+    );
   }
 }

@@ -1,24 +1,26 @@
-import {
-  cancelStaffAppointment,
-  createStaffAppointment,
-  landingColors,
-  listStaffAppointments,
-  listStaffServices,
-  type StaffAppointment,
-  updateStaffAppointment,
-  updateStaffAppointmentStatus,
-} from '@barber/shared';
-import AddRoundedIcon from '@mui/icons-material/AddRounded';
-import ChevronLeftRoundedIcon from '@mui/icons-material/ChevronLeftRounded';
-import ChevronRightRoundedIcon from '@mui/icons-material/ChevronRightRounded';
+import { landingColors, listStaffAppointments, type StaffAppointment } from '@barber/shared';
+import AccessTimeRoundedIcon from '@mui/icons-material/AccessTimeRounded';
+import CalendarMonthRoundedIcon from '@mui/icons-material/CalendarMonthRounded';
+import CheckCircleRoundedIcon from '@mui/icons-material/CheckCircleRounded';
+import EventRoundedIcon from '@mui/icons-material/EventRounded';
+import PersonRoundedIcon from '@mui/icons-material/PersonRounded';
 import TodayRoundedIcon from '@mui/icons-material/TodayRounded';
-import { Alert, alpha, Box, Button, Grid, IconButton, Stack, Typography } from '@mui/material';
+import TrendingUpRoundedIcon from '@mui/icons-material/TrendingUpRounded';
+import {
+  Avatar,
+  alpha,
+  Box,
+  Button,
+  Card,
+  CardContent,
+  CircularProgress,
+  Divider,
+  Grid,
+  Stack,
+  Typography,
+} from '@mui/material';
 import * as React from 'react';
-import AddAppointmentDialog from './components/AddAppointmentDialog';
-import DayOverviewCard from './components/DayOverviewCard';
-import EditAppointmentDialog from './components/EditAppointmentDialog';
-import ScheduleCalendar from './components/ScheduleCalendar';
-import SelectedAppointmentCard from './components/SelectedAppointmentCard';
+import { useNavigate } from 'react-router-dom';
 
 function formatDateInput(date: Date) {
   const year = date.getFullYear();
@@ -27,349 +29,404 @@ function formatDateInput(date: Date) {
   return `${year}-${month}-${day}`;
 }
 
-function formatHumanDate(dateString: string) {
-  return new Date(`${dateString}T12:00:00`).toLocaleDateString([], {
-    weekday: 'long',
-    day: '2-digit',
-    month: 'long',
+function formatTime(dateString: string) {
+  return new Date(dateString).toLocaleTimeString([], {
+    hour: '2-digit',
+    minute: '2-digit',
   });
 }
 
 export default function StaffDashboardPage() {
-  const [selectedDate, setSelectedDate] = React.useState<string>(formatDateInput(new Date()));
-  const [appointments, setAppointments] = React.useState<StaffAppointment[]>([]);
-  const [services, setServices] = React.useState<
-    {
-      id: string;
-      serviceId: string;
-      name: string;
-      durationMin: number;
-      priceEUR: number;
-      description?: string;
-    }[]
-  >([]);
-  const [selectedAppointmentId, setSelectedAppointmentId] = React.useState<string | null>(null);
+  const navigate = useNavigate();
   const [loading, setLoading] = React.useState(true);
-  const [error, setError] = React.useState('');
-  const [moveError, setMoveError] = React.useState('');
-  const [actionLoading, setActionLoading] = React.useState(false);
-
-  const [addOpen, setAddOpen] = React.useState(false);
-  const [editOpen, setEditOpen] = React.useState(false);
-  const [creating, setCreating] = React.useState(false);
-
-  const selectedAppointment =
-    appointments.find((item) => item.id === selectedAppointmentId) ?? null;
-
-  const loadAppointments = React.useCallback(async () => {
-    try {
-      setLoading(true);
-      setError('');
-      const result = await listStaffAppointments(selectedDate);
-      setAppointments(result);
-      setSelectedAppointmentId((prev) =>
-        prev && result.some((item) => item.id === prev) ? prev : null,
-      );
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to load appointments');
-    } finally {
-      setLoading(false);
-    }
-  }, [selectedDate]);
+  const [todayAppointments, setTodayAppointments] = React.useState<StaffAppointment[]>([]);
+  const [weekAppointments, setWeekAppointments] = React.useState<StaffAppointment[]>([]);
 
   React.useEffect(() => {
-    void loadAppointments();
-  }, [loadAppointments]);
-
-  React.useEffect(() => {
-    async function loadServices() {
+    async function loadData() {
       try {
-        const result = await listStaffServices();
-        setServices(result);
+        setLoading(true);
+        const today = new Date();
+        const todayStr = formatDateInput(today);
+
+        // Get today's appointments
+        const todayRes = await listStaffAppointments({ date: todayStr });
+        setTodayAppointments(todayRes);
+
+        // Get this week's appointments (from Monday to Sunday)
+        const currentDay = today.getDay();
+        const diff = today.getDate() - currentDay + (currentDay === 0 ? -6 : 1);
+        const monday = new Date(new Date(today).setDate(diff));
+        const sunday = new Date(monday);
+        sunday.setDate(monday.getDate() + 6);
+
+        const weekRes = await listStaffAppointments({
+          startDate: formatDateInput(monday),
+          endDate: formatDateInput(sunday),
+        });
+        setWeekAppointments(weekRes);
       } catch (err) {
-        console.error(err);
+        console.error('Failed to load dashboard data', err);
+      } finally {
+        setLoading(false);
       }
     }
 
-    void loadServices();
+    void loadData();
   }, []);
 
-  function goToPreviousDay() {
-    const date = new Date(`${selectedDate}T12:00:00`);
-    date.setDate(date.getDate() - 1);
-    setSelectedDate(formatDateInput(date));
-    setSelectedAppointmentId(null);
+  if (loading) {
+    return (
+      <Box sx={{ display: 'grid', placeItems: 'center', minHeight: '60vh' }}>
+        <CircularProgress sx={{ color: landingColors.purple }} />
+      </Box>
+    );
   }
 
-  function goToNextDay() {
-    const date = new Date(`${selectedDate}T12:00:00`);
-    date.setDate(date.getDate() + 1);
-    setSelectedDate(formatDateInput(date));
-    setSelectedAppointmentId(null);
-  }
+  const upcoming = todayAppointments
+    .filter((a) => new Date(a.startTime) > new Date() && a.status !== 'cancelled')
+    .slice(0, 3);
 
-  function goToToday() {
-    setSelectedDate(formatDateInput(new Date()));
-    setSelectedAppointmentId(null);
-  }
+  const completedToday = todayAppointments.filter((a) => a.status === 'completed').length;
+  const confirmedToday = todayAppointments.filter((a) => a.status === 'confirmed').length;
 
-  async function handleMoveAppointment(appointment: StaffAppointment, nextStartIso: string) {
-    try {
-      setMoveError('');
+  const nextAppointment = todayAppointments
+    .filter((a) => new Date(a.startTime) > new Date() && a.status === 'confirmed')
+    .sort((a, b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime())[0];
 
-      await updateStaffAppointment(appointment.id, {
-        startTime: nextStartIso,
-      });
-
-      await loadAppointments();
-    } catch (err) {
-      setMoveError(
-        err instanceof Error
-          ? err.message
-          : 'Could not move the appointment. It may overlap with another booking.',
-      );
-    }
-  }
-
-  async function handleEditAppointment(payload: {
-    startTime: string;
-    customerName: string;
-    customerPhone: string;
-    customerEmail?: string;
-    notes?: string;
-    status: StaffAppointment['status'];
-  }) {
-    if (!selectedAppointment) return;
-
-    try {
-      setActionLoading(true);
-
-      await updateStaffAppointment(selectedAppointment.id, {
-        startTime: new Date(`${selectedDate}T${payload.startTime}:00`).toISOString(),
-        customerName: payload.customerName,
-        customerPhone: payload.customerPhone,
-        customerEmail: payload.customerEmail,
-        notes: payload.notes,
-      });
-
-      if (payload.status !== selectedAppointment.status) {
-        await updateStaffAppointmentStatus(selectedAppointment.id, payload.status);
-      }
-
-      setEditOpen(false);
-      await loadAppointments();
-    } finally {
-      setActionLoading(false);
-    }
-  }
-
-  async function handleMarkDone() {
-    if (!selectedAppointment) return;
-    try {
-      setActionLoading(true);
-      await updateStaffAppointmentStatus(selectedAppointment.id, 'completed');
-      await loadAppointments();
-    } finally {
-      setActionLoading(false);
-    }
-  }
-
-  async function handleMarkNoShow() {
-    if (!selectedAppointment) return;
-    try {
-      setActionLoading(true);
-      await updateStaffAppointmentStatus(selectedAppointment.id, 'no-show');
-      await loadAppointments();
-    } finally {
-      setActionLoading(false);
-    }
-  }
-
-  async function handleCancel() {
-    if (!selectedAppointment) return;
-    try {
-      setActionLoading(true);
-      await cancelStaffAppointment(selectedAppointment.id);
-      await loadAppointments();
-    } finally {
-      setActionLoading(false);
-    }
-  }
+  const weeklyRevenue = weekAppointments.reduce(
+    (acc, a) => acc + (a.status !== 'cancelled' ? a.priceEUR : 0),
+    0,
+  );
 
   return (
-    <>
-      <Stack spacing={4}>
-        <Stack
-          direction={{ xs: 'column', md: 'row' }}
-          justifyContent="space-between"
-          alignItems={{ xs: 'stretch', md: 'flex-start' }}
-          spacing={3}
-        >
-          <Box>
-            <Typography
-              sx={{ fontWeight: 1000, fontSize: 36, letterSpacing: -1.5, color: '#0F172A' }}
-            >
-              Your Schedule
-            </Typography>
-            <Typography sx={{ color: '#64748B', fontWeight: 600, fontSize: 18 }}>
-              Manage appointments and optimize your day.
-            </Typography>
-          </Box>
-
-          <Stack
-            direction="row"
-            spacing={1.5}
-            flexWrap="wrap"
-            useFlexGap
-            sx={{ alignItems: 'center' }}
+    <Stack spacing={4}>
+      <Stack direction="row" justifyContent="space-between" alignItems="center">
+        <Box>
+          <Typography
+            sx={{ fontWeight: 1000, fontSize: 36, letterSpacing: -1.5, color: '#0F172A' }}
           >
-            <Button
-              variant="outlined"
-              startIcon={<TodayRoundedIcon />}
-              onClick={goToToday}
-              sx={{
-                borderRadius: 999,
-                fontWeight: 900,
-                borderColor: 'rgba(15,23,42,0.12)',
-                color: '#475569',
-                '&:hover': { bgcolor: '#FFF', borderColor: landingColors.purple },
-              }}
-            >
-              Today
-            </Button>
-
-            <Stack
-              direction="row"
-              alignItems="center"
-              spacing={1}
-              sx={{
-                bgcolor: '#FFFFFF',
-                border: '1px solid rgba(15,23,42,0.06)',
-                borderRadius: 999,
-                px: 1,
-                py: 0.5,
-                boxShadow: '0 4px 12px rgba(15,23,42,0.03)',
-              }}
-            >
-              <IconButton
-                size="small"
-                onClick={goToPreviousDay}
-                sx={{
-                  color: landingColors.purple,
-                  '&:hover': { bgcolor: alpha(landingColors.purple, 0.08) },
-                }}
-              >
-                <ChevronLeftRoundedIcon />
-              </IconButton>
-
-              <Typography
-                sx={{
-                  minWidth: 180,
-                  textAlign: 'center',
-                  fontWeight: 800,
-                  fontSize: 15,
-                  color: '#0F172A',
-                }}
-              >
-                {formatHumanDate(selectedDate)}
-              </Typography>
-
-              <IconButton
-                size="small"
-                onClick={goToNextDay}
-                sx={{
-                  color: landingColors.purple,
-                  '&:hover': { bgcolor: alpha(landingColors.purple, 0.08) },
-                }}
-              >
-                <ChevronRightRoundedIcon />
-              </IconButton>
-            </Stack>
-
-            <Button
-              variant="contained"
-              startIcon={<AddRoundedIcon />}
-              onClick={() => setAddOpen(true)}
-              sx={{
-                minHeight: 52,
-                px: 3,
-                borderRadius: 999,
-                fontWeight: 900,
-                bgcolor: landingColors.purple,
-                boxShadow: `0 12px 30px ${alpha(landingColors.purple, 0.24)}`,
-              }}
-            >
-              Add Appointment
-            </Button>
-          </Stack>
-        </Stack>
-
-        {error ? (
-          <Alert severity="error" sx={{ borderRadius: 3 }}>
-            {error}
-          </Alert>
-        ) : null}
-        {moveError ? (
-          <Alert severity="warning" sx={{ borderRadius: 3 }}>
-            {moveError}
-          </Alert>
-        ) : null}
-
-        <Grid container spacing={3}>
-          <Grid item xs={12} lg={8.5}>
-            <ScheduleCalendar
-              selectedDate={selectedDate}
-              appointments={appointments}
-              loading={loading}
-              selectedAppointmentId={selectedAppointmentId}
-              onSelectAppointment={setSelectedAppointmentId}
-              onMoveAppointment={handleMoveAppointment}
-            />
-          </Grid>
-
-          <Grid item xs={12} lg={3.5}>
-            <Stack spacing={3}>
-              <DayOverviewCard appointments={appointments} />
-
-              <SelectedAppointmentCard
-                selectedAppointment={selectedAppointment}
-                onEdit={() => setEditOpen(true)}
-                onCancel={handleCancel}
-                onMarkDone={handleMarkDone}
-                onMarkNoShow={handleMarkNoShow}
-              />
-            </Stack>
-          </Grid>
-        </Grid>
+            Welcome back!
+          </Typography>
+          <Typography sx={{ color: '#64748B', fontWeight: 600, fontSize: 18 }}>
+            Here is what is happening in your salon today.
+          </Typography>
+        </Box>
+        <Button
+          variant="contained"
+          onClick={() => navigate('/staff/schedule')}
+          sx={{
+            borderRadius: 999,
+            fontWeight: 900,
+            px: 3,
+            py: 1.5,
+            bgcolor: landingColors.purple,
+            '&:hover': { bgcolor: landingColors.purple, filter: 'brightness(1.1)' },
+          }}
+        >
+          View Full Schedule
+        </Button>
       </Stack>
 
-      <AddAppointmentDialog
-        open={addOpen}
-        onClose={() => setAddOpen(false)}
-        creating={creating}
-        services={services}
-        onSubmit={async (payload) => {
-          try {
-            setCreating(true);
-            await createStaffAppointment({
-              ...payload,
-              startTime: new Date(`${selectedDate}T${payload.startTime}:00`).toISOString(),
-            });
-            setAddOpen(false);
-            await loadAppointments();
-          } finally {
-            setCreating(false);
-          }
-        }}
-      />
+      <Grid container spacing={3}>
+        {/* Today Summary */}
+        <Grid item xs={12} md={4}>
+          <Card
+            sx={{
+              height: '100%',
+              borderRadius: 4,
+              border: '1px solid rgba(15,23,42,0.06)',
+              boxShadow: '0 4px 20px rgba(15,23,42,0.03)',
+            }}
+          >
+            <CardContent sx={{ p: 3 }}>
+              <Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 2 }}>
+                <Avatar
+                  sx={{
+                    bgcolor: alpha(landingColors.purple, 0.1),
+                    color: landingColors.purple,
+                  }}
+                >
+                  <TodayRoundedIcon />
+                </Avatar>
+                <Typography sx={{ fontWeight: 800, fontSize: 18, color: '#0F172A' }}>
+                  Today Summary
+                </Typography>
+              </Stack>
+              <Stack spacing={1.5}>
+                <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+                  <Typography sx={{ color: '#64748B', fontWeight: 600 }}>Total Bookings</Typography>
+                  <Typography sx={{ fontWeight: 800 }}>{todayAppointments.length}</Typography>
+                </Box>
+                <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+                  <Typography sx={{ color: '#64748B', fontWeight: 600 }}>Confirmed</Typography>
+                  <Typography sx={{ fontWeight: 800, color: landingColors.purple }}>
+                    {confirmedToday}
+                  </Typography>
+                </Box>
+                <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+                  <Typography sx={{ color: '#64748B', fontWeight: 600 }}>Completed</Typography>
+                  <Typography sx={{ fontWeight: 800, color: landingColors.success }}>
+                    {completedToday}
+                  </Typography>
+                </Box>
+              </Stack>
+            </CardContent>
+          </Card>
+        </Grid>
 
-      <EditAppointmentDialog
-        open={editOpen}
-        appointment={selectedAppointment}
-        onClose={() => setEditOpen(false)}
-        onSubmit={handleEditAppointment}
-        saving={actionLoading}
-      />
-    </>
+        {/* This Week */}
+        <Grid item xs={12} md={4}>
+          <Card
+            sx={{
+              height: '100%',
+              borderRadius: 4,
+              border: '1px solid rgba(15,23,42,0.06)',
+              boxShadow: '0 4px 20px rgba(15,23,42,0.03)',
+            }}
+          >
+            <CardContent sx={{ p: 3 }}>
+              <Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 2 }}>
+                <Avatar
+                  sx={{
+                    bgcolor: alpha(landingColors.blue, 0.1),
+                    color: landingColors.blue,
+                  }}
+                >
+                  <CalendarMonthRoundedIcon />
+                </Avatar>
+                <Typography sx={{ fontWeight: 800, fontSize: 18, color: '#0F172A' }}>
+                  This Week
+                </Typography>
+              </Stack>
+              <Stack spacing={1.5}>
+                <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+                  <Typography sx={{ color: '#64748B', fontWeight: 600 }}>
+                    Weekly Appointments
+                  </Typography>
+                  <Typography sx={{ fontWeight: 800 }}>{weekAppointments.length}</Typography>
+                </Box>
+                <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+                  <Typography sx={{ color: '#64748B', fontWeight: 600 }}>
+                    Revenue Estimate
+                  </Typography>
+                  <Typography sx={{ fontWeight: 800, color: landingColors.success }}>
+                    €{weeklyRevenue}
+                  </Typography>
+                </Box>
+                <Stack direction="row" alignItems="center" spacing={0.5} sx={{ mt: 0.5 }}>
+                  <TrendingUpRoundedIcon sx={{ color: landingColors.success, fontSize: 16 }} />
+                  <Typography sx={{ color: landingColors.success, fontWeight: 700, fontSize: 12 }}>
+                    Keep it up!
+                  </Typography>
+                </Stack>
+              </Stack>
+            </CardContent>
+          </Card>
+        </Grid>
+
+        {/* Next Appointment / Free Slot */}
+        <Grid item xs={12} md={4}>
+          <Card
+            sx={{
+              height: '100%',
+              borderRadius: 4,
+              border: '1px solid rgba(15,23,42,0.06)',
+              boxShadow: '0 4px 20px rgba(15,23,42,0.03)',
+              bgcolor: nextAppointment ? alpha(landingColors.purple, 0.04) : '#FFF',
+            }}
+          >
+            <CardContent sx={{ p: 3 }}>
+              <Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 2 }}>
+                <Avatar
+                  sx={{
+                    bgcolor: alpha(landingColors.purple, 0.1),
+                    color: landingColors.purple,
+                  }}
+                >
+                  <AccessTimeRoundedIcon />
+                </Avatar>
+                <Typography sx={{ fontWeight: 800, fontSize: 18, color: '#0F172A' }}>
+                  {nextAppointment ? 'Next Appointment' : 'Status'}
+                </Typography>
+              </Stack>
+              {nextAppointment ? (
+                <Stack spacing={1}>
+                  <Typography sx={{ fontWeight: 900, fontSize: 24, color: landingColors.purple }}>
+                    {formatTime(nextAppointment.startTime)}
+                  </Typography>
+                  <Typography sx={{ fontWeight: 700, color: '#0F172A' }}>
+                    {nextAppointment.customerName}
+                  </Typography>
+                  <Typography sx={{ fontWeight: 600, fontSize: 13, color: '#64748B' }}>
+                    {nextAppointment.serviceName}
+                  </Typography>
+                </Stack>
+              ) : (
+                <Stack spacing={1}>
+                  <Typography sx={{ fontWeight: 800, fontSize: 20, color: landingColors.success }}>
+                    Available Now
+                  </Typography>
+                  <Typography sx={{ color: '#64748B', fontWeight: 600, mt: 1 }}>
+                    You have no more confirmed bookings for today.
+                  </Typography>
+                </Stack>
+              )}
+            </CardContent>
+          </Card>
+        </Grid>
+      </Grid>
+
+      <Grid container spacing={3}>
+        <Grid item xs={12} lg={8}>
+          <Typography
+            sx={{ fontWeight: 900, fontSize: 24, letterSpacing: -0.5, color: '#0F172A', mb: 2 }}
+          >
+            Upcoming Today
+          </Typography>
+
+          {upcoming.length === 0 ? (
+            <Card
+              sx={{
+                borderRadius: 4,
+                border: '1px dashed rgba(15,23,42,0.12)',
+                bgcolor: 'transparent',
+                boxShadow: 'none',
+              }}
+            >
+              <CardContent sx={{ py: 6, textAlign: 'center' }}>
+                <EventRoundedIcon sx={{ fontSize: 48, color: '#CBD5E1', mb: 2 }} />
+                <Typography sx={{ fontWeight: 700, color: '#64748B' }}>
+                  No more upcoming bookings for today.
+                </Typography>
+              </CardContent>
+            </Card>
+          ) : (
+            <Stack spacing={2}>
+              {upcoming.map((a) => (
+                <Card
+                  key={a.id}
+                  sx={{
+                    borderRadius: 4,
+                    border: '1px solid rgba(15,23,42,0.06)',
+                    boxShadow: '0 4px 12px rgba(15,23,42,0.02)',
+                    transition: 'all 0.2s ease',
+                    cursor: 'pointer',
+                    '&:hover': {
+                      borderColor: landingColors.purple,
+                      transform: 'translateX(4px)',
+                    },
+                  }}
+                  onClick={() => navigate('/staff/schedule')}
+                >
+                  <CardContent sx={{ p: 2.5 }}>
+                    <Stack direction="row" spacing={2} alignItems="center">
+                      <Box sx={{ textAlign: 'center', minWidth: 80 }}>
+                        <Typography
+                          sx={{ fontWeight: 900, fontSize: 18, color: landingColors.purple }}
+                        >
+                          {formatTime(a.startTime)}
+                        </Typography>
+                        <Typography sx={{ fontWeight: 700, fontSize: 12, color: '#94A3B8' }}>
+                          {a.durationMin} min
+                        </Typography>
+                      </Box>
+                      <Divider orientation="vertical" flexItem sx={{ opacity: 0.1 }} />
+                      <Box sx={{ flex: 1 }}>
+                        <Typography sx={{ fontWeight: 800, fontSize: 16, color: '#0F172A' }}>
+                          {a.customerName}
+                        </Typography>
+                        <Typography sx={{ fontWeight: 600, fontSize: 14, color: '#64748B' }}>
+                          {a.serviceName}
+                        </Typography>
+                      </Box>
+                      <Avatar
+                        sx={{
+                          bgcolor: alpha(landingColors.purple, 0.08),
+                          color: landingColors.purple,
+                        }}
+                      >
+                        <PersonRoundedIcon />
+                      </Avatar>
+                    </Stack>
+                  </CardContent>
+                </Card>
+              ))}
+            </Stack>
+          )}
+        </Grid>
+
+        <Grid item xs={12} lg={4}>
+          <Typography
+            sx={{ fontWeight: 900, fontSize: 24, letterSpacing: -0.5, color: '#0F172A', mb: 2 }}
+          >
+            Daily Progress
+          </Typography>
+          <Card
+            sx={{
+              borderRadius: 4,
+              border: '1px solid rgba(15,23,42,0.06)',
+              boxShadow: '0 4px 20px rgba(15,23,42,0.03)',
+            }}
+          >
+            <CardContent sx={{ p: 3 }}>
+              <Stack spacing={3}>
+                <Box>
+                  <Stack direction="row" justifyContent="space-between" sx={{ mb: 1 }}>
+                    <Typography sx={{ fontWeight: 700, fontSize: 14, color: '#64748B' }}>
+                      Day Completion
+                    </Typography>
+                    <Typography sx={{ fontWeight: 800, fontSize: 14 }}>
+                      {Math.round((completedToday / (todayAppointments.length || 1)) * 100)}%
+                    </Typography>
+                  </Stack>
+                  <Box
+                    sx={{
+                      height: 8,
+                      borderRadius: 4,
+                      bgcolor: alpha(landingColors.purple, 0.06),
+                      overflow: 'hidden',
+                    }}
+                  >
+                    <Box
+                      sx={{
+                        height: '100%',
+                        width: `${(completedToday / (todayAppointments.length || 1)) * 100}%`,
+                        bgcolor: landingColors.purple,
+                        borderRadius: 4,
+                      }}
+                    />
+                  </Box>
+                </Box>
+
+                <Stack direction="row" spacing={2} alignItems="center">
+                  <Box
+                    sx={{
+                      width: 40,
+                      height: 40,
+                      borderRadius: '50%',
+                      bgcolor: alpha(landingColors.success, 0.1),
+                      display: 'grid',
+                      placeItems: 'center',
+                      color: landingColors.success,
+                    }}
+                  >
+                    <CheckCircleRoundedIcon />
+                  </Box>
+                  <Box>
+                    <Typography sx={{ fontWeight: 800, fontSize: 15 }}>
+                      {completedToday} Completed
+                    </Typography>
+                    <Typography sx={{ fontWeight: 600, fontSize: 13, color: '#64748B' }}>
+                      Nice work today!
+                    </Typography>
+                  </Box>
+                </Stack>
+              </Stack>
+            </CardContent>
+          </Card>
+        </Grid>
+      </Grid>
+    </Stack>
   );
 }

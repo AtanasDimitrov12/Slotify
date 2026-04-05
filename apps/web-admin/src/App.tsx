@@ -18,6 +18,7 @@ import StaffBookingRulesPage from './pages/staff/StaffBookingRulesPage';
 import StaffDashboardPage from './pages/staff/StaffDashboardPage';
 import StaffLayout from './pages/staff/StaffLayout';
 import StaffProfilePage from './pages/staff/StaffProfilePage';
+import StaffSchedulePage from './pages/staff/StaffSchedulePage';
 import StaffServicesPage from './pages/staff/StaffServicesPage';
 import StaffTimeOffPage from './pages/staff/StaffTimeOffPage';
 
@@ -51,7 +52,9 @@ export default function App() {
           <Route path="/staff" element={<StaffLayout />}>
             <Route index element={<StaffDashboardPage />} />
             <Route path="dashboard" element={<StaffDashboardPage />} />
+            <Route path="schedule" element={<StaffSchedulePage />} />
             <Route path="profile" element={<StaffProfilePage />} />
+
             <Route path="availability" element={<StaffAvailabilityPage />} />
             <Route path="time-off" element={<StaffTimeOffPage />} />
             <Route path="services" element={<StaffServicesPage />} />

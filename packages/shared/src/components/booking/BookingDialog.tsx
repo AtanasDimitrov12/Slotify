@@ -50,7 +50,8 @@ const STEP_SERVICE = 0;
 const STEP_STAFF = 1;
 const STEP_TIME = 2;
 const STEP_DETAILS = 3;
-const STEP_SUCCESS = 4;
+const STEP_OVERVIEW = 4;
+const STEP_SUCCESS = 5;
 
 function formatDateInput(date: Date) {
   const year = date.getFullYear();
@@ -381,6 +382,14 @@ export default function BookingDialog({ open, slug, salonName, onClose }: Bookin
       handleClose();
       return;
     }
+    if (step === STEP_OVERVIEW) {
+      if (user && profile?.phone) {
+        setStep(STEP_TIME);
+      } else {
+        setStep(STEP_DETAILS);
+      }
+      return;
+    }
     setStep((prev) => Math.max(prev - 1, STEP_SERVICE));
   }
 
@@ -396,12 +405,23 @@ export default function BookingDialog({ open, slug, salonName, onClose }: Bookin
     }
     if (step === STEP_TIME) {
       if (!selectedSlot) return;
-      // Skip details step if already logged in and filled
       if (user && customerName && customerPhone) {
-        handleConfirm();
+        setStep(STEP_OVERVIEW);
       } else {
         setStep(STEP_DETAILS);
       }
+      return;
+    }
+    if (step === STEP_DETAILS) {
+      if (!customerName.trim()) {
+        showError('Please fill in your full name.');
+        return;
+      }
+      if (!customerPhone.trim() || !validatePhone(customerPhone)) {
+        showError('Please provide a valid phone number.');
+        return;
+      }
+      setStep(STEP_OVERVIEW);
     }
   }
 
@@ -468,7 +488,7 @@ export default function BookingDialog({ open, slug, salonName, onClose }: Bookin
     !submitLoading;
 
   function renderSummary() {
-    if (step === STEP_SUCCESS) return null;
+    if (step === STEP_SUCCESS || step === STEP_OVERVIEW) return null;
 
     return (
       <Box
@@ -1010,6 +1030,171 @@ export default function BookingDialog({ open, slug, salonName, onClose }: Bookin
     );
   }
 
+  function renderOverviewStep() {
+    return (
+      <Stack spacing={3}>
+        <Box>
+          <Typography sx={{ fontWeight: 900, fontSize: 24, letterSpacing: -0.5, color: '#0F172A' }}>
+            Review Booking
+          </Typography>
+          <Typography sx={{ color: '#64748B', fontWeight: 500, fontSize: 15 }}>
+            Please review your appointment details before confirming.
+          </Typography>
+        </Box>
+
+        <Box
+          sx={{
+            borderRadius: 4,
+            border: '1px solid rgba(15,23,42,0.06)',
+            bgcolor: '#FFFFFF',
+            p: 3,
+          }}
+        >
+          <Stack spacing={2.5}>
+            <Stack direction="row" justifyContent="space-between" alignItems="flex-start">
+              <Box>
+                <Typography
+                  sx={{
+                    color: '#94A3B8',
+                    fontWeight: 700,
+                    fontSize: 11,
+                    textTransform: 'uppercase',
+                  }}
+                >
+                  Service
+                </Typography>
+                <Typography sx={{ fontWeight: 800, color: '#0F172A', fontSize: 16 }}>
+                  {selectedService?.name}
+                </Typography>
+                <Typography sx={{ color: '#64748B', fontWeight: 600, fontSize: 13 }}>
+                  {selectedService?.durationMin} min • €{selectedService?.priceEUR}
+                </Typography>
+              </Box>
+              <Button
+                size="small"
+                onClick={() => setStep(STEP_SERVICE)}
+                sx={{ fontWeight: 700, fontSize: 11, color: landingColors.purple }}
+              >
+                Change
+              </Button>
+            </Stack>
+
+            <Divider />
+
+            <Stack direction="row" justifyContent="space-between" alignItems="flex-start">
+              <Box>
+                <Typography
+                  sx={{
+                    color: '#94A3B8',
+                    fontWeight: 700,
+                    fontSize: 11,
+                    textTransform: 'uppercase',
+                  }}
+                >
+                  Professional
+                </Typography>
+                <Typography sx={{ fontWeight: 800, color: '#0F172A', fontSize: 16 }}>
+                  {staff.find((m) => m._id === selectedSlot?.staffId)?.displayName ||
+                    'Expert Staff'}
+                </Typography>
+              </Box>
+              <Button
+                size="small"
+                onClick={() => setStep(STEP_STAFF)}
+                sx={{ fontWeight: 700, fontSize: 11, color: landingColors.purple }}
+              >
+                Change
+              </Button>
+            </Stack>
+
+            <Divider />
+
+            <Stack direction="row" justifyContent="space-between" alignItems="flex-start">
+              <Box>
+                <Typography
+                  sx={{
+                    color: '#94A3B8',
+                    fontWeight: 700,
+                    fontSize: 11,
+                    textTransform: 'uppercase',
+                  }}
+                >
+                  Date & Time
+                </Typography>
+                <Typography sx={{ fontWeight: 800, color: landingColors.purple, fontSize: 16 }}>
+                  {selectedSlot ? formatSlotDateTime(selectedSlot.startTime) : ''}
+                </Typography>
+              </Box>
+              <Button
+                size="small"
+                onClick={() => setStep(STEP_TIME)}
+                sx={{ fontWeight: 700, fontSize: 11, color: landingColors.purple }}
+              >
+                Change
+              </Button>
+            </Stack>
+
+            <Divider />
+
+            <Stack direction="row" justifyContent="space-between" alignItems="flex-start">
+              <Box>
+                <Typography
+                  sx={{
+                    color: '#94A3B8',
+                    fontWeight: 700,
+                    fontSize: 11,
+                    textTransform: 'uppercase',
+                  }}
+                >
+                  Your Details
+                </Typography>
+                <Typography sx={{ fontWeight: 800, color: '#0F172A', fontSize: 15 }}>
+                  {customerName}
+                </Typography>
+                <Typography sx={{ color: '#64748B', fontWeight: 500, fontSize: 13 }}>
+                  {customerPhone}
+                </Typography>
+                {customerEmail && (
+                  <Typography sx={{ color: '#64748B', fontWeight: 500, fontSize: 13 }}>
+                    {customerEmail}
+                  </Typography>
+                )}
+              </Box>
+              <Button
+                size="small"
+                onClick={() => setStep(STEP_DETAILS)}
+                sx={{ fontWeight: 700, fontSize: 11, color: landingColors.purple }}
+              >
+                Edit
+              </Button>
+            </Stack>
+
+            {notes && (
+              <>
+                <Divider />
+                <Box>
+                  <Typography
+                    sx={{
+                      color: '#94A3B8',
+                      fontWeight: 700,
+                      fontSize: 11,
+                      textTransform: 'uppercase',
+                    }}
+                  >
+                    Notes
+                  </Typography>
+                  <Typography sx={{ color: '#64748B', fontWeight: 500, fontSize: 13, mt: 0.5 }}>
+                    {notes}
+                  </Typography>
+                </Box>
+              </>
+            )}
+          </Stack>
+        </Box>
+      </Stack>
+    );
+  }
+
   function renderSuccessStep() {
     return (
       <Stack
@@ -1131,6 +1316,8 @@ export default function BookingDialog({ open, slug, salonName, onClose }: Bookin
         return renderTimeStep();
       case STEP_DETAILS:
         return renderDetailsStep();
+      case STEP_OVERVIEW:
+        return renderOverviewStep();
       case STEP_SUCCESS:
         return renderSuccessStep();
       default:
@@ -1172,15 +1359,18 @@ export default function BookingDialog({ open, slug, salonName, onClose }: Bookin
     if (step === STEP_TIME) {
       return (
         <Button variant="contained" onClick={handleNext} disabled={!canContinueFromTime} sx={btnSx}>
-          {user && customerPhone
-            ? submitLoading
-              ? 'Booking...'
-              : 'Confirm Booking'
-            : 'Enter Details'}
+          {user && customerPhone ? 'Review Booking' : 'Enter Details'}
         </Button>
       );
     }
     if (step === STEP_DETAILS) {
+      return (
+        <Button variant="contained" onClick={handleNext} sx={btnSx}>
+          Review Booking
+        </Button>
+      );
+    }
+    if (step === STEP_OVERVIEW) {
       return (
         <Button variant="contained" onClick={handleConfirm} disabled={!canConfirm} sx={btnSx}>
           {submitLoading ? 'Booking...' : 'Confirm Booking'}
@@ -1243,9 +1433,9 @@ export default function BookingDialog({ open, slug, salonName, onClose }: Bookin
             <Box sx={{ position: 'relative' }}>
               <MobileStepper
                 variant="progress"
-                steps={4}
+                steps={5}
                 position="static"
-                activeStep={Math.min(step, 3)}
+                activeStep={Math.min(step, 4)}
                 nextButton={<Box />}
                 backButton={<Box />}
                 sx={{

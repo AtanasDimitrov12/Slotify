@@ -39,10 +39,12 @@ export class StaffAppointmentsController {
     if (user.tenantId === undefined) {
       throw new Error('Tenant ID is required to list bookable services for staff');
     }
-    return this.staffAppointmentsService.listForDay({
+    return this.staffAppointmentsService.list({
       tenantId: user.tenantId,
       userId: user.sub,
       date: query.date,
+      startDate: query.startDate,
+      endDate: query.endDate,
     });
   }
 

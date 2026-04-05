@@ -1,6 +1,6 @@
+import { type StaffAppointment } from '@barber/shared';
 import { Chip } from '@mui/material';
 import * as React from 'react';
-import type { StaffAppointment } from '../../../api/staffAppointments';
 
 export default function AppointmentStatusChip({ status }: { status: StaffAppointment['status'] }) {
   const config =

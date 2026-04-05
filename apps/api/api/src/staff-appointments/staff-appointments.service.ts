@@ -46,24 +46,39 @@ export class StaffAppointmentsService {
     private readonly staffBookingSettingsModel: Model<StaffBookingSettings>,
   ) {}
 
-  async listForDay(params: { tenantId: string; userId: string; date: string }) {
+  async list(params: {
+    tenantId: string;
+    userId: string;
+    date?: string;
+    startDate?: string;
+    endDate?: string;
+  }) {
     const tenantId = new Types.ObjectId(params.tenantId);
     const userId = new Types.ObjectId(params.userId);
-    const date = new Date(params.date);
 
-    if (Number.isNaN(date.getTime())) {
-      throw new BadRequestException('Invalid date');
+    let queryStart: Date;
+    let queryEnd: Date;
+
+    if (params.startDate && params.endDate) {
+      queryStart = startOfDay(new Date(params.startDate));
+      queryEnd = endOfDay(new Date(params.endDate));
+    } else if (params.date) {
+      const date = new Date(params.date);
+      if (Number.isNaN(date.getTime())) {
+        throw new BadRequestException('Invalid date');
+      }
+      queryStart = startOfDay(date);
+      queryEnd = endOfDay(date);
+    } else {
+      throw new BadRequestException('Either date or startDate and endDate must be provided');
     }
-
-    const dayStart = startOfDay(date);
-    const dayEnd = endOfDay(date);
 
     const reservations = await this.reservationModel
       .find({
         tenantId,
         staffId: userId,
-        startTime: { $lt: dayEnd },
-        endTime: { $gt: dayStart },
+        startTime: { $lt: queryEnd },
+        endTime: { $gt: queryStart },
       })
       .sort({ startTime: 1 })
       .lean();

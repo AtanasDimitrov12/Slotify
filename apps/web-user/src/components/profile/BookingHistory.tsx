@@ -1,14 +1,13 @@
 import { addReservationReview, type CustomerReservation } from '@barber/shared';
 import {
+  AddPhotoAlternateRounded,
+  DeleteRounded,
   HistoryRounded,
   LocationOnRounded,
   PersonRounded,
-  ContentCutRounded,
   RateReviewRounded,
-  StarRounded,
-  AddPhotoAlternateRounded,
-  DeleteRounded,
   SearchRounded,
+  StarRounded,
 } from '@mui/icons-material';
 import {
   alpha,
@@ -36,12 +35,17 @@ interface Props {
   onReviewAdded: () => void;
 }
 
+type ReviewPicture = {
+  id: string;
+  url: string;
+};
+
 export default function BookingHistory({ reservations, onReviewAdded }: Props) {
   const [searchDate, setSearchDate] = useState('');
   const [selectedRes, setSelectedRes] = useState<CustomerReservation | null>(null);
   const [rating, setRating] = useState<number>(5);
   const [comment, setComment] = useState('');
-  const [pictures, setPictures] = useState<string[]>([]);
+  const [pictures, setPictures] = useState<ReviewPicture[]>([]);
   const [newPicUrl, setNewPicUrl] = useState('');
   const [submitting, setSubmitting] = useState(false);
 
@@ -54,7 +58,12 @@ export default function BookingHistory({ reservations, onReviewAdded }: Props) {
     setSelectedRes(res);
     setRating(res.review?.rating || 5);
     setComment(res.review?.comment || '');
-    setPictures(res.review?.pictures || []);
+    setPictures(
+      (res.review?.pictures || []).map((url) => ({
+        id: crypto.randomUUID(),
+        url,
+      })),
+    );
   };
 
   const handleCloseReview = () => {
@@ -67,13 +76,19 @@ export default function BookingHistory({ reservations, onReviewAdded }: Props) {
 
   const handleAddPicture = () => {
     if (newPicUrl.trim()) {
-      setPictures((prev) => [...prev, newPicUrl.trim()]);
+      setPictures((prev) => [
+        ...prev,
+        {
+          id: crypto.randomUUID(),
+          url: newPicUrl.trim(),
+        },
+      ]);
       setNewPicUrl('');
     }
   };
 
-  const handleRemovePicture = (index: number) => {
-    setPictures((prev) => prev.filter((_, i) => i !== index));
+  const handleRemovePicture = (id: string) => {
+    setPictures((prev) => prev.filter((pic) => pic.id !== id));
   };
 
   const handleSubmitReview = async () => {
@@ -83,7 +98,7 @@ export default function BookingHistory({ reservations, onReviewAdded }: Props) {
       await addReservationReview(selectedRes._id, {
         rating,
         comment,
-        pictures,
+        pictures: pictures.map((pic) => pic.url),
       });
       onReviewAdded();
       handleCloseReview();
@@ -286,11 +301,11 @@ export default function BookingHistory({ reservations, onReviewAdded }: Props) {
                             "{res.review.comment}"
                           </Typography>
                         )}
-                        {res.review.pictures && res.review.pictures.length > 0 && (
+                        {(res.review?.pictures ?? []).length > 0 && (
                           <Stack direction="row" spacing={1} sx={{ overflowX: 'auto', pb: 0.5 }}>
-                            {res.review.pictures.map((pic, i) => (
+                            {(res.review?.pictures ?? []).map((pic) => (
                               <Box
-                                key={i}
+                                key={pic}
                                 component="img"
                                 src={pic}
                                 sx={{
@@ -347,16 +362,16 @@ export default function BookingHistory({ reservations, onReviewAdded }: Props) {
                 Pictures
               </Typography>
               <Stack direction="row" spacing={1} sx={{ mb: 2, overflowX: 'auto', pb: 1 }}>
-                {pictures.map((url, i) => (
-                  <Box key={i} sx={{ position: 'relative', flexShrink: 0 }}>
+                {pictures.map((pic) => (
+                  <Box key={pic.id} sx={{ position: 'relative', flexShrink: 0 }}>
                     <Box
                       component="img"
-                      src={url}
+                      src={pic.url}
                       sx={{ width: 80, height: 80, borderRadius: 2, objectFit: 'cover' }}
                     />
                     <IconButton
                       size="small"
-                      onClick={() => handleRemovePicture(i)}
+                      onClick={() => handleRemovePicture(pic.id)}
                       sx={{
                         position: 'absolute',
                         top: -8,

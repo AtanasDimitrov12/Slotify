@@ -16,7 +16,6 @@ export * from './api/staffTimeOff';
 export * from './api/tenantDetails';
 export * from './api/tenants';
 export * from './api/types';
-export * from './constants/locations';
 // Auth
 export * from './auth/AuthProvider';
 export * from './auth/RequireAuth';
@@ -34,6 +33,7 @@ export * from './components/landing/TrustStrip';
 export { default as RequireRole } from './components/RequireRole';
 // Components
 export { ToastProvider, useToast } from './components/ToastProvider';
+export * from './constants/locations';
 // Hooks
 export * from './hooks/useRevealOnScroll';
 export * from './hooks/useScrollMotion';
