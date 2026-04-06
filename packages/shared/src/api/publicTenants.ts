@@ -1,6 +1,5 @@
+import { apiFetch } from './http';
 import type { TenantAddress } from './types';
-
-const API_BASE_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:4000';
 
 export type OpeningTimeRange = {
   start: string;
@@ -130,34 +129,16 @@ export type CreatedReservationResponse = {
   };
 };
 
-async function parseJson<T>(res: Response): Promise<T> {
-  if (!res.ok) {
-    let message = 'Request failed';
-    try {
-      const body = await res.json();
-      message = body.message || message;
-    } catch {
-      //
-    }
-    throw new Error(message);
-  }
-
-  return res.json() as Promise<T>;
-}
-
 export async function listPublicTenants(): Promise<PublicTenantListItem[]> {
-  const res = await fetch(`${API_BASE_URL}/public/tenants`);
-  return parseJson<PublicTenantListItem[]>(res);
+  return apiFetch<PublicTenantListItem[]>('/public/tenants');
 }
 
 export async function getPublicTenantBySlug(slug: string): Promise<PublicTenantBySlugResponse> {
-  const res = await fetch(`${API_BASE_URL}/public/tenants/${slug}`);
-  return parseJson<PublicTenantBySlugResponse>(res);
+  return apiFetch<PublicTenantBySlugResponse>(`/public/tenants/${slug}`);
 }
 
 export async function getBookingOptions(slug: string): Promise<BookingOptionsResponse> {
-  const res = await fetch(`${API_BASE_URL}/public/tenants/${slug}/booking-options`);
-  return parseJson<BookingOptionsResponse>(res);
+  return apiFetch<BookingOptionsResponse>(`/public/tenants/${slug}/booking-options`);
 }
 
 export async function getAvailability(params: {
@@ -175,24 +156,17 @@ export async function getAvailability(params: {
     search.set('staffId', params.staffId);
   }
 
-  const res = await fetch(
-    `${API_BASE_URL}/public/tenants/${params.slug}/availability?${search.toString()}`,
+  return apiFetch<AvailabilityResponse>(
+    `/public/tenants/${params.slug}/availability?${search.toString()}`,
   );
-
-  return parseJson<AvailabilityResponse>(res);
 }
 
 export async function createReservation(
   slug: string,
   payload: CreateReservationPayload,
 ): Promise<CreatedReservationResponse> {
-  const res = await fetch(`${API_BASE_URL}/public/tenants/${slug}/reservations`, {
+  return apiFetch<CreatedReservationResponse>(`/public/tenants/${slug}/reservations`, {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
     body: JSON.stringify(payload),
   });
-
-  return parseJson<CreatedReservationResponse>(res);
 }

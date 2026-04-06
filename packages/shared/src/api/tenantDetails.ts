@@ -1,3 +1,4 @@
+import { apiFetch } from './http';
 import type { TenantAddress } from './types';
 
 export type OpeningHoursDay = {
@@ -49,34 +50,26 @@ export type UpdateTenantDetailsPayload = Partial<Omit<CreateTenantDetailsPayload
 };
 
 export async function getTenantDetailsByTenantId(tenantId: string): Promise<TenantDetails> {
-  const res = await fetch(`/api/tenant-details/${tenantId}`);
-  if (!res.ok) throw new Error('Failed to load tenant details');
-  return res.json();
+  return apiFetch(`/tenant-details/${tenantId}`);
 }
 
 export async function createTenantDetails(
   payload: CreateTenantDetailsPayload,
 ): Promise<TenantDetails> {
-  const res = await fetch('/api/tenant-details', {
+  return apiFetch('/tenant-details', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(payload),
   });
-  if (!res.ok) throw new Error('Failed to create tenant details');
-  return res.json();
 }
 
 export async function updateTenantDetailsByTenantId(
   tenantId: string,
   payload: UpdateTenantDetailsPayload,
 ): Promise<TenantDetails> {
-  const res = await fetch(`/api/tenant-details/${tenantId}`, {
+  return apiFetch(`/tenant-details/${tenantId}`, {
     method: 'PATCH',
-    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(payload),
   });
-  if (!res.ok) throw new Error('Failed to update tenant details');
-  return res.json();
 }
 
 // Upsert is very convenient for FE profile screens
@@ -84,11 +77,8 @@ export async function upsertTenantDetailsByTenantId(
   tenantId: string,
   payload: UpdateTenantDetailsPayload,
 ): Promise<TenantDetails> {
-  const res = await fetch(`/api/tenant-details/${tenantId}`, {
+  return apiFetch(`/tenant-details/${tenantId}`, {
     method: 'PUT',
-    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(payload),
   });
-  if (!res.ok) throw new Error('Failed to upsert tenant details');
-  return res.json();
 }

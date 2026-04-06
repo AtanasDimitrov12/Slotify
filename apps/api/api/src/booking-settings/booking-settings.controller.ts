@@ -18,7 +18,7 @@ export class BookingSettingsController {
       throw new UnauthorizedException('Invalid tenant context');
     }
 
-    if (!['owner', 'manager'].includes(currentUser?.role)) {
+    if (!['owner'].includes(currentUser?.role)) {
       throw new UnauthorizedException('You are not allowed to manage booking settings');
     }
 

@@ -2,7 +2,7 @@ import { Navigate, Outlet } from 'react-router-dom';
 import { useAuth } from '../auth/AuthProvider';
 
 type Props = {
-  role: 'admin' | 'owner' | 'manager' | 'staff';
+  role: 'admin' | 'owner' | 'staff';
 };
 
 export default function RequireRole({ role }: Props) {

@@ -248,7 +248,7 @@ export default function SalonPublicPage() {
                                   letterSpacing: 1,
                                 }}
                               >
-                                Manager
+                                Owner
                               </Typography>
                               <Typography sx={{ fontWeight: 700, color: '#475569' }}>
                                 {data.details?.contactPersonName || 'Not provided'}

@@ -39,8 +39,8 @@ export class StaffTimeOffController {
     }
   }
 
-  private ensureOwnerOrManager(currentUser: JwtPayload) {
-    if (!['owner', 'manager'].includes(currentUser?.role ?? '')) {
+  private ensureOwner(currentUser: JwtPayload) {
+    if (!['owner'].includes(currentUser?.role ?? '')) {
       throw new UnauthorizedException('You are not allowed to manage staff time off');
     }
   }
@@ -67,13 +67,13 @@ export class StaffTimeOffController {
 
   @Get('owner/pending-counts')
   getPendingCounts(@CurrentUser() currentUser: JwtPayload) {
-    this.ensureOwnerOrManager(currentUser);
+    this.ensureOwner(currentUser);
     return this.staffTimeOffService.getPendingCountsByTenant(this.getTenantId(currentUser));
   }
 
   @Get('owner/staff/:userId')
   getAllForOwnerByStaff(@CurrentUser() currentUser: JwtPayload, @Param('userId') userId: string) {
-    this.ensureOwnerOrManager(currentUser);
+    this.ensureOwner(currentUser);
     this.validateUserId(userId);
 
     return this.staffTimeOffService.findAllForOwnerByStaff(this.getTenantId(currentUser), userId);
@@ -85,7 +85,7 @@ export class StaffTimeOffController {
     @Param('requestId') requestId: string,
     @Body() body: { status: 'approved' | 'denied' },
   ) {
-    this.ensureOwnerOrManager(currentUser);
+    this.ensureOwner(currentUser);
 
     return this.staffTimeOffService.reviewRequest(
       this.getTenantId(currentUser),

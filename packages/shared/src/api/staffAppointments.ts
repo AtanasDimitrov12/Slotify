@@ -1,4 +1,4 @@
-const API_BASE_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:4000';
+import { apiFetch } from './http';
 
 export type StaffAppointment = {
   id: string;
@@ -25,35 +25,8 @@ export type StaffServiceOption = {
   description?: string;
 };
 
-async function parseJson<T>(res: Response): Promise<T> {
-  if (!res.ok) {
-    let message = 'Request failed';
-    try {
-      const body = await res.json();
-      message = body.message || message;
-    } catch {
-      //
-    }
-    throw new Error(message);
-  }
-
-  return res.json() as Promise<T>;
-}
-
-function getAuthHeaders() {
-  const token = localStorage.getItem('accessToken');
-  return {
-    'Content-Type': 'application/json',
-    Authorization: token ? `Bearer ${token}` : '',
-  };
-}
-
 export async function listStaffServices(): Promise<StaffServiceOption[]> {
-  const res = await fetch(`${API_BASE_URL}/staff/me/appointments/services`, {
-    headers: getAuthHeaders(),
-  });
-
-  return parseJson<StaffServiceOption[]>(res);
+  return apiFetch<StaffServiceOption[]>('/staff/me/appointments/services');
 }
 
 export async function listStaffAppointments(params: {
@@ -72,11 +45,7 @@ export async function listStaffAppointments(params: {
     query.set('endDate', new Date(`${params.endDate}T12:00:00`).toISOString());
   }
 
-  const res = await fetch(`${API_BASE_URL}/staff/me/appointments?${query.toString()}`, {
-    headers: getAuthHeaders(),
-  });
-
-  return parseJson<StaffAppointment[]>(res);
+  return apiFetch<StaffAppointment[]>(`/staff/me/appointments?${query.toString()}`);
 }
 
 export async function createStaffAppointment(payload: {
@@ -87,13 +56,10 @@ export async function createStaffAppointment(payload: {
   customerEmail?: string;
   notes?: string;
 }) {
-  const res = await fetch(`${API_BASE_URL}/staff/me/appointments`, {
+  return apiFetch<{ id: string }>('/staff/me/appointments', {
     method: 'POST',
-    headers: getAuthHeaders(),
     body: JSON.stringify(payload),
   });
-
-  return parseJson<{ id: string }>(res);
 }
 
 export async function updateStaffAppointment(
@@ -107,33 +73,24 @@ export async function updateStaffAppointment(
     notes?: string;
   }>,
 ) {
-  const res = await fetch(`${API_BASE_URL}/staff/me/appointments/${id}`, {
+  return apiFetch<{ success: true }>(`/staff/me/appointments/${id}`, {
     method: 'PATCH',
-    headers: getAuthHeaders(),
     body: JSON.stringify(payload),
   });
-
-  return parseJson<{ success: true }>(res);
 }
 
 export async function updateStaffAppointmentStatus(
   id: string,
   status: 'pending' | 'confirmed' | 'cancelled' | 'completed' | 'no-show',
 ) {
-  const res = await fetch(`${API_BASE_URL}/staff/me/appointments/${id}/status`, {
+  return apiFetch<{ success: true }>(`/staff/me/appointments/${id}/status`, {
     method: 'PATCH',
-    headers: getAuthHeaders(),
     body: JSON.stringify({ status }),
   });
-
-  return parseJson<{ success: true }>(res);
 }
 
 export async function cancelStaffAppointment(id: string) {
-  const res = await fetch(`${API_BASE_URL}/staff/me/appointments/${id}`, {
+  return apiFetch<{ success: true }>(`/staff/me/appointments/${id}`, {
     method: 'DELETE',
-    headers: getAuthHeaders(),
   });
-
-  return parseJson<{ success: true }>(res);
 }

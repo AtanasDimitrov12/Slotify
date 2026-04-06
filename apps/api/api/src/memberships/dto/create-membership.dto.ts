@@ -8,6 +8,6 @@ export class CreateMembershipDto {
   userId!: string;
 
   @IsOptional()
-  @IsIn(['owner', 'manager', 'staff'])
-  role?: 'owner' | 'manager' | 'staff';
+  @IsIn(['owner', 'staff'])
+  role?: 'owner' | 'staff';
 }

@@ -136,7 +136,7 @@ describe('StaffService', () => {
       expect(staffProfilesService.create).toHaveBeenCalled();
     });
 
-    it('should throw UnauthorizedException if requester is not an owner or manager', async () => {
+    it('should throw UnauthorizedException if requester is not an owner', async () => {
       const staffUser: JwtPayload = {
         ...mockOwnerUser,
         role: 'staff',

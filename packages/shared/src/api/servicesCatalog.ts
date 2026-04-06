@@ -1,3 +1,5 @@
+import { apiFetch } from './http';
+
 export type CatalogServiceItem = {
   id: string;
   name: string;
@@ -5,15 +7,6 @@ export type CatalogServiceItem = {
   priceEUR: number;
   description?: string;
 };
-
-function getAuthHeaders() {
-  const token = localStorage.getItem('accessToken');
-
-  return {
-    'Content-Type': 'application/json',
-    ...(token ? { Authorization: `Bearer ${token}` } : {}),
-  };
-}
 
 function mapService(raw: any): CatalogServiceItem {
   return {
@@ -36,28 +29,10 @@ export async function extractServicesFromAI(file: File): Promise<CatalogServiceP
   const formData = new FormData();
   formData.append('file', file);
 
-  const token = localStorage.getItem('accessToken');
-  const headers: Record<string, string> = {};
-  if (token) {
-    headers.Authorization = `Bearer ${token}`;
-  }
-
-  const res = await fetch('/api/services/extract-ai', {
+  const data: unknown = await apiFetch('/services/extract-ai', {
     method: 'POST',
-    headers,
     body: formData,
   });
-
-  if (!res.ok) {
-    let message = 'Failed to extract services';
-    try {
-      const data = await res.json();
-      message = data.message || message;
-    } catch {}
-    throw new Error(message);
-  }
-
-  const data: unknown = await res.json();
 
   if (
     !data ||
@@ -73,41 +48,19 @@ export async function extractServicesFromAI(file: File): Promise<CatalogServiceP
 export async function createBulkCatalogServices(
   payloads: CatalogServicePayload[],
 ): Promise<CatalogServiceItem[]> {
-  const res = await fetch('/api/services/bulk', {
+  const data = await apiFetch<any[]>('/services/bulk', {
     method: 'POST',
-    headers: getAuthHeaders(),
     body: JSON.stringify(payloads),
   });
 
-  if (!res.ok) {
-    let message = 'Failed to create services';
-    try {
-      const data = await res.json();
-      message = data.message || message;
-    } catch {}
-    throw new Error(message);
-  }
-
-  const data = await res.json();
   return (data ?? []).map(mapService);
 }
 
 export async function getCatalogServices(): Promise<CatalogServiceItem[]> {
-  const res = await fetch('/api/services/catalog', {
+  const data = await apiFetch<any[]>('/services/catalog', {
     method: 'GET',
-    headers: getAuthHeaders(),
   });
 
-  if (!res.ok) {
-    let message = 'Failed to load service catalog';
-    try {
-      const data = await res.json();
-      message = data.message || message;
-    } catch {}
-    throw new Error(message);
-  }
-
-  const data = await res.json();
   return (data ?? []).map(mapService);
 }
 
@@ -117,22 +70,12 @@ export async function createCatalogService(payload: {
   priceEUR: number;
   description?: string;
 }): Promise<CatalogServiceItem> {
-  const res = await fetch('/api/services', {
+  const data = await apiFetch<any>('/services', {
     method: 'POST',
-    headers: getAuthHeaders(),
     body: JSON.stringify(payload),
   });
 
-  if (!res.ok) {
-    let message = 'Failed to create service';
-    try {
-      const data = await res.json();
-      message = data.message || message;
-    } catch {}
-    throw new Error(message);
-  }
-
-  return mapService(await res.json());
+  return mapService(data);
 }
 
 export async function updateCatalogService(
@@ -144,38 +87,16 @@ export async function updateCatalogService(
     description?: string;
   },
 ): Promise<CatalogServiceItem> {
-  const res = await fetch(`/api/services/${id}`, {
+  const data = await apiFetch<any>(`/services/${id}`, {
     method: 'PATCH',
-    headers: getAuthHeaders(),
     body: JSON.stringify(payload),
   });
 
-  if (!res.ok) {
-    let message = 'Failed to update service';
-    try {
-      const data = await res.json();
-      message = data.message || message;
-    } catch {}
-    throw new Error(message);
-  }
-
-  return mapService(await res.json());
+  return mapService(data);
 }
 
 export async function deleteCatalogService(id: string): Promise<{ message: string }> {
-  const res = await fetch(`/api/services/${id}`, {
+  return apiFetch<{ message: string }>(`/services/${id}`, {
     method: 'DELETE',
-    headers: getAuthHeaders(),
   });
-
-  if (!res.ok) {
-    let message = 'Failed to delete service';
-    try {
-      const data = await res.json();
-      message = data.message || message;
-    } catch {}
-    throw new Error(message);
-  }
-
-  return res.json();
 }

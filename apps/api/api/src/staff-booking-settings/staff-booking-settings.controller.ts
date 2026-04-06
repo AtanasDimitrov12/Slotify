@@ -35,8 +35,8 @@ export class StaffBookingSettingsController {
     }
   }
 
-  private ensureOwnerOrManager(currentUser: JwtPayload) {
-    if (!['owner', 'manager'].includes(currentUser?.role)) {
+  private ensureOwner(currentUser: JwtPayload) {
+    if (!['owner'].includes(currentUser?.role ?? '')) {
       throw new UnauthorizedException('You are not allowed to manage staff booking settings');
     }
   }
@@ -74,7 +74,7 @@ export class StaffBookingSettingsController {
 
   @Get(':userId')
   async getForStaff(@CurrentUser() currentUser: JwtPayload, @Param('userId') userId: string) {
-    this.ensureOwnerOrManager(currentUser);
+    this.ensureOwner(currentUser);
     this.validateUserId(userId);
 
     return this.staffBookingSettingsService.getEffectiveSettings(
@@ -89,7 +89,7 @@ export class StaffBookingSettingsController {
     @Param('userId') userId: string,
     @Body() dto: UpdateStaffBookingSettingsDto,
   ) {
-    this.ensureOwnerOrManager(currentUser);
+    this.ensureOwner(currentUser);
     this.validateUserId(userId);
 
     const updated = await this.staffBookingSettingsService.updateByStaff(

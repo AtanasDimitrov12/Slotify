@@ -5,7 +5,7 @@ import { User } from '../users/user.schema';
 
 export type MembershipDocument = HydratedDocument<Membership>;
 
-export type MembershipRole = 'owner' | 'manager' | 'staff';
+export type MembershipRole = 'owner' | 'staff';
 
 @Schema({ timestamps: true })
 export class Membership {
@@ -17,7 +17,7 @@ export class Membership {
 
   @Prop({
     default: 'staff',
-    enum: ['owner', 'manager', 'staff'],
+    enum: ['owner', 'staff'],
   })
   role!: MembershipRole;
 

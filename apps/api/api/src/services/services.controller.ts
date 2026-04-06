@@ -43,15 +43,15 @@ export class ServicesController {
     return tenantId;
   }
 
-  private ensureOwnerOrManager(currentUser: JwtPayload) {
-    if (!['owner', 'manager'].includes(currentUser?.role ?? '')) {
+  private ensureOwner(currentUser: JwtPayload) {
+    if (!['owner'].includes(currentUser?.role ?? '')) {
       throw new UnauthorizedException('You are not allowed to manage the services catalog');
     }
   }
 
   @Post()
   create(@CurrentUser() currentUser: JwtPayload, @Body() dto: CreateServiceDto) {
-    this.ensureOwnerOrManager(currentUser);
+    this.ensureOwner(currentUser);
     const tenantId = this.getTenantIdOrThrow(currentUser);
 
     return this.servicesService.createForTenant(tenantId, dto);
@@ -59,7 +59,7 @@ export class ServicesController {
 
   @Post('bulk')
   async createBulk(@CurrentUser() currentUser: JwtPayload, @Body() dtos: CreateServiceDto[]) {
-    this.ensureOwnerOrManager(currentUser);
+    this.ensureOwner(currentUser);
 
     if (!Array.isArray(dtos) || dtos.length === 0) {
       throw new BadRequestException('At least one service is required');
@@ -89,7 +89,7 @@ export class ServicesController {
     )
     file: Express.Multer.File,
   ) {
-    this.ensureOwnerOrManager(currentUser);
+    this.ensureOwner(currentUser);
 
     const extractedServices = await this.aiService.extractServices(file.buffer, file.mimetype);
 
@@ -121,7 +121,7 @@ export class ServicesController {
     @Param('id') id: string,
     @Body() dto: UpdateServiceDto,
   ) {
-    this.ensureOwnerOrManager(currentUser);
+    this.ensureOwner(currentUser);
     const tenantId = this.getTenantIdOrThrow(currentUser);
 
     if (!Types.ObjectId.isValid(id)) {
@@ -133,7 +133,7 @@ export class ServicesController {
 
   @Delete(':id')
   remove(@CurrentUser() currentUser: JwtPayload, @Param('id') id: string) {
-    this.ensureOwnerOrManager(currentUser);
+    this.ensureOwner(currentUser);
     const tenantId = this.getTenantIdOrThrow(currentUser);
 
     if (!Types.ObjectId.isValid(id)) {

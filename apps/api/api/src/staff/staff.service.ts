@@ -157,7 +157,7 @@ export class StaffService {
   async onboard(currentUser: JwtPayload, dto: CreateStaffAccountDto) {
     const tenantId = this.getTenantIdOrThrow(currentUser);
 
-    if (!['owner', 'manager'].includes(currentUser?.role ?? '')) {
+    if (!['owner'].includes(currentUser?.role ?? '')) {
       throw new UnauthorizedException('You are not allowed to create staff members');
     }
 

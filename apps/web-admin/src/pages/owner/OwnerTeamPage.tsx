@@ -30,7 +30,7 @@ type StaffMember = {
   id: string;
   name: string;
   email: string;
-  role: 'staff' | 'manager';
+  role: 'staff';
   pendingTimeOffCount: number;
 };
 
@@ -81,7 +81,7 @@ export default function OwnerTeamPage() {
         id: member.userId,
         name: member.name,
         email: member.email,
-        role: member.role === 'manager' ? 'manager' : 'staff',
+        role: 'staff',
         pendingTimeOffCount: pendingMap.get(member.userId) ?? 0,
       }));
 
@@ -113,7 +113,7 @@ export default function OwnerTeamPage() {
         id: result.account.userId,
         name: result.account.name,
         email: result.account.email,
-        role: result.account.role === 'manager' ? 'manager' : 'staff',
+        role: 'staff',
         pendingTimeOffCount: 0,
       };
 

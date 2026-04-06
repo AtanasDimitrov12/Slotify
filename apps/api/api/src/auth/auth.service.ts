@@ -19,7 +19,7 @@ type JwtPayload = {
   userId: string;
   name: string;
   tenantId?: string;
-  role?: 'owner' | 'manager' | 'staff' | 'customer';
+  role?: 'owner' | 'staff' | 'customer';
   email: string;
   accountType: 'internal' | 'customer';
 };
