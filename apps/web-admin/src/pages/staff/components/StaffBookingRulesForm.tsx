@@ -10,7 +10,6 @@ import {
   TextField,
   Typography,
 } from '@mui/material';
-import * as React from 'react';
 
 export type StaffBookingRulesValues = {
   bufferBefore: { enabled: boolean; minutes: number };

@@ -1,6 +1,5 @@
-import { type StaffAppointment } from '@barber/shared';
+import type { StaffAppointment } from '@barber/shared';
 import { Chip } from '@mui/material';
-import * as React from 'react';
 
 export default function AppointmentStatusChip({ status }: { status: StaffAppointment['status'] }) {
   const config =

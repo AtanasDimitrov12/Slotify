@@ -5,7 +5,6 @@ import ContentCutRoundedIcon from '@mui/icons-material/ContentCutRounded';
 import NotesRoundedIcon from '@mui/icons-material/NotesRounded';
 import PersonRoundedIcon from '@mui/icons-material/PersonRounded';
 import { alpha, Box, Button, Card, CardContent, Divider, Stack, Typography } from '@mui/material';
-import * as React from 'react';
 import AppointmentStatusChip from './AppointmentStatusChip';
 
 function formatTimeOnly(value: string) {

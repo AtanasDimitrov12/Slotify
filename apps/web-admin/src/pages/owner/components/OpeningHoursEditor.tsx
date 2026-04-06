@@ -2,8 +2,6 @@ import { landingColors } from '@barber/shared';
 import {
   alpha,
   Box,
-  Card,
-  CardContent,
   FormControlLabel,
   Grid,
   Stack,
@@ -11,7 +9,6 @@ import {
   TextField,
   Typography,
 } from '@mui/material';
-import * as React from 'react';
 
 export type OpeningDayKey = 'mon' | 'tue' | 'wed' | 'thu' | 'fri' | 'sat' | 'sun';
 

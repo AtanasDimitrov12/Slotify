@@ -18,7 +18,6 @@ interface HeroProps {
 }
 
 export function Hero({
-  eyebrow,
   title,
   subtitle1,
   subtitle2,

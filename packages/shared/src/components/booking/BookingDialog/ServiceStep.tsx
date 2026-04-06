@@ -1,4 +1,3 @@
-import FavoriteRoundedIcon from '@mui/icons-material/FavoriteRounded';
 import SearchRoundedIcon from '@mui/icons-material/SearchRounded';
 import {
   Avatar,

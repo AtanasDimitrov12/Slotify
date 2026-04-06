@@ -29,8 +29,8 @@ export default function AdminLayout() {
   const location = useLocation();
 
   const items: AdminNavItem[] = [
-    { label: 'System overview', to: '/admin/overview', icon: <DashboardRoundedIcon /> },
-    { label: 'Tenants', to: '/admin/tenants', icon: <StorefrontRoundedIcon /> },
+    { label: 'Dashboard', to: '/admin', icon: DashboardRoundedIcon },
+    { label: 'Tenants', to: '/admin/tenants', icon: StorefrontRoundedIcon },
   ];
 
   const isActive = (to: string) =>

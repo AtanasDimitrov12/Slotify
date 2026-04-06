@@ -1,6 +1,5 @@
 import { landingColors } from '@barber/shared';
 import { alpha, Box, Divider, Grid, MenuItem, Stack, TextField, Typography } from '@mui/material';
-import * as React from 'react';
 
 export type GeneralSettingsValues = {
   salonName: string;

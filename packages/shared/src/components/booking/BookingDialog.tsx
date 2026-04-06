@@ -14,7 +14,6 @@ import { type CustomerProfile, getMyCustomerProfile } from '../../api/customerPr
 import { type CustomerReservation, getMyReservations } from '../../api/customerReservations';
 import {
   type AvailabilitySlot,
-  type BookingOptionService,
   type BookingOptionStaff,
   createReservation,
   getAvailability,
@@ -59,7 +58,6 @@ export default function BookingDialog({ open, slug, salonName, onClose }: Bookin
   const [loadingOptions, setLoadingOptions] = React.useState(false);
   const [optionsError, setOptionsError] = React.useState('');
 
-  const [services, setServices] = React.useState<BookingOptionService[]>([]);
   const [staff, setStaff] = React.useState<BookingOptionStaff[]>([]);
   const [maxDays, setMaxDays] = React.useState(14);
   const [profile, setProfile] = React.useState<CustomerProfile | null>(null);
@@ -108,7 +106,6 @@ export default function BookingDialog({ open, slug, salonName, onClose }: Bookin
           user ? getMyReservations().catch(() => []) : Promise.resolve([]),
         ]);
 
-        setServices(result.services);
         setStaff(result.staff);
         setMaxDays(result.maximumDaysInAdvance);
         setProfile(profileData);

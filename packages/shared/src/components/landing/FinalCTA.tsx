@@ -1,6 +1,5 @@
 import ArrowForwardRoundedIcon from '@mui/icons-material/ArrowForwardRounded';
 import { Box, Button, Container, Grid, Stack, Typography } from '@mui/material';
-import { alpha } from '@mui/material/styles';
 import { useNavigate } from 'react-router-dom';
 import { landingColors, premium } from './constants';
 

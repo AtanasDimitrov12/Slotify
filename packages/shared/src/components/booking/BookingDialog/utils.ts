@@ -89,7 +89,7 @@ export function analyzeSlot(
   const currentTimeStr = `${hour.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
 
   // 1. INTENT ANALYSIS (Explicit Preferences)
-  let hasSpecificPreference = false;
+  //let hasSpecificPreference = false;
   if (profile.preferredBookingSlots) {
     for (const pSlot of profile.preferredBookingSlots) {
       if (pSlot.dayOfWeek === day) {
@@ -98,7 +98,7 @@ export function analyzeSlot(
           if (currentTimeStr >= start && currentTimeStr <= end) {
             bonus += 2000; // High priority for explicit intent
             reasons.push('Matches your custom preferred window');
-            hasSpecificPreference = true;
+            //hasSpecificPreference = true;
           }
         } else if (pSlot.timeSlot === 'morning' && hour < 12) {
           bonus += 1200;

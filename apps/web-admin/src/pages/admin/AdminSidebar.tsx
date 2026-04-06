@@ -1,4 +1,5 @@
 import { landingColors } from '@barber/shared';
+import type { SvgIconComponent } from '@mui/icons-material';
 import {
   Avatar,
   Box,
@@ -11,12 +12,11 @@ import {
   Typography,
 } from '@mui/material';
 import { alpha } from '@mui/material/styles';
-import * as React from 'react';
 
 export type AdminNavItem = {
   label: string;
   to: string;
-  icon: React.ReactNode;
+  icon: SvgIconComponent;
 };
 
 type Props = {
@@ -74,6 +74,7 @@ export function AdminSidebar({ items, isActive, onNavigate }: Props) {
       <List sx={{ p: 2 }}>
         {items.map((it) => {
           const active = isActive(it.to);
+          const Icon = it.icon;
 
           return (
             <ListItemButton
@@ -104,8 +105,9 @@ export function AdminSidebar({ items, isActive, onNavigate }: Props) {
               }}
             >
               <ListItemIcon sx={{ minWidth: 40, color: active ? landingColors.purple : '#94A3B8' }}>
-                {React.cloneElement(it.icon as React.ReactElement, { fontSize: 'medium' })}
+                <Icon fontSize="medium" />
               </ListItemIcon>
+
               <ListItemText
                 primary={it.label}
                 primaryTypographyProps={{

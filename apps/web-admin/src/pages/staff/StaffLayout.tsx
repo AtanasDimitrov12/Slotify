@@ -1,4 +1,5 @@
 import { landingColors } from '@barber/shared';
+import type { SvgIconComponent } from '@mui/icons-material';
 import BeachAccessRoundedIcon from '@mui/icons-material/BeachAccessRounded';
 import DashboardRoundedIcon from '@mui/icons-material/DashboardRounded';
 import LocalOfferRoundedIcon from '@mui/icons-material/LocalOfferRounded';
@@ -29,7 +30,7 @@ import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 
 const drawerWidth = 280;
 
-type NavItem = { label: string; to: string; icon: React.ReactNode };
+type NavItem = { label: string; to: string; icon: SvgIconComponent };
 
 export default function StaffLayout() {
   const theme = useTheme();
@@ -39,13 +40,13 @@ export default function StaffLayout() {
   const location = useLocation();
 
   const items: NavItem[] = [
-    { label: 'Dashboard', to: '/staff/dashboard', icon: <DashboardRoundedIcon /> },
-    { label: 'Schedule', to: '/staff/schedule', icon: <ScheduleRoundedIcon /> },
-    { label: 'Profile', to: '/staff/profile', icon: <PersonRoundedIcon /> },
-    { label: 'Availability', to: '/staff/availability', icon: <ScheduleRoundedIcon /> },
-    { label: 'Time off', to: '/staff/time-off', icon: <BeachAccessRoundedIcon /> },
-    { label: 'Services & prices', to: '/staff/services', icon: <LocalOfferRoundedIcon /> },
-    { label: 'Booking rules', to: '/staff/booking-rules', icon: <TuneRoundedIcon /> },
+    { label: 'Dashboard', to: '/staff/dashboard', icon: DashboardRoundedIcon },
+    { label: 'Schedule', to: '/staff/schedule', icon: ScheduleRoundedIcon },
+    { label: 'Profile', to: '/staff/profile', icon: PersonRoundedIcon },
+    { label: 'Availability', to: '/staff/availability', icon: ScheduleRoundedIcon },
+    { label: 'Time off', to: '/staff/time-off', icon: BeachAccessRoundedIcon },
+    { label: 'Services & prices', to: '/staff/services', icon: LocalOfferRoundedIcon },
+    { label: 'Booking rules', to: '/staff/booking-rules', icon: TuneRoundedIcon },
   ];
 
   const sidebar = (
@@ -100,6 +101,8 @@ export default function StaffLayout() {
             (it.to.endsWith('/dashboard') &&
               (location.pathname === '/staff' || location.pathname === '/staff/'));
 
+          const Icon = it.icon;
+
           return (
             <ListItemButton
               key={it.to}
@@ -132,7 +135,7 @@ export default function StaffLayout() {
               }}
             >
               <ListItemIcon sx={{ minWidth: 40, color: active ? landingColors.purple : '#94A3B8' }}>
-                {React.cloneElement(it.icon as React.ReactElement, { fontSize: 'medium' })}
+                <Icon fontSize="medium" />
               </ListItemIcon>
               <ListItemText
                 primary={it.label}

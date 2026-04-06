@@ -3,7 +3,7 @@ import CalendarViewDayRoundedIcon from '@mui/icons-material/CalendarViewDayRound
 import QueryStatsRoundedIcon from '@mui/icons-material/QueryStatsRounded';
 import StorefrontRoundedIcon from '@mui/icons-material/StorefrontRounded';
 import TuneRoundedIcon from '@mui/icons-material/TuneRounded';
-import { Box, Button, Card, CardContent, Container, Grid, Stack, Typography } from '@mui/material';
+import { Box, Button, Card, CardContent, Container, Stack, Typography } from '@mui/material';
 import { alpha } from '@mui/material/styles';
 import { useNavigate } from 'react-router-dom';
 import { landingColors, premium } from './constants';

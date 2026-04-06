@@ -15,7 +15,6 @@ import {
   TableRow,
   Typography,
 } from '@mui/material';
-import * as React from 'react';
 import StatusChip from './StatusChip';
 
 type Props = {

@@ -1,7 +1,6 @@
 import { landingColors, useToast } from '@barber/shared';
 import {
   alpha,
-  Box,
   Button,
   Dialog,
   DialogActions,

@@ -10,7 +10,6 @@ import {
   TextField,
   Typography,
 } from '@mui/material';
-import * as React from 'react';
 import type { DaySchedule } from './types';
 
 type Props = {

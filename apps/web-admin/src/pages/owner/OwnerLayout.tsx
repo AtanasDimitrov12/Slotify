@@ -1,4 +1,5 @@
 import { landingColors } from '@barber/shared';
+import type { SvgIconComponent } from '@mui/icons-material';
 import ContentCutRoundedIcon from '@mui/icons-material/ContentCutRounded';
 import DashboardRoundedIcon from '@mui/icons-material/DashboardRounded';
 import EventAvailableRoundedIcon from '@mui/icons-material/EventAvailableRounded';
@@ -28,7 +29,7 @@ import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 
 const drawerWidth = 280;
 
-type NavItem = { label: string; to: string; icon: React.ReactNode };
+type NavItem = { label: string; to: string; icon: SvgIconComponent };
 
 export default function OwnerLayout() {
   const theme = useTheme();
@@ -38,11 +39,11 @@ export default function OwnerLayout() {
   const location = useLocation();
 
   const items: NavItem[] = [
-    { label: 'Overview', to: '/owner/overview', icon: <DashboardRoundedIcon /> },
-    { label: 'Team', to: '/owner/team', icon: <GroupsRoundedIcon /> },
-    { label: 'Services', to: '/owner/services', icon: <ContentCutRoundedIcon /> },
-    { label: 'Booking rules', to: '/owner/booking-rules', icon: <EventAvailableRoundedIcon /> },
-    { label: 'Business settings', to: '/owner/settings', icon: <SettingsRoundedIcon /> },
+    { label: 'Overview', to: '/owner/overview', icon: DashboardRoundedIcon },
+    { label: 'Team', to: '/owner/team', icon: GroupsRoundedIcon },
+    { label: 'Services', to: '/owner/services', icon: ContentCutRoundedIcon },
+    { label: 'Booking rules', to: '/owner/booking-rules', icon: EventAvailableRoundedIcon },
+    { label: 'Business settings', to: '/owner/settings', icon: SettingsRoundedIcon },
   ];
 
   const sidebar = (
@@ -97,6 +98,8 @@ export default function OwnerLayout() {
             (it.to.endsWith('/overview') &&
               (location.pathname === '/owner' || location.pathname === '/owner/'));
 
+          const Icon = it.icon;
+
           return (
             <ListItemButton
               key={it.to}
@@ -129,7 +132,7 @@ export default function OwnerLayout() {
               }}
             >
               <ListItemIcon sx={{ minWidth: 40, color: active ? landingColors.purple : '#94A3B8' }}>
-                {React.cloneElement(it.icon as React.ReactElement, { fontSize: 'medium' })}
+                <Icon fontSize="medium" />
               </ListItemIcon>
               <ListItemText
                 primary={it.label}

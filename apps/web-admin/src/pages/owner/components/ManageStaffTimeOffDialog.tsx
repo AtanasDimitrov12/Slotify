@@ -6,7 +6,6 @@ import {
   useToast,
 } from '@barber/shared';
 import {
-  Alert,
   alpha,
   Box,
   Button,

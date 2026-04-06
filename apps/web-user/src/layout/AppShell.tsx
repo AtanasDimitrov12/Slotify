@@ -280,7 +280,7 @@ export default function AppShell() {
             <CloseRounded />
           </IconButton>
         </Box>
-        <List spacing={1}>
+        <List sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
           <MobileNavItem
             active={isActive('/')}
             icon={<HomeRounded />}
