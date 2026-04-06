@@ -48,6 +48,17 @@ export class StaffAppointmentsController {
     });
   }
 
+  @Get(':id/customer-insights')
+  getCustomerInsights(@CurrentUser() user: JwtPayload, @Param('id') id: string) {
+    if (user.tenantId === undefined) {
+      throw new Error('Tenant ID is required for customer insights');
+    }
+    return this.staffAppointmentsService.getCustomerInsights({
+      tenantId: user.tenantId,
+      reservationId: id,
+    });
+  }
+
   @Post()
   create(@CurrentUser() user: JwtPayload, @Body() body: CreateStaffAppointmentDto) {
     if (user.tenantId === undefined) {

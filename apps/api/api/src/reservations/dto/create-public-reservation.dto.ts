@@ -10,7 +10,7 @@ import {
 } from 'class-validator';
 
 export class CreatePublicReservationDto {
-  @IsMongoId()
+  @IsString()
   serviceId!: string;
 
   @IsMongoId()

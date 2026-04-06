@@ -2,7 +2,7 @@ import { Transform } from 'class-transformer';
 import { IsDateString, IsEmail, IsMongoId, IsOptional, IsString, Length } from 'class-validator';
 
 export class CreateReservationLockDto {
-  @IsMongoId()
+  @IsString()
   serviceId!: string;
 
   @IsMongoId()

@@ -11,6 +11,8 @@ import { StaffProfile } from '../staff-profiles/staff-profile.schema';
 import { StaffServiceAssignment } from '../staff-service-assignments/staff-service-assignment.schema';
 import { StaffTimeOff } from '../staff-time-off/staff-time-off.schema';
 import { TenantDetails } from '../tenant-details/tenant-details.schema';
+import { User } from '../users/user.schema';
+import { CustomerProfile } from '../customer-profiles/customer-profile.schema';
 import { StaffAppointmentsService } from './staff-appointments.service';
 
 describe('StaffAppointmentsService (Production Life Cycle)', () => {
@@ -21,12 +23,16 @@ describe('StaffAppointmentsService (Production Life Cycle)', () => {
     sort: jest.fn().mockReturnThis(),
     exec: jest.fn().mockResolvedValue(data),
     then: (resolve: any) => resolve(data),
+    findById: jest.fn().mockReturnThis(),
+    findOne: jest.fn().mockReturnThis(),
+    find: jest.fn().mockReturnThis(),
   });
 
   const mockModels = {
     reservation: {
       find: jest.fn(),
       findOne: jest.fn(),
+      findById: jest.fn(),
       create: jest.fn(),
       updateOne: jest.fn(),
     },
@@ -38,6 +44,8 @@ describe('StaffAppointmentsService (Production Life Cycle)', () => {
     tenantDetails: { findOne: jest.fn() },
     staffAvailability: { findOne: jest.fn() },
     staffTimeOff: { find: jest.fn() },
+    user: { findById: jest.fn() },
+    customerProfile: { findOne: jest.fn() },
   };
 
   beforeEach(async () => {
@@ -77,6 +85,11 @@ describe('StaffAppointmentsService (Production Life Cycle)', () => {
           provide: getModelToken(StaffBookingSettings.name),
           useValue: mockModels.staffBookingSettings,
         },
+        { provide: getModelToken(User.name), useValue: mockModels.user },
+        {
+          provide: getModelToken(CustomerProfile.name),
+          useValue: mockModels.customerProfile,
+        },
       ],
     }).compile();
 
@@ -86,6 +99,60 @@ describe('StaffAppointmentsService (Production Life Cycle)', () => {
   const tenantId = new Types.ObjectId().toString();
   const userId = new Types.ObjectId().toString();
   const reservationId = new Types.ObjectId().toString();
+
+  describe('Customer DNA Intelligence', () => {
+    it('should flag suspicious phone numbers correctly', async () => {
+      const suspiciousPhone = '123123123';
+      mockModels.reservation.findById.mockReturnValue(
+        mockQuery({
+          _id: reservationId,
+          customerPhone: suspiciousPhone,
+          tenantId,
+        }),
+      );
+      mockModels.reservation.find.mockReturnValue(mockQuery([]));
+      mockModels.customerProfile.findOne.mockReturnValue(mockQuery(null));
+
+      const insights = await service.getCustomerInsights({
+        tenantId,
+        reservationId,
+      });
+
+      expect(insights.riskScore).toBeGreaterThan(40);
+      expect(insights.riskFactors).toContain(
+        'Identity: Phone number matches known suspicious patterns or is fake',
+      );
+    });
+
+    it('should calculate high risk score for repeat no-shows', async () => {
+      const phone = '+1999888777';
+      const pastResId = new Types.ObjectId();
+      mockModels.reservation.findById.mockReturnValue(
+        mockQuery({
+          _id: reservationId,
+          customerPhone: phone,
+          tenantId,
+        }),
+      );
+      // Mock history with no-shows
+      mockModels.reservation.find.mockReturnValue(
+        mockQuery([
+          { _id: reservationId, customerPhone: phone, tenantId, status: 'confirmed', startTime: new Date() },
+          { _id: pastResId, customerPhone: phone, tenantId, status: 'no-show', startTime: new Date(Date.now() - 86400000) },
+        ]),
+      );
+      mockModels.customerProfile.findOne.mockReturnValue(mockQuery(null));
+
+      const insights = await service.getCustomerInsights({
+        tenantId,
+        reservationId,
+      });
+
+      expect(insights.riskScore).toBeGreaterThan(60);
+      expect(insights.riskFactors).toContain('Urgent: The customer\'s last attempted reservation was a NO-SHOW');
+      expect(insights.riskFactors.some(f => f.includes('Local: 1 no-show(s)'))).toBe(true);
+    });
+  });
 
   describe('Appointment Lifecycle', () => {
     it('should update appointment status correctly (Confirmed -> Completed)', async () => {

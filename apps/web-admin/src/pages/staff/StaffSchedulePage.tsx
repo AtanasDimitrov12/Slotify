@@ -7,14 +7,17 @@ import {
   type StaffAppointment,
   updateStaffAppointment,
   updateStaffAppointmentStatus,
+  getCustomerInsights,
+  type CustomerInsights,
 } from '@barber/shared';
 import AddRoundedIcon from '@mui/icons-material/AddRounded';
 import ChevronLeftRoundedIcon from '@mui/icons-material/ChevronLeftRounded';
 import ChevronRightRoundedIcon from '@mui/icons-material/ChevronRightRounded';
 import TodayRoundedIcon from '@mui/icons-material/TodayRounded';
-import { Alert, alpha, Box, Button, Grid, IconButton, Stack, Typography } from '@mui/material';
+import { Alert, alpha, Box, Button, Grid, IconButton, Stack, Typography, CircularProgress } from '@mui/material';
 import * as React from 'react';
 import AddAppointmentDialog from './components/AddAppointmentDialog';
+import CustomerInsightsCard from './components/CustomerInsightsCard';
 import DayOverviewCard from './components/DayOverviewCard';
 import EditAppointmentDialog from './components/EditAppointmentDialog';
 import ScheduleCalendar from './components/ScheduleCalendar';
@@ -54,6 +57,9 @@ export default function StaffSchedulePage() {
   const [moveError, setMoveError] = React.useState('');
   const [actionLoading, setActionLoading] = React.useState(false);
 
+  const [customerInsights, setCustomerInsights] = React.useState<CustomerInsights | null>(null);
+  const [insightsLoading, setInsightsLoading] = React.useState(false);
+
   const [addOpen, setAddOpen] = React.useState(false);
   const [editOpen, setEditOpen] = React.useState(false);
   const [creating, setCreating] = React.useState(false);
@@ -80,6 +86,28 @@ export default function StaffSchedulePage() {
   React.useEffect(() => {
     void loadAppointments();
   }, [loadAppointments]);
+
+  React.useEffect(() => {
+    async function fetchInsights() {
+      if (!selectedAppointmentId) {
+        setCustomerInsights(null);
+        return;
+      }
+
+      try {
+        setInsightsLoading(true);
+        const insights = await getCustomerInsights(selectedAppointmentId);
+        setCustomerInsights(insights);
+      } catch (err) {
+        console.error('Failed to load customer insights', err);
+        setCustomerInsights(null);
+      } finally {
+        setInsightsLoading(false);
+      }
+    }
+
+    void fetchInsights();
+  }, [selectedAppointmentId]);
 
   React.useEffect(() => {
     async function loadServices() {
@@ -338,6 +366,14 @@ export default function StaffSchedulePage() {
                 onMarkDone={handleMarkDone}
                 onMarkNoShow={handleMarkNoShow}
               />
+
+              {insightsLoading ? (
+                <Box sx={{ display: 'flex', justifyContent: 'center', p: 4 }}>
+                  <CircularProgress size={32} sx={{ color: landingColors.purple }} />
+                </Box>
+              ) : customerInsights ? (
+                <CustomerInsightsCard insights={customerInsights} />
+              ) : null}
             </Stack>
           </Grid>
         </Grid>

@@ -20,6 +20,8 @@ import { StaffProfile } from '../staff-profiles/staff-profile.schema';
 import { StaffServiceAssignment } from '../staff-service-assignments/staff-service-assignment.schema';
 import { StaffTimeOff } from '../staff-time-off/staff-time-off.schema';
 import { TenantDetails, type WeeklyOpeningHours } from '../tenant-details/tenant-details.schema';
+import { User, UserDocument } from '../users/user.schema';
+import { CustomerProfile, CustomerProfileDocument } from '../customer-profiles/customer-profile.schema';
 import { CreateStaffAppointmentDto } from './dto/create-staff-appointment.dto';
 import { UpdateStaffAppointmentDto } from './dto/update-staff-appointment.dto';
 
@@ -44,7 +46,144 @@ export class StaffAppointmentsService {
     private readonly tenantBookingSettingsModel: Model<TenantBookingSettings>,
     @InjectModel(StaffBookingSettings.name)
     private readonly staffBookingSettingsModel: Model<StaffBookingSettings>,
+    @InjectModel(User.name)
+    private readonly userModel: Model<UserDocument>,
+    @InjectModel(CustomerProfile.name)
+    private readonly customerProfileModel: Model<CustomerProfileDocument>,
   ) {}
+
+  async getCustomerInsights(params: { tenantId: string; reservationId: string }) {
+    const reservation = await this.reservationModel.findById(params.reservationId).lean();
+    if (!reservation) {
+      throw new NotFoundException('Reservation not found');
+    }
+
+    const phone = reservation.customerPhone;
+    const email = reservation.customerEmail;
+
+    const [allReservations, profile] = await Promise.all([
+      this.reservationModel.find({ customerPhone: phone }).lean(),
+      this.customerProfileModel.findOne({ phone }).lean(),
+    ]);
+
+    const user = profile ? await this.userModel.findById(profile.userId).lean() : null;
+
+    const tenantId = new Types.ObjectId(params.tenantId);
+    const localReservations = allReservations.filter((r) => String(r.tenantId) === params.tenantId);
+
+    const calculateStats = (resList: any[]) => {
+      const completed = resList.filter((r) => r.status === 'completed').length;
+      const cancelled = resList.filter((r) => r.status === 'cancelled').length;
+      const noShow = resList.filter((r) => r.status === 'no-show').length;
+      const total = resList.length;
+
+      return { total, completed, cancelled, noShow };
+    };
+
+    const stats = calculateStats(localReservations);
+    const globalStats = calculateStats(allReservations);
+
+    // Suspicious phone number check
+    const isSuspiciousPhone = (p: string) => {
+      const digitsOnly = p.replace(/\D/g, '');
+
+      // Too short or too long for a valid mobile number in most regions
+      if (digitsOnly.length < 7 || digitsOnly.length > 15) return true;
+
+      // All same digits (e.g., 1111111)
+      if (/^(\d)\1+$/.test(digitsOnly)) return true;
+
+      // Sequential digits (e.g., 1234567, 9876543)
+      if ('1234567890123456789'.includes(digitsOnly)) return true;
+      if ('9876543210987654321'.includes(digitsOnly)) return true;
+
+      // Repeating patterns (e.g., 123123123, 12121212)
+      for (let len = 2; len <= 4; len++) {
+        const pattern = digitsOnly.substring(0, len);
+        let isRepeating = true;
+        for (let i = 0; i < digitsOnly.length; i += len) {
+          const chunk = digitsOnly.substring(i, i + len);
+          if (chunk.length === len && chunk !== pattern) {
+            isRepeating = false;
+            break;
+          }
+        }
+        if (isRepeating && digitsOnly.length >= len * 2) return true;
+      }
+
+      // Very common fake patterns
+      const suspiciousPatterns = ['123456', '654321', '123123', '000000'];
+      if (suspiciousPatterns.some((pat) => digitsOnly.includes(pat))) return true;
+
+      return false;
+    };
+
+    const riskFactors: string[] = [];
+    let riskScore = 0;
+
+    // 1. Phone Number Intelligence
+    if (isSuspiciousPhone(phone)) {
+      riskFactors.push('Identity: Phone number matches known suspicious patterns or is fake');
+      riskScore += 45;
+    }
+
+    // 2. Local Reliability History
+    if (stats.noShow > 0) {
+      const noShowRate = Math.round((stats.noShow / stats.total) * 100);
+      riskFactors.push(`Local: ${stats.noShow} no-show(s) at your salon (${noShowRate}% rate)`);
+      riskScore += stats.noShow * 35;
+    }
+
+    // 3. Network-wide Intelligence
+    const otherNoShows = globalStats.noShow - stats.noShow;
+    if (otherNoShows > 0) {
+      riskFactors.push(`Network: Marked as risky in ${otherNoShows} other salon(s) in the system`);
+      riskScore += otherNoShows * 25;
+    }
+
+    // 4. Recency & Pattern Analysis
+    const pastReservations = allReservations
+      .filter((r) => String(r._id) !== params.reservationId)
+      .sort((a, b) => b.startTime.getTime() - a.startTime.getTime());
+
+    if (pastReservations.length > 0) {
+      const lastRes = pastReservations[0];
+      if (lastRes.status === 'no-show') {
+        riskFactors.push('Urgent: The customer\'s last attempted reservation was a NO-SHOW');
+        riskScore += 30;
+      }
+    }
+
+    // 5. Cancellation Patterns
+    if (stats.cancelled > 2) {
+      riskFactors.push(`Reliability: Unusual cancellation frequency at your salon (${stats.cancelled})`);
+      riskScore += 15;
+    }
+
+    // 6. Verification & Trust
+    if (!user) {
+      riskFactors.push('Trust: Unregistered guest user (identity not verified)');
+      riskScore += 10;
+    } else if (!user.emailVerified) {
+      riskFactors.push('Trust: Registered account but email is not verified');
+      riskScore += 5;
+    }
+
+    // Cap risk score at 100
+    riskScore = Math.min(riskScore, 100);
+
+    return {
+      stats,
+      globalStats,
+      verification: {
+        isRegistered: !!user,
+        isEmailVerified: user?.emailVerified ?? false,
+        hasPhone: !!phone,
+      },
+      riskScore,
+      riskFactors,
+    };
+  }
 
   async list(params: {
     tenantId: string;
