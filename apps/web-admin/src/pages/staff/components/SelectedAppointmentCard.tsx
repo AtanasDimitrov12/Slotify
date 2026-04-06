@@ -4,7 +4,8 @@ import AccessTimeRoundedIcon from '@mui/icons-material/AccessTimeRounded';
 import ContentCutRoundedIcon from '@mui/icons-material/ContentCutRounded';
 import NotesRoundedIcon from '@mui/icons-material/NotesRounded';
 import PersonRoundedIcon from '@mui/icons-material/PersonRounded';
-import { alpha, Box, Button, Card, CardContent, Divider, Stack, Typography } from '@mui/material';
+import ShieldRoundedIcon from '@mui/icons-material/ShieldRounded';
+import { alpha, Box, Button, Card, CardContent, Divider, Stack, Typography, Tooltip } from '@mui/material';
 import AppointmentStatusChip from './AppointmentStatusChip';
 
 function formatTimeOnly(value: string) {
@@ -20,12 +21,14 @@ export default function SelectedAppointmentCard({
   onCancel,
   onMarkDone,
   onMarkNoShow,
+  onViewInsights,
 }: {
   selectedAppointment: StaffAppointment | null;
   onEdit: () => void;
   onCancel: () => void;
   onMarkDone: () => void;
   onMarkNoShow: () => void;
+  onViewInsights?: () => void;
 }) {
   if (!selectedAppointment) {
     return (
@@ -67,9 +70,32 @@ export default function SelectedAppointmentCard({
       <CardContent sx={{ p: 3.5 }}>
         <Stack spacing={3}>
           <Box>
-            <Typography sx={{ fontWeight: 1000, fontSize: 18, color: '#0F172A', mb: 2 }}>
-              Booking Details
-            </Typography>
+            <Stack direction="row" justifyContent="space-between" alignItems="center" mb={2}>
+              <Typography sx={{ fontWeight: 1000, fontSize: 18, color: '#0F172A' }}>
+                Booking Details
+              </Typography>
+              {onViewInsights && (
+                <Tooltip title="View DNA Intelligence" arrow>
+                  <Button
+                    size="small"
+                    startIcon={<ShieldRoundedIcon sx={{ fontSize: 18 }} />}
+                    onClick={onViewInsights}
+                    sx={{
+                      fontWeight: 900,
+                      fontSize: 12,
+                      borderRadius: 999,
+                      px: 2,
+                      bgcolor: alpha(landingColors.purple, 0.08),
+                      color: landingColors.purple,
+                      '&:hover': { bgcolor: alpha(landingColors.purple, 0.15) },
+                      textTransform: 'none',
+                    }}
+                  >
+                    DNA
+                  </Button>
+                </Tooltip>
+              )}
+            </Stack>
 
             <Stack spacing={2}>
               <Stack direction="row" spacing={1.5} alignItems="center">

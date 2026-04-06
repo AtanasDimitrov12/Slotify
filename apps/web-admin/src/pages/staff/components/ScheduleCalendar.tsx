@@ -1,6 +1,7 @@
 import type { StaffAppointment } from '@barber/shared';
 import { landingColors, premium } from '@barber/shared';
-import { alpha, Box, Card, CardContent, CircularProgress, Stack, Typography } from '@mui/material';
+import { alpha, Box, Card, CardContent, CircularProgress, Stack, Typography, Tooltip, IconButton } from '@mui/material';
+import ShieldRoundedIcon from '@mui/icons-material/ShieldRounded';
 import * as React from 'react';
 import AppointmentStatusChip from './AppointmentStatusChip';
 
@@ -175,6 +176,7 @@ export default function ScheduleCalendar({
   selectedAppointmentId,
   onSelectAppointment,
   onMoveAppointment,
+  onViewInsights,
 }: {
   selectedDate: string;
   appointments: StaffAppointment[];
@@ -182,6 +184,7 @@ export default function ScheduleCalendar({
   selectedAppointmentId: string | null;
   onSelectAppointment: (id: string) => void;
   onMoveAppointment: (appointment: StaffAppointment, nextStartIso: string) => Promise<void>;
+  onViewInsights?: (id: string) => void;
 }) {
   const containerRef = React.useRef<HTMLDivElement | null>(null);
   const [draggingId, setDraggingId] = React.useState<string | null>(null);
@@ -414,6 +417,7 @@ export default function ScheduleCalendar({
               const veryDense = laneWidth < 200 || height < 50;
 
               const showMetaLine = !veryDense && height >= 58;
+              const showDnaIcon = !veryDense && height >= 48;
 
               return (
                 <Box
@@ -475,12 +479,34 @@ export default function ScheduleCalendar({
                         overflow: 'hidden',
                         textOverflow: 'ellipsis',
                         whiteSpace: 'nowrap',
+                        flex: 1,
                       }}
                     >
                       {formatTimeOnly(appointment.startTime)} · {appointment.customerName}
                     </Typography>
 
-                    {!veryDense && <AppointmentStatusChip status={appointment.status} />}
+                    <Stack direction="row" spacing={0.5} alignItems="center" onMouseDown={(e) => e.stopPropagation()}>
+                      {showDnaIcon && (
+                        <Tooltip title="View Customer DNA Intelligence" arrow>
+                          <IconButton
+                            size="small"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              onViewInsights?.(appointment.id);
+                            }}
+                            sx={{
+                              p: 0.4,
+                              color: landingColors.purple,
+                              bgcolor: alpha(landingColors.purple, 0.08),
+                              '&:hover': { bgcolor: alpha(landingColors.purple, 0.15) },
+                            }}
+                          >
+                            <ShieldRoundedIcon sx={{ fontSize: 14 }} />
+                          </IconButton>
+                        </Tooltip>
+                      )}
+                      {!veryDense && <AppointmentStatusChip status={appointment.status} />}
+                    </Stack>
                   </Stack>
 
                   {showMetaLine && (

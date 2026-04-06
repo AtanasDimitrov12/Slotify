@@ -17,7 +17,7 @@ import TodayRoundedIcon from '@mui/icons-material/TodayRounded';
 import { Alert, alpha, Box, Button, Grid, IconButton, Stack, Typography, CircularProgress } from '@mui/material';
 import * as React from 'react';
 import AddAppointmentDialog from './components/AddAppointmentDialog';
-import CustomerInsightsCard from './components/CustomerInsightsCard';
+import CustomerInsightsPopup from './components/CustomerInsightsPopup';
 import DayOverviewCard from './components/DayOverviewCard';
 import EditAppointmentDialog from './components/EditAppointmentDialog';
 import ScheduleCalendar from './components/ScheduleCalendar';
@@ -59,6 +59,7 @@ export default function StaffSchedulePage() {
 
   const [customerInsights, setCustomerInsights] = React.useState<CustomerInsights | null>(null);
   const [insightsLoading, setInsightsLoading] = React.useState(false);
+  const [insightsOpen, setInsightsOpen] = React.useState(false);
 
   const [addOpen, setAddOpen] = React.useState(false);
   const [editOpen, setEditOpen] = React.useState(false);
@@ -108,6 +109,11 @@ export default function StaffSchedulePage() {
 
     void fetchInsights();
   }, [selectedAppointmentId]);
+
+  const handleViewInsights = React.useCallback((id: string) => {
+    setSelectedAppointmentId(id);
+    setInsightsOpen(true);
+  }, []);
 
   React.useEffect(() => {
     async function loadServices() {
@@ -352,6 +358,7 @@ export default function StaffSchedulePage() {
               selectedAppointmentId={selectedAppointmentId}
               onSelectAppointment={setSelectedAppointmentId}
               onMoveAppointment={handleMoveAppointment}
+              onViewInsights={handleViewInsights}
             />
           </Grid>
 
@@ -365,19 +372,19 @@ export default function StaffSchedulePage() {
                 onCancel={handleCancel}
                 onMarkDone={handleMarkDone}
                 onMarkNoShow={handleMarkNoShow}
+                onViewInsights={() => setInsightsOpen(true)}
               />
-
-              {insightsLoading ? (
-                <Box sx={{ display: 'flex', justifyContent: 'center', p: 4 }}>
-                  <CircularProgress size={32} sx={{ color: landingColors.purple }} />
-                </Box>
-              ) : customerInsights ? (
-                <CustomerInsightsCard insights={customerInsights} />
-              ) : null}
             </Stack>
           </Grid>
         </Grid>
       </Stack>
+
+      <CustomerInsightsPopup
+        open={insightsOpen}
+        onClose={() => setInsightsOpen(false)}
+        insights={customerInsights}
+        loading={insightsLoading}
+      />
 
       <AddAppointmentDialog
         open={addOpen}
