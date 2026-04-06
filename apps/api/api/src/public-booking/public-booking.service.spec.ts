@@ -44,6 +44,7 @@ describe('PublicBookingService (Production Logic)', () => {
   };
 
   beforeEach(async () => {
+    jest.useFakeTimers().setSystemTime(new Date('2026-04-06T00:00:00Z'));
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         PublicBookingService,
