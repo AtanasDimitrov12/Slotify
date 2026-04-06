@@ -1,7 +1,17 @@
 import type { StaffAppointment } from '@barber/shared';
 import { landingColors, premium } from '@barber/shared';
-import { alpha, Box, Card, CardContent, CircularProgress, Stack, Typography, Tooltip, IconButton } from '@mui/material';
 import ShieldRoundedIcon from '@mui/icons-material/ShieldRounded';
+import {
+  alpha,
+  Box,
+  Card,
+  CardContent,
+  CircularProgress,
+  IconButton,
+  Stack,
+  Tooltip,
+  Typography,
+} from '@mui/material';
 import * as React from 'react';
 import AppointmentStatusChip from './AppointmentStatusChip';
 
@@ -485,7 +495,12 @@ export default function ScheduleCalendar({
                       {formatTimeOnly(appointment.startTime)} · {appointment.customerName}
                     </Typography>
 
-                    <Stack direction="row" spacing={0.5} alignItems="center" onMouseDown={(e) => e.stopPropagation()}>
+                    <Stack
+                      direction="row"
+                      spacing={0.5}
+                      alignItems="center"
+                      onMouseDown={(e) => e.stopPropagation()}
+                    >
                       {showDnaIcon && (
                         <Tooltip title="View Customer DNA Intelligence" arrow>
                           <IconButton

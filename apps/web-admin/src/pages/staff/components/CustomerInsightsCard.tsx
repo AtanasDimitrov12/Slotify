@@ -1,30 +1,30 @@
-import React from 'react';
+import { type CustomerInsights, landingColors } from '@barber/shared';
 import {
-  Box,
-  Typography,
-  Stack,
+  CheckCircleRounded as CheckCircleIcon,
+  ErrorRounded as ErrorIcon,
+  HistoryRounded as HistoryIcon,
+  PersonSearchRounded as IdentityIcon,
+  InfoRounded as InfoIcon,
+  DomainRounded as NetworkIcon,
+  PublicRounded as PublicIcon,
+  AssessmentRounded as ReliabilityIcon,
+  ShieldRounded as ShieldIcon,
+  HandshakeRounded as TrustIcon,
+  ReportProblemRounded as UrgentIcon,
+  WarningRounded as WarningIcon,
+} from '@mui/icons-material';
+import {
   alpha,
-  LinearProgress,
-  Tooltip,
+  Box,
   Chip,
   Divider,
   Grid,
+  LinearProgress,
+  Stack,
+  Tooltip,
+  Typography,
 } from '@mui/material';
-import {
-  ShieldRounded as ShieldIcon,
-  WarningRounded as WarningIcon,
-  CheckCircleRounded as CheckCircleIcon,
-  ErrorRounded as ErrorIcon,
-  InfoRounded as InfoIcon,
-  HistoryRounded as HistoryIcon,
-  PublicRounded as PublicIcon,
-  PersonSearchRounded as IdentityIcon,
-  ReportProblemRounded as UrgentIcon,
-  HandshakeRounded as TrustIcon,
-  AssessmentRounded as ReliabilityIcon,
-  DomainRounded as NetworkIcon,
-} from '@mui/icons-material';
-import { type CustomerInsights, landingColors } from '@barber/shared';
+import type React from 'react';
 
 interface CustomerInsightsCardProps {
   insights: CustomerInsights;
@@ -40,11 +40,15 @@ export default function CustomerInsightsCard({ insights }: CustomerInsightsCardP
   const riskColor = getRiskColor(insights.riskScore);
 
   const getFactorIcon = (factor: string) => {
-    if (factor.startsWith('Identity:')) return <IdentityIcon sx={{ color: '#6366F1', fontSize: 16 }} />;
-    if (factor.startsWith('Local:')) return <ReliabilityIcon sx={{ color: '#10B981', fontSize: 16 }} />;
-    if (factor.startsWith('Network:')) return <NetworkIcon sx={{ color: '#8B5CF6', fontSize: 16 }} />;
+    if (factor.startsWith('Identity:'))
+      return <IdentityIcon sx={{ color: '#6366F1', fontSize: 16 }} />;
+    if (factor.startsWith('Local:'))
+      return <ReliabilityIcon sx={{ color: '#10B981', fontSize: 16 }} />;
+    if (factor.startsWith('Network:'))
+      return <NetworkIcon sx={{ color: '#8B5CF6', fontSize: 16 }} />;
     if (factor.startsWith('Urgent:')) return <UrgentIcon sx={{ color: '#EF4444', fontSize: 16 }} />;
-    if (factor.startsWith('Reliability:')) return <AssessmentRoundedIcon sx={{ color: '#F59E0B', fontSize: 16 }} />;
+    if (factor.startsWith('Reliability:'))
+      return <AssessmentRoundedIcon sx={{ color: '#F59E0B', fontSize: 16 }} />;
     if (factor.startsWith('Trust:')) return <TrustIcon sx={{ color: '#64748B', fontSize: 16 }} />;
     return <WarningIcon sx={{ color: '#F59E0B', fontSize: 16 }} />;
   };
@@ -59,7 +63,13 @@ export default function CustomerInsightsCard({ insights }: CustomerInsightsCardP
         boxShadow: '0 4px 12px rgba(15,23,42,0.03)',
       }}
     >
-      <Box sx={{ p: 2.5, bgcolor: alpha(riskColor, 0.04), borderBottom: '1px solid rgba(15,23,42,0.05)' }}>
+      <Box
+        sx={{
+          p: 2.5,
+          bgcolor: alpha(riskColor, 0.04),
+          borderBottom: '1px solid rgba(15,23,42,0.05)',
+        }}
+      >
         <Stack direction="row" justifyContent="space-between" alignItems="center" mb={2}>
           <Stack direction="row" spacing={1} alignItems="center">
             <ShieldIcon sx={{ color: riskColor, fontSize: 20 }} />
@@ -68,7 +78,13 @@ export default function CustomerInsightsCard({ insights }: CustomerInsightsCardP
             </Typography>
           </Stack>
           <Chip
-            label={insights.riskScore < 30 ? 'Low Risk' : insights.riskScore < 60 ? 'Medium Risk' : 'High Risk'}
+            label={
+              insights.riskScore < 30
+                ? 'Low Risk'
+                : insights.riskScore < 60
+                  ? 'Medium Risk'
+                  : 'High Risk'
+            }
             size="small"
             sx={{
               fontWeight: 900,
@@ -108,7 +124,16 @@ export default function CustomerInsightsCard({ insights }: CustomerInsightsCardP
       <Stack spacing={2.5} sx={{ p: 2.5 }}>
         {/* Verification Status */}
         <Box>
-          <Typography sx={{ fontSize: 12, fontWeight: 800, color: '#94A3B8', textTransform: 'uppercase', mb: 1.5, letterSpacing: 0.5 }}>
+          <Typography
+            sx={{
+              fontSize: 12,
+              fontWeight: 800,
+              color: '#94A3B8',
+              textTransform: 'uppercase',
+              mb: 1.5,
+              letterSpacing: 0.5,
+            }}
+          >
             Identity & Trust Verification
           </Typography>
           <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
@@ -154,16 +179,25 @@ export default function CustomerInsightsCard({ insights }: CustomerInsightsCardP
         {/* Risk Factors */}
         {insights.riskFactors.length > 0 && (
           <Box sx={{ mt: 1 }}>
-             <Typography sx={{ fontSize: 12, fontWeight: 800, color: '#94A3B8', textTransform: 'uppercase', mb: 1.5, letterSpacing: 0.5 }}>
+            <Typography
+              sx={{
+                fontSize: 12,
+                fontWeight: 800,
+                color: '#94A3B8',
+                textTransform: 'uppercase',
+                mb: 1.5,
+                letterSpacing: 0.5,
+              }}
+            >
               Identified Risk Indicators
             </Typography>
             <Stack spacing={1.5}>
               {insights.riskFactors.map((factor, index) => (
                 <Stack key={index} direction="row" spacing={1.5} alignItems="flex-start">
-                  <Box sx={{ mt: 0.2, display: 'flex' }}>
-                    {getFactorIcon(factor)}
-                  </Box>
-                  <Typography sx={{ fontSize: 13, color: '#475569', fontWeight: 600, lineHeight: 1.4 }}>
+                  <Box sx={{ mt: 0.2, display: 'flex' }}>{getFactorIcon(factor)}</Box>
+                  <Typography
+                    sx={{ fontSize: 13, color: '#475569', fontWeight: 600, lineHeight: 1.4 }}
+                  >
                     {factor.includes(':') ? (
                       <>
                         <Box component="span" sx={{ color: '#0F172A', fontWeight: 800 }}>
@@ -171,7 +205,9 @@ export default function CustomerInsightsCard({ insights }: CustomerInsightsCardP
                         </Box>
                         {factor.split(':').slice(1).join(':')}
                       </>
-                    ) : factor}
+                    ) : (
+                      factor
+                    )}
                   </Typography>
                 </Stack>
               ))}
@@ -186,7 +222,13 @@ export default function CustomerInsightsCard({ insights }: CustomerInsightsCardP
 function VerificationChip({ label, verified }: { label: string; verified: boolean }) {
   return (
     <Chip
-      icon={verified ? <CheckCircleIcon style={{ fontSize: 14, color: '#10B981' }} /> : <ErrorIcon style={{ fontSize: 14, color: '#94A3B8' }} />}
+      icon={
+        verified ? (
+          <CheckCircleIcon style={{ fontSize: 14, color: '#10B981' }} />
+        ) : (
+          <ErrorIcon style={{ fontSize: 14, color: '#94A3B8' }} />
+        )
+      }
       label={label}
       size="small"
       sx={{
@@ -196,17 +238,31 @@ function VerificationChip({ label, verified }: { label: string; verified: boolea
         bgcolor: verified ? alpha('#10B981', 0.05) : alpha('#94A3B8', 0.05),
         color: verified ? '#059669' : '#64748B',
         border: `1px solid ${verified ? alpha('#10B981', 0.1) : alpha('#94A3B8', 0.1)}`,
-        '& .MuiChip-icon': { ml: 0.5 }
+        '& .MuiChip-icon': { ml: 0.5 },
       }}
     />
   );
 }
 
-function StatBox({ icon, label, total, completed, noShow }: { icon: React.ReactNode, label: string; total: number; completed: number; noShow: number }) {
+function StatBox({
+  icon,
+  label,
+  total,
+  completed,
+  noShow,
+}: {
+  icon: React.ReactNode;
+  label: string;
+  total: number;
+  completed: number;
+  noShow: number;
+}) {
   const reliability = total > 0 ? Math.round((completed / total) * 100) : 100;
-  
+
   return (
-    <Box sx={{ p: 1.5, bgcolor: '#F8FAFC', borderRadius: 2, border: '1px solid rgba(15,23,42,0.04)' }}>
+    <Box
+      sx={{ p: 1.5, bgcolor: '#F8FAFC', borderRadius: 2, border: '1px solid rgba(15,23,42,0.04)' }}
+    >
       <Stack direction="row" spacing={0.5} alignItems="center" mb={1}>
         <Box sx={{ color: landingColors.purple, display: 'flex' }}>{icon}</Box>
         <Typography sx={{ fontSize: 11, fontWeight: 800, color: '#64748B' }}>{label}</Typography>
@@ -217,8 +273,16 @@ function StatBox({ icon, label, total, completed, noShow }: { icon: React.ReactN
           <Typography sx={{ fontSize: 11, color: '#0F172A', fontWeight: 800 }}>{total}</Typography>
         </Stack>
         <Stack direction="row" justifyContent="space-between">
-          <Typography sx={{ fontSize: 11, color: '#94A3B8', fontWeight: 600 }}>Reliability</Typography>
-          <Typography sx={{ fontSize: 11, color: reliability > 70 ? '#10B981' : reliability > 40 ? '#F59E0B' : '#EF4444', fontWeight: 800 }}>
+          <Typography sx={{ fontSize: 11, color: '#94A3B8', fontWeight: 600 }}>
+            Reliability
+          </Typography>
+          <Typography
+            sx={{
+              fontSize: 11,
+              color: reliability > 70 ? '#10B981' : reliability > 40 ? '#F59E0B' : '#EF4444',
+              fontWeight: 800,
+            }}
+          >
             {reliability}%
           </Typography>
         </Stack>
