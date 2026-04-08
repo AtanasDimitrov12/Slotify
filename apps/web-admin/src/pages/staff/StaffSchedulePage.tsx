@@ -1,20 +1,20 @@
 import {
+  type CustomerInsights,
   cancelStaffAppointment,
   createStaffAppointment,
+  getCustomerInsights,
   landingColors,
   listStaffAppointments,
   listStaffServices,
   type StaffAppointment,
   updateStaffAppointment,
   updateStaffAppointmentStatus,
-  getCustomerInsights,
-  type CustomerInsights,
 } from '@barber/shared';
 import AddRoundedIcon from '@mui/icons-material/AddRounded';
 import ChevronLeftRoundedIcon from '@mui/icons-material/ChevronLeftRounded';
 import ChevronRightRoundedIcon from '@mui/icons-material/ChevronRightRounded';
 import TodayRoundedIcon from '@mui/icons-material/TodayRounded';
-import { Alert, alpha, Box, Button, Grid, IconButton, Stack, Typography, CircularProgress } from '@mui/material';
+import { Alert, alpha, Box, Button, Grid, IconButton, Stack, Typography } from '@mui/material';
 import * as React from 'react';
 import AddAppointmentDialog from './components/AddAppointmentDialog';
 import CustomerInsightsPopup from './components/CustomerInsightsPopup';

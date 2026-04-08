@@ -4,7 +4,6 @@ import {
   ErrorRounded as ErrorIcon,
   HistoryRounded as HistoryIcon,
   PersonSearchRounded as IdentityIcon,
-  InfoRounded as InfoIcon,
   DomainRounded as NetworkIcon,
   PublicRounded as PublicIcon,
   AssessmentRounded as ReliabilityIcon,
@@ -13,17 +12,7 @@ import {
   ReportProblemRounded as UrgentIcon,
   WarningRounded as WarningIcon,
 } from '@mui/icons-material';
-import {
-  alpha,
-  Box,
-  Chip,
-  Divider,
-  Grid,
-  LinearProgress,
-  Stack,
-  Tooltip,
-  Typography,
-} from '@mui/material';
+import { alpha, Box, Chip, Divider, Grid, LinearProgress, Stack, Typography } from '@mui/material';
 import type React from 'react';
 
 interface CustomerInsightsCardProps {

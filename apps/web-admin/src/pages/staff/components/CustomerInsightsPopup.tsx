@@ -1,19 +1,18 @@
-import React from 'react';
-import {
-  Dialog,
-  DialogContent,
-  IconButton,
-  Box,
-  useMediaQuery,
-  useTheme,
-  Fade,
-  Typography,
-  Stack,
-} from '@mui/material';
+import type { CustomerInsights } from '@barber/shared';
 import CloseRoundedIcon from '@mui/icons-material/CloseRounded';
 import ShieldRoundedIcon from '@mui/icons-material/ShieldRounded';
+import {
+  Box,
+  Dialog,
+  DialogContent,
+  Fade,
+  IconButton,
+  Stack,
+  Typography,
+  useMediaQuery,
+  useTheme,
+} from '@mui/material';
 import CustomerInsightsCard from './CustomerInsightsCard';
-import { type CustomerInsights } from '@barber/shared';
 
 interface CustomerInsightsPopupProps {
   open: boolean;
@@ -111,12 +110,16 @@ export default function CustomerInsightsPopup({
         )}
       </DialogContent>
 
-      <style dangerouslySetInnerHTML={{ __html: `
+      <style
+        dangerouslySetInnerHTML={{
+          __html: `
         @keyframes fadeIn {
           from { opacity: 0; transform: translateY(10px); }
           to { opacity: 1; transform: translateY(0); }
         }
-      `}} />
+      `,
+        }}
+      />
     </Dialog>
   );
 }
