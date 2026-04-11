@@ -1,42 +1,36 @@
-import { landingColors } from '@barber/shared';
-import type { SvgIconComponent } from '@mui/icons-material';
+import { landingColors, useAuth } from '@barber/shared';
 import ContentCutRoundedIcon from '@mui/icons-material/ContentCutRounded';
 import DashboardRoundedIcon from '@mui/icons-material/DashboardRounded';
 import EventAvailableRoundedIcon from '@mui/icons-material/EventAvailableRounded';
 import GroupsRoundedIcon from '@mui/icons-material/GroupsRounded';
 import MenuRoundedIcon from '@mui/icons-material/MenuRounded';
 import SettingsRoundedIcon from '@mui/icons-material/SettingsRounded';
-import {
-  AppBar,
-  Avatar,
-  Box,
-  Divider,
-  Drawer,
-  IconButton,
-  List,
-  ListItemButton,
-  ListItemIcon,
-  ListItemText,
-  Stack,
-  Toolbar,
-  Typography,
-  useMediaQuery,
-  useTheme,
-} from '@mui/material';
+import { Box, Drawer, IconButton, useMediaQuery, useTheme } from '@mui/material';
 import { alpha } from '@mui/material/styles';
 import * as React from 'react';
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
-
-const drawerWidth = 280;
-
-type NavItem = { label: string; to: string; icon: SvgIconComponent };
+import UnifiedSidebar, { type NavItem } from '../../layout/UnifiedSidebar';
 
 export default function OwnerLayout() {
+  const { user } = useAuth();
   const theme = useTheme();
   const isDesktop = useMediaQuery(theme.breakpoints.up('md'));
   const [open, setOpen] = React.useState(false);
+  const [collapsed, setCollapsed] = React.useState(() => {
+    const saved = localStorage.getItem('sidebar-collapsed');
+    return saved === 'true';
+  });
+
   const navigate = useNavigate();
   const location = useLocation();
+
+  const handleToggleCollapse = () => {
+    setCollapsed((prev) => {
+      const next = !prev;
+      localStorage.setItem('sidebar-collapsed', String(next));
+      return next;
+    });
+  };
 
   const items: NavItem[] = [
     { label: 'Overview', to: '/owner/overview', icon: DashboardRoundedIcon },
@@ -46,110 +40,17 @@ export default function OwnerLayout() {
     { label: 'Business settings', to: '/owner/settings', icon: SettingsRoundedIcon },
   ];
 
-  const sidebar = (
-    <Box
-      sx={{
-        height: '100%',
-        display: 'flex',
-        flexDirection: 'column',
-        bgcolor: 'transparent',
-      }}
-    >
-      <Stack direction="row" alignItems="center" spacing={1.5} sx={{ p: 3 }}>
-        <Avatar
-          sx={{
-            width: 44,
-            height: 44,
-            fontSize: 18,
-            fontWeight: 1000,
-            bgcolor: alpha(landingColors.purple, 0.12),
-            color: landingColors.purple,
-            border: `1px solid ${alpha(landingColors.purple, 0.2)}`,
-            boxShadow: `0 8px 24px ${alpha(landingColors.purple, 0.16)}`,
-          }}
-        >
-          O
-        </Avatar>
+  const isActive = (to: string) =>
+    location.pathname === to ||
+    (to.endsWith('/overview') &&
+      (location.pathname === '/owner' || location.pathname === '/owner/'));
 
-        <Box>
-          <Typography
-            sx={{
-              fontWeight: 1000,
-              letterSpacing: -0.4,
-              lineHeight: 1,
-              fontSize: 18,
-              color: '#0F172A',
-            }}
-          >
-            Salon Console
-          </Typography>
-          <Typography variant="body2" sx={{ color: '#64748B', fontWeight: 700, mt: 0.4 }}>
-            Business Owner
-          </Typography>
-        </Box>
-      </Stack>
+  const onNavigate = (to: string) => {
+    navigate(to);
+    setOpen(false);
+  };
 
-      <Divider sx={{ mx: 2, borderColor: 'rgba(15,23,42,0.04)' }} />
-
-      <List sx={{ p: 2 }}>
-        {items.map((it) => {
-          const active =
-            location.pathname === it.to ||
-            (it.to.endsWith('/overview') &&
-              (location.pathname === '/owner' || location.pathname === '/owner/'));
-
-          const Icon = it.icon;
-
-          return (
-            <ListItemButton
-              key={it.to}
-              selected={active}
-              onClick={() => {
-                navigate(it.to);
-                setOpen(false);
-              }}
-              sx={{
-                borderRadius: 4,
-                mb: 1,
-                px: 2,
-                py: 1.5,
-                border: '1px solid',
-                borderColor: active ? alpha(landingColors.purple, 0.12) : 'transparent',
-                bgcolor: active ? alpha(landingColors.purple, 0.08) : 'transparent',
-                transition: 'all 0.2s ease',
-                '&:hover': {
-                  bgcolor: active
-                    ? alpha(landingColors.purple, 0.12)
-                    : alpha(landingColors.purple, 0.04),
-                  transform: 'translateX(4px)',
-                },
-                '&.Mui-selected': {
-                  bgcolor: alpha(landingColors.purple, 0.08),
-                },
-                '&.Mui-selected:hover': {
-                  bgcolor: alpha(landingColors.purple, 0.12),
-                },
-              }}
-            >
-              <ListItemIcon sx={{ minWidth: 40, color: active ? landingColors.purple : '#94A3B8' }}>
-                <Icon fontSize="medium" />
-              </ListItemIcon>
-              <ListItemText
-                primary={it.label}
-                primaryTypographyProps={{
-                  fontWeight: active ? 900 : 700,
-                  fontSize: 15,
-                  color: active ? landingColors.purple : '#475569',
-                }}
-              />
-            </ListItemButton>
-          );
-        })}
-      </List>
-
-      <Box sx={{ flex: 1 }} />
-    </Box>
-  );
+  const currentDrawerWidth = collapsed && isDesktop ? 88 : 280;
 
   return (
     <Box
@@ -162,85 +63,94 @@ export default function OwnerLayout() {
         `,
       }}
     >
-      <AppBar
-        position="sticky"
-        elevation={0}
-        sx={{
-          zIndex: (theme) => theme.zIndex.appBar,
-          bgcolor: alpha('#FFFFFF', 0.8),
-          backdropFilter: 'blur(20px)',
-          borderBottom: '1px solid',
-          borderColor: 'rgba(15,23,42,0.06)',
-          color: 'text.primary',
-        }}
-      >
-        <Toolbar sx={{ minHeight: 74, px: { xs: 2, md: 4 } }}>
-          {!isDesktop && (
-            <IconButton
-              onClick={() => setOpen(true)}
-              sx={{
-                mr: 2,
-                bgcolor: alpha(landingColors.purple, 0.08),
-                color: landingColors.purple,
-                '&:hover': { bgcolor: alpha(landingColors.purple, 0.12) },
-              }}
-              aria-label="Open management menu"
-            >
-              <MenuRoundedIcon />
-            </IconButton>
-          )}
-
-          <Box sx={{ flex: 1 }}>
-            <Typography
-              sx={{ fontWeight: 1000, fontSize: 20, letterSpacing: -0.8, color: '#0F172A' }}
-            >
-              Management
-            </Typography>
-            <Typography variant="body2" sx={{ color: '#64748B', fontWeight: 700 }}>
-              Salon & Team Control
-            </Typography>
-          </Box>
-        </Toolbar>
-      </AppBar>
-
       <Box
-        sx={{ display: 'grid', gridTemplateColumns: isDesktop ? `${drawerWidth}px 1fr` : '1fr' }}
+        sx={{
+          display: 'grid',
+          gridTemplateColumns: isDesktop ? `${currentDrawerWidth}px 1fr` : '1fr',
+          transition: 'grid-template-columns 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+        }}
       >
         {isDesktop ? (
           <Box
             sx={{
               position: 'sticky',
-              top: 148,
-              height: 'calc(100vh - 148px)',
+              top: 74,
+              height: 'calc(100vh - 74px)',
               borderRight: '1px solid',
               borderColor: 'rgba(15,23,42,0.06)',
               bgcolor: alpha('#FFFFFF', 0.4),
               backdropFilter: 'blur(10px)',
+              zIndex: (theme) => theme.zIndex.appBar - 1,
             }}
           >
-            {sidebar}
+            <UnifiedSidebar
+              items={items}
+              isActive={isActive}
+              onNavigate={onNavigate}
+              collapsed={collapsed}
+              onToggleCollapse={handleToggleCollapse}
+              userRole="owner"
+              title="Salon Console"
+              userName={user?.name}
+              userEmail={user?.email}
+            />
           </Box>
         ) : (
-          <Drawer
-            anchor="left"
-            open={open}
-            onClose={() => setOpen(false)}
-            PaperProps={{
-              sx: {
-                width: drawerWidth,
-                borderTopRightRadius: 32,
-                borderBottomRightRadius: 32,
-                overflow: 'hidden',
-                bgcolor: alpha('#FFFFFF', 0.95),
-                backdropFilter: 'blur(20px)',
-              },
-            }}
-          >
-            {sidebar}
-          </Drawer>
+          <>
+            <IconButton
+              onClick={() => setOpen(true)}
+              sx={{
+                position: 'fixed',
+                bottom: 24,
+                right: 24,
+                zIndex: 1100,
+                width: 56,
+                height: 56,
+                bgcolor: landingColors.purple,
+                color: 'white',
+                boxShadow: `0 12px 24px ${alpha(landingColors.purple, 0.4)}`,
+                transition: 'all 0.2s ease',
+                '&:hover': {
+                  bgcolor: landingColors.purple,
+                  transform: 'scale(1.1) rotate(5deg)',
+                  boxShadow: `0 16px 32px ${alpha(landingColors.purple, 0.5)}`,
+                },
+              }}
+            >
+              <MenuRoundedIcon />
+            </IconButton>
+
+            <Drawer
+              anchor="left"
+              open={open}
+              onClose={() => setOpen(false)}
+              PaperProps={{
+                sx: {
+                  width: 280,
+                  borderTopRightRadius: 32,
+                  borderBottomRightRadius: 32,
+                  overflow: 'hidden',
+                  bgcolor: alpha('#FFFFFF', 0.95),
+                  backdropFilter: 'blur(20px)',
+                },
+              }}
+            >
+              <UnifiedSidebar
+                items={items}
+                isActive={isActive}
+                onNavigate={onNavigate}
+                collapsed={false}
+                onToggleCollapse={() => {}}
+                userRole="owner"
+                title="Salon Console"
+                userName={user?.name}
+                userEmail={user?.email}
+              />
+            </Drawer>
+          </>
         )}
 
-        <Box sx={{ px: { xs: 2, md: 5 }, py: { xs: 3, md: 5 } }}>
+        <Box sx={{ px: { xs: 2, md: 5 }, py: { xs: 3, md: 5 }, minWidth: 0 }}>
           <Box sx={{ maxWidth: 1400, mx: 'auto' }}>
             <Outlet />
           </Box>

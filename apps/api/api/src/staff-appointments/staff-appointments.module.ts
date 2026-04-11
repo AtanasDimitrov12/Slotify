@@ -4,6 +4,10 @@ import {
   TenantBookingSettings,
   TenantBookingSettingsSchema,
 } from '../booking-settings/tenant-booking-settings.schema';
+import {
+  CustomerProfile,
+  CustomerProfileSchema,
+} from '../customer-profiles/customer-profile.schema';
 import { Reservation, ReservationSchema } from '../reservations/reservation.schema';
 import { Service, ServiceSchema } from '../services/service.schema';
 import {
@@ -21,6 +25,7 @@ import {
 } from '../staff-service-assignments/staff-service-assignment.schema';
 import { StaffTimeOff, StaffTimeOffSchema } from '../staff-time-off/staff-time-off.schema';
 import { TenantDetails, TenantDetailsSchema } from '../tenant-details/tenant-details.schema';
+import { User, UserSchema } from '../users/user.schema';
 import { StaffAppointmentsController } from './staff-appointments.controller';
 import { StaffAppointmentsService } from './staff-appointments.service';
 
@@ -39,6 +44,8 @@ import { StaffAppointmentsService } from './staff-appointments.service';
       { name: TenantDetails.name, schema: TenantDetailsSchema },
       { name: TenantBookingSettings.name, schema: TenantBookingSettingsSchema },
       { name: StaffBookingSettings.name, schema: StaffBookingSettingsSchema },
+      { name: User.name, schema: UserSchema },
+      { name: CustomerProfile.name, schema: CustomerProfileSchema },
     ]),
   ],
   controllers: [StaffAppointmentsController],

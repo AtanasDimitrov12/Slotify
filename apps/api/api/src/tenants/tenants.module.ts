@@ -1,6 +1,7 @@
-import { Module } from '@nestjs/common';
+import { forwardRef, Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import { BookingSettingsModule } from '../booking-settings/booking-settings.module';
+import { MembershipsModule } from '../memberships/memberships.module';
 import { TenantDetailsModule } from '../tenant-details/tenant-details.module';
 import { AdminTenantsController } from './admin-tenants.controller';
 import { PublicTenantsController } from './public-tenants.controller';
@@ -13,6 +14,7 @@ import { TenantsService } from './tenants.service';
     MongooseModule.forFeature([{ name: Tenant.name, schema: TenantSchema }]),
     BookingSettingsModule,
     TenantDetailsModule,
+    forwardRef(() => MembershipsModule),
   ],
   controllers: [TenantsController, PublicTenantsController, AdminTenantsController],
   providers: [TenantsService],

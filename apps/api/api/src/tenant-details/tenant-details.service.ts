@@ -32,7 +32,7 @@ export class TenantDetailsService {
 
   async updateByTenantId(tenantId: string, dto: UpdateTenantDetailsDto) {
     const updated = await this.model
-      .findOneAndUpdate({ tenantId }, { $set: dto }, { new: true })
+      .findOneAndUpdate({ tenantId }, { $set: dto }, { returnDocument: 'after' })
       .lean();
 
     if (!updated) throw new NotFoundException('TenantDetails not found');
@@ -41,7 +41,11 @@ export class TenantDetailsService {
 
   async upsertByTenantId(tenantId: string, dto: UpdateTenantDetailsDto) {
     const updated = await this.model
-      .findOneAndUpdate({ tenantId }, { $set: { ...dto, tenantId } }, { new: true, upsert: true })
+      .findOneAndUpdate(
+        { tenantId },
+        { $set: { ...dto, tenantId } },
+        { returnDocument: 'after', upsert: true },
+      )
       .lean();
 
     return updated;

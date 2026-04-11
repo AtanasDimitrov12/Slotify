@@ -1,4 +1,4 @@
-import { landingColors, premium } from '@barber/shared';
+import { landingColors } from '@barber/shared';
 import CameraAltRoundedIcon from '@mui/icons-material/CameraAltRounded';
 import { Avatar, alpha, Box, Button, Card, CardContent, Stack, Typography } from '@mui/material';
 import * as React from 'react';
@@ -15,16 +15,16 @@ export default function ProfilePhotoCard({ name, photoUrl, onChangePhoto }: Prop
   return (
     <Card
       sx={{
-        borderRadius: `${premium.rLg * 4}px`,
+        borderRadius: 3,
         border: '1px solid',
         borderColor: 'rgba(15,23,42,0.06)',
         bgcolor: '#FFFFFF',
-        boxShadow: '0 10px 40px rgba(15,23,42,0.04)',
+        boxShadow: '0 4px 20px rgba(0,0,0,0.02)',
         height: '100%',
       }}
     >
-      <CardContent sx={{ p: 4 }}>
-        <Stack spacing={4} alignItems="center" textAlign="center">
+      <CardContent sx={{ p: { xs: 3, md: 4 } }}>
+        <Stack spacing={{ xs: 3, md: 4 }} alignItems="center" textAlign="center">
           <Typography sx={{ fontWeight: 1000, fontSize: 20, color: '#0F172A' }}>
             Profile Photo
           </Typography>
@@ -33,8 +33,8 @@ export default function ProfilePhotoCard({ name, photoUrl, onChangePhoto }: Prop
             <Avatar
               src={photoUrl}
               sx={{
-                width: 140,
-                height: 140,
+                width: { xs: 120, md: 140 },
+                height: { xs: 120, md: 140 },
                 fontSize: 48,
                 fontWeight: 1000,
                 bgcolor: alpha(landingColors.purple, 0.08),
@@ -69,10 +69,9 @@ export default function ProfilePhotoCard({ name, photoUrl, onChangePhoto }: Prop
             </Box>
           </Box>
 
-          <Box>
-            <Typography sx={{ color: '#64748B', fontWeight: 600, fontSize: 14, mb: 2 }}>
-              Make sure your face is clearly visible. This photo will be shown to customers during
-              booking.
+          <Box sx={{ maxWidth: 280 }}>
+            <Typography sx={{ color: '#64748B', fontWeight: 600, fontSize: 14, mb: 2.5 }}>
+              Make sure your face is clearly visible. This photo will be shown during booking.
             </Typography>
 
             <input
@@ -90,11 +89,14 @@ export default function ProfilePhotoCard({ name, photoUrl, onChangePhoto }: Prop
               variant="outlined"
               onClick={() => inputRef.current?.click()}
               sx={{
-                borderRadius: 999,
+                borderRadius: 2,
                 fontWeight: 900,
                 px: 4,
-                borderColor: 'rgba(15,23,42,0.12)',
+                height: 44,
+                borderColor: 'rgba(15,23,42,0.1)',
                 color: '#475569',
+                textTransform: 'none',
+                '&:hover': { borderColor: landingColors.purple, color: landingColors.purple },
               }}
             >
               Upload New

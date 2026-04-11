@@ -23,8 +23,6 @@ export default function LandingPage() {
           description="Find the best barbershops and salons, check their real-time availability, and secure your spot without making a single call."
           primaryCtaText="Explore and Book"
           primaryCtaLink="/salons"
-          secondaryCtaText="For partners"
-          secondaryCtaLink="/partner"
           chipLabel="Slotify — book your next appointment"
         />
       }

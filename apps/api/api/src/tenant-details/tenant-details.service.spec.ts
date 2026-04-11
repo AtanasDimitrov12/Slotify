@@ -98,7 +98,7 @@ describe('TenantDetailsService', () => {
       expect(model.findOneAndUpdate).toHaveBeenCalledWith(
         { tenantId },
         { $set: { contactPhone: '123' } },
-        { new: true },
+        { returnDocument: 'after' },
       );
       expect(res).toEqual({ tenantId, contactPhone: '123' });
     });
@@ -125,7 +125,7 @@ describe('TenantDetailsService', () => {
       expect(model.findOneAndUpdate).toHaveBeenCalledWith(
         { tenantId },
         { $set: { contactEmail: 'upsert@x.com', tenantId } },
-        { new: true, upsert: true },
+        { returnDocument: 'after', upsert: true },
       );
       expect(res).toEqual({ tenantId, contactEmail: 'upsert@x.com' });
     });

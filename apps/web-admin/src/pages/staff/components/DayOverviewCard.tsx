@@ -22,41 +22,47 @@ export default function DayOverviewCard({ appointments }: { appointments: StaffA
       elevation={0}
       sx={{
         borderRadius: 4,
-        bgcolor: 'rgba(255,255,255,0.7)',
-        backdropFilter: 'blur(16px)',
-        border: '1px solid rgba(15,23,42,0.08)',
-        boxShadow: '0 10px 30px rgba(15,23,42,0.04)',
+        bgcolor: '#FFF',
+        border: '1px solid rgba(15,23,42,0.06)',
+        boxShadow: '0 4px 20px rgba(15,23,42,0.02)',
       }}
     >
       <CardContent sx={{ p: 3 }}>
         <Typography
-          fontWeight={1000}
-          variant="h6"
-          sx={{ mb: 2, letterSpacing: -0.8, color: '#111827' }}
+          variant="subtitle1"
+          sx={{ mb: 2.5, fontWeight: 700, color: '#0F172A', letterSpacing: -0.5 }}
         >
-          Day overview
+          Day Overview
         </Typography>
 
-        <Stack spacing={1.5}>
+        <Stack spacing={2}>
           <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <Typography sx={{ color: '#475569', fontWeight: 600 }}>Appointments</Typography>
-            <Typography sx={{ fontWeight: 900, color: '#7C6CFF' }}>
+            <Typography sx={{ color: '#64748B', fontWeight: 500, fontSize: 14 }}>
+              Appointments
+            </Typography>
+            <Typography sx={{ fontWeight: 700, color: '#7C6CFF' }}>
               {productiveAppointments.length}
             </Typography>
           </Box>
           <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <Typography sx={{ color: '#475569', fontWeight: 600 }}>Booked time</Typography>
-            <Typography sx={{ fontWeight: 900, color: '#111827' }}>
+            <Typography sx={{ color: '#64748B', fontWeight: 500, fontSize: 14 }}>
+              Booked Time
+            </Typography>
+            <Typography sx={{ fontWeight: 700, color: '#0F172A' }}>
               {totalBookedMinutes} min
             </Typography>
           </Box>
           <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <Typography sx={{ color: '#475569', fontWeight: 600 }}>Estimated revenue</Typography>
-            <Typography sx={{ fontWeight: 1000, color: '#10B981' }}>€{estimatedRevenue}</Typography>
+            <Typography sx={{ color: '#64748B', fontWeight: 500, fontSize: 14 }}>
+              Estimated Revenue
+            </Typography>
+            <Typography sx={{ fontWeight: 800, color: '#10B981' }}>€{estimatedRevenue}</Typography>
           </Box>
           <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <Typography sx={{ color: '#475569', fontWeight: 600 }}>No-shows</Typography>
-            <Typography sx={{ fontWeight: 900, color: '#EF4444' }}>{noShows}</Typography>
+            <Typography sx={{ color: '#64748B', fontWeight: 500, fontSize: 14 }}>
+              No-shows
+            </Typography>
+            <Typography sx={{ fontWeight: 700, color: '#EF4444' }}>{noShows}</Typography>
           </Box>
         </Stack>
       </CardContent>

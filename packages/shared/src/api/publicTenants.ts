@@ -47,6 +47,7 @@ export type PublicTenantListItem = {
   name: string;
   slug: string;
   timezone?: string;
+  plan?: string;
   details?: PublicTenantDetails;
 };
 

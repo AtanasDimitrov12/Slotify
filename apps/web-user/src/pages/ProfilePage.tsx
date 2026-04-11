@@ -75,14 +75,22 @@ export default function ProfilePage() {
       ]);
 
       setProfile(profileData);
-      setAllSalons(salonsData);
+      // Filter out administrative tenants:
+      // 1. Those with plan: 'admin' (backend-driven)
+      // 2. Those matching the current admin's tenantId (frontend safeguard)
+      const filteredSalons = salonsData.filter((s) => {
+        if (s.plan === 'admin') return false;
+        if (user?.role === 'admin' && s._id === user.tenantId) return false;
+        return true;
+      });
+      setAllSalons(filteredSalons);
       setReservations(resData);
     } catch (err) {
       showError(err);
     } finally {
       setLoading(false);
     }
-  }, [showError]);
+  }, [showError, user?.tenantId, user?.role]);
 
   useEffect(() => {
     void loadData();

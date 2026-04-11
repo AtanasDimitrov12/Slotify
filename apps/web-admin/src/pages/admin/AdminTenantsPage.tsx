@@ -1,4 +1,11 @@
-import { landingColors, listTenants, register, type Tenant, updateTenant } from '@barber/shared';
+import {
+  landingColors,
+  listTenants,
+  register,
+  type Tenant,
+  updateTenant,
+  useAuth,
+} from '@barber/shared';
 import AddRoundedIcon from '@mui/icons-material/AddRounded';
 import { alpha, Box, Button, Stack, Typography } from '@mui/material';
 import * as React from 'react';
@@ -6,6 +13,7 @@ import TenantFormDialog, { type TenantFormValues } from './components/TenantForm
 import TenantsTable from './components/TenantsTable';
 
 export default function AdminTenantsPage() {
+  const { user } = useAuth();
   const [rows, setRows] = React.useState<Tenant[]>([]);
   const [loading, setLoading] = React.useState(true);
 
@@ -17,11 +25,19 @@ export default function AdminTenantsPage() {
     setLoading(true);
     try {
       const data = await listTenants();
-      setRows(data);
+      // Filter out administrative tenants:
+      // 1. Those with plan: 'admin' (backend-driven)
+      // 2. Those matching the current admin's tenantId (frontend safeguard)
+      const filtered = data.filter((t) => {
+        if (t.plan === 'admin') return false;
+        if (user?.role === 'admin' && t._id === user.tenantId) return false;
+        return true;
+      });
+      setRows(filtered);
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [user?.tenantId, user?.role]);
 
   React.useEffect(() => {
     void refresh();
@@ -86,18 +102,19 @@ export default function AdminTenantsPage() {
     <Box>
       <Stack
         direction={{ xs: 'column', md: 'row' }}
-        alignItems={{ xs: 'stretch', md: 'flex-start' }}
+        alignItems={{ xs: 'stretch', md: 'center' }}
         justifyContent="space-between"
         spacing={2}
         sx={{ mb: 5 }}
       >
         <Box>
           <Typography
-            sx={{ fontWeight: 1000, fontSize: 36, letterSpacing: -1.5, color: '#0F172A' }}
+            variant="h4"
+            sx={{ fontWeight: 800, letterSpacing: -1, color: '#0F172A', mb: 0.5 }}
           >
             Tenants
           </Typography>
-          <Typography sx={{ color: '#64748B', fontWeight: 600, fontSize: 18 }}>
+          <Typography sx={{ color: '#64748B', fontWeight: 500, fontSize: { xs: 16, md: 18 } }}>
             Onboard and manage salon environments.
           </Typography>
         </Box>
@@ -108,14 +125,17 @@ export default function AdminTenantsPage() {
           startIcon={<AddRoundedIcon />}
           onClick={handleOpenCreate}
           sx={{
-            minHeight: 54,
+            height: 48,
             px: 3.5,
-            borderRadius: 999,
-            fontWeight: 900,
-            fontSize: 15,
+            borderRadius: 3,
+            fontWeight: 700,
+            textTransform: 'none',
             bgcolor: landingColors.purple,
-            boxShadow: `0 12px 30px ${alpha(landingColors.purple, 0.24)}`,
-            '&:hover': { bgcolor: landingColors.purple, filter: 'brightness(1.05)' },
+            boxShadow: `0 8px 20px ${alpha(landingColors.purple, 0.25)}`,
+            '&:hover': {
+              bgcolor: alpha(landingColors.purple, 0.9),
+              boxShadow: `0 10px 25px ${alpha(landingColors.purple, 0.35)}`,
+            },
           }}
         >
           Add new tenant

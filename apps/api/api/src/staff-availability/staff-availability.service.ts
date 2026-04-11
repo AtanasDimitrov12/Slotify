@@ -43,14 +43,14 @@ export class StaffAvailabilityService {
             weeklyAvailability: dto.weeklyAvailability,
           },
         },
-        { new: true, upsert: true },
+        { returnDocument: 'after', upsert: true },
       )
       .lean();
   }
 
   async update(id: string, dto: UpdateStaffAvailabilityDto) {
     const updated = await this.availabilityModel
-      .findByIdAndUpdate(id, { $set: dto }, { new: true })
+      .findByIdAndUpdate(id, { $set: dto }, { returnDocument: 'after' })
       .lean();
 
     if (!updated) throw new NotFoundException('Staff availability not found');

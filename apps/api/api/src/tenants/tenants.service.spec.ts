@@ -172,7 +172,7 @@ describe('TenantsService', () => {
       expect(mockTenantModel.findByIdAndUpdate).toHaveBeenCalledWith(
         'tenant-id',
         { $set: dto },
-        { new: true },
+        { returnDocument: 'after' },
       );
       expect(result).toEqual(mockTenant);
     });

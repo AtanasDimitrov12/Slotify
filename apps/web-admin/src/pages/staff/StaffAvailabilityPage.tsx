@@ -149,56 +149,54 @@ export default function StaffAvailabilityPage() {
   }
 
   return (
-    <>
-      <Stack spacing={4}>
-        <Box
-          sx={{
-            display: 'flex',
-            flexDirection: { xs: 'column', md: 'row' },
-            alignItems: { xs: 'flex-start', md: 'center' },
-            justifyContent: 'space-between',
-            gap: 2,
-          }}
-        >
-          <Box>
-            <Typography
-              sx={{ fontWeight: 1000, fontSize: 36, letterSpacing: -1.5, color: '#0F172A' }}
-            >
-              Availability
-            </Typography>
-            <Typography sx={{ color: '#64748B', fontWeight: 600, fontSize: 18 }}>
-              Set your weekly working hours and break times.
-            </Typography>
-          </Box>
-
-          <Button
-            variant="contained"
-            size="large"
-            onClick={handleSave}
-            disabled={saving}
-            sx={{
-              minHeight: 52,
-              px: 4,
-              borderRadius: 999,
-              fontWeight: 900,
-              whiteSpace: 'nowrap',
-              alignSelf: { xs: 'flex-start', md: 'center' },
-              bgcolor: landingColors.purple,
-              boxShadow: `0 12px 30px ${alpha(landingColors.purple, 0.24)}`,
-            }}
+    <Stack spacing={4}>
+      <Box
+        sx={{
+          display: 'flex',
+          flexDirection: { xs: 'column', md: 'row' },
+          alignItems: { xs: 'flex-start', md: 'center' },
+          justifyContent: 'space-between',
+          gap: 2,
+        }}
+      >
+        <Box>
+          <Typography
+            sx={{ fontWeight: 1000, fontSize: 36, letterSpacing: -1.5, color: '#0F172A' }}
           >
-            {saving ? 'Saving...' : 'Save Schedule'}
-          </Button>
+            Availability
+          </Typography>
+          <Typography sx={{ color: '#64748B', fontWeight: 600, fontSize: 18 }}>
+            Set your weekly working hours and break times.
+          </Typography>
         </Box>
 
-        {error ? (
-          <Alert severity="error" sx={{ borderRadius: 3 }}>
-            {error}
-          </Alert>
-        ) : null}
+        <Button
+          variant="contained"
+          size="large"
+          onClick={handleSave}
+          disabled={saving}
+          sx={{
+            minHeight: 52,
+            px: 4,
+            borderRadius: 999,
+            fontWeight: 900,
+            whiteSpace: 'nowrap',
+            alignSelf: { xs: 'flex-start', md: 'center' },
+            bgcolor: landingColors.purple,
+            boxShadow: `0 12px 30px ${alpha(landingColors.purple, 0.24)}`,
+          }}
+        >
+          {saving ? 'Saving...' : 'Save Schedule'}
+        </Button>
+      </Box>
 
-        <WeeklyScheduleEditor value={schedule} onChange={setSchedule} />
-      </Stack>
-    </>
+      {error ? (
+        <Alert severity="error" sx={{ borderRadius: 3 }}>
+          {error}
+        </Alert>
+      ) : null}
+
+      <WeeklyScheduleEditor value={schedule} onChange={setSchedule} />
+    </Stack>
   );
 }

@@ -105,109 +105,103 @@ export default function StaffBookingRulesPage() {
   }
 
   return (
-    <>
-      <Stack spacing={4}>
-        <Box
-          sx={{
-            display: 'flex',
-            flexDirection: { xs: 'column', md: 'row' },
-            alignItems: { xs: 'flex-start', md: 'center' },
-            justifyContent: 'space-between',
-            gap: 2,
-          }}
-        >
-          <Box>
-            <Typography
-              sx={{ fontWeight: 1000, fontSize: 36, letterSpacing: -1.5, color: '#0F172A' }}
-            >
-              Booking Rules
-            </Typography>
-            <Typography sx={{ color: '#64748B', fontWeight: 600, fontSize: 18 }}>
-              Use salon-wide rules or define your own personal schedule behavior.
-            </Typography>
-          </Box>
-
-          <Button
-            variant="contained"
-            size="large"
-            onClick={handleSave}
-            disabled={saving}
-            sx={{
-              minHeight: 52,
-              px: 4,
-              borderRadius: 999,
-              fontWeight: 900,
-              whiteSpace: 'nowrap',
-              alignSelf: { xs: 'flex-start', md: 'center' },
-              bgcolor: landingColors.purple,
-              boxShadow: `0 12px 30px ${alpha(landingColors.purple, 0.24)}`,
-            }}
+    <Stack spacing={4}>
+      <Box
+        sx={{
+          display: 'flex',
+          flexDirection: { xs: 'column', md: 'row' },
+          alignItems: { xs: 'flex-start', md: 'center' },
+          justifyContent: 'space-between',
+          gap: 2,
+        }}
+      >
+        <Box>
+          <Typography
+            sx={{ fontWeight: 1000, fontSize: 36, letterSpacing: -1.5, color: '#0F172A' }}
           >
-            {saving ? 'Saving...' : 'Save Rules'}
-          </Button>
+            Booking Rules
+          </Typography>
+          <Typography sx={{ color: '#64748B', fontWeight: 600, fontSize: 18 }}>
+            Use salon-wide rules or define your own personal schedule behavior.
+          </Typography>
         </Box>
 
-        {error ? (
-          <Alert severity="error" sx={{ borderRadius: 3 }}>
-            {error}
-          </Alert>
-        ) : null}
-
-        <Card
+        <Button
+          variant="contained"
+          size="large"
+          onClick={handleSave}
+          disabled={saving}
           sx={{
-            borderRadius: `${premium.rLg * 4}px`,
-            border: '1px solid',
-            borderColor: 'rgba(15,23,42,0.06)',
-            bgcolor: '#FFFFFF',
-            boxShadow: '0 10px 40px rgba(15,23,42,0.04)',
+            minHeight: 52,
+            px: 4,
+            borderRadius: 999,
+            fontWeight: 900,
+            whiteSpace: 'nowrap',
+            alignSelf: { xs: 'flex-start', md: 'center' },
+            bgcolor: landingColors.purple,
+            boxShadow: `0 12px 30px ${alpha(landingColors.purple, 0.24)}`,
           }}
         >
-          <CardContent sx={{ p: 4 }}>
-            <Stack spacing={4}>
-              <Box
-                sx={{
-                  p: 2.5,
-                  borderRadius: 4,
-                  bgcolor: alpha(landingColors.purple, 0.04),
-                  border: `1px solid ${alpha(landingColors.purple, 0.1)}`,
-                }}
-              >
-                <FormControlLabel
-                  control={
-                    <Switch
-                      checked={useGlobalSettings}
-                      onChange={(e) => handleToggleUseGlobal(e.target.checked)}
-                      sx={{
-                        '& .MuiSwitch-switchBase.Mui-checked': { color: landingColors.purple },
-                        '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': {
-                          bgcolor: landingColors.purple,
-                        },
-                      }}
-                    />
-                  }
-                  label={
-                    <Typography sx={{ fontWeight: 800, color: '#0F172A' }}>
-                      Follow salon default rules
-                    </Typography>
-                  }
-                />
-              </Box>
+          {saving ? 'Saving...' : 'Save Rules'}
+        </Button>
+      </Box>
 
-              {useGlobalSettings ? (
-                <Alert severity="info" sx={{ borderRadius: 3, fontWeight: 600 }}>
-                  Your personal schedule currently inherits all rules from the salon owner.
-                </Alert>
-              ) : null}
+      {error ? (
+        <Alert severity="error" sx={{ borderRadius: 3 }}>
+          {error}
+        </Alert>
+      ) : null}
 
-              <StaffBookingRulesForm
-                value={rules}
-                onChange={setRules}
-                disabled={useGlobalSettings}
+      <Card
+        sx={{
+          borderRadius: `${premium.rLg * 4}px`,
+          border: '1px solid',
+          borderColor: 'rgba(15,23,42,0.06)',
+          bgcolor: '#FFFFFF',
+          boxShadow: '0 10px 40px rgba(15,23,42,0.04)',
+        }}
+      >
+        <CardContent sx={{ p: 4 }}>
+          <Stack spacing={4}>
+            <Box
+              sx={{
+                p: 2.5,
+                borderRadius: 4,
+                bgcolor: alpha(landingColors.purple, 0.04),
+                border: `1px solid ${alpha(landingColors.purple, 0.1)}`,
+              }}
+            >
+              <FormControlLabel
+                control={
+                  <Switch
+                    checked={useGlobalSettings}
+                    onChange={(e) => handleToggleUseGlobal(e.target.checked)}
+                    sx={{
+                      '& .MuiSwitch-switchBase.Mui-checked': { color: landingColors.purple },
+                      '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': {
+                        bgcolor: landingColors.purple,
+                      },
+                    }}
+                  />
+                }
+                label={
+                  <Typography sx={{ fontWeight: 800, color: '#0F172A' }}>
+                    Follow salon default rules
+                  </Typography>
+                }
               />
-            </Stack>
-          </CardContent>
-        </Card>
-      </Stack>
-    </>
+            </Box>
+
+            {useGlobalSettings ? (
+              <Alert severity="info" sx={{ borderRadius: 3, fontWeight: 600 }}>
+                Your personal schedule currently inherits all rules from the salon owner.
+              </Alert>
+            ) : null}
+
+            <StaffBookingRulesForm value={rules} onChange={setRules} disabled={useGlobalSettings} />
+          </Stack>
+        </CardContent>
+      </Card>
+    </Stack>
   );
 }

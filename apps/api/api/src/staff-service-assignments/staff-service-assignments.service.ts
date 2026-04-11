@@ -37,7 +37,7 @@ export class StaffServiceAssignmentsService {
 
   async update(id: string, dto: UpdateStaffServiceAssignmentDto) {
     const updated = await this.assignmentModel
-      .findByIdAndUpdate(id, { $set: dto }, { new: true })
+      .findByIdAndUpdate(id, { $set: dto }, { returnDocument: 'after' })
       .populate('serviceId')
       .lean();
 

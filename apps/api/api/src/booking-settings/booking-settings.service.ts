@@ -20,7 +20,7 @@ export class BookingSettingsService {
         { tenantId: new Types.ObjectId(tenantId) },
         { $set: dto },
         {
-          new: true,
+          returnDocument: 'after',
           upsert: true,
           setDefaultsOnInsert: true,
         },
@@ -47,7 +47,7 @@ export class BookingSettingsService {
           },
         },
         {
-          new: true,
+          returnDocument: 'after',
           upsert: true,
           setDefaultsOnInsert: true,
         },

@@ -11,7 +11,7 @@ export class AdminTenantsController {
 
   @Get()
   findAll() {
-    return this.tenantsService.findAll();
+    return this.tenantsService.findAllSalons();
   }
 
   @Post()

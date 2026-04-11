@@ -14,6 +14,7 @@ export type StaffAppointment = {
   staffServiceAssignmentId: string;
   serviceName: string;
   status: 'pending' | 'confirmed' | 'cancelled' | 'completed' | 'no-show';
+  riskScore?: number;
 };
 
 export type StaffServiceOption = {
@@ -24,6 +25,32 @@ export type StaffServiceOption = {
   priceEUR: number;
   description?: string;
 };
+
+export type CustomerInsights = {
+  stats: {
+    total: number;
+    completed: number;
+    cancelled: number;
+    noShow: number;
+  };
+  globalStats: {
+    total: number;
+    completed: number;
+    cancelled: number;
+    noShow: number;
+  };
+  verification: {
+    isRegistered: boolean;
+    isEmailVerified: boolean;
+    hasPhone: boolean;
+  };
+  riskScore: number;
+  riskFactors: string[];
+};
+
+export async function getCustomerInsights(reservationId: string): Promise<CustomerInsights> {
+  return apiFetch<CustomerInsights>(`/staff/me/appointments/${reservationId}/customer-insights`);
+}
 
 export async function listStaffServices(): Promise<StaffServiceOption[]> {
   return apiFetch<StaffServiceOption[]>('/staff/me/appointments/services');
