@@ -14,6 +14,7 @@ export type StaffAppointment = {
   staffServiceAssignmentId: string;
   serviceName: string;
   status: 'pending' | 'confirmed' | 'cancelled' | 'completed' | 'no-show';
+  riskScore?: number;
 };
 
 export type StaffServiceOption = {

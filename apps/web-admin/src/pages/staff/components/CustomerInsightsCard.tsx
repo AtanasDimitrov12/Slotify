@@ -46,25 +46,41 @@ export default function CustomerInsightsCard({ insights }: CustomerInsightsCardP
     <Box
       sx={{
         bgcolor: '#FFFFFF',
-        borderRadius: 4,
+        borderRadius: 3,
         border: '1px solid rgba(15,23,42,0.08)',
         overflow: 'hidden',
-        boxShadow: '0 4px 12px rgba(15,23,42,0.03)',
+        boxShadow: '0 12px 24px -4px rgba(15,23,42,0.06)',
       }}
     >
       <Box
         sx={{
-          p: 2.5,
-          bgcolor: alpha(riskColor, 0.04),
+          p: 3,
+          bgcolor: alpha(riskColor, 0.03),
           borderBottom: '1px solid rgba(15,23,42,0.05)',
         }}
       >
-        <Stack direction="row" justifyContent="space-between" alignItems="center" mb={2}>
-          <Stack direction="row" spacing={1} alignItems="center">
-            <ShieldIcon sx={{ color: riskColor, fontSize: 20 }} />
-            <Typography sx={{ fontWeight: 800, fontSize: 16, color: '#0F172A' }}>
-              Customer DNA Intelligence
-            </Typography>
+        <Stack direction="row" justifyContent="space-between" alignItems="center" mb={2.5}>
+          <Stack direction="row" spacing={1.5} alignItems="center">
+            <Box sx={{ 
+              width: 40, 
+              height: 40, 
+              borderRadius: 2, 
+              bgcolor: alpha(riskColor, 0.1),
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              color: riskColor
+            }}>
+              <ShieldIcon sx={{ fontSize: 24 }} />
+            </Box>
+            <Box>
+              <Typography sx={{ fontWeight: 900, fontSize: 16, color: '#0F172A', lineHeight: 1.2 }}>
+                DNA Intelligence
+              </Typography>
+              <Typography sx={{ fontWeight: 600, fontSize: 12, color: '#64748B' }}>
+                Integrity & Risk Analysis
+              </Typography>
+            </Box>
           </Stack>
           <Chip
             label={
@@ -78,19 +94,22 @@ export default function CustomerInsightsCard({ insights }: CustomerInsightsCardP
             sx={{
               fontWeight: 900,
               fontSize: 11,
+              height: 24,
               bgcolor: alpha(riskColor, 0.1),
               color: riskColor,
               border: `1px solid ${alpha(riskColor, 0.2)}`,
+              textTransform: 'uppercase',
+              letterSpacing: 0.5,
             }}
           />
         </Stack>
 
-        <Box sx={{ mb: 1 }}>
-          <Stack direction="row" justifyContent="space-between" mb={0.5}>
-            <Typography sx={{ fontSize: 13, fontWeight: 700, color: '#64748B' }}>
+        <Box sx={{ px: 0.5 }}>
+          <Stack direction="row" justifyContent="space-between" mb={1}>
+            <Typography sx={{ fontSize: 13, fontWeight: 800, color: '#475569' }}>
               Risk Assessment Score
             </Typography>
-            <Typography sx={{ fontSize: 13, fontWeight: 900, color: riskColor }}>
+            <Typography sx={{ fontSize: 14, fontWeight: 1000, color: riskColor }}>
               {insights.riskScore}%
             </Typography>
           </Stack>
@@ -100,7 +119,7 @@ export default function CustomerInsightsCard({ insights }: CustomerInsightsCardP
             sx={{
               height: 8,
               borderRadius: 4,
-              bgcolor: alpha(riskColor, 0.1),
+              bgcolor: alpha(riskColor, 0.08),
               '& .MuiLinearProgress-bar': {
                 bgcolor: riskColor,
                 borderRadius: 4,
@@ -110,53 +129,54 @@ export default function CustomerInsightsCard({ insights }: CustomerInsightsCardP
         </Box>
       </Box>
 
-      <Stack spacing={2.5} sx={{ p: 2.5 }}>
+      <Stack spacing={3} sx={{ p: 3 }}>
         {/* Verification Status */}
         <Box>
           <Typography
             sx={{
-              fontSize: 12,
-              fontWeight: 800,
+              fontSize: 11,
+              fontWeight: 900,
               color: '#94A3B8',
               textTransform: 'uppercase',
-              mb: 1.5,
-              letterSpacing: 0.5,
+              mb: 2,
+              letterSpacing: 1,
+              textAlign: 'center'
             }}
           >
-            Identity & Trust Verification
+            Trust Verification
           </Typography>
-          <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
+          <Stack direction="row" spacing={1} justifyContent="center" flexWrap="wrap" useFlexGap>
             <VerificationChip
-              label={insights.verification.isRegistered ? 'Registered User' : 'Guest Booking'}
+              label={insights.verification.isRegistered ? 'Verified Account' : 'Guest Identity'}
               verified={insights.verification.isRegistered}
             />
             <VerificationChip
-              label={insights.verification.isEmailVerified ? 'Email Verified' : 'Email Unverified'}
+              label={insights.verification.isEmailVerified ? 'Email Confirmed' : 'Email Pending'}
               verified={insights.verification.isEmailVerified}
             />
             <VerificationChip
-              label={insights.verification.hasPhone ? 'Phone Confirmed' : 'Phone Missing'}
+              label={insights.verification.hasPhone ? 'Phone Bound' : 'No Phone'}
               verified={insights.verification.hasPhone}
             />
           </Stack>
         </Box>
 
-        <Divider sx={{ borderColor: 'rgba(15,23,42,0.05)' }} />
+        <Divider sx={{ borderColor: 'rgba(15,23,42,0.06)' }} />
 
         {/* History Stats */}
         <Grid container spacing={2}>
-          <Grid item xs={6}>
+          <Grid item xs={12} sm={6}>
             <StatBox
-              icon={<HistoryIcon sx={{ fontSize: 16 }} />}
+              icon={<HistoryIcon sx={{ fontSize: 18 }} />}
               label="Local Reputation"
               total={insights.stats.total}
               completed={insights.stats.completed}
               noShow={insights.stats.noShow}
             />
           </Grid>
-          <Grid item xs={6}>
+          <Grid item xs={12} sm={6}>
             <StatBox
-              icon={<PublicIcon sx={{ fontSize: 16 }} />}
+              icon={<PublicIcon sx={{ fontSize: 18 }} />}
               label="Network Insights"
               total={insights.globalStats.total}
               completed={insights.globalStats.completed}
@@ -167,25 +187,31 @@ export default function CustomerInsightsCard({ insights }: CustomerInsightsCardP
 
         {/* Risk Factors */}
         {insights.riskFactors.length > 0 && (
-          <Box sx={{ mt: 1 }}>
+          <Box sx={{ 
+            mt: 1, 
+            p: 2, 
+            borderRadius: 2.5, 
+            bgcolor: '#F8FAFC',
+            border: '1px solid rgba(15,23,42,0.04)'
+          }}>
             <Typography
               sx={{
-                fontSize: 12,
-                fontWeight: 800,
-                color: '#94A3B8',
+                fontSize: 11,
+                fontWeight: 900,
+                color: '#64748B',
                 textTransform: 'uppercase',
-                mb: 1.5,
-                letterSpacing: 0.5,
+                mb: 2,
+                letterSpacing: 1,
               }}
             >
-              Identified Risk Indicators
+              Key Indicators
             </Typography>
-            <Stack spacing={1.5}>
+            <Stack spacing={2}>
               {insights.riskFactors.map((factor, index) => (
-                <Stack key={index} direction="row" spacing={1.5} alignItems="flex-start">
-                  <Box sx={{ mt: 0.2, display: 'flex' }}>{getFactorIcon(factor)}</Box>
+                <Stack key={index} direction="row" spacing={2} alignItems="flex-start">
+                  <Box sx={{ mt: 0.3, display: 'flex' }}>{getFactorIcon(factor)}</Box>
                   <Typography
-                    sx={{ fontSize: 13, color: '#475569', fontWeight: 600, lineHeight: 1.4 }}
+                    sx={{ fontSize: 13, color: '#334155', fontWeight: 600, lineHeight: 1.5 }}
                   >
                     {factor.includes(':') ? (
                       <>
@@ -205,6 +231,7 @@ export default function CustomerInsightsCard({ insights }: CustomerInsightsCardP
         )}
       </Stack>
     </Box>
+
   );
 }
 

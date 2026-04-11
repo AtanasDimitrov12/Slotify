@@ -75,7 +75,7 @@ export default function SelectedAppointmentCard({
                 Booking Details
               </Typography>
               {onViewInsights && (
-                <Tooltip title="View DNA Intelligence" arrow>
+                <Tooltip title={`Risk Level: ${selectedAppointment.riskScore ?? 'N/A'}%`} arrow>
                   <Button
                     size="small"
                     startIcon={<ShieldRoundedIcon sx={{ fontSize: 18 }} />}
@@ -83,15 +83,49 @@ export default function SelectedAppointmentCard({
                     sx={{
                       fontWeight: 900,
                       fontSize: 12,
-                      borderRadius: 999,
-                      px: 2,
-                      bgcolor: alpha(landingColors.purple, 0.08),
-                      color: landingColors.purple,
-                      '&:hover': { bgcolor: alpha(landingColors.purple, 0.15) },
+                      borderRadius: 1.5,
+                      px: 1.5,
+                      py: 0.5,
+                      bgcolor: (theme) => {
+                        const score = selectedAppointment.riskScore;
+                        if (score === undefined) return alpha(landingColors.purple, 0.08);
+                        if (score < 30) return alpha('#10B981', 0.1);
+                        if (score < 60) return alpha('#F59E0B', 0.1);
+                        return alpha('#EF4444', 0.1);
+                      },
+                      color: (theme) => {
+                        const score = selectedAppointment.riskScore;
+                        if (score === undefined) return landingColors.purple;
+                        if (score < 30) return '#10B981';
+                        if (score < 60) return '#F59E0B';
+                        return '#EF4444';
+                      },
+                      border: (theme) => {
+                        const score = selectedAppointment.riskScore;
+                        let color = landingColors.purple;
+                        if (score !== undefined) {
+                          if (score < 30) color = '#10B981';
+                          else if (score < 60) color = '#F59E0B';
+                          else color = '#EF4444';
+                        }
+                        return `1px solid ${alpha(color, 0.2)}`;
+                      },
+                      '&:hover': { 
+                        bgcolor: (theme) => {
+                          const score = selectedAppointment.riskScore;
+                          let color = landingColors.purple;
+                          if (score !== undefined) {
+                            if (score < 30) color = '#10B981';
+                            else if (score < 60) color = '#F59E0B';
+                            else color = '#EF4444';
+                          }
+                          return alpha(color, 0.2);
+                        }
+                      },
                       textTransform: 'none',
                     }}
                   >
-                    DNA
+                    DNA {selectedAppointment.riskScore !== undefined ? `${selectedAppointment.riskScore}%` : ''}
                   </Button>
                 </Tooltip>
               )}

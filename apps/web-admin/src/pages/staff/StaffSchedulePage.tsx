@@ -236,101 +236,118 @@ export default function StaffSchedulePage() {
         <Stack
           direction={{ xs: 'column', md: 'row' }}
           justifyContent="space-between"
-          alignItems={{ xs: 'stretch', md: 'flex-start' }}
+          alignItems={{ xs: 'stretch', md: 'center' }}
           spacing={3}
         >
           <Box>
             <Typography
-              sx={{ fontWeight: 1000, fontSize: 36, letterSpacing: -1.5, color: '#0F172A' }}
+              sx={{ 
+                fontWeight: 1000, 
+                fontSize: { xs: 28, md: 36 }, 
+                letterSpacing: -1.5, 
+                color: '#0F172A',
+                lineHeight: 1
+              }}
             >
               Your Schedule
             </Typography>
-            <Typography sx={{ color: '#64748B', fontWeight: 600, fontSize: 18 }}>
+            <Typography sx={{ color: '#64748B', fontWeight: 600, fontSize: { xs: 15, md: 18 }, mt: 0.5 }}>
               Manage appointments and optimize your day.
             </Typography>
           </Box>
 
           <Stack
-            direction="row"
+            direction={{ xs: 'column', sm: 'row' }}
             spacing={1.5}
-            flexWrap="wrap"
-            useFlexGap
-            sx={{ alignItems: 'center' }}
+            sx={{ alignItems: { xs: 'stretch', sm: 'center' } }}
           >
-            <Button
-              variant="outlined"
-              startIcon={<TodayRoundedIcon />}
-              onClick={goToToday}
-              sx={{
-                borderRadius: 999,
-                fontWeight: 900,
-                borderColor: 'rgba(15,23,42,0.12)',
-                color: '#475569',
-                '&:hover': { bgcolor: '#FFF', borderColor: landingColors.purple },
-              }}
-            >
-              Today
-            </Button>
-
             <Stack
               direction="row"
-              alignItems="center"
               spacing={1}
-              sx={{
-                bgcolor: '#FFFFFF',
-                border: '1px solid rgba(15,23,42,0.06)',
-                borderRadius: 999,
-                px: 1,
-                py: 0.5,
-                boxShadow: '0 4px 12px rgba(15,23,42,0.03)',
-              }}
+              sx={{ flex: { xs: 1, sm: 'initial' }, alignItems: 'center' }}
             >
-              <IconButton
-                size="small"
-                onClick={goToPreviousDay}
+              <Button
+                variant="outlined"
+                onClick={goToToday}
                 sx={{
-                  color: landingColors.purple,
-                  '&:hover': { bgcolor: alpha(landingColors.purple, 0.08) },
+                  borderRadius: 2,
+                  fontWeight: 900,
+                  borderColor: 'rgba(15,23,42,0.1)',
+                  color: '#475569',
+                  minWidth: { xs: 'auto', sm: 100 },
+                  px: 2,
+                  height: 44,
+                  bgcolor: '#FFF',
+                  '&:hover': { bgcolor: '#FFF', borderColor: landingColors.purple, color: landingColors.purple },
                 }}
               >
-                <ChevronLeftRoundedIcon />
-              </IconButton>
+                Today
+              </Button>
 
-              <Typography
+              <Stack
+                direction="row"
+                alignItems="center"
+                spacing={0.5}
                 sx={{
-                  minWidth: 180,
-                  textAlign: 'center',
-                  fontWeight: 800,
-                  fontSize: 15,
-                  color: '#0F172A',
+                  bgcolor: '#FFFFFF',
+                  border: '1px solid rgba(15,23,42,0.08)',
+                  borderRadius: 2,
+                  p: 0.5,
+                  boxShadow: '0 2px 8px rgba(15,23,42,0.02)',
+                  flex: 1,
+                  justifyContent: 'space-between'
                 }}
               >
-                {formatHumanDate(selectedDate)}
-              </Typography>
+                <IconButton
+                  size="small"
+                  onClick={goToPreviousDay}
+                  sx={{
+                    color: landingColors.purple,
+                    '&:hover': { bgcolor: alpha(landingColors.purple, 0.08) },
+                  }}
+                >
+                  <ChevronLeftRoundedIcon fontSize="small" />
+                </IconButton>
 
-              <IconButton
-                size="small"
-                onClick={goToNextDay}
-                sx={{
-                  color: landingColors.purple,
-                  '&:hover': { bgcolor: alpha(landingColors.purple, 0.08) },
-                }}
-              >
-                <ChevronRightRoundedIcon />
-              </IconButton>
+                <Typography
+                  sx={{
+                    fontWeight: 800,
+                    fontSize: { xs: 13, sm: 14 },
+                    color: '#0F172A',
+                    whiteSpace: 'nowrap',
+                    px: 1
+                  }}
+                >
+                  {formatHumanDate(selectedDate)}
+                </Typography>
+
+                <IconButton
+                  size="small"
+                  onClick={goToNextDay}
+                  sx={{
+                    color: landingColors.purple,
+                    '&:hover': { bgcolor: alpha(landingColors.purple, 0.08) },
+                  }}
+                >
+                  <ChevronRightRoundedIcon fontSize="small" />
+                </IconButton>
+              </Stack>
             </Stack>
 
             <Button
               variant="contained"
               startIcon={<AddRoundedIcon />}
               onClick={() => setAddOpen(true)}
+              fullWidth
               sx={{
-                minHeight: 52,
+                height: 44,
                 px: 3,
-                borderRadius: 999,
+                borderRadius: 2,
                 fontWeight: 900,
                 bgcolor: landingColors.purple,
-                boxShadow: `0 12px 30px ${alpha(landingColors.purple, 0.24)}`,
+                boxShadow: `0 8px 20px ${alpha(landingColors.purple, 0.2)}`,
+                textTransform: 'none',
+                sm: { width: 'auto' }
               }}
             >
               Add Appointment

@@ -429,6 +429,15 @@ export default function ScheduleCalendar({
               const showMetaLine = !veryDense && height >= 58;
               const showDnaIcon = !veryDense && height >= 48;
 
+              const getRiskColor = (score?: number) => {
+                if (score === undefined) return '#94A3B8';
+                if (score < 30) return '#10B981';
+                if (score < 60) return '#F59E0B';
+                return '#EF4444';
+              };
+
+              const riskColor = getRiskColor(appointment.riskScore);
+
               return (
                 <Box
                   key={appointment.id}
@@ -441,9 +450,9 @@ export default function ScheduleCalendar({
                     width: laneWidth,
                     height: height - 2,
                     boxSizing: 'border-box',
-                    borderRadius: 3,
-                    px: dense ? 1.5 : 2,
-                    py: dense ? 1 : 1.5,
+                    borderRadius: 2,
+                    px: dense ? 1 : 1.5,
+                    py: dense ? 0.75 : 1,
                     cursor: draggable ? (isDragging ? 'grabbing' : 'grab') : 'pointer',
                     border: '1px solid',
                     borderStyle: isCancelled ? 'dashed' : 'solid',
@@ -452,6 +461,7 @@ export default function ScheduleCalendar({
                       : selected
                         ? landingColors.purple
                         : 'rgba(15,23,42,0.08)',
+                    borderLeft: appointment.riskScore !== undefined ? `4px solid ${riskColor}` : undefined,
                     bgcolor: isCancelled
                       ? alpha('#F43F5E', 0.04)
                       : isCompleted
@@ -471,19 +481,19 @@ export default function ScheduleCalendar({
                     display: 'flex',
                     flexDirection: 'column',
                     justifyContent: 'center',
-                    gap: 0.5,
+                    gap: 0.25,
                   }}
                 >
                   <Stack
                     direction="row"
                     justifyContent="space-between"
                     alignItems="center"
-                    spacing={1}
+                    spacing={0.5}
                   >
                     <Typography
                       sx={{
                         fontWeight: 900,
-                        fontSize: dense ? 13 : 14.5,
+                        fontSize: dense ? 12 : 14,
                         color: isCancelled ? '#F43F5E' : '#0F172A',
                         textDecoration: isCancelled ? 'line-through' : 'none',
                         overflow: 'hidden',
@@ -497,12 +507,12 @@ export default function ScheduleCalendar({
 
                     <Stack
                       direction="row"
-                      spacing={0.5}
+                      spacing={0.25}
                       alignItems="center"
                       onMouseDown={(e) => e.stopPropagation()}
                     >
                       {showDnaIcon && (
-                        <Tooltip title="View Customer DNA Intelligence" arrow>
+                        <Tooltip title={`Risk Level: ${appointment.riskScore ?? 'N/A'}%`} arrow>
                           <IconButton
                             size="small"
                             onClick={(e) => {
@@ -510,13 +520,13 @@ export default function ScheduleCalendar({
                               onViewInsights?.(appointment.id);
                             }}
                             sx={{
-                              p: 0.4,
-                              color: landingColors.purple,
-                              bgcolor: alpha(landingColors.purple, 0.08),
-                              '&:hover': { bgcolor: alpha(landingColors.purple, 0.15) },
+                              p: 0.3,
+                              color: riskColor,
+                              bgcolor: alpha(riskColor, 0.1),
+                              '&:hover': { bgcolor: alpha(riskColor, 0.2) },
                             }}
                           >
-                            <ShieldRoundedIcon sx={{ fontSize: 14 }} />
+                            <ShieldRoundedIcon sx={{ fontSize: 13 }} />
                           </IconButton>
                         </Tooltip>
                       )}
@@ -529,7 +539,7 @@ export default function ScheduleCalendar({
                       sx={{
                         color: '#64748B',
                         fontWeight: 700,
-                        fontSize: dense ? 11 : 12.5,
+                        fontSize: dense ? 10 : 12,
                         overflow: 'hidden',
                         textOverflow: 'ellipsis',
                         whiteSpace: 'nowrap',

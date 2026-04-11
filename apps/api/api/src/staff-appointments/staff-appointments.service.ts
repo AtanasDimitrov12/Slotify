@@ -58,9 +58,10 @@ export class StaffAppointmentsService {
       throw new NotFoundException('Reservation not found');
     }
 
-    const phone = reservation.customerPhone;
-    const email = reservation.customerEmail;
+    return this.calculateFullRisk(params.tenantId, reservation.customerPhone, String(reservation._id));
+  }
 
+  private async calculateFullRisk(tenantId: string, phone: string, currentReservationId?: string) {
     const [allReservations, profile] = await Promise.all([
       this.reservationModel.find({ customerPhone: phone }).lean(),
       this.customerProfileModel.findOne({ phone }).lean(),
@@ -68,8 +69,7 @@ export class StaffAppointmentsService {
 
     const user = profile ? await this.userModel.findById(profile.userId).lean() : null;
 
-    const tenantId = new Types.ObjectId(params.tenantId);
-    const localReservations = allReservations.filter((r) => String(r.tenantId) === params.tenantId);
+    const localReservations = allReservations.filter((r) => String(r.tenantId) === tenantId);
 
     const calculateStats = (resList: any[]) => {
       const completed = resList.filter((r) => r.status === 'completed').length;
@@ -143,13 +143,13 @@ export class StaffAppointmentsService {
 
     // 4. Recency & Pattern Analysis
     const pastReservations = allReservations
-      .filter((r) => String(r._id) !== params.reservationId)
+      .filter((r) => String(r._id) !== currentReservationId)
       .sort((a, b) => b.startTime.getTime() - a.startTime.getTime());
 
     if (pastReservations.length > 0) {
       const lastRes = pastReservations[0];
       if (lastRes.status === 'no-show') {
-        riskFactors.push('Urgent: The customer\'s last attempted reservation was a NO-SHOW');
+        riskFactors.push("Urgent: The customer's last attempted reservation was a NO-SHOW");
         riskScore += 30;
       }
     }
@@ -222,21 +222,29 @@ export class StaffAppointmentsService {
       .sort({ startTime: 1 })
       .lean();
 
-    return reservations.map((reservation) => ({
-      id: String(reservation._id),
-      startTime: reservation.startTime,
-      endTime: reservation.endTime,
-      durationMin: reservation.durationMin,
-      priceEUR: reservation.priceEUR,
-      customerName: reservation.customerName,
-      customerPhone: reservation.customerPhone,
-      customerEmail: reservation.customerEmail,
-      notes: reservation.notes,
-      serviceId: String(reservation.serviceId),
-      staffServiceAssignmentId: String(reservation.staffServiceAssignmentId),
-      serviceName: reservation.serviceName,
-      status: reservation.status,
-    }));
+    const result = await Promise.all(
+      reservations.map(async (reservation) => {
+        const insights = await this.calculateFullRisk(params.tenantId, reservation.customerPhone, String(reservation._id));
+        return {
+          id: String(reservation._id),
+          startTime: reservation.startTime,
+          endTime: reservation.endTime,
+          durationMin: reservation.durationMin,
+          priceEUR: reservation.priceEUR,
+          customerName: reservation.customerName,
+          customerPhone: reservation.customerPhone,
+          customerEmail: reservation.customerEmail,
+          notes: reservation.notes,
+          serviceId: String(reservation.serviceId),
+          staffServiceAssignmentId: String(reservation.staffServiceAssignmentId),
+          serviceName: reservation.serviceName,
+          status: reservation.status,
+          riskScore: insights.riskScore,
+        };
+      }),
+    );
+
+    return result;
   }
 
   async listBookableServicesForStaff(params: { tenantId: string; userId: string }) {

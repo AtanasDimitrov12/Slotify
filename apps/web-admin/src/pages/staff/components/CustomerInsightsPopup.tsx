@@ -3,6 +3,7 @@ import CloseRoundedIcon from '@mui/icons-material/CloseRounded';
 import ShieldRoundedIcon from '@mui/icons-material/ShieldRounded';
 import {
   Box,
+  CircularProgress,
   Dialog,
   DialogContent,
   Fade,
@@ -41,7 +42,7 @@ export default function CustomerInsightsPopup({
       transitionDuration={400}
       PaperProps={{
         sx: {
-          borderRadius: fullScreen ? 0 : 6,
+          borderRadius: fullScreen ? 0 : 3,
           bgcolor: '#F8FAFC',
           backgroundImage: 'none',
           boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
@@ -51,7 +52,7 @@ export default function CustomerInsightsPopup({
     >
       <Box
         sx={{
-          p: 2,
+          p: 2.5,
           display: 'flex',
           justifyContent: 'space-between',
           alignItems: 'center',
@@ -62,9 +63,9 @@ export default function CustomerInsightsPopup({
         <Stack direction="row" spacing={1.5} alignItems="center">
           <Box
             sx={{
-              width: 32,
-              height: 32,
-              borderRadius: 1,
+              width: 36,
+              height: 36,
+              borderRadius: 1.5,
               bgcolor: 'rgba(99, 102, 241, 0.1)',
               display: 'flex',
               alignItems: 'center',
@@ -72,9 +73,9 @@ export default function CustomerInsightsPopup({
               color: '#6366F1',
             }}
           >
-            <ShieldRoundedIcon sx={{ fontSize: 20 }} />
+            <ShieldRoundedIcon sx={{ fontSize: 22 }} />
           </Box>
-          <Typography sx={{ fontWeight: 900, fontSize: 18, color: '#0F172A', letterSpacing: -0.5 }}>
+          <Typography sx={{ fontWeight: 900, fontSize: 19, color: '#0F172A', letterSpacing: -0.5 }}>
             Customer DNA Profile
           </Typography>
         </Stack>
@@ -90,24 +91,30 @@ export default function CustomerInsightsPopup({
         </IconButton>
       </Box>
 
-      <DialogContent sx={{ p: { xs: 2, sm: 3 }, bgcolor: '#F8FAFC' }}>
-        {insights ? (
-          <Box sx={{ animation: 'fadeIn 0.5s ease-out' }}>
-            <CustomerInsightsCard insights={insights} />
-          </Box>
-        ) : loading ? (
-          <Box sx={{ py: 8, textAlign: 'center' }}>
-            <Typography sx={{ color: '#64748B', fontWeight: 600 }}>
-              Analyzing Customer DNA...
-            </Typography>
-          </Box>
-        ) : (
-          <Box sx={{ py: 8, textAlign: 'center' }}>
-            <Typography sx={{ color: '#EF4444', fontWeight: 600 }}>
-              Failed to load insights.
-            </Typography>
-          </Box>
-        )}
+      <DialogContent sx={{ p: { xs: 2, sm: 4 }, bgcolor: '#F8FAFC', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+        <Box sx={{ width: '100%', maxWidth: 480 }}>
+          {insights ? (
+            <Box sx={{ animation: 'fadeIn 0.5s ease-out' }}>
+              <CustomerInsightsCard insights={insights} />
+            </Box>
+          ) : loading ? (
+            <Box sx={{ py: 12, textAlign: 'center', width: '100%' }}>
+              <CircularProgress size={32} sx={{ mb: 2, color: '#6366F1' }} />
+              <Typography sx={{ color: '#64748B', fontWeight: 600 }}>
+                Analyzing Customer DNA...
+              </Typography>
+            </Box>
+          ) : (
+            <Box sx={{ py: 12, textAlign: 'center', width: '100%' }}>
+              <Typography sx={{ color: '#EF4444', fontWeight: 700, fontSize: 16 }}>
+                Failed to load insights
+              </Typography>
+              <Typography sx={{ color: '#94A3B8', mt: 1, fontWeight: 500 }}>
+                Please try again later.
+              </Typography>
+            </Box>
+          )}
+        </Box>
       </DialogContent>
 
       <style
