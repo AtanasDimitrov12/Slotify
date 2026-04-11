@@ -174,100 +174,96 @@ export default function OwnerSettingsPage() {
   }
 
   return (
-    <>
-      <Stack spacing={4}>
-        <Box>
-          <Typography
-            sx={{ fontWeight: 1000, fontSize: 36, letterSpacing: -1.5, color: '#0F172A' }}
+    <Stack spacing={4}>
+      <Box>
+        <Typography sx={{ fontWeight: 1000, fontSize: 36, letterSpacing: -1.5, color: '#0F172A' }}>
+          Business Settings
+        </Typography>
+        <Typography sx={{ color: '#64748B', fontWeight: 600, fontSize: 18 }}>
+          Update your salon profile and operational hours.
+        </Typography>
+      </Box>
+
+      {error ? (
+        <Alert severity="error" sx={{ borderRadius: 3 }}>
+          {error}
+        </Alert>
+      ) : null}
+
+      <Card
+        sx={{
+          borderRadius: `${premium.rLg * 4}px`,
+          border: '1px solid',
+          borderColor: 'rgba(15,23,42,0.06)',
+          bgcolor: '#FFFFFF',
+          boxShadow: '0 10px 40px rgba(15,23,42,0.04)',
+        }}
+      >
+        <CardContent sx={{ p: 4 }}>
+          <Box
+            sx={{
+              display: 'flex',
+              alignItems: { xs: 'stretch', md: 'center' },
+              justifyContent: 'space-between',
+              gap: 2,
+              flexDirection: { xs: 'column', md: 'row' },
+              borderBottom: '1px solid rgba(15,23,42,0.06)',
+              pb: 2,
+            }}
           >
-            Business Settings
-          </Typography>
-          <Typography sx={{ color: '#64748B', fontWeight: 600, fontSize: 18 }}>
-            Update your salon profile and operational hours.
-          </Typography>
-        </Box>
-
-        {error ? (
-          <Alert severity="error" sx={{ borderRadius: 3 }}>
-            {error}
-          </Alert>
-        ) : null}
-
-        <Card
-          sx={{
-            borderRadius: `${premium.rLg * 4}px`,
-            border: '1px solid',
-            borderColor: 'rgba(15,23,42,0.06)',
-            bgcolor: '#FFFFFF',
-            boxShadow: '0 10px 40px rgba(15,23,42,0.04)',
-          }}
-        >
-          <CardContent sx={{ p: 4 }}>
-            <Box
+            <Tabs
+              value={tab}
+              onChange={(_, v) => setTab(v)}
               sx={{
-                display: 'flex',
-                alignItems: { xs: 'stretch', md: 'center' },
-                justifyContent: 'space-between',
-                gap: 2,
-                flexDirection: { xs: 'column', md: 'row' },
-                borderBottom: '1px solid rgba(15,23,42,0.06)',
-                pb: 2,
+                minHeight: 48,
+                '& .MuiTab-root': {
+                  fontWeight: 900,
+                  fontSize: 15,
+                  textTransform: 'none',
+                  minHeight: 48,
+                  color: '#64748B',
+                  '&.Mui-selected': { color: landingColors.purple },
+                },
+                '& .MuiTabs-indicator': {
+                  bgcolor: landingColors.purple,
+                  height: 3,
+                  borderRadius: '3px 3px 0 0',
+                },
               }}
             >
-              <Tabs
-                value={tab}
-                onChange={(_, v) => setTab(v)}
-                sx={{
-                  minHeight: 48,
-                  '& .MuiTab-root': {
-                    fontWeight: 900,
-                    fontSize: 15,
-                    textTransform: 'none',
-                    minHeight: 48,
-                    color: '#64748B',
-                    '&.Mui-selected': { color: landingColors.purple },
-                  },
-                  '& .MuiTabs-indicator': {
-                    bgcolor: landingColors.purple,
-                    height: 3,
-                    borderRadius: '3px 3px 0 0',
-                  },
-                }}
-              >
-                <Tab label="General Info" />
-                <Tab label="Opening Hours" />
-              </Tabs>
+              <Tab label="General Info" />
+              <Tab label="Opening Hours" />
+            </Tabs>
 
-              <Button
-                variant="contained"
-                size="large"
-                onClick={tab === 0 ? handleSaveGeneral : handleSaveOpeningHours}
-                disabled={saving}
-                sx={{
-                  minHeight: 52,
-                  px: 4,
-                  borderRadius: 999,
-                  fontWeight: 900,
-                  whiteSpace: 'nowrap',
-                  alignSelf: { xs: 'flex-start', md: 'center' },
-                  bgcolor: landingColors.purple,
-                  boxShadow: `0 12px 30px ${alpha(landingColors.purple, 0.24)}`,
-                }}
-              >
-                {saving ? 'Saving...' : tab === 0 ? 'Save Profile' : 'Save Hours'}
-              </Button>
-            </Box>
+            <Button
+              variant="contained"
+              size="large"
+              onClick={tab === 0 ? handleSaveGeneral : handleSaveOpeningHours}
+              disabled={saving}
+              sx={{
+                minHeight: 52,
+                px: 4,
+                borderRadius: 999,
+                fontWeight: 900,
+                whiteSpace: 'nowrap',
+                alignSelf: { xs: 'flex-start', md: 'center' },
+                bgcolor: landingColors.purple,
+                boxShadow: `0 12px 30px ${alpha(landingColors.purple, 0.24)}`,
+              }}
+            >
+              {saving ? 'Saving...' : tab === 0 ? 'Save Profile' : 'Save Hours'}
+            </Button>
+          </Box>
 
-            <TabPanel value={tab} index={0}>
-              <GeneralSettingsForm value={generalSettings} onChange={setGeneralSettings} />
-            </TabPanel>
+          <TabPanel value={tab} index={0}>
+            <GeneralSettingsForm value={generalSettings} onChange={setGeneralSettings} />
+          </TabPanel>
 
-            <TabPanel value={tab} index={1}>
-              <OpeningHoursEditor value={openingHours} onChange={setOpeningHours} />
-            </TabPanel>
-          </CardContent>
-        </Card>
-      </Stack>
-    </>
+          <TabPanel value={tab} index={1}>
+            <OpeningHoursEditor value={openingHours} onChange={setOpeningHours} />
+          </TabPanel>
+        </CardContent>
+      </Card>
+    </Stack>
   );
 }

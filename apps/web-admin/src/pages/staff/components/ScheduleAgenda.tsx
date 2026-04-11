@@ -1,5 +1,4 @@
 import type { StaffAppointment } from '@barber/shared';
-import { landingColors } from '@barber/shared';
 import AddRoundedIcon from '@mui/icons-material/AddRounded';
 import ShieldRoundedIcon from '@mui/icons-material/ShieldRounded';
 import { alpha, Box, IconButton, Stack, Tooltip, Typography } from '@mui/material';
@@ -443,7 +442,6 @@ export default function ScheduleAgenda({
             )}
 
             {clusters.map((cluster, idx) => {
-              const clusterStart = cluster.start;
               const nextCluster = clusters[idx + 1];
 
               // Find where "Now" fits

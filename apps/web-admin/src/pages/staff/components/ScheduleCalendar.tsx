@@ -1,11 +1,9 @@
 import type { StaffAppointment } from '@barber/shared';
-import { landingColors, premium } from '@barber/shared';
+import { landingColors } from '@barber/shared';
 import ShieldRoundedIcon from '@mui/icons-material/ShieldRounded';
 import {
   alpha,
   Box,
-  Card,
-  CardContent,
   CircularProgress,
   IconButton,
   Stack,

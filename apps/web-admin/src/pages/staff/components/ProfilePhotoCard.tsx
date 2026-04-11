@@ -1,4 +1,4 @@
-import { landingColors, premium } from '@barber/shared';
+import { landingColors } from '@barber/shared';
 import CameraAltRoundedIcon from '@mui/icons-material/CameraAltRounded';
 import { Avatar, alpha, Box, Button, Card, CardContent, Stack, Typography } from '@mui/material';
 import * as React from 'react';

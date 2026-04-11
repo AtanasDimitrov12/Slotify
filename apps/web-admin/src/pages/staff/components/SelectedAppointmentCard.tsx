@@ -1,10 +1,9 @@
 import type { StaffAppointment } from '@barber/shared';
-import { landingColors, premium } from '@barber/shared';
+import { landingColors } from '@barber/shared';
 import AccessTimeRoundedIcon from '@mui/icons-material/AccessTimeRounded';
 import ContentCutRoundedIcon from '@mui/icons-material/ContentCutRounded';
 import NotesRoundedIcon from '@mui/icons-material/NotesRounded';
 import PersonRoundedIcon from '@mui/icons-material/PersonRounded';
-import ShieldRoundedIcon from '@mui/icons-material/ShieldRounded';
 import {
   alpha,
   Box,
@@ -129,14 +128,14 @@ export default function SelectedAppointmentCard({
                       px: 1.25,
                       py: 0.5,
                       minWidth: 'auto',
-                      bgcolor: (theme) => {
+                      bgcolor: () => {
                         const score = selectedAppointment.riskScore;
                         if (score === undefined) return alpha(landingColors.purple, 0.05);
                         if (score < 30) return alpha('#10B981', 0.05);
                         if (score < 60) return alpha('#F59E0B', 0.05);
                         return alpha('#EF4444', 0.05);
                       },
-                      color: (theme) => {
+                      color: () => {
                         const score = selectedAppointment.riskScore;
                         if (score === undefined) return landingColors.purple;
                         if (score < 30) return '#10B981';
@@ -146,7 +145,7 @@ export default function SelectedAppointmentCard({
                       border: '1px solid currentColor',
                       textTransform: 'none',
                       '&:hover': {
-                        bgcolor: (theme) => {
+                        bgcolor: () => {
                           const score = selectedAppointment.riskScore;
                           let color = landingColors.purple;
                           if (score !== undefined) {
