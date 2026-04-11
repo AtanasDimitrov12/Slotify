@@ -12,8 +12,6 @@ interface HeroProps {
   description: string;
   primaryCtaText: string;
   primaryCtaLink: string;
-  secondaryCtaText?: string;
-  secondaryCtaLink?: string;
   chipLabel: string;
 }
 
@@ -24,8 +22,6 @@ export function Hero({
   description,
   primaryCtaText,
   primaryCtaLink,
-  secondaryCtaText,
-  secondaryCtaLink,
   chipLabel,
 }: HeroProps) {
   const navigate = useNavigate();
@@ -172,32 +168,6 @@ export function Hero({
             >
               {primaryCtaText}
             </Button>
-
-            {secondaryCtaText && secondaryCtaLink && (
-              <Button
-                variant="outlined"
-                onClick={() => navigate(secondaryCtaLink)}
-                sx={{
-                  minWidth: { xs: 240, sm: 240 },
-                  minHeight: 58,
-                  px: 3.2,
-                  borderRadius: 999,
-                  fontWeight: 900,
-                  fontSize: 15.5,
-                  letterSpacing: 0.3,
-                  textTransform: 'none',
-                  color: '#111827',
-                  borderColor: 'rgba(15,23,42,0.10)',
-                  bgcolor: 'rgba(255,255,255,0.74)',
-                  '&:hover': {
-                    borderColor: 'rgba(15,23,42,0.16)',
-                    bgcolor: 'rgba(255,255,255,0.96)',
-                  },
-                }}
-              >
-                {secondaryCtaText}
-              </Button>
-            )}
           </Stack>
 
           <Typography
