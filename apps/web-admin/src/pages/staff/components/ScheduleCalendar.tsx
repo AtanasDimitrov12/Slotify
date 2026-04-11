@@ -200,6 +200,12 @@ export default function ScheduleCalendar({
   const [draggingId, setDraggingId] = React.useState<string | null>(null);
   const [previewTopById, setPreviewTopById] = React.useState<Record<string, number>>({});
   const [contentWidth, setContentWidth] = React.useState(700);
+  const [now, setNow] = React.useState(new Date());
+
+  React.useEffect(() => {
+    const timer = setInterval(() => setNow(new Date()), 30000);
+    return () => clearInterval(timer);
+  }, []);
 
   const dragMetaRef = React.useRef<{
     id: string;
@@ -313,247 +319,291 @@ export default function ScheduleCalendar({
 
   const totalHorizontalSpace = contentWidth - APPOINTMENT_LEFT - APPOINTMENT_RIGHT_GAP;
 
+  const isToday = now.toISOString().split('T')[0] === selectedDate;
+  const nowMinutes = now.getHours() * 60 + now.getMinutes();
+  const startMinutes = CALENDAR_START_HOUR * 60;
+  const endMinutes = (CALENDAR_START_HOUR + HOURS.length) * 60;
+  const nowTop =
+    isToday && nowMinutes >= startMinutes && nowMinutes <= endMinutes
+      ? ((nowMinutes - startMinutes) / 60) * SLOT_HEIGHT
+      : null;
+
   return (
-    <Card
+    <Box
       sx={{
-        borderRadius: `${premium.rLg * 4}px`,
-        border: '1px solid',
-        borderColor: 'rgba(15,23,42,0.06)',
+        borderRadius: 4,
+        border: '1px solid rgba(15,23,42,0.06)',
         bgcolor: '#FFFFFF',
-        boxShadow: '0 10px 40px rgba(15,23,42,0.04)',
+        boxShadow: '0 10px 40px rgba(15,23,42,0.03)',
         overflow: 'hidden',
       }}
     >
-      <CardContent sx={{ p: 0 }}>
+      {loading ? (
+        <Box sx={{ display: 'grid', placeItems: 'center', minHeight: 500 }}>
+          <CircularProgress size={32} sx={{ color: landingColors.purple }} />
+        </Box>
+      ) : (
         <Box
+          ref={containerRef}
           sx={{
-            px: 4,
-            py: 2.5,
-            borderBottom: '1px solid',
-            borderColor: 'rgba(15,23,42,0.04)',
-            bgcolor: alpha(landingColors.purple, 0.02),
+            position: 'relative',
+            height: HOURS.length * SLOT_HEIGHT,
+            overflow: 'auto',
+            bgcolor: '#FFFFFF',
+            userSelect: 'none',
+            '&::-webkit-scrollbar': { width: 8 },
+            '&::-webkit-scrollbar-thumb': { bgcolor: 'rgba(0,0,0,0.05)', borderRadius: 4 },
           }}
         >
-          <Typography
-            sx={{ fontWeight: 1000, fontSize: 20, color: '#0F172A', letterSpacing: -0.5 }}
-          >
-            Daily Timeline
-          </Typography>
-        </Box>
-
-        {loading ? (
-          <Box sx={{ display: 'grid', placeItems: 'center', minHeight: 500 }}>
-            <CircularProgress sx={{ color: landingColors.purple }} />
-          </Box>
-        ) : (
-          <Box
-            ref={containerRef}
-            sx={{
-              position: 'relative',
-              height: HOURS.length * SLOT_HEIGHT,
-              overflow: 'auto',
-              bgcolor: '#FFFFFF',
-              userSelect: 'none',
-              '&::-webkit-scrollbar': { width: 8 },
-              '&::-webkit-scrollbar-thumb': { bgcolor: 'rgba(0,0,0,0.05)', borderRadius: 4 },
-            }}
-          >
-            {HOURS.map((hour, index) => (
-              <Box
-                key={hour}
+          {HOURS.map((hour, index) => (
+            <Box
+              key={hour}
+              sx={{
+                position: 'absolute',
+                top: index * SLOT_HEIGHT,
+                left: 0,
+                right: 0,
+                height: SLOT_HEIGHT,
+                borderTop: '1px solid',
+                borderColor: 'rgba(15,23,42,0.03)',
+              }}
+            >
+              <Typography
                 sx={{
                   position: 'absolute',
-                  top: index * SLOT_HEIGHT,
-                  left: 0,
-                  right: 0,
-                  height: SLOT_HEIGHT,
-                  borderTop: '1px solid',
-                  borderColor: 'rgba(15,23,42,0.04)',
+                  top: 12,
+                  left: 20,
+                  width: 60,
+                  color: '#94A3B8',
+                  fontWeight: 600,
+                  fontSize: 12,
+                  fontFamily: 'monospace',
                 }}
               >
-                <Typography
-                  sx={{
-                    position: 'absolute',
-                    top: 12,
-                    left: 24,
-                    width: 60,
-                    color: '#94A3B8',
-                    fontWeight: 800,
-                    fontSize: 13,
-                  }}
-                >
-                  {`${String(hour).padStart(2, '0')}:00`}
-                </Typography>
+                {`${String(hour).padStart(2, '0')}:00`}
+              </Typography>
 
-                <Box
-                  sx={{
-                    position: 'absolute',
-                    top: 0,
-                    left: TIME_COLUMN_WIDTH,
-                    right: 0,
-                    bottom: 0,
-                    borderLeft: '1px solid',
-                    borderColor: 'rgba(15,23,42,0.04)',
-                  }}
-                />
-              </Box>
-            ))}
+              <Box
+                sx={{
+                  position: 'absolute',
+                  top: 0,
+                  left: TIME_COLUMN_WIDTH,
+                  right: 0,
+                  bottom: 0,
+                  borderLeft: '1px solid',
+                  borderColor: 'rgba(15,23,42,0.03)',
+                }}
+              />
+            </Box>
+          ))}
 
-            {layoutItems.map(({ appointment, laneIndex, laneCount }) => {
-              const selected = selectedAppointmentId === appointment.id;
-              const isDragging = draggingId === appointment.id;
-              const draggable = isDraggableStatus(appointment.status);
+          {nowTop !== null && (
+            <Box
+              sx={{
+                position: 'absolute',
+                top: nowTop,
+                left: TIME_COLUMN_WIDTH - 8,
+                right: 0,
+                zIndex: 200,
+                pointerEvents: 'none',
+                display: 'flex',
+                alignItems: 'center',
+              }}
+            >
+              <Box
+                sx={{
+                  width: 8,
+                  height: 8,
+                  borderRadius: '50%',
+                  bgcolor: '#EF4444',
+                  border: '2px solid #FFF',
+                }}
+              />
+              <Box sx={{ height: '2px', flex: 1, bgcolor: '#EF4444', opacity: 0.6 }} />
+            </Box>
+          )}
 
-              const top =
-                previewTopById[appointment.id] !== undefined
-                  ? previewTopById[appointment.id]
-                  : getAppointmentTop(appointment.startTime);
+          {layoutItems.map(({ appointment, laneIndex, laneCount }) => {
+            const selected = selectedAppointmentId === appointment.id;
+            const isDragging = draggingId === appointment.id;
+            const draggable = isDraggableStatus(appointment.status);
 
-              const height = getAppointmentHeight(appointment.durationMin);
+            const top =
+              previewTopById[appointment.id] !== undefined
+                ? previewTopById[appointment.id]
+                : getAppointmentTop(appointment.startTime);
 
-              const isCancelled = appointment.status === 'cancelled';
-              const isCompleted = appointment.status === 'completed';
-              const isNoShow = appointment.status === 'no-show';
+            const height = getAppointmentHeight(appointment.durationMin);
 
-              const innerGapTotal = Math.max(0, (laneCount - 1) * APPOINTMENT_GAP);
-              const laneWidth = Math.max(
-                180,
-                Math.floor((totalHorizontalSpace - innerGapTotal) / laneCount),
-              );
+            const isCancelled = appointment.status === 'cancelled';
+            const isCompleted = appointment.status === 'completed';
+            const isNoShow = appointment.status === 'no-show';
+            const isUpcoming =
+              appointment.status === 'confirmed' || appointment.status === 'pending';
 
-              const left = APPOINTMENT_LEFT + laneIndex * (laneWidth + APPOINTMENT_GAP);
+            const startTime = new Date(appointment.startTime);
+            const isOverdue = isUpcoming && startTime < now;
 
-              const dense = laneCount > 1 || laneWidth < 280 || height < 64;
-              const veryDense = laneWidth < 200 || height < 50;
+            const innerGapTotal = Math.max(0, (laneCount - 1) * APPOINTMENT_GAP);
+            const laneWidth = Math.max(
+              180,
+              Math.floor((totalHorizontalSpace - innerGapTotal) / laneCount),
+            );
 
-              const showMetaLine = !veryDense && height >= 58;
-              const showDnaIcon = !veryDense && height >= 48;
+            const left = APPOINTMENT_LEFT + laneIndex * (laneWidth + APPOINTMENT_GAP);
 
-              const getRiskColor = (score?: number) => {
-                if (score === undefined) return '#94A3B8';
-                if (score < 30) return '#10B981';
-                if (score < 60) return '#F59E0B';
-                return '#EF4444';
-              };
+            const dense = laneCount > 1 || laneWidth < 280 || height < 64;
+            const veryDense = laneWidth < 200 || height < 50;
 
-              const riskColor = getRiskColor(appointment.riskScore);
+            const showMetaLine = !veryDense && height >= 58;
+            const showDnaIcon = !veryDense && height >= 48;
 
-              return (
-                <Box
-                  key={appointment.id}
-                  onMouseDown={(event) => handleMouseDown(event, appointment)}
-                  onClick={() => onSelectAppointment(appointment.id)}
-                  sx={{
-                    position: 'absolute',
-                    top,
-                    left,
-                    width: laneWidth,
-                    height: height - 2,
-                    boxSizing: 'border-box',
-                    borderRadius: 2,
-                    px: dense ? 1 : 1.5,
-                    py: dense ? 0.75 : 1,
-                    cursor: draggable ? (isDragging ? 'grabbing' : 'grab') : 'pointer',
-                    border: '1px solid',
-                    borderStyle: isCancelled ? 'dashed' : 'solid',
-                    borderColor: isCancelled
-                      ? '#F43F5E'
+            const getRiskColor = (score?: number) => {
+              if (score === undefined) return '#94A3B8';
+              if (score < 30) return '#10B981';
+              if (score < 60) return '#F59E0B';
+              return '#EF4444';
+            };
+
+            const riskColor = getRiskColor(appointment.riskScore);
+
+            return (
+              <Box
+                key={appointment.id}
+                onMouseDown={(event) => handleMouseDown(event, appointment)}
+                onClick={() => onSelectAppointment(appointment.id)}
+                sx={{
+                  position: 'absolute',
+                  top,
+                  left,
+                  width: laneWidth,
+                  height: height - 2,
+                  boxSizing: 'border-box',
+                  borderRadius: 2.5,
+                  px: dense ? 1.5 : 2,
+                  py: dense ? 1 : 1.5,
+                  cursor: draggable ? (isDragging ? 'grabbing' : 'grab') : 'pointer',
+                  border: '1px solid',
+                  borderStyle: isCancelled ? 'dashed' : 'solid',
+                  borderColor: isCancelled
+                    ? '#F43F5E'
+                    : isOverdue
+                      ? alpha('#EF4444', 0.4)
                       : selected
-                        ? landingColors.purple
-                        : 'rgba(15,23,42,0.08)',
-                    borderLeft: appointment.riskScore !== undefined ? `4px solid ${riskColor}` : undefined,
-                    bgcolor: isCancelled
-                      ? alpha('#F43F5E', 0.04)
+                        ? alpha(landingColors.purple, 0.4)
+                        : 'rgba(15,23,42,0.06)',
+                  bgcolor: isCancelled
+                    ? alpha('#F43F5E', 0.02)
+                    : isOverdue
+                      ? alpha('#EF4444', 0.02)
                       : isCompleted
-                        ? alpha(landingColors.success, 0.04)
+                        ? alpha(landingColors.success, 0.02)
                         : isNoShow
-                          ? alpha('#94A3B8', 0.06)
+                          ? alpha('#94A3B8', 0.04)
                           : selected
-                            ? alpha(landingColors.purple, 0.06)
+                            ? alpha(landingColors.purple, 0.03)
                             : '#FFFFFF',
-                    boxShadow:
-                      selected && !isDragging
-                        ? `0 12px 30px ${alpha(landingColors.purple, 0.15)}`
-                        : '0 4px 12px rgba(0,0,0,0.02)',
-                    opacity: isDragging ? 0.8 : 1,
-                    zIndex: isDragging ? 100 : selected ? 50 : 10,
-                    transition: isDragging ? 'none' : 'top 0.1s ease, box-shadow 0.2s ease',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    justifyContent: 'center',
-                    gap: 0.25,
-                  }}
+                  boxShadow:
+                    selected && !isDragging
+                      ? `0 8px 24px ${alpha(landingColors.purple, 0.1)}`
+                      : 'none',
+                  opacity: isDragging ? 0.8 : 1,
+                  zIndex: isDragging ? 100 : selected ? 50 : 10,
+                  transition: isDragging ? 'none' : 'top 0.1s ease, box-shadow 0.2s ease',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  justifyContent: 'center',
+                  gap: 0.5,
+                  ...(isOverdue && {
+                    animation: 'overdue-pulse 2s infinite ease-in-out',
+                    '@keyframes overdue-pulse': {
+                      '0%': { borderColor: alpha('#EF4444', 0.4) },
+                      '50%': { borderColor: alpha('#EF4444', 0.8) },
+                      '100%': { borderColor: alpha('#EF4444', 0.4) },
+                    },
+                  }),
+                  '&::before': {
+                    content: '""',
+                    position: 'absolute',
+                    left: 0,
+                    top: 8,
+                    bottom: 8,
+                    width: 3,
+                    borderRadius: '0 4px 4px 0',
+                    bgcolor: isCancelled ? '#F43F5E' : riskColor,
+                  },
+                }}
+              >
+                <Stack
+                  direction="row"
+                  justifyContent="space-between"
+                  alignItems="center"
+                  spacing={1}
                 >
+                  <Typography
+                    sx={{
+                      fontWeight: 700,
+                      fontSize: dense ? 13 : 14,
+                      color: isCancelled ? '#F43F5E' : '#0F172A',
+                      textDecoration: isCancelled ? 'line-through' : 'none',
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                      whiteSpace: 'nowrap',
+                      flex: 1,
+                    }}
+                  >
+                    {appointment.customerName}
+                  </Typography>
+
                   <Stack
                     direction="row"
-                    justifyContent="space-between"
-                    alignItems="center"
                     spacing={0.5}
+                    alignItems="center"
+                    onMouseDown={(e) => e.stopPropagation()}
                   >
-                    <Typography
-                      sx={{
-                        fontWeight: 900,
-                        fontSize: dense ? 12 : 14,
-                        color: isCancelled ? '#F43F5E' : '#0F172A',
-                        textDecoration: isCancelled ? 'line-through' : 'none',
-                        overflow: 'hidden',
-                        textOverflow: 'ellipsis',
-                        whiteSpace: 'nowrap',
-                        flex: 1,
-                      }}
-                    >
-                      {formatTimeOnly(appointment.startTime)} · {appointment.customerName}
-                    </Typography>
-
-                    <Stack
-                      direction="row"
-                      spacing={0.25}
-                      alignItems="center"
-                      onMouseDown={(e) => e.stopPropagation()}
-                    >
-                      {showDnaIcon && (
-                        <Tooltip title={`Risk Level: ${appointment.riskScore ?? 'N/A'}%`} arrow>
-                          <IconButton
-                            size="small"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              onViewInsights?.(appointment.id);
-                            }}
-                            sx={{
-                              p: 0.3,
-                              color: riskColor,
-                              bgcolor: alpha(riskColor, 0.1),
-                              '&:hover': { bgcolor: alpha(riskColor, 0.2) },
-                            }}
-                          >
-                            <ShieldRoundedIcon sx={{ fontSize: 13 }} />
-                          </IconButton>
-                        </Tooltip>
-                      )}
-                      {!veryDense && <AppointmentStatusChip status={appointment.status} />}
-                    </Stack>
+                    {showDnaIcon && (
+                      <Tooltip title={`Risk: ${appointment.riskScore ?? 'N/A'}%`} arrow>
+                        <IconButton
+                          size="small"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onViewInsights?.(appointment.id);
+                          }}
+                          sx={{
+                            p: 0.4,
+                            color: riskColor,
+                            bgcolor: alpha(riskColor, 0.05),
+                            '&:hover': { bgcolor: alpha(riskColor, 0.1) },
+                          }}
+                        >
+                          <ShieldRoundedIcon sx={{ fontSize: 13 }} />
+                        </IconButton>
+                      </Tooltip>
+                    )}
+                    {!veryDense && <AppointmentStatusChip status={appointment.status} />}
                   </Stack>
+                </Stack>
 
-                  {showMetaLine && (
-                    <Typography
-                      sx={{
-                        color: '#64748B',
-                        fontWeight: 700,
-                        fontSize: dense ? 10 : 12,
-                        overflow: 'hidden',
-                        textOverflow: 'ellipsis',
-                        whiteSpace: 'nowrap',
-                      }}
-                    >
-                      {appointment.serviceName}
-                    </Typography>
-                  )}
-                </Box>
-              );
-            })}
-          </Box>
-        )}
-      </CardContent>
-    </Card>
+                {showMetaLine && (
+                  <Typography
+                    sx={{
+                      color: isOverdue ? '#EF4444' : '#64748B',
+                      fontWeight: 600,
+                      fontSize: dense ? 11 : 12,
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                      whiteSpace: 'nowrap',
+                    }}
+                  >
+                    {formatTimeOnly(appointment.startTime)} · {appointment.serviceName}
+                    {isOverdue && ' · Running Late'}
+                  </Typography>
+                )}
+              </Box>
+            );
+          })}
+        </Box>
+      )}
+    </Box>
   );
 }

@@ -94,26 +94,61 @@ export default function StaffProfilePage() {
 
   return (
     <>
-      <Stack spacing={4}>
-        <Box>
-          <Typography
-            sx={{ fontWeight: 1000, fontSize: 36, letterSpacing: -1.5, color: '#0F172A' }}
+      <Stack spacing={{ xs: 3, md: 5 }}>
+        <Stack
+          direction={{ xs: 'column', sm: 'row' }}
+          justifyContent="space-between"
+          alignItems={{ xs: 'flex-start', sm: 'flex-end' }}
+          spacing={2}
+        >
+          <Box>
+            <Typography
+              sx={{
+                fontWeight: 1000,
+                fontSize: { xs: 28, md: 36 },
+                letterSpacing: -1.5,
+                color: '#0F172A',
+                lineHeight: 1.1,
+              }}
+            >
+              Public Profile
+            </Typography>
+            <Typography
+              sx={{ color: '#64748B', fontWeight: 600, fontSize: { xs: 14, md: 18 }, mt: 1 }}
+            >
+              This information will be visible to customers on your booking page.
+            </Typography>
+          </Box>
+
+          <Button
+            variant="contained"
+            size="large"
+            onClick={handleSave}
+            disabled={saving}
+            sx={{
+              display: { xs: 'none', md: 'inline-flex' },
+              minHeight: 48,
+              px: 4,
+              borderRadius: 2,
+              fontWeight: 900,
+              bgcolor: landingColors.purple,
+              boxShadow: `0 12px 30px ${alpha(landingColors.purple, 0.2)}`,
+              textTransform: 'none',
+            }}
           >
-            Profile
-          </Typography>
-          <Typography sx={{ color: '#64748B', fontWeight: 600, fontSize: 18 }}>
-            Tell customers about your skills and experience.
-          </Typography>
-        </Box>
+            {saving ? 'Saving...' : 'Save Changes'}
+          </Button>
+        </Stack>
 
         {error ? (
-          <Alert severity="error" sx={{ borderRadius: 3 }}>
+          <Alert severity="error" sx={{ borderRadius: 2 }}>
             {error}
           </Alert>
         ) : null}
 
-        <Grid container spacing={3}>
-          <Grid item xs={12} md={4}>
+        <Grid container spacing={{ xs: 3, md: 4 }}>
+          {/* Left Column: Photo */}
+          <Grid item xs={12} lg={4}>
             <ProfilePhotoCard
               name={profile.name}
               photoUrl={profile.photoUrl}
@@ -124,92 +159,134 @@ export default function StaffProfilePage() {
             />
           </Grid>
 
-          <Grid item xs={12} md={8}>
-            <Card
-              sx={{
-                borderRadius: `${premium.rLg * 4}px`,
-                border: '1px solid',
-                borderColor: 'rgba(15,23,42,0.06)',
-                bgcolor: '#FFFFFF',
-                boxShadow: '0 10px 40px rgba(15,23,42,0.04)',
-              }}
-            >
-              <CardContent sx={{ p: 4 }}>
-                <Grid container spacing={3}>
-                  <Grid item xs={12} sm={6}>
-                    <TextField
-                      fullWidth
-                      label="Full Name"
-                      value={profile.name}
-                      onChange={(e) => setProfile((p) => ({ ...p, name: e.target.value }))}
-                    />
+          {/* Right Column: Details */}
+          <Grid item xs={12} lg={8}>
+            <Stack spacing={{ xs: 3, md: 4 }}>
+              {/* Section 1: Identity */}
+              <Card
+                sx={{
+                  borderRadius: 3,
+                  border: '1px solid rgba(15,23,42,0.06)',
+                  boxShadow: '0 4px 20px rgba(0,0,0,0.02)',
+                }}
+              >
+                <CardContent sx={{ p: { xs: 2.5, md: 4 } }}>
+                  <Typography sx={{ fontWeight: 900, fontSize: 18, color: '#0F172A', mb: 3 }}>
+                    Account Identity
+                  </Typography>
+                  <Grid container spacing={2.5}>
+                    <Grid item xs={12} sm={6}>
+                      <TextField
+                        fullWidth
+                        label="Full Name"
+                        value={profile.name}
+                        onChange={(e) => setProfile((p) => ({ ...p, name: e.target.value }))}
+                        variant="outlined"
+                      />
+                    </Grid>
+                    <Grid item xs={12} sm={6}>
+                      <TextField
+                        fullWidth
+                        label="Email Address"
+                        value={profile.email}
+                        disabled
+                        helperText="Primary contact (managed by admin)"
+                        variant="outlined"
+                      />
+                    </Grid>
                   </Grid>
+                </CardContent>
+              </Card>
 
-                  <Grid item xs={12} sm={6}>
-                    <TextField
-                      fullWidth
-                      label="Email Address"
-                      value={profile.email}
-                      disabled
-                      helperText="Managed by salon owner"
-                    />
+              {/* Section 2: Professional Stats */}
+              <Card
+                sx={{
+                  borderRadius: 3,
+                  border: '1px solid rgba(15,23,42,0.06)',
+                  boxShadow: '0 4px 20px rgba(0,0,0,0.02)',
+                }}
+              >
+                <CardContent sx={{ p: { xs: 2.5, md: 4 } }}>
+                  <Typography sx={{ fontWeight: 900, fontSize: 18, color: '#0F172A', mb: 3 }}>
+                    Skills & Experience
+                  </Typography>
+                  <Grid container spacing={2.5}>
+                    <Grid item xs={12} sm={4}>
+                      <TextField
+                        fullWidth
+                        label="Years of Experience"
+                        type="number"
+                        value={profile.experienceYears ?? 0}
+                        onChange={(e) =>
+                          setProfile((p) => ({
+                            ...p,
+                            experienceYears: Number(e.target.value),
+                          }))
+                        }
+                      />
+                    </Grid>
+                    <Grid item xs={12} sm={8}>
+                      <ExpertiseChipsInput
+                        value={profile.expertiseTags}
+                        onChange={(next) => setProfile((p) => ({ ...p, expertiseTags: next }))}
+                      />
+                    </Grid>
                   </Grid>
+                </CardContent>
+              </Card>
 
-                  <Grid item xs={12} sm={4}>
-                    <TextField
-                      fullWidth
-                      label="Years of Experience"
-                      type="number"
-                      value={profile.experienceYears ?? 0}
-                      onChange={(e) =>
-                        setProfile((p) => ({
-                          ...p,
-                          experienceYears: Number(e.target.value),
-                        }))
-                      }
-                    />
-                  </Grid>
-
-                  <Grid item xs={12} sm={8}>
-                    <ExpertiseChipsInput
-                      value={profile.expertiseTags}
-                      onChange={(next) => setProfile((p) => ({ ...p, expertiseTags: next }))}
-                    />
-                  </Grid>
-
-                  <Grid item xs={12}>
-                    <TextField
-                      fullWidth
-                      label="Biography"
-                      placeholder="Write a short intro for your customers..."
-                      value={profile.bio ?? ''}
-                      onChange={(e) => setProfile((p) => ({ ...p, bio: e.target.value }))}
-                      multiline
-                      minRows={5}
-                    />
-                  </Grid>
-                </Grid>
-
-                <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 4 }}>
-                  <Button
-                    variant="contained"
-                    size="large"
-                    onClick={handleSave}
-                    disabled={saving}
+              {/* Section 3: Bio */}
+              <Card
+                sx={{
+                  borderRadius: 3,
+                  border: '1px solid rgba(15,23,42,0.06)',
+                  boxShadow: '0 4px 20px rgba(0,0,0,0.02)',
+                }}
+              >
+                <CardContent sx={{ p: { xs: 2.5, md: 4 } }}>
+                  <Typography sx={{ fontWeight: 900, fontSize: 18, color: '#0F172A', mb: 1 }}>
+                    Biography
+                  </Typography>
+                  <Typography sx={{ color: '#64748B', fontSize: 14, mb: 3, fontWeight: 500 }}>
+                    Write a brief introduction that will help customers get to know you.
+                  </Typography>
+                  <TextField
+                    fullWidth
+                    placeholder="Describe your style, background, or anything you'd like to share with your clients..."
+                    value={profile.bio ?? ''}
+                    onChange={(e) => setProfile((p) => ({ ...p, bio: e.target.value }))}
+                    multiline
+                    minRows={6}
                     sx={{
-                      minHeight: 52,
-                      px: 4,
-                      borderRadius: 999,
-                      fontWeight: 900,
-                      bgcolor: landingColors.purple,
-                      boxShadow: `0 12px 30px ${alpha(landingColors.purple, 0.24)}`,
+                      '& .MuiOutlinedInput-root': {
+                        bgcolor: '#F8FAFC',
+                      },
                     }}
-                  >
-                    {saving ? 'Saving...' : 'Save Changes'}
-                  </Button>
-                </Box>
-              </CardContent>
-            </Card>
+                  />
+                </CardContent>
+              </Card>
+
+              {/* Mobile Save Button */}
+              <Box sx={{ display: { xs: 'block', md: 'none' }, pt: 1, pb: 4 }}>
+                <Button
+                  variant="contained"
+                  fullWidth
+                  size="large"
+                  onClick={handleSave}
+                  disabled={saving}
+                  sx={{
+                    height: 56,
+                    borderRadius: 2,
+                    fontWeight: 900,
+                    bgcolor: landingColors.purple,
+                    boxShadow: `0 12px 30px ${alpha(landingColors.purple, 0.2)}`,
+                    textTransform: 'none',
+                  }}
+                >
+                  {saving ? 'Saving...' : 'Save Changes'}
+                </Button>
+              </Box>
+            </Stack>
           </Grid>
         </Grid>
       </Stack>

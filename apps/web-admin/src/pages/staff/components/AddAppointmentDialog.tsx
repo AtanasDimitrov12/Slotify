@@ -29,6 +29,7 @@ export default function AddAppointmentDialog({
   onSubmit,
   creating,
   services,
+  initialStartTime,
 }: {
   open: boolean;
   onClose: () => void;
@@ -42,26 +43,30 @@ export default function AddAppointmentDialog({
   }) => Promise<void>;
   creating: boolean;
   services: ServiceOption[];
+  initialStartTime?: string;
 }) {
   const { showError, showSuccess } = useToast();
   const theme = useTheme();
   const fullScreen = useMediaQuery(theme.breakpoints.down('sm'));
   const [staffServiceAssignmentId, setStaffServiceAssignmentId] = React.useState('');
-  const [startTime, setStartTime] = React.useState('10:00');
+  const [startTime, setStartTime] = React.useState(initialStartTime ?? '10:00');
   const [customerName, setCustomerName] = React.useState('');
   const [customerPhone, setCustomerPhone] = React.useState('');
   const [customerEmail, setCustomerEmail] = React.useState('');
   const [notes, setNotes] = React.useState('');
 
   React.useEffect(() => {
-    if (!open) return;
+    if (!open) {
+      return;
+    }
+
     setStaffServiceAssignmentId('');
-    setStartTime('10:00');
+    setStartTime(initialStartTime ?? '10:00');
     setCustomerName('');
     setCustomerPhone('');
     setCustomerEmail('');
     setNotes('');
-  }, [open]);
+  }, [open, initialStartTime]);
 
   const validateEmail = (email: string) => {
     if (!email) return true;

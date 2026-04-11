@@ -13,13 +13,17 @@ import {
 import AddRoundedIcon from '@mui/icons-material/AddRounded';
 import ChevronLeftRoundedIcon from '@mui/icons-material/ChevronLeftRounded';
 import ChevronRightRoundedIcon from '@mui/icons-material/ChevronRightRounded';
-import TodayRoundedIcon from '@mui/icons-material/TodayRounded';
+import ViewAgendaRoundedIcon from '@mui/icons-material/ViewAgendaRounded';
+import ViewStreamRoundedIcon from '@mui/icons-material/ViewStreamRounded';
 import { Alert, alpha, Box, Button, Grid, IconButton, Stack, Typography } from '@mui/material';
+import ToggleButton from '@mui/material/ToggleButton';
+import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
 import * as React from 'react';
 import AddAppointmentDialog from './components/AddAppointmentDialog';
 import CustomerInsightsPopup from './components/CustomerInsightsPopup';
 import DayOverviewCard from './components/DayOverviewCard';
 import EditAppointmentDialog from './components/EditAppointmentDialog';
+import ScheduleAgenda from './components/ScheduleAgenda';
 import ScheduleCalendar from './components/ScheduleCalendar';
 import SelectedAppointmentCard from './components/SelectedAppointmentCard';
 
@@ -64,6 +68,9 @@ export default function StaffSchedulePage() {
   const [addOpen, setAddOpen] = React.useState(false);
   const [editOpen, setEditOpen] = React.useState(false);
   const [creating, setCreating] = React.useState(false);
+
+  const [viewMode, setViewMode] = React.useState<'smart' | 'timeline'>('smart');
+  const [prefillStartTime, setPrefillStartTime] = React.useState<string | undefined>(undefined);
 
   const selectedAppointment =
     appointments.find((item) => item.id === selectedAppointmentId) ?? null;
@@ -127,6 +134,11 @@ export default function StaffSchedulePage() {
 
     void loadServices();
   }, []);
+
+  function handleAddAppointmentAt(time: string) {
+    setPrefillStartTime(time);
+    setAddOpen(true);
+  }
 
   function goToPreviousDay() {
     const date = new Date(`${selectedDate}T12:00:00`);
@@ -234,120 +246,170 @@ export default function StaffSchedulePage() {
     <>
       <Stack spacing={4}>
         <Stack
-          direction={{ xs: 'column', md: 'row' }}
+          direction={{ xs: 'column', lg: 'row' }}
           justifyContent="space-between"
-          alignItems={{ xs: 'stretch', md: 'center' }}
+          alignItems={{ xs: 'stretch', lg: 'center' }}
           spacing={3}
         >
           <Box>
             <Typography
-              sx={{ 
-                fontWeight: 1000, 
-                fontSize: { xs: 28, md: 36 }, 
-                letterSpacing: -1.5, 
+              variant="h4"
+              sx={{
+                fontWeight: 800,
+                letterSpacing: -1,
                 color: '#0F172A',
-                lineHeight: 1
+                mb: 0.5,
               }}
             >
               Your Schedule
             </Typography>
-            <Typography sx={{ color: '#64748B', fontWeight: 600, fontSize: { xs: 15, md: 18 }, mt: 0.5 }}>
+            <Typography sx={{ color: '#64748B', fontWeight: 500, fontSize: { xs: 15, md: 16 } }}>
               Manage appointments and optimize your day.
             </Typography>
           </Box>
 
           <Stack
             direction={{ xs: 'column', sm: 'row' }}
-            spacing={1.5}
+            spacing={2}
             sx={{ alignItems: { xs: 'stretch', sm: 'center' } }}
           >
             <Stack
               direction="row"
               spacing={1}
-              sx={{ flex: { xs: 1, sm: 'initial' }, alignItems: 'center' }}
+              sx={{
+                bgcolor: '#FFF',
+                p: 0.5,
+                borderRadius: 3,
+                border: '1px solid rgba(15,23,42,0.08)',
+                boxShadow: '0 2px 10px rgba(15,23,42,0.02)',
+                alignItems: 'center',
+              }}
             >
+              <IconButton
+                size="small"
+                onClick={goToPreviousDay}
+                sx={{
+                  color: '#64748B',
+                  '&:hover': {
+                    bgcolor: alpha(landingColors.purple, 0.05),
+                    color: landingColors.purple,
+                  },
+                }}
+              >
+                <ChevronLeftRoundedIcon fontSize="small" />
+              </IconButton>
+
               <Button
-                variant="outlined"
+                variant="text"
                 onClick={goToToday}
                 sx={{
                   borderRadius: 2,
-                  fontWeight: 900,
-                  borderColor: 'rgba(15,23,42,0.1)',
+                  fontWeight: 700,
                   color: '#475569',
-                  minWidth: { xs: 'auto', sm: 100 },
                   px: 2,
-                  height: 44,
-                  bgcolor: '#FFF',
-                  '&:hover': { bgcolor: '#FFF', borderColor: landingColors.purple, color: landingColors.purple },
+                  minWidth: 'auto',
+                  height: 32,
+                  fontSize: 13,
+                  '&:hover': {
+                    bgcolor: alpha(landingColors.purple, 0.05),
+                    color: landingColors.purple,
+                  },
                 }}
               >
                 Today
               </Button>
 
-              <Stack
-                direction="row"
-                alignItems="center"
-                spacing={0.5}
+              <Typography
                 sx={{
-                  bgcolor: '#FFFFFF',
-                  border: '1px solid rgba(15,23,42,0.08)',
-                  borderRadius: 2,
-                  p: 0.5,
-                  boxShadow: '0 2px 8px rgba(15,23,42,0.02)',
-                  flex: 1,
-                  justifyContent: 'space-between'
+                  fontWeight: 700,
+                  fontSize: 14,
+                  color: '#0F172A',
+                  whiteSpace: 'nowrap',
+                  px: 1,
+                  borderLeft: '1px solid rgba(15,23,42,0.08)',
+                  borderRight: '1px solid rgba(15,23,42,0.08)',
                 }}
               >
-                <IconButton
-                  size="small"
-                  onClick={goToPreviousDay}
-                  sx={{
-                    color: landingColors.purple,
-                    '&:hover': { bgcolor: alpha(landingColors.purple, 0.08) },
-                  }}
-                >
-                  <ChevronLeftRoundedIcon fontSize="small" />
-                </IconButton>
+                {formatHumanDate(selectedDate)}
+              </Typography>
 
-                <Typography
-                  sx={{
-                    fontWeight: 800,
-                    fontSize: { xs: 13, sm: 14 },
-                    color: '#0F172A',
-                    whiteSpace: 'nowrap',
-                    px: 1
-                  }}
-                >
-                  {formatHumanDate(selectedDate)}
-                </Typography>
-
-                <IconButton
-                  size="small"
-                  onClick={goToNextDay}
-                  sx={{
+              <IconButton
+                size="small"
+                onClick={goToNextDay}
+                sx={{
+                  color: '#64748B',
+                  '&:hover': {
+                    bgcolor: alpha(landingColors.purple, 0.05),
                     color: landingColors.purple,
-                    '&:hover': { bgcolor: alpha(landingColors.purple, 0.08) },
-                  }}
-                >
-                  <ChevronRightRoundedIcon fontSize="small" />
-                </IconButton>
-              </Stack>
+                  },
+                }}
+              >
+                <ChevronRightRoundedIcon fontSize="small" />
+              </IconButton>
             </Stack>
+
+            <ToggleButtonGroup
+              exclusive
+              value={viewMode}
+              onChange={(_, value) => {
+                if (value) setViewMode(value);
+              }}
+              sx={{
+                bgcolor: '#FFF',
+                p: 0.5,
+                borderRadius: 3,
+                border: '1px solid rgba(15,23,42,0.08)',
+                boxShadow: '0 2px 10px rgba(15,23,42,0.02)',
+                '& .MuiToggleButton-root': {
+                  border: 'none',
+                  borderRadius: 2,
+                  px: 1.5,
+                  py: 0.5,
+                  height: 32,
+                  textTransform: 'none',
+                  fontWeight: 700,
+                  fontSize: 13,
+                  color: '#64748B',
+                  '&.Mui-selected': {
+                    bgcolor: alpha(landingColors.purple, 0.1),
+                    color: landingColors.purple,
+                    '&:hover': {
+                      bgcolor: alpha(landingColors.purple, 0.15),
+                    },
+                  },
+                },
+              }}
+            >
+              <ToggleButton value="smart">
+                <Stack direction="row" spacing={0.75} alignItems="center">
+                  <ViewAgendaRoundedIcon sx={{ fontSize: 16 }} />
+                  <span>Smart Day</span>
+                </Stack>
+              </ToggleButton>
+              <ToggleButton value="timeline">
+                <Stack direction="row" spacing={0.75} alignItems="center">
+                  <ViewStreamRoundedIcon sx={{ fontSize: 16 }} />
+                  <span>Timeline</span>
+                </Stack>
+              </ToggleButton>
+            </ToggleButtonGroup>
 
             <Button
               variant="contained"
               startIcon={<AddRoundedIcon />}
               onClick={() => setAddOpen(true)}
-              fullWidth
               sx={{
                 height: 44,
                 px: 3,
-                borderRadius: 2,
-                fontWeight: 900,
+                borderRadius: 3,
+                fontWeight: 700,
                 bgcolor: landingColors.purple,
-                boxShadow: `0 8px 20px ${alpha(landingColors.purple, 0.2)}`,
+                boxShadow: `0 8px 20px ${alpha(landingColors.purple, 0.25)}`,
                 textTransform: 'none',
-                sm: { width: 'auto' }
+                '&:hover': {
+                  bgcolor: alpha(landingColors.purple, 0.9),
+                  boxShadow: `0 10px 25px ${alpha(landingColors.purple, 0.35)}`,
+                },
               }}
             >
               Add Appointment
@@ -368,15 +430,26 @@ export default function StaffSchedulePage() {
 
         <Grid container spacing={3}>
           <Grid item xs={12} lg={8.5}>
-            <ScheduleCalendar
-              selectedDate={selectedDate}
-              appointments={appointments}
-              loading={loading}
-              selectedAppointmentId={selectedAppointmentId}
-              onSelectAppointment={setSelectedAppointmentId}
-              onMoveAppointment={handleMoveAppointment}
-              onViewInsights={handleViewInsights}
-            />
+            {viewMode === 'smart' ? (
+              <ScheduleAgenda
+                selectedDate={selectedDate}
+                appointments={appointments}
+                selectedAppointmentId={selectedAppointmentId}
+                onSelectAppointment={setSelectedAppointmentId}
+                onAddAppointmentAt={handleAddAppointmentAt}
+                onViewInsights={handleViewInsights}
+              />
+            ) : (
+              <ScheduleCalendar
+                selectedDate={selectedDate}
+                appointments={appointments}
+                loading={loading}
+                selectedAppointmentId={selectedAppointmentId}
+                onSelectAppointment={setSelectedAppointmentId}
+                onMoveAppointment={handleMoveAppointment}
+                onViewInsights={handleViewInsights}
+              />
+            )}
           </Grid>
 
           <Grid item xs={12} lg={3.5}>
@@ -405,9 +478,13 @@ export default function StaffSchedulePage() {
 
       <AddAppointmentDialog
         open={addOpen}
-        onClose={() => setAddOpen(false)}
+        onClose={() => {
+          setAddOpen(false);
+          setPrefillStartTime(undefined);
+        }}
         creating={creating}
         services={services}
+        initialStartTime={prefillStartTime}
         onSubmit={async (payload) => {
           try {
             setCreating(true);
@@ -416,6 +493,7 @@ export default function StaffSchedulePage() {
               startTime: new Date(`${selectedDate}T${payload.startTime}:00`).toISOString(),
             });
             setAddOpen(false);
+            setPrefillStartTime(undefined);
             await loadAppointments();
           } finally {
             setCreating(false);

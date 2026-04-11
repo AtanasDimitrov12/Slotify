@@ -61,16 +61,18 @@ export default function CustomerInsightsCard({ insights }: CustomerInsightsCardP
       >
         <Stack direction="row" justifyContent="space-between" alignItems="center" mb={2.5}>
           <Stack direction="row" spacing={1.5} alignItems="center">
-            <Box sx={{ 
-              width: 40, 
-              height: 40, 
-              borderRadius: 2, 
-              bgcolor: alpha(riskColor, 0.1),
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              color: riskColor
-            }}>
+            <Box
+              sx={{
+                width: 40,
+                height: 40,
+                borderRadius: 2,
+                bgcolor: alpha(riskColor, 0.1),
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                color: riskColor,
+              }}
+            >
               <ShieldIcon sx={{ fontSize: 24 }} />
             </Box>
             <Box>
@@ -82,26 +84,43 @@ export default function CustomerInsightsCard({ insights }: CustomerInsightsCardP
               </Typography>
             </Box>
           </Stack>
-          <Chip
-            label={
-              insights.riskScore < 30
+          <Box
+            sx={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: 0.75,
+              px: 1.5,
+              py: 0.5,
+              borderRadius: 2,
+              bgcolor: alpha(riskColor, 0.08),
+              border: `1px solid ${alpha(riskColor, 0.15)}`,
+            }}
+          >
+            <Box
+              sx={{
+                width: 6,
+                height: 6,
+                borderRadius: '50%',
+                bgcolor: riskColor,
+                boxShadow: `0 0 8px ${alpha(riskColor, 0.4)}`,
+              }}
+            />
+            <Typography
+              sx={{
+                color: riskColor,
+                fontWeight: 800,
+                fontSize: 11,
+                textTransform: 'uppercase',
+                letterSpacing: 0.5,
+              }}
+            >
+              {insights.riskScore < 30
                 ? 'Low Risk'
                 : insights.riskScore < 60
                   ? 'Medium Risk'
-                  : 'High Risk'
-            }
-            size="small"
-            sx={{
-              fontWeight: 900,
-              fontSize: 11,
-              height: 24,
-              bgcolor: alpha(riskColor, 0.1),
-              color: riskColor,
-              border: `1px solid ${alpha(riskColor, 0.2)}`,
-              textTransform: 'uppercase',
-              letterSpacing: 0.5,
-            }}
-          />
+                  : 'High Risk'}
+            </Typography>
+          </Box>
         </Stack>
 
         <Box sx={{ px: 0.5 }}>
@@ -140,7 +159,7 @@ export default function CustomerInsightsCard({ insights }: CustomerInsightsCardP
               textTransform: 'uppercase',
               mb: 2,
               letterSpacing: 1,
-              textAlign: 'center'
+              textAlign: 'center',
             }}
           >
             Trust Verification
@@ -187,13 +206,15 @@ export default function CustomerInsightsCard({ insights }: CustomerInsightsCardP
 
         {/* Risk Factors */}
         {insights.riskFactors.length > 0 && (
-          <Box sx={{ 
-            mt: 1, 
-            p: 2, 
-            borderRadius: 2.5, 
-            bgcolor: '#F8FAFC',
-            border: '1px solid rgba(15,23,42,0.04)'
-          }}>
+          <Box
+            sx={{
+              mt: 1,
+              p: 2,
+              borderRadius: 2.5,
+              bgcolor: '#F8FAFC',
+              border: '1px solid rgba(15,23,42,0.04)',
+            }}
+          >
             <Typography
               sx={{
                 fontSize: 11,
@@ -231,32 +252,43 @@ export default function CustomerInsightsCard({ insights }: CustomerInsightsCardP
         )}
       </Stack>
     </Box>
-
   );
 }
 
 function VerificationChip({ label, verified }: { label: string; verified: boolean }) {
+  const color = verified ? '#10B981' : '#94A3B8';
   return (
-    <Chip
-      icon={
-        verified ? (
-          <CheckCircleIcon style={{ fontSize: 14, color: '#10B981' }} />
-        ) : (
-          <ErrorIcon style={{ fontSize: 14, color: '#94A3B8' }} />
-        )
-      }
-      label={label}
-      size="small"
+    <Box
       sx={{
-        height: 24,
-        fontSize: 11,
-        fontWeight: 800,
-        bgcolor: verified ? alpha('#10B981', 0.05) : alpha('#94A3B8', 0.05),
-        color: verified ? '#059669' : '#64748B',
-        border: `1px solid ${verified ? alpha('#10B981', 0.1) : alpha('#94A3B8', 0.1)}`,
-        '& .MuiChip-icon': { ml: 0.5 },
+        display: 'inline-flex',
+        alignItems: 'center',
+        gap: 0.75,
+        px: 1.25,
+        py: 0.5,
+        borderRadius: 2,
+        bgcolor: alpha(color, 0.05),
+        border: `1px solid ${alpha(color, 0.1)}`,
       }}
-    />
+    >
+      <Box
+        sx={{
+          width: 5,
+          height: 5,
+          borderRadius: '50%',
+          bgcolor: color,
+        }}
+      />
+      <Typography
+        sx={{
+          color: verified ? '#059669' : '#64748B',
+          fontWeight: 800,
+          fontSize: 11,
+          lineHeight: 1,
+        }}
+      >
+        {label}
+      </Typography>
+    </Box>
   );
 }
 
