@@ -1,10 +1,8 @@
 import {
   COUNTRIES,
-  landingColors,
   listPublicTenants,
   Page,
   type PublicTenantListItem,
-  premium,
   type TenantAddress,
   useAuth,
 } from '@barber/shared';
