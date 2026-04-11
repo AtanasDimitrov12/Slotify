@@ -100,7 +100,7 @@ export class ServicesService {
           isActive: true,
         },
         { $set: payload },
-        { new: true },
+        { returnDocument: 'after' },
       )
       .lean();
 
@@ -120,7 +120,7 @@ export class ServicesService {
           isActive: true,
         },
         { $set: { isActive: false } },
-        { new: true },
+        { returnDocument: 'after' },
       )
       .lean();
 

@@ -52,7 +52,7 @@ export class StaffProfilesService {
 
   async update(id: string, dto: UpdateStaffProfileDto) {
     const updated = await this.staffProfileModel
-      .findByIdAndUpdate(id, { $set: dto }, { new: true })
+      .findByIdAndUpdate(id, { $set: dto }, { returnDocument: 'after' })
       .lean();
 
     if (!updated) throw new NotFoundException('Staff profile not found');
@@ -68,7 +68,7 @@ export class StaffProfilesService {
           isActive: true,
         },
         { $set: dto },
-        { new: true },
+        { returnDocument: 'after' },
       )
       .lean();
 
@@ -79,7 +79,7 @@ export class StaffProfilesService {
 
   async remove(id: string) {
     const deleted = await this.staffProfileModel
-      .findByIdAndUpdate(id, { isActive: false }, { new: true })
+      .findByIdAndUpdate(id, { isActive: false }, { returnDocument: 'after' })
       .lean();
 
     if (!deleted) throw new NotFoundException('Staff profile not found');

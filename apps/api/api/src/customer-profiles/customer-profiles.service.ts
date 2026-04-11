@@ -48,7 +48,11 @@ export class CustomerProfilesService {
     }
 
     const updated = await this.customerProfileModel
-      .findOneAndUpdate({ userId: new Types.ObjectId(userId) }, { $set: updateData }, { new: true })
+      .findOneAndUpdate(
+        { userId: new Types.ObjectId(userId) },
+        { $set: updateData },
+        { returnDocument: 'after' },
+      )
       .lean();
 
     if (!updated) {

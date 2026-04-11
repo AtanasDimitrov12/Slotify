@@ -27,7 +27,9 @@ export class MembershipsService {
   }
 
   async update(id: string, dto: UpdateMembershipDto) {
-    return this.membershipModel.findByIdAndUpdate(id, { $set: dto }, { new: true }).lean();
+    return this.membershipModel
+      .findByIdAndUpdate(id, { $set: dto }, { returnDocument: 'after' })
+      .lean();
   }
 
   async findByUserId(userId: string) {

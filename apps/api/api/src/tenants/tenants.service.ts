@@ -57,6 +57,15 @@ export class TenantsService {
     return this.tenantModel.find().sort({ createdAt: -1 }).lean();
   }
 
+  async findAllSalons() {
+    return this.tenantModel
+      .find({
+        plan: { $ne: 'admin' },
+      })
+      .sort({ createdAt: -1 })
+      .lean();
+  }
+
   async findOne(id: string) {
     const tenant = await this.tenantModel.findById(id).lean();
     if (!tenant) throw new NotFoundException('Tenant not found');
@@ -78,6 +87,7 @@ export class TenantsService {
       .find({
         isPublished: true,
         status: 'active',
+        plan: { $ne: 'admin' },
       })
       .sort({ createdAt: -1 })
       .lean();
@@ -89,13 +99,14 @@ export class TenantsService {
         slug,
         isPublished: true,
         status: 'active',
+        plan: { $ne: 'admin' },
       })
       .lean();
   }
 
   async update(id: string, dto: UpdateTenantDto) {
     const updated = await this.tenantModel
-      .findByIdAndUpdate(id, { $set: dto }, { new: true })
+      .findByIdAndUpdate(id, { $set: dto }, { returnDocument: 'after' })
       .lean();
 
     if (!updated) throw new NotFoundException('Tenant not found');

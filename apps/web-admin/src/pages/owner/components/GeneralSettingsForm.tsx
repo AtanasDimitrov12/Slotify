@@ -1,4 +1,4 @@
-import { landingColors } from '@barber/shared';
+import { COUNTRIES, landingColors } from '@barber/shared';
 import { alpha, Box, Divider, Grid, MenuItem, Stack, TextField, Typography } from '@mui/material';
 
 export type GeneralSettingsValues = {
@@ -30,11 +30,21 @@ export default function GeneralSettingsForm({ value, onChange }: Props) {
     field: K,
     fieldValue: GeneralSettingsValues[K],
   ) {
-    onChange({
+    const next = {
       ...value,
       [field]: fieldValue,
-    });
+    };
+
+    // If country changes, reset city
+    if (field === 'country') {
+      next.city = '';
+    }
+
+    onChange(next);
   }
+
+  const selectedCountry = COUNTRIES.find((c) => c.name === value.country);
+  const cityOptions = selectedCountry?.cities || [];
 
   return (
     <Stack spacing={4}>
@@ -160,20 +170,35 @@ export default function GeneralSettingsForm({ value, onChange }: Props) {
 
           <Grid item xs={12} md={4}>
             <TextField
+              select
               fullWidth
               label="City"
               value={value.city}
               onChange={(e) => updateField('city', e.target.value)}
-            />
+              disabled={!value.country}
+            >
+              {cityOptions.map((city) => (
+                <MenuItem key={city.code} value={city.name}>
+                  {city.name}
+                </MenuItem>
+              ))}
+            </TextField>
           </Grid>
 
           <Grid item xs={12} md={4}>
             <TextField
+              select
               fullWidth
               label="Country"
               value={value.country}
               onChange={(e) => updateField('country', e.target.value)}
-            />
+            >
+              {COUNTRIES.map((country) => (
+                <MenuItem key={country.code} value={country.name}>
+                  {country.name}
+                </MenuItem>
+              ))}
+            </TextField>
           </Grid>
         </Grid>
       </Stack>
