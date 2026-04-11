@@ -3,6 +3,7 @@ import { getModelToken } from '@nestjs/mongoose';
 import { Test, type TestingModule } from '@nestjs/testing';
 import { Types } from 'mongoose';
 import { TenantBookingSettings } from '../booking-settings/tenant-booking-settings.schema';
+import { CustomerProfile } from '../customer-profiles/customer-profile.schema';
 import { Reservation } from '../reservations/reservation.schema';
 import { Service } from '../services/service.schema';
 import { StaffAvailability } from '../staff-availability/staff-availability.schema';
@@ -12,7 +13,6 @@ import { StaffServiceAssignment } from '../staff-service-assignments/staff-servi
 import { StaffTimeOff } from '../staff-time-off/staff-time-off.schema';
 import { TenantDetails } from '../tenant-details/tenant-details.schema';
 import { User } from '../users/user.schema';
-import { CustomerProfile } from '../customer-profiles/customer-profile.schema';
 import { StaffAppointmentsService } from './staff-appointments.service';
 
 describe('StaffAppointmentsService (Production Life Cycle)', () => {
@@ -137,8 +137,20 @@ describe('StaffAppointmentsService (Production Life Cycle)', () => {
       // Mock history with no-shows
       mockModels.reservation.find.mockReturnValue(
         mockQuery([
-          { _id: reservationId, customerPhone: phone, tenantId, status: 'confirmed', startTime: new Date() },
-          { _id: pastResId, customerPhone: phone, tenantId, status: 'no-show', startTime: new Date(Date.now() - 86400000) },
+          {
+            _id: reservationId,
+            customerPhone: phone,
+            tenantId,
+            status: 'confirmed',
+            startTime: new Date(),
+          },
+          {
+            _id: pastResId,
+            customerPhone: phone,
+            tenantId,
+            status: 'no-show',
+            startTime: new Date(Date.now() - 86400000),
+          },
         ]),
       );
       mockModels.customerProfile.findOne.mockReturnValue(mockQuery(null));
@@ -149,8 +161,10 @@ describe('StaffAppointmentsService (Production Life Cycle)', () => {
       });
 
       expect(insights.riskScore).toBeGreaterThan(60);
-      expect(insights.riskFactors).toContain('Urgent: The customer\'s last attempted reservation was a NO-SHOW');
-      expect(insights.riskFactors.some(f => f.includes('Local: 1 no-show(s)'))).toBe(true);
+      expect(insights.riskFactors).toContain(
+        "Urgent: The customer's last attempted reservation was a NO-SHOW",
+      );
+      expect(insights.riskFactors.some((f) => f.includes('Local: 1 no-show(s)'))).toBe(true);
     });
   });
 

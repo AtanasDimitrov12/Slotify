@@ -1,12 +1,13 @@
 import { landingColors } from '@barber/shared';
+import type { SvgIconComponent } from '@mui/icons-material';
 import ChevronLeftRoundedIcon from '@mui/icons-material/ChevronLeftRounded';
 import ChevronRightRoundedIcon from '@mui/icons-material/ChevronRightRounded';
-import type { SvgIconComponent } from '@mui/icons-material';
 import {
   Avatar,
   Box,
   Divider,
   IconButton,
+  keyframes,
   List,
   ListItemButton,
   ListItemIcon,
@@ -17,6 +18,17 @@ import {
 } from '@mui/material';
 import { alpha } from '@mui/material/styles';
 import * as React from 'react';
+
+const fadeIn = keyframes`
+  from {
+    opacity: 0;
+    transform: translateX(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+`;
 
 export type NavItem = {
   label: string;
@@ -30,7 +42,7 @@ interface UnifiedSidebarProps {
   onNavigate: (to: string) => void;
   collapsed: boolean;
   onToggleCollapse: () => void;
-  role: 'admin' | 'owner' | 'staff';
+  userRole: 'admin' | 'owner' | 'staff';
   title: string;
   userName?: string;
   userEmail?: string;
@@ -42,15 +54,19 @@ export default function UnifiedSidebar({
   onNavigate,
   collapsed,
   onToggleCollapse,
-  role,
+  userRole,
   title,
   userName,
   userEmail,
 }: UnifiedSidebarProps) {
-  const roleColor = landingColors.purple;
-  
+  const roleColor =
+    userRole === 'admin'
+      ? landingColors.purple
+      : userRole === 'owner'
+        ? landingColors.blue
+        : landingColors.success;
+
   const displayName = userName || userEmail || 'User';
-  const displaySubtitle = userName ? (userEmail || '') : (userEmail || 'My Workspace');
   const userInitial = displayName.charAt(0).toUpperCase();
 
   return (
@@ -94,7 +110,7 @@ export default function UnifiedSidebar({
         </Avatar>
 
         {!collapsed && (
-          <Box sx={{ minWidth: 0, animation: 'fadeIn 0.3s ease-out' }}>
+          <Box sx={{ minWidth: 0, animation: `${fadeIn} 0.3s ease-out` }}>
             <Typography
               noWrap
               sx={{
@@ -107,11 +123,7 @@ export default function UnifiedSidebar({
             >
               {title}
             </Typography>
-            <Typography
-              noWrap
-              variant="body2"
-              sx={{ color: '#64748B', fontWeight: 700, mt: 0.4 }}
-            >
+            <Typography noWrap variant="body2" sx={{ color: '#64748B', fontWeight: 700, mt: 0.4 }}>
               {displayName}
             </Typography>
           </Box>
@@ -192,13 +204,13 @@ export default function UnifiedSidebar({
       </Box>
 
       {/* Collapse Toggle (Desktop only) */}
-      <Box 
-        sx={{ 
-          p: 2, 
-          display: 'flex', 
+      <Box
+        sx={{
+          p: 2,
+          display: 'flex',
           justifyContent: collapsed ? 'center' : 'flex-end',
           borderTop: '1px solid rgba(15,23,42,0.04)',
-          bgcolor: alpha('#FFFFFF', 0.5)
+          bgcolor: alpha('#FFFFFF', 0.5),
         }}
       >
         <IconButton
@@ -226,13 +238,6 @@ export default function UnifiedSidebar({
           {collapsed ? <ChevronRightRoundedIcon /> : <ChevronLeftRoundedIcon />}
         </IconButton>
       </Box>
-
-      <style dangerouslySetInnerHTML={{ __html: `
-        @keyframes fadeIn {
-          from { opacity: 0; transform: translateX(-10px); }
-          to { opacity: 1; transform: translateX(0); }
-        }
-      `}} />
     </Box>
   );
 }

@@ -81,7 +81,7 @@ export default function AdminLayout() {
               onNavigate={onNavigate}
               collapsed={collapsed}
               onToggleCollapse={handleToggleCollapse}
-              role="admin"
+              userRole="admin"
               title="Admin Console"
               userName={user?.name}
               userEmail={user?.email}
@@ -133,7 +133,7 @@ export default function AdminLayout() {
                 onNavigate={onNavigate}
                 collapsed={false}
                 onToggleCollapse={() => {}}
-                role="admin"
+                userRole="admin"
                 title="Admin Console"
                 userName={user?.name}
                 userEmail={user?.email}

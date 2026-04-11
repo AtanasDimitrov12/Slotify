@@ -3,6 +3,10 @@ import { InjectModel } from '@nestjs/mongoose';
 import { type Model, Types } from 'mongoose';
 import { TenantBookingSettings } from '../booking-settings/tenant-booking-settings.schema';
 import {
+  CustomerProfile,
+  CustomerProfileDocument,
+} from '../customer-profiles/customer-profile.schema';
+import {
   addMinutes,
   buildDateTimeOnDay,
   endOfDay,
@@ -21,7 +25,6 @@ import { StaffServiceAssignment } from '../staff-service-assignments/staff-servi
 import { StaffTimeOff } from '../staff-time-off/staff-time-off.schema';
 import { TenantDetails, type WeeklyOpeningHours } from '../tenant-details/tenant-details.schema';
 import { User, UserDocument } from '../users/user.schema';
-import { CustomerProfile, CustomerProfileDocument } from '../customer-profiles/customer-profile.schema';
 import { CreateStaffAppointmentDto } from './dto/create-staff-appointment.dto';
 import { UpdateStaffAppointmentDto } from './dto/update-staff-appointment.dto';
 
@@ -58,7 +61,11 @@ export class StaffAppointmentsService {
       throw new NotFoundException('Reservation not found');
     }
 
-    return this.calculateFullRisk(params.tenantId, reservation.customerPhone, String(reservation._id));
+    return this.calculateFullRisk(
+      params.tenantId,
+      reservation.customerPhone,
+      String(reservation._id),
+    );
   }
 
   private async calculateFullRisk(tenantId: string, phone: string, currentReservationId?: string) {
@@ -156,7 +163,9 @@ export class StaffAppointmentsService {
 
     // 5. Cancellation Patterns
     if (stats.cancelled > 2) {
-      riskFactors.push(`Reliability: Unusual cancellation frequency at your salon (${stats.cancelled})`);
+      riskFactors.push(
+        `Reliability: Unusual cancellation frequency at your salon (${stats.cancelled})`,
+      );
       riskScore += 15;
     }
 
@@ -224,7 +233,11 @@ export class StaffAppointmentsService {
 
     const result = await Promise.all(
       reservations.map(async (reservation) => {
-        const insights = await this.calculateFullRisk(params.tenantId, reservation.customerPhone, String(reservation._id));
+        const insights = await this.calculateFullRisk(
+          params.tenantId,
+          reservation.customerPhone,
+          String(reservation._id),
+        );
         return {
           id: String(reservation._id),
           startTime: reservation.startTime,

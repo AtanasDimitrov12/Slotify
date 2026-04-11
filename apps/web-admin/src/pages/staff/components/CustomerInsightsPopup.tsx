@@ -8,12 +8,24 @@ import {
   DialogContent,
   Fade,
   IconButton,
+  keyframes,
   Stack,
   Typography,
   useMediaQuery,
   useTheme,
 } from '@mui/material';
 import CustomerInsightsCard from './CustomerInsightsCard';
+
+const fadeInUp = keyframes`
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+`;
 
 interface CustomerInsightsPopupProps {
   open: boolean;
@@ -91,10 +103,18 @@ export default function CustomerInsightsPopup({
         </IconButton>
       </Box>
 
-      <DialogContent sx={{ p: { xs: 2, sm: 4 }, bgcolor: '#F8FAFC', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+      <DialogContent
+        sx={{
+          p: { xs: 2, sm: 4 },
+          bgcolor: '#F8FAFC',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+        }}
+      >
         <Box sx={{ width: '100%', maxWidth: 480 }}>
           {insights ? (
-            <Box sx={{ animation: 'fadeIn 0.5s ease-out' }}>
+            <Box sx={{ animation: `${fadeInUp} 0.5s ease-out` }}>
               <CustomerInsightsCard insights={insights} />
             </Box>
           ) : loading ? (
@@ -116,17 +136,6 @@ export default function CustomerInsightsPopup({
           )}
         </Box>
       </DialogContent>
-
-      <style
-        dangerouslySetInnerHTML={{
-          __html: `
-        @keyframes fadeIn {
-          from { opacity: 0; transform: translateY(10px); }
-          to { opacity: 1; transform: translateY(0); }
-        }
-      `,
-        }}
-      />
     </Dialog>
   );
 }

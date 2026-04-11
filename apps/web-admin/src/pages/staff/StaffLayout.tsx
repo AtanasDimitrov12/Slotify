@@ -92,7 +92,7 @@ export default function StaffLayout() {
               onNavigate={onNavigate}
               collapsed={collapsed}
               onToggleCollapse={handleToggleCollapse}
-              role="staff"
+              userRole="staff"
               title="Staff Console"
               userName={user?.name}
               userEmail={user?.email}
@@ -144,7 +144,7 @@ export default function StaffLayout() {
                 onNavigate={onNavigate}
                 collapsed={false}
                 onToggleCollapse={() => {}}
-                role="staff"
+                userRole="staff"
                 title="Staff Console"
                 userName={user?.name}
                 userEmail={user?.email}

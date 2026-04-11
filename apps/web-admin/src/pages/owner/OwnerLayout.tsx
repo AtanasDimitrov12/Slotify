@@ -89,7 +89,7 @@ export default function OwnerLayout() {
               onNavigate={onNavigate}
               collapsed={collapsed}
               onToggleCollapse={handleToggleCollapse}
-              role="owner"
+              userRole="owner"
               title="Salon Console"
               userName={user?.name}
               userEmail={user?.email}
@@ -141,7 +141,7 @@ export default function OwnerLayout() {
                 onNavigate={onNavigate}
                 collapsed={false}
                 onToggleCollapse={() => {}}
-                role="owner"
+                userRole="owner"
                 title="Salon Console"
                 userName={user?.name}
                 userEmail={user?.email}

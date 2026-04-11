@@ -1,7 +1,5 @@
 import { type CustomerInsights, landingColors } from '@barber/shared';
 import {
-  CheckCircleRounded as CheckCircleIcon,
-  ErrorRounded as ErrorIcon,
   HistoryRounded as HistoryIcon,
   PersonSearchRounded as IdentityIcon,
   DomainRounded as NetworkIcon,
@@ -12,8 +10,8 @@ import {
   ReportProblemRounded as UrgentIcon,
   WarningRounded as WarningIcon,
 } from '@mui/icons-material';
-import { alpha, Box, Chip, Divider, Grid, LinearProgress, Stack, Typography } from '@mui/material';
-import type React from 'react';
+import { alpha, Box, Divider, Grid, LinearProgress, Stack, Typography } from '@mui/material';
+import React from 'react';
 
 interface CustomerInsightsCardProps {
   insights: CustomerInsights;
@@ -41,6 +39,20 @@ export default function CustomerInsightsCard({ insights }: CustomerInsightsCardP
     if (factor.startsWith('Trust:')) return <TrustIcon sx={{ color: '#64748B', fontSize: 16 }} />;
     return <WarningIcon sx={{ color: '#F59E0B', fontSize: 16 }} />;
   };
+
+  const keyedRiskFactors = React.useMemo(() => {
+    const counts = new Map<string, number>();
+
+    return insights.riskFactors.map((factor) => {
+      const count = counts.get(factor) ?? 0;
+      counts.set(factor, count + 1);
+
+      return {
+        key: `${factor}__${count}`,
+        factor,
+      };
+    });
+  }, [insights.riskFactors]);
 
   return (
     <Box
@@ -228,8 +240,8 @@ export default function CustomerInsightsCard({ insights }: CustomerInsightsCardP
               Key Indicators
             </Typography>
             <Stack spacing={2}>
-              {insights.riskFactors.map((factor, index) => (
-                <Stack key={index} direction="row" spacing={2} alignItems="flex-start">
+              {keyedRiskFactors.map(({ key, factor }) => (
+                <Stack key={key} direction="row" spacing={2} alignItems="flex-start">
                   <Box sx={{ mt: 0.3, display: 'flex' }}>{getFactorIcon(factor)}</Box>
                   <Typography
                     sx={{ fontSize: 13, color: '#334155', fontWeight: 600, lineHeight: 1.5 }}
