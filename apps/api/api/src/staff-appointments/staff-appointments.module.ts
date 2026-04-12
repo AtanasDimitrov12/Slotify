@@ -15,6 +15,10 @@ import {
   StaffAvailabilitySchema,
 } from '../staff-availability/staff-availability.schema';
 import {
+  StaffBlockedSlot,
+  StaffBlockedSlotSchema,
+} from '../staff-blocked-slots/staff-blocked-slot.schema';
+import {
   StaffBookingSettings,
   StaffBookingSettingsSchema,
 } from '../staff-booking-settings/staff-booking-settings.schema';
@@ -41,6 +45,7 @@ import { StaffAppointmentsService } from './staff-appointments.service';
       },
       { name: StaffAvailability.name, schema: StaffAvailabilitySchema },
       { name: StaffTimeOff.name, schema: StaffTimeOffSchema },
+      { name: StaffBlockedSlot.name, schema: StaffBlockedSlotSchema },
       { name: TenantDetails.name, schema: TenantDetailsSchema },
       { name: TenantBookingSettings.name, schema: TenantBookingSettingsSchema },
       { name: StaffBookingSettings.name, schema: StaffBookingSettingsSchema },

@@ -11,6 +11,7 @@ export * from './api/servicesCatalog';
 export * from './api/staff';
 export * from './api/staffAppointments';
 export * from './api/staffAvailability';
+export * from './api/staffBlockedSlot';
 export * from './api/staffServices';
 export * from './api/staffTimeOff';
 export * from './api/tenantDetails';

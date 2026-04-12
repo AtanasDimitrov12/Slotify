@@ -10,6 +10,7 @@ import {
 } from '../reservations/reservation-lock.schema';
 import { Service } from '../services/service.schema';
 import { StaffAvailability } from '../staff-availability/staff-availability.schema';
+import { StaffBlockedSlot } from '../staff-blocked-slots/staff-blocked-slot.schema';
 import { StaffBookingSettings } from '../staff-booking-settings/staff-booking-settings.schema';
 import { StaffProfile } from '../staff-profiles/staff-profile.schema';
 import { StaffServiceAssignment } from '../staff-service-assignments/staff-service-assignment.schema';
@@ -45,6 +46,8 @@ export class PublicBookingService {
     private readonly staffAvailabilityModel: Model<StaffAvailability>,
     @InjectModel(StaffTimeOff.name)
     private readonly staffTimeOffModel: Model<StaffTimeOff>,
+    @InjectModel(StaffBlockedSlot.name)
+    private readonly staffBlockedSlotModel: Model<StaffBlockedSlot>,
     @InjectModel(StaffServiceAssignment.name)
     private readonly staffServiceAssignmentModel: Model<StaffServiceAssignment>,
     @InjectModel(TenantBookingSettings.name)
@@ -675,44 +678,58 @@ export class PublicBookingService {
     const dayStart = startOfDay(requestedDate);
     const dayEnd = endOfDay(requestedDate);
     const weekday = requestedDate.getDay();
+    const dateStr = requestedDate.toISOString().split('T')[0];
 
-    const [tenantDetails, availability, timeOffEntries, reservations, locks, staffProfile] =
-      await Promise.all([
-        this.tenantDetailsModel.findOne({ tenantId: String(tenantId), isPublished: true }).lean(),
-        this.staffAvailabilityModel
-          .findOne({ tenantId, userId: new Types.ObjectId(staffId) })
-          .lean(),
-        this.staffTimeOffModel
-          .find({
-            tenantId,
-            userId: new Types.ObjectId(staffId),
-            status: 'approved',
-            startDate: { $lt: dayEnd },
-            endDate: { $gt: dayStart },
-          })
-          .lean(),
-        this.reservationModel
-          .find({
-            tenantId,
-            staffId: new Types.ObjectId(staffId),
-            status: { $in: ['pending', 'confirmed'] },
-            startTime: { $lt: dayEnd },
-            endTime: { $gt: dayStart },
-          })
-          .sort({ startTime: 1 })
-          .lean(),
-        this.reservationLockModel
-          .find({
-            tenantId,
-            staffId: new Types.ObjectId(staffId),
-            expiresAt: { $gt: new Date() },
-            startTime: { $lt: dayEnd },
-            endTime: { $gt: dayStart },
-          })
-          .sort({ startTime: 1 })
-          .lean(),
-        this.staffProfileModel.findOne({ tenantId, userId: new Types.ObjectId(staffId) }).lean(),
-      ]);
+    const [
+      tenantDetails,
+      availability,
+      timeOffEntries,
+      blockedSlots,
+      reservations,
+      locks,
+      staffProfile,
+    ] = await Promise.all([
+      this.tenantDetailsModel.findOne({ tenantId: String(tenantId), isPublished: true }).lean(),
+      this.staffAvailabilityModel.findOne({ tenantId, userId: new Types.ObjectId(staffId) }).lean(),
+      this.staffTimeOffModel
+        .find({
+          tenantId,
+          userId: new Types.ObjectId(staffId),
+          status: 'approved',
+          startDate: { $lt: dayEnd },
+          endDate: { $gt: dayStart },
+        })
+        .lean(),
+      this.staffBlockedSlotModel
+        .find({
+          tenantId,
+          userId: new Types.ObjectId(staffId),
+          isActive: true,
+          date: dateStr,
+        })
+        .lean(),
+      this.reservationModel
+        .find({
+          tenantId,
+          staffId: new Types.ObjectId(staffId),
+          status: { $in: ['pending', 'confirmed'] },
+          startTime: { $lt: dayEnd },
+          endTime: { $gt: dayStart },
+        })
+        .sort({ startTime: 1 })
+        .lean(),
+      this.reservationLockModel
+        .find({
+          tenantId,
+          staffId: new Types.ObjectId(staffId),
+          expiresAt: { $gt: new Date() },
+          startTime: { $lt: dayEnd },
+          endTime: { $gt: dayStart },
+        })
+        .sort({ startTime: 1 })
+        .lean(),
+      this.staffProfileModel.findOne({ tenantId, userId: new Types.ObjectId(staffId) }).lean(),
+    ]);
 
     const staffDayEntries =
       availability?.weeklyAvailability?.filter(
@@ -768,6 +785,10 @@ export class PublicBookingService {
       ...timeOffEntries.map((entry) => ({
         start: new Date(entry.startDate),
         end: new Date(entry.endDate),
+      })),
+      ...blockedSlots.map((slot) => ({
+        start: buildDateTimeOnDay(requestedDate, slot.startTime),
+        end: buildDateTimeOnDay(requestedDate, slot.endTime),
       })),
       ...reservations.map((reservation) => ({
         start: addMinutes(new Date(reservation.startTime), -settings.bufferBeforeMinutes),

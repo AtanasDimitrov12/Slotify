@@ -1,4 +1,4 @@
-import type { StaffAppointment } from '@barber/shared';
+import type { StaffAppointment, StaffBlockedSlotItem } from '@barber/shared';
 import AddRoundedIcon from '@mui/icons-material/AddRounded';
 import ShieldRoundedIcon from '@mui/icons-material/ShieldRounded';
 import { alpha, Box, IconButton, Stack, Tooltip, Typography } from '@mui/material';
@@ -24,6 +24,7 @@ type AppointmentCluster = {
   start: Date;
   end: Date;
   appointments: StaffAppointment[];
+  blockedSlots: StaffBlockedSlotItem[];
   gapBefore?: TimeGap;
 };
 
@@ -57,25 +58,9 @@ function getRiskColor(score?: number) {
   return '#EF4444';
 }
 
-function getStatusPriority(status: StaffAppointment['status']) {
-  switch (status) {
-    case 'confirmed':
-      return 0;
-    case 'pending':
-      return 1;
-    case 'completed':
-      return 2;
-    case 'no-show':
-      return 3;
-    case 'cancelled':
-      return 4;
-    default:
-      return 5;
-  }
-}
-
 function buildClusters(
   appointments: StaffAppointment[],
+  blockedSlots: StaffBlockedSlotItem[],
   selectedDate: string,
 ): {
   clusters: AppointmentCluster[];
@@ -88,17 +73,22 @@ function buildClusters(
   const dayEnd = new Date(`${selectedDate}T00:00:00`);
   dayEnd.setHours(DAY_END_HOUR, 0, 0, 0);
 
-  const sorted = [...appointments].sort((a, b) => {
-    const timeDiff = new Date(a.startTime).getTime() - new Date(b.startTime).getTime();
-    if (timeDiff !== 0) return timeDiff;
+  const allItems: { type: 'appt' | 'block'; start: number; end: number; original: any }[] = [
+    ...appointments.map((a) => ({
+      type: 'appt' as const,
+      start: new Date(a.startTime).getTime(),
+      end: new Date(a.endTime).getTime(),
+      original: a,
+    })),
+    ...blockedSlots.map((s) => ({
+      type: 'block' as const,
+      start: new Date(`${s.date}T${s.startTime}:00`).getTime(),
+      end: new Date(`${s.date}T${s.endTime}:00`).getTime(),
+      original: s,
+    })),
+  ].sort((a, b) => a.start - b.start || a.end - b.end);
 
-    const priorityDiff = getStatusPriority(a.status) - getStatusPriority(b.status);
-    if (priorityDiff !== 0) return priorityDiff;
-
-    return a.customerName.localeCompare(b.customerName);
-  });
-
-  if (!sorted.length) {
+  if (!allItems.length) {
     return {
       clusters: [],
       firstGap: {
@@ -109,73 +99,61 @@ function buildClusters(
     };
   }
 
-  const rawClusters: StaffAppointment[][] = [];
-  let currentCluster: StaffAppointment[] = [];
-  let currentClusterMaxEnd = 0;
+  const clusters: AppointmentCluster[] = [];
+  let currentGroup: typeof allItems = [];
+  let groupMaxEnd = 0;
 
-  for (const appointment of sorted) {
-    const start = new Date(appointment.startTime).getTime();
-    const end = new Date(appointment.endTime).getTime();
+  function finalizeCluster(group: typeof allItems): AppointmentCluster {
+    const start = new Date(Math.min(...group.map((i) => i.start)));
+    const end = new Date(Math.max(...group.map((i) => i.end)));
+    return {
+      id: `${start.toISOString()}-${end.toISOString()}`,
+      start,
+      end,
+      appointments: group.filter((i) => i.type === 'appt').map((i) => i.original),
+      blockedSlots: group.filter((i) => i.type === 'block').map((i) => i.original),
+    };
+  }
 
-    if (currentCluster.length === 0) {
-      currentCluster = [appointment];
-      currentClusterMaxEnd = end;
+  for (const item of allItems) {
+    if (currentGroup.length === 0) {
+      currentGroup = [item];
+      groupMaxEnd = item.end;
       continue;
     }
 
-    if (start < currentClusterMaxEnd) {
-      currentCluster.push(appointment);
-      currentClusterMaxEnd = Math.max(currentClusterMaxEnd, end);
+    if (item.start < groupMaxEnd) {
+      currentGroup.push(item);
+      groupMaxEnd = Math.max(groupMaxEnd, item.end);
     } else {
-      rawClusters.push(currentCluster);
-      currentCluster = [appointment];
-      currentClusterMaxEnd = end;
+      clusters.push(finalizeCluster(currentGroup));
+      currentGroup = [item];
+      groupMaxEnd = item.end;
     }
   }
 
-  if (currentCluster.length) {
-    rawClusters.push(currentCluster);
+  if (currentGroup.length) {
+    clusters.push(finalizeCluster(currentGroup));
   }
 
-  const clusters: AppointmentCluster[] = [];
+  // Calculate gaps
   let cursor = dayStart;
   let firstGap: TimeGap | undefined;
 
-  for (const clusterAppointments of rawClusters) {
-    const clusterStart = new Date(
-      Math.min(...clusterAppointments.map((a) => new Date(a.startTime).getTime())),
-    );
-    const clusterEnd = new Date(
-      Math.max(...clusterAppointments.map((a) => new Date(a.endTime).getTime())),
-    );
+  for (let i = 0; i < clusters.length; i++) {
+    const cluster = clusters[i];
+    const gapMin = Math.round((cluster.start.getTime() - cursor.getTime()) / 60000);
 
-    const gapMin = Math.round((clusterStart.getTime() - cursor.getTime()) / 60000);
-    const gapBefore =
-      gapMin >= MIN_GAP_TO_SHOW
-        ? {
-            start: new Date(cursor),
-            end: new Date(clusterStart),
-            durationMin: gapMin,
-          }
-        : undefined;
-
-    if (!firstGap && gapBefore) {
-      firstGap = gapBefore;
+    if (gapMin >= MIN_GAP_TO_SHOW) {
+      const gap = {
+        start: new Date(cursor),
+        end: new Date(cluster.start),
+        durationMin: gapMin,
+      };
+      if (i === 0) firstGap = gap;
+      cluster.gapBefore = gap;
     }
-
-    clusters.push({
-      id: `${clusterStart.toISOString()}-${clusterEnd.toISOString()}`,
-      start: clusterStart,
-      end: clusterEnd,
-      appointments: [...clusterAppointments].sort((a, b) => {
-        const priorityDiff = getStatusPriority(a.status) - getStatusPriority(b.status);
-        if (priorityDiff !== 0) return priorityDiff;
-        return a.customerName.localeCompare(b.customerName);
-      }),
-      gapBefore,
-    });
-
-    cursor = clusterEnd;
+    cursor = cluster.end;
   }
 
   const lastGapMin = Math.round((dayEnd.getTime() - cursor.getTime()) / 60000);
@@ -382,9 +360,48 @@ function AppointmentItem({
   );
 }
 
+function BlockedSlotItem({ slot }: { slot: StaffBlockedSlotItem }) {
+  return (
+    <Box
+      sx={{
+        flex: 1,
+        minWidth: 0,
+        p: 1.75,
+        borderRadius: 2.5,
+        bgcolor: alpha('#94A3B8', 0.05),
+        border: '1px dashed',
+        borderColor: 'rgba(15,23,42,0.12)',
+        display: 'flex',
+        flexDirection: 'column',
+        gap: 0.5,
+      }}
+    >
+      <Stack direction="row" justifyContent="space-between" alignItems="center">
+        <Typography sx={{ fontWeight: 800, fontSize: 14, color: '#475569' }}>
+          BLOCKED SLOT
+        </Typography>
+        <Typography
+          sx={{
+            fontWeight: 700,
+            fontSize: 11,
+            fontFamily: 'monospace',
+            color: '#64748B',
+          }}
+        >
+          Until {slot.endTime}
+        </Typography>
+      </Stack>
+      <Typography sx={{ color: '#64748B', fontSize: 13, fontWeight: 600 }}>
+        {slot.reason || 'No reason provided'}
+      </Typography>
+    </Box>
+  );
+}
+
 export default function ScheduleAgenda({
   selectedDate,
   appointments,
+  blockedSlots = [],
   selectedAppointmentId,
   onSelectAppointment,
   onAddAppointmentAt,
@@ -392,6 +409,7 @@ export default function ScheduleAgenda({
 }: {
   selectedDate: string;
   appointments: StaffAppointment[];
+  blockedSlots?: StaffBlockedSlotItem[];
   selectedAppointmentId: string | null;
   onSelectAppointment: (id: string) => void;
   onAddAppointmentAt: (time: string) => void;
@@ -405,8 +423,8 @@ export default function ScheduleAgenda({
   }, []);
 
   const { clusters, firstGap, lastGap } = React.useMemo(
-    () => buildClusters(appointments, selectedDate),
-    [appointments, selectedDate],
+    () => buildClusters(appointments, blockedSlots, selectedDate),
+    [appointments, blockedSlots, selectedDate],
   );
 
   const isToday = now.toISOString().split('T')[0] === selectedDate;
@@ -476,11 +494,17 @@ export default function ScheduleAgenda({
                     <Stack
                       direction={{
                         xs: 'column',
-                        sm: cluster.appointments.length > 1 ? 'row' : 'column',
+                        sm:
+                          cluster.appointments.length + cluster.blockedSlots.length > 1
+                            ? 'row'
+                            : 'column',
                       }}
                       spacing={1.5}
                       sx={{ flex: 1 }}
                     >
+                      {cluster.blockedSlots.map((slot) => (
+                        <BlockedSlotItem key={slot.id} slot={slot} />
+                      ))}
                       {cluster.appointments.map((appointment) => {
                         const startTime = new Date(appointment.startTime);
                         const isUpcoming =

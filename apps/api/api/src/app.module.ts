@@ -15,6 +15,7 @@ import { ServicesModule } from './services/services.module';
 import { StaffModule } from './staff/staff.module';
 import { StaffAppointmentsModule } from './staff-appointments/staff-appointments.module';
 import { StaffAvailabilityModule } from './staff-availability/staff-availability.module';
+import { StaffBlockedSlotModule } from './staff-blocked-slots/staff-blocked-slot.module';
 import { StaffBookingSettingsModule } from './staff-booking-settings/staff-booking-settings.module';
 import { StaffProfilesModule } from './staff-profiles/staff-profiles.module';
 import { StaffServiceAssignmentsModule } from './staff-service-assignments/staff-service-assignments.module';
@@ -43,6 +44,7 @@ import { TenantsModule } from './tenants/tenants.module';
     StaffProfilesModule,
     StaffAvailabilityModule,
     StaffTimeOffModule,
+    StaffBlockedSlotModule,
     ServicesModule,
     StaffServiceAssignmentsModule,
     BookingSettingsModule,
