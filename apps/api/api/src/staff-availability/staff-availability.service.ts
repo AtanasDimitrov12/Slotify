@@ -29,6 +29,24 @@ export class StaffAvailabilityService {
       .lean();
   }
 
+  findAnyByUserId(userId: string) {
+    return this.availabilityModel
+      .findOne({
+        userId: new Types.ObjectId(userId),
+      })
+      .lean();
+  }
+
+  findOtherByUserId(userId: string, currentTenantId: string) {
+    return this.availabilityModel
+      .findOne({
+        userId: new Types.ObjectId(userId),
+        tenantId: { $ne: new Types.ObjectId(currentTenantId) },
+      })
+      .sort({ updatedAt: -1 })
+      .lean();
+  }
+
   async upsertByStaff(tenantId: string, userId: string, dto: UpdateStaffAvailabilityDto) {
     return this.availabilityModel
       .findOneAndUpdate(

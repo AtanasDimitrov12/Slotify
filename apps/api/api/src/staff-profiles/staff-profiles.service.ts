@@ -32,6 +32,34 @@ export class StaffProfilesService {
     return this.staffProfileModel.find({ tenantId, isActive: true }).lean();
   }
 
+  findAnyByUserId(userId: string) {
+    if (!Types.ObjectId.isValid(userId)) {
+      throw new BadRequestException('Invalid userId');
+    }
+
+    return this.staffProfileModel
+      .findOne({
+        userId: new Types.ObjectId(userId),
+        isActive: true,
+      })
+      .lean();
+  }
+
+  findOtherByUserId(userId: string, currentTenantId: string) {
+    if (!Types.ObjectId.isValid(userId)) {
+      throw new BadRequestException('Invalid userId');
+    }
+
+    return this.staffProfileModel
+      .findOne({
+        userId: new Types.ObjectId(userId),
+        tenantId: { $ne: new Types.ObjectId(currentTenantId) },
+        isActive: true,
+      })
+      .sort({ updatedAt: -1 })
+      .lean();
+  }
+
   findOne(id: string) {
     return this.staffProfileModel.findById(id).lean();
   }

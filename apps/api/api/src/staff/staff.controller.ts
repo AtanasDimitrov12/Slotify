@@ -97,6 +97,24 @@ export class StaffController {
     return this.staffService.removeMyService(currentUser, id);
   }
 
+  @Get('me/sync-profile')
+  @UseGuards(JwtAuthGuard)
+  getOtherProfile(@CurrentUser() currentUser: JwtPayload) {
+    return this.staffService.getAnyOtherProfile(currentUser);
+  }
+
+  @Get('me/sync-availability')
+  @UseGuards(JwtAuthGuard)
+  getOtherAvailability(@CurrentUser() currentUser: JwtPayload) {
+    return this.staffService.getAnyOtherAvailability(currentUser);
+  }
+
+  @Get('available')
+  @UseGuards(JwtAuthGuard)
+  listAvailable(@CurrentUser() currentUser: JwtPayload) {
+    return this.staffService.listAvailableStaffForOwner(currentUser);
+  }
+
   @Post('onboard')
   @UseGuards(JwtAuthGuard)
   onboard(@CurrentUser() currentUser: JwtPayload, @Body() dto: CreateStaffAccountDto) {

@@ -1,7 +1,9 @@
 import { landingColors } from '@barber/shared';
 import type { SvgIconComponent } from '@mui/icons-material';
+import AddRoundedIcon from '@mui/icons-material/AddRounded';
 import ChevronLeftRoundedIcon from '@mui/icons-material/ChevronLeftRounded';
 import ChevronRightRoundedIcon from '@mui/icons-material/ChevronRightRounded';
+import SwapHorizRoundedIcon from '@mui/icons-material/SwapHorizRounded';
 import {
   Avatar,
   Box,
@@ -12,6 +14,8 @@ import {
   ListItemButton,
   ListItemIcon,
   ListItemText,
+  Menu,
+  MenuItem,
   Stack,
   Tooltip,
   Typography,
@@ -36,6 +40,13 @@ export type NavItem = {
   icon: SvgIconComponent;
 };
 
+export type AvailableTenant = {
+  _id: string;
+  name?: string;
+  slug?: string;
+  role?: string;
+};
+
 interface UnifiedSidebarProps {
   items: NavItem[];
   isActive: (to: string) => boolean;
@@ -46,6 +57,10 @@ interface UnifiedSidebarProps {
   title: string;
   userName?: string;
   userEmail?: string;
+  availableTenants?: AvailableTenant[];
+  currentTenantId?: string;
+  onSwitchTenant?: (tenantId: string) => void;
+  onAddTenant?: () => void;
 }
 
 export default function UnifiedSidebar({
@@ -58,7 +73,36 @@ export default function UnifiedSidebar({
   title,
   userName,
   userEmail,
+  availableTenants = [],
+  currentTenantId,
+  onSwitchTenant,
+  onAddTenant,
 }: UnifiedSidebarProps) {
+  const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
+  const openSwitcher = Boolean(anchorEl);
+
+  const handleOpenSwitcher = (event: React.MouseEvent<HTMLElement>) => {
+    if (availableTenants.length > 0 || onAddTenant) {
+      setAnchorEl(event.currentTarget);
+    }
+  };
+
+  const handleCloseSwitcher = () => {
+    setAnchorEl(null);
+  };
+
+  const handleSwitch = (id: string) => {
+    handleCloseSwitcher();
+    onSwitchTenant?.(id);
+  };
+
+  const handleAdd = () => {
+    handleCloseSwitcher();
+    onAddTenant?.();
+  };
+
+  const currentTenant = availableTenants.find((t) => t._id === currentTenantId);
+
   const roleColor =
     userRole === 'admin'
       ? landingColors.purple
@@ -91,37 +135,69 @@ export default function UnifiedSidebar({
           minHeight: 100,
           transition: 'padding 0.3s',
           overflow: 'hidden',
+          cursor:
+            availableTenants.length > 1 || (userRole === 'owner' && onAddTenant)
+              ? 'pointer'
+              : 'default',
+          '&:hover': {
+            bgcolor:
+              availableTenants.length > 1 || (userRole === 'owner' && onAddTenant)
+                ? alpha('#FFFFFF', 0.5)
+                : 'transparent',
+          },
         }}
+        onClick={handleOpenSwitcher}
       >
-        <Avatar
-          sx={{
-            width: 44,
-            height: 44,
-            fontSize: 18,
-            fontWeight: 1000,
-            bgcolor: alpha(roleColor, 0.12),
-            color: roleColor,
-            border: `1px solid ${alpha(roleColor, 0.2)}`,
-            boxShadow: `0 8px 24px ${alpha(roleColor, 0.16)}`,
-            flexShrink: 0,
-          }}
-        >
-          {userInitial}
-        </Avatar>
+        <Box sx={{ position: 'relative' }}>
+          <Avatar
+            sx={{
+              width: 44,
+              height: 44,
+              fontSize: 18,
+              fontWeight: 1000,
+              bgcolor: alpha(roleColor, 0.12),
+              color: roleColor,
+              border: `1px solid ${alpha(roleColor, 0.2)}`,
+              boxShadow: `0 8px 24px ${alpha(roleColor, 0.16)}`,
+              flexShrink: 0,
+            }}
+          >
+            {userInitial}
+          </Avatar>
+          {(availableTenants.length > 1 || (userRole === 'owner' && onAddTenant)) && (
+            <Box
+              sx={{
+                position: 'absolute',
+                bottom: -4,
+                right: -4,
+                width: 20,
+                height: 20,
+                borderRadius: '50%',
+                bgcolor: '#FFFFFF',
+                boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+                display: 'grid',
+                placeItems: 'center',
+                color: '#64748B',
+              }}
+            >
+              <SwapHorizRoundedIcon sx={{ fontSize: 14 }} />
+            </Box>
+          )}
+        </Box>
 
         {!collapsed && (
-          <Box sx={{ minWidth: 0, animation: `${fadeIn} 0.3s ease-out` }}>
+          <Box sx={{ minWidth: 0, flex: 1, animation: `${fadeIn} 0.3s ease-out` }}>
             <Typography
               noWrap
               sx={{
                 fontWeight: 1000,
                 letterSpacing: -0.4,
-                lineHeight: 1,
+                lineHeight: 1.1,
                 fontSize: 18,
                 color: '#0F172A',
               }}
             >
-              {title}
+              {currentTenant?.name || title}
             </Typography>
             <Typography noWrap variant="body2" sx={{ color: '#64748B', fontWeight: 700, mt: 0.4 }}>
               {displayName}
@@ -129,6 +205,90 @@ export default function UnifiedSidebar({
           </Box>
         )}
       </Stack>
+
+      <Menu
+        anchorEl={anchorEl}
+        open={openSwitcher}
+        onClose={handleCloseSwitcher}
+        onClick={(e) => e.stopPropagation()}
+        PaperProps={{
+          sx: {
+            mt: 1.5,
+            width: 280,
+            borderRadius: 4,
+            boxShadow: '0 20px 40px rgba(15,23,42,0.12)',
+            border: '1px solid rgba(15,23,42,0.08)',
+            p: 1,
+          },
+        }}
+        transformOrigin={{ horizontal: 'left', vertical: 'top' }}
+        anchorOrigin={{ horizontal: 'left', vertical: 'bottom' }}
+      >
+        <Typography sx={{ px: 2, py: 1, color: '#94A3B8', fontSize: 12, fontWeight: 800 }}>
+          MY SALONS
+        </Typography>
+
+        {availableTenants.map((tenant) => (
+          <MenuItem
+            key={tenant._id}
+            selected={tenant._id === currentTenantId}
+            onClick={() => handleSwitch(tenant._id)}
+            sx={{
+              borderRadius: 3,
+              mb: 0.5,
+              py: 1.5,
+              '&.Mui-selected': {
+                bgcolor: alpha(roleColor, 0.08),
+                color: roleColor,
+                fontWeight: 800,
+                '&:hover': { bgcolor: alpha(roleColor, 0.12) },
+              },
+            }}
+          >
+            <ListItemIcon sx={{ color: tenant._id === currentTenantId ? roleColor : 'inherit' }}>
+              <Avatar
+                sx={{
+                  width: 32,
+                  height: 32,
+                  fontSize: 14,
+                  fontWeight: 800,
+                  bgcolor:
+                    tenant._id === currentTenantId ? alpha(roleColor, 0.1) : alpha('#94A3B8', 0.1),
+                  color: tenant._id === currentTenantId ? roleColor : '#94A3B8',
+                }}
+              >
+                {(tenant.name || 'S').charAt(0)}
+              </Avatar>
+            </ListItemIcon>
+            <ListItemText
+              primary={tenant.name || 'Unnamed Salon'}
+              primaryTypographyProps={{ fontWeight: 700, fontSize: 14 }}
+              secondary={tenant.role === 'owner' ? 'Owner' : 'Staff'}
+              secondaryTypographyProps={{ fontSize: 11, fontWeight: 600 }}
+            />
+          </MenuItem>
+        ))}
+
+        {userRole === 'owner' && onAddTenant && <Divider sx={{ my: 1, opacity: 0.5 }} />}
+        {userRole === 'owner' && onAddTenant && (
+          <MenuItem
+            onClick={handleAdd}
+            sx={{
+              borderRadius: 3,
+              py: 1.5,
+              color: landingColors.purple,
+            }}
+          >
+            <ListItemIcon sx={{ color: landingColors.purple }}>
+              <AddRoundedIcon />
+            </ListItemIcon>
+            <ListItemText
+              primary="Create New Salon"
+              primaryTypographyProps={{ fontWeight: 800, fontSize: 14 }}
+            />
+          </MenuItem>
+        )}
+      </Menu>
 
       <Divider sx={{ mx: collapsed ? 1.5 : 2, borderColor: 'rgba(15,23,42,0.06)' }} />
 

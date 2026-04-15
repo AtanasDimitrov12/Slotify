@@ -60,3 +60,10 @@ export async function getMyTenant(): Promise<Tenant> {
     method: 'GET',
   });
 }
+
+export async function createMySalon(name: string): Promise<Tenant> {
+  return apiFetch<Tenant>('/tenants/my-salons', {
+    method: 'POST',
+    body: JSON.stringify({ name }),
+  });
+}

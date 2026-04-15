@@ -103,6 +103,33 @@ export class AuthService {
     };
   }
 
+  async switchTenant(userId: string, tenantId: string) {
+    const user = await this.usersService.findById(userId);
+    if (!user) {
+      throw new UnauthorizedException('User not found');
+    }
+
+    const membership = await this.membershipsService.findActiveByUserIdAndTenantId(
+      userId,
+      tenantId,
+    );
+    if (!membership) {
+      throw new UnauthorizedException('You are not a member of this tenant');
+    }
+
+    return this.finalizeLogin(user, membership);
+  }
+
+  async getMyTenants(userId: string) {
+    const memberships = await this.membershipsService.findAllByUserId(userId);
+    return memberships.map((m: any) => ({
+      _id: this.getId(m.tenantId),
+      name: m.tenantId?.name ?? undefined,
+      slug: m.tenantId?.slug ?? undefined,
+      role: m.role,
+    }));
+  }
+
   private async finalizeLogin(user: UserDocument, membership: MembershipDocument) {
     const userId = this.getId(user._id);
     const tenantId = this.getId(membership.tenantId);

@@ -163,21 +163,35 @@ export class StaffService {
 
     const email = dto.email.trim().toLowerCase();
 
-    const existingUser = await this.usersService.findByEmail(email);
-    if (existingUser) {
-      throw new BadRequestException('Email already in use');
+    let user = await this.usersService.findByEmail(email);
+    let userId: string;
+
+    if (user) {
+      // User exists, check if they already have a membership in this tenant
+      userId = user._id.toString();
+      const existingMembership = await this.membershipsService.findActiveByUserIdAndTenantId(
+        userId,
+        tenantId,
+      );
+
+      if (existingMembership) {
+        throw new BadRequestException('User is already a staff member in this salon');
+      }
+    } else {
+      // Create new user
+      if (!dto.password) {
+        throw new BadRequestException('Password is required for new accounts');
+      }
+
+      const passwordHash = await bcrypt.hash(dto.password, 10);
+      user = await this.usersService.create({
+        name: dto.name.trim(),
+        email,
+        password: passwordHash,
+        accountType: 'internal',
+      });
+      userId = user._id.toString();
     }
-
-    const passwordHash = await bcrypt.hash(dto.password, 10);
-
-    const user = await this.usersService.create({
-      name: dto.name.trim(),
-      email,
-      password: passwordHash,
-      accountType: 'internal',
-    });
-
-    const userId = user._id.toString();
 
     const membership = await this.membershipsService.create({
       tenantId,
@@ -185,18 +199,25 @@ export class StaffService {
       role: 'staff',
     });
 
+    // Try to reuse profile data if user already exists in other salons
+    const existingProfile = await this.staffProfilesService.findAnyByUserId(userId);
+
     const staffProfile = await this.staffProfilesService.create({
       tenantId,
       userId,
-      displayName: dto.name.trim(),
-      bio: '',
-      experienceYears: 0,
-      expertise: [],
+      displayName: existingProfile?.displayName || dto.name.trim(),
+      bio: existingProfile?.bio || '',
+      experienceYears: existingProfile?.experienceYears || 0,
+      expertise: existingProfile?.expertise || [],
+      avatarUrl: existingProfile?.avatarUrl || '',
       isBookable: true,
       isActive: true,
     });
 
-    const defaultAvailability = [
+    // Try to reuse availability data
+    const existingAvailability = await this.staffAvailabilityService.findAnyByUserId(userId);
+
+    const defaultAvailability = existingAvailability?.weeklyAvailability || [
       {
         dayOfWeek: 1,
         startTime: '09:00',
@@ -258,6 +279,97 @@ export class StaffService {
         name: user.name,
         email: user.email,
       },
+    };
+  }
+
+  async listAvailableStaffForOwner(currentUser: JwtPayload) {
+    const currentTenantId = this.getTenantIdOrThrow(currentUser);
+    const ownerUserId = this.getUserIdOrThrow(currentUser);
+
+    // 1. Get all tenants of this owner
+    const ownerMemberships = await this.membershipsService.findAllByUserId(ownerUserId);
+    const ownerTenantIds = ownerMemberships
+      .filter((m) => m.role === 'owner')
+      .map((m) => m.tenantId?._id?.toString() || m.tenantId?.toString());
+
+    // 2. Get all staff in these tenants
+    const allStaffMemberships = await Promise.all(
+      ownerTenantIds.map((tid) => this.membershipsService.findByTenantAndRole(tid, 'staff')),
+    );
+
+    const flattenedStaff = allStaffMemberships.flat();
+
+    // 3. Get unique userIds of staff, excluding those already in current salon
+    const currentStaffMemberships = flattenedStaff.filter(
+      (m) => m.tenantId.toString() === currentTenantId,
+    );
+    const currentStaffUserIds = new Set(currentStaffMemberships.map((m) => m.userId.toString()));
+
+    const otherStaffMemberships = flattenedStaff.filter(
+      (m) =>
+        m.tenantId.toString() !== currentTenantId && !currentStaffUserIds.has(m.userId.toString()),
+    );
+
+    // Unique by userId
+    const uniqueOtherStaffUserIds = Array.from(
+      new Set(otherStaffMemberships.map((m) => m.userId.toString())),
+    );
+
+    // 4. Return basic info for these staff members
+    const result = await Promise.all(
+      uniqueOtherStaffUserIds.map(async (userId) => {
+        const user = await this.usersService.findById(userId);
+        const anyProfile = await this.staffProfilesService.findAnyByUserId(userId);
+
+        return {
+          userId,
+          name: anyProfile?.displayName || user?.name || '',
+          email: user?.email || '',
+          photoUrl: anyProfile?.avatarUrl || '',
+        };
+      }),
+    );
+
+    return result;
+  }
+
+  async getAnyOtherProfile(currentUser: JwtPayload) {
+    const currentTenantId = this.getTenantIdOrThrow(currentUser);
+    const userId = this.getUserIdOrThrow(currentUser);
+
+    // Find profiles for this user NOT in the current tenant
+    const otherProfile = await this.staffProfilesService.findOtherByUserId(userId, currentTenantId);
+
+    if (!otherProfile) {
+      throw new NotFoundException('No other profile found to sync from');
+    }
+
+    const user = await this.usersService.findById(userId);
+
+    return {
+      displayName: otherProfile.displayName || user?.name || '',
+      bio: otherProfile.bio || '',
+      experienceYears: otherProfile.experienceYears || 0,
+      expertiseTags: otherProfile.expertise || [],
+      avatarUrl: otherProfile.avatarUrl || '',
+    };
+  }
+
+  async getAnyOtherAvailability(currentUser: JwtPayload) {
+    const currentTenantId = this.getTenantIdOrThrow(currentUser);
+    const userId = this.getUserIdOrThrow(currentUser);
+
+    const otherAvailability = await this.staffAvailabilityService.findOtherByUserId(
+      userId,
+      currentTenantId,
+    );
+
+    if (!otherAvailability) {
+      throw new NotFoundException('No other availability found to sync from');
+    }
+
+    return {
+      weeklyAvailability: otherAvailability.weeklyAvailability || [],
     };
   }
 

@@ -1,6 +1,7 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { forwardRef, Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
+import { MembershipsService } from '../memberships/memberships.service';
 import { CreateTenantDto } from './dto/create-tenant.dto';
 import { UpdateTenantDto } from './dto/update-tenant.dto';
 import { Tenant, type TenantDocument } from './tenant.schema';
@@ -25,6 +26,8 @@ export class TenantsService {
   constructor(
     @InjectModel(Tenant.name)
     private readonly tenantModel: Model<TenantDocument>,
+    @Inject(forwardRef(() => MembershipsService))
+    private readonly membershipsService: MembershipsService,
   ) {}
 
   private async generateUniqueSlug(name: string): Promise<string> {
@@ -51,6 +54,18 @@ export class TenantsService {
     });
 
     return created.toObject();
+  }
+
+  async createForOwner(userId: string, dto: CreateTenantDto) {
+    const tenant = await this.create(dto);
+
+    await this.membershipsService.create({
+      tenantId: String(tenant._id),
+      userId,
+      role: 'owner',
+    });
+
+    return tenant;
   }
 
   async findAll() {

@@ -3,7 +3,7 @@ import { apiFetch } from './http';
 export type CreateStaffPayload = {
   name: string;
   email: string;
-  password: string;
+  password?: string;
 };
 
 export type StaffProfileResponse = {
@@ -28,10 +28,35 @@ export type UpdateMyStaffProfilePayload = {
   avatarUrl?: string;
 };
 
+export type AvailableStaffListItem = {
+  userId: string;
+  name: string;
+  email: string;
+  photoUrl?: string;
+};
+
 export async function createStaff(payload: CreateStaffPayload) {
   return apiFetch('/staff/onboard', {
     method: 'POST',
     body: JSON.stringify(payload),
+  });
+}
+
+export async function listAvailableStaffForOwner(): Promise<AvailableStaffListItem[]> {
+  return apiFetch('/staff/available', {
+    method: 'GET',
+  });
+}
+
+export async function getOtherProfileSync(): Promise<Partial<StaffProfileResponse>> {
+  return apiFetch('/staff/me/sync-profile', {
+    method: 'GET',
+  });
+}
+
+export async function getOtherAvailabilitySync(): Promise<any> {
+  return apiFetch('/staff/me/sync-availability', {
+    method: 'GET',
   });
 }
 

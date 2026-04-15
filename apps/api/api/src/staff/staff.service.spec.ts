@@ -50,6 +50,7 @@ describe('StaffService', () => {
           useValue: {
             create: jest.fn(),
             findByTenantAndRole: jest.fn(),
+            findActiveByUserIdAndTenantId: jest.fn(),
           },
         },
         {
@@ -144,9 +145,29 @@ describe('StaffService', () => {
       await expect(service.onboard(staffUser, onboardDto)).rejects.toThrow(UnauthorizedException);
     });
 
-    it('should throw BadRequestException if email is already in use', async () => {
+    it('should throw BadRequestException if user is already a member of this tenant', async () => {
       usersService.findByEmail.mockResolvedValue({ _id: 'exists' } as any);
+      membershipsService.findActiveByUserIdAndTenantId.mockResolvedValue({ _id: 'm1' } as any);
       await expect(service.onboard(mockOwnerUser, onboardDto)).rejects.toThrow(BadRequestException);
+    });
+
+    it('should successfully add an existing user to this tenant if they are not already members', async () => {
+      // Arrange
+      const existingUserId = new Types.ObjectId();
+      usersService.findByEmail.mockResolvedValue({ _id: existingUserId } as any);
+      membershipsService.findActiveByUserIdAndTenantId.mockResolvedValue(null);
+      membershipsService.create.mockResolvedValue({ _id: 'm2', role: 'staff' } as any);
+      staffProfilesService.create.mockResolvedValue({ _id: 'p2' } as any);
+
+      // Act
+      const result = await service.onboard(mockOwnerUser, onboardDto);
+
+      // Assert
+      expect(result.message).toContain('successfully');
+      expect(usersService.create).not.toHaveBeenCalled();
+      expect(membershipsService.create).toHaveBeenCalledWith(
+        expect.objectContaining({ userId: existingUserId.toString(), tenantId: mockTenantId }),
+      );
     });
   });
 

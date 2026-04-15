@@ -1,4 +1,11 @@
-import { getMyStaffProfile, landingColors, updateMyStaffProfile, useToast } from '@barber/shared';
+import {
+  getMyStaffProfile,
+  getOtherProfileSync,
+  landingColors,
+  updateMyStaffProfile,
+  useToast,
+} from '@barber/shared';
+import SyncRoundedIcon from '@mui/icons-material/SyncRounded';
 import {
   Alert,
   alpha,
@@ -31,6 +38,7 @@ export default function StaffProfilePage() {
   const [profile, setProfile] = React.useState<StaffProfile>(emptyProfile);
   const [loading, setLoading] = React.useState(true);
   const [saving, setSaving] = React.useState(false);
+  const [syncing, setSyncing] = React.useState(false);
   const [error, setError] = React.useState('');
 
   const loadProfile = React.useCallback(async () => {
@@ -57,6 +65,26 @@ export default function StaffProfilePage() {
   React.useEffect(() => {
     void loadProfile();
   }, [loadProfile]);
+
+  async function handleSync() {
+    setSyncing(true);
+    try {
+      const other = await getOtherProfileSync();
+      setProfile((p) => ({
+        ...p,
+        name: other.name ?? p.name,
+        bio: other.bio ?? p.bio,
+        experienceYears: other.experienceYears ?? p.experienceYears,
+        expertiseTags: other.expertiseTags ?? p.expertiseTags,
+        photoUrl: other.photoUrl ?? p.photoUrl,
+      }));
+      showSuccess("Profile information loaded from your other salon. Don't forget to save!");
+    } catch (err) {
+      showError("You don't have other profiles to sync from yet.");
+    } finally {
+      setSyncing(false);
+    }
+  }
 
   async function handleSave() {
     setSaving(true);
@@ -113,24 +141,46 @@ export default function StaffProfilePage() {
           </Typography>
         </Box>
 
-        <Button
-          variant="contained"
-          size="large"
-          onClick={handleSave}
-          disabled={saving}
-          sx={{
-            display: { xs: 'none', md: 'inline-flex' },
-            minHeight: 48,
-            px: 4,
-            borderRadius: 2,
-            fontWeight: 900,
-            bgcolor: landingColors.purple,
-            boxShadow: `0 12px 30px ${alpha(landingColors.purple, 0.2)}`,
-            textTransform: 'none',
-          }}
-        >
-          {saving ? 'Saving...' : 'Save Changes'}
-        </Button>
+        <Stack direction="row" spacing={2}>
+          <Button
+            variant="outlined"
+            startIcon={<SyncRoundedIcon />}
+            onClick={handleSync}
+            disabled={syncing || loading}
+            sx={{
+              borderRadius: 2,
+              fontWeight: 800,
+              textTransform: 'none',
+              borderColor: 'rgba(15,23,42,0.12)',
+              color: '#475569',
+              '&:hover': {
+                bgcolor: alpha(landingColors.purple, 0.04),
+                borderColor: landingColors.purple,
+              },
+            }}
+          >
+            {syncing ? 'Syncing...' : 'Sync from other Salon'}
+          </Button>
+
+          <Button
+            variant="contained"
+            size="large"
+            onClick={handleSave}
+            disabled={saving}
+            sx={{
+              display: { xs: 'none', md: 'inline-flex' },
+              minHeight: 48,
+              px: 4,
+              borderRadius: 2,
+              fontWeight: 900,
+              bgcolor: landingColors.purple,
+              boxShadow: `0 12px 30px ${alpha(landingColors.purple, 0.2)}`,
+              textTransform: 'none',
+            }}
+          >
+            {saving ? 'Saving...' : 'Save Changes'}
+          </Button>
+        </Stack>
       </Stack>
 
       {error ? (

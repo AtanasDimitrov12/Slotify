@@ -48,6 +48,19 @@ export async function login(email: string, password: string, tenantId?: string) 
   });
 }
 
+export async function switchTenant(tenantId: string) {
+  return apiFetch<LoginResponse>('/auth/switch', {
+    method: 'POST',
+    body: JSON.stringify({ tenantId }),
+  });
+}
+
+export async function getMyTenants() {
+  return apiFetch<Partial<Tenant>[]>('/auth/my-tenants', {
+    method: 'GET',
+  });
+}
+
 export async function me() {
   return apiFetch<AuthUser>('/auth/me', { method: 'GET' });
 }

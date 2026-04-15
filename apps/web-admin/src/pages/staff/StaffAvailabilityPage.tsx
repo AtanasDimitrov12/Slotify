@@ -1,9 +1,11 @@
 import {
   getMyStaffAvailability,
+  getOtherAvailabilitySync,
   landingColors,
   updateMyStaffAvailability,
   useToast,
 } from '@barber/shared';
+import SyncRoundedIcon from '@mui/icons-material/SyncRounded';
 import { Alert, alpha, Box, Button, CircularProgress, Stack, Typography } from '@mui/material';
 import * as React from 'react';
 import type { DaySchedule } from './components/types';
@@ -97,6 +99,7 @@ export default function StaffAvailabilityPage() {
   const [schedule, setSchedule] = React.useState<DaySchedule[]>(defaultSchedule);
   const [loading, setLoading] = React.useState(true);
   const [saving, setSaving] = React.useState(false);
+  const [syncing, setSyncing] = React.useState(false);
   const [error, setError] = React.useState('');
 
   const loadAvailability = React.useCallback(async () => {
@@ -116,6 +119,21 @@ export default function StaffAvailabilityPage() {
   React.useEffect(() => {
     void loadAvailability();
   }, [loadAvailability]);
+
+  async function handleSync() {
+    setSyncing(true);
+    try {
+      const other = await getOtherAvailabilitySync();
+      if (other.weeklyAvailability) {
+        setSchedule(mapApiToUi(other.weeklyAvailability));
+        showSuccess("Availability loaded from your other salon. Don't forget to save!");
+      }
+    } catch (err) {
+      showError("You don't have other availability settings to sync from yet.");
+    } finally {
+      setSyncing(false);
+    }
+  }
 
   async function handleSave() {
     setSaving(true);
@@ -170,24 +188,46 @@ export default function StaffAvailabilityPage() {
           </Typography>
         </Box>
 
-        <Button
-          variant="contained"
-          size="large"
-          onClick={handleSave}
-          disabled={saving}
-          sx={{
-            minHeight: 52,
-            px: 4,
-            borderRadius: 999,
-            fontWeight: 900,
-            whiteSpace: 'nowrap',
-            alignSelf: { xs: 'flex-start', md: 'center' },
-            bgcolor: landingColors.purple,
-            boxShadow: `0 12px 30px ${alpha(landingColors.purple, 0.24)}`,
-          }}
-        >
-          {saving ? 'Saving...' : 'Save Schedule'}
-        </Button>
+        <Stack direction="row" spacing={2} sx={{ alignSelf: { xs: 'flex-start', md: 'center' } }}>
+          <Button
+            variant="outlined"
+            startIcon={<SyncRoundedIcon />}
+            onClick={handleSync}
+            disabled={syncing || loading}
+            sx={{
+              borderRadius: 999,
+              fontWeight: 800,
+              textTransform: 'none',
+              borderColor: 'rgba(15,23,42,0.12)',
+              color: '#475569',
+              px: 3,
+              '&:hover': {
+                bgcolor: alpha(landingColors.purple, 0.04),
+                borderColor: landingColors.purple,
+              },
+            }}
+          >
+            {syncing ? 'Syncing...' : 'Sync from other Salon'}
+          </Button>
+
+          <Button
+            variant="contained"
+            size="large"
+            onClick={handleSave}
+            disabled={saving}
+            sx={{
+              minHeight: 52,
+              px: 4,
+              borderRadius: 999,
+              fontWeight: 900,
+              whiteSpace: 'nowrap',
+              bgcolor: landingColors.purple,
+              boxShadow: `0 12px 30px ${alpha(landingColors.purple, 0.24)}`,
+            }}
+          >
+            {saving ? 'Saving...' : 'Save Schedule'}
+          </Button>
+        </Stack>
       </Box>
 
       {error ? (
