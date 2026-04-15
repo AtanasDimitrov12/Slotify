@@ -1,15 +1,17 @@
 import { apiFetch } from './http';
 
+export type StaffAvailabilitySlot = {
+  startTime: string;
+  endTime: string;
+  tenantId: string;
+};
+
 export type StaffAvailabilityResponse = {
   id: string;
-  tenantId: string;
   userId: string;
   weeklyAvailability: {
     dayOfWeek: number;
-    startTime: string;
-    endTime: string;
-    breakStartTime?: string;
-    breakEndTime?: string;
+    slots: StaffAvailabilitySlot[];
     isAvailable: boolean;
   }[];
 };
@@ -17,10 +19,7 @@ export type StaffAvailabilityResponse = {
 export type UpdateMyAvailabilityPayload = {
   weeklyAvailability: {
     dayOfWeek: number;
-    startTime: string;
-    endTime: string;
-    breakStartTime?: string;
-    breakEndTime?: string;
+    slots: StaffAvailabilitySlot[];
     isAvailable: boolean;
   }[];
 };

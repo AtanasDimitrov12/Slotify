@@ -215,58 +215,42 @@ export class StaffService {
     });
 
     // Try to reuse availability data
-    const existingAvailability = await this.staffAvailabilityService.findAnyByUserId(userId);
+    const existingAvailability = await this.staffAvailabilityService.findByUser(userId);
 
-    const defaultAvailability = existingAvailability?.weeklyAvailability || [
-      {
-        dayOfWeek: 1,
-        startTime: '09:00',
-        endTime: '17:00',
-        breakStartTime: '12:00',
-        breakEndTime: '13:00',
-      },
-      {
-        dayOfWeek: 2,
-        startTime: '09:00',
-        endTime: '17:00',
-        breakStartTime: '12:00',
-        breakEndTime: '13:00',
-      },
-      {
-        dayOfWeek: 3,
-        startTime: '09:00',
-        endTime: '17:00',
-        breakStartTime: '12:00',
-        breakEndTime: '13:00',
-      },
-      {
-        dayOfWeek: 4,
-        startTime: '09:00',
-        endTime: '17:00',
-        breakStartTime: '12:00',
-        breakEndTime: '13:00',
-      },
-      {
-        dayOfWeek: 5,
-        startTime: '09:00',
-        endTime: '17:00',
-        breakStartTime: '12:00',
-        breakEndTime: '13:00',
-      },
-    ];
+    if (!existingAvailability) {
+      const defaultAvailability = [
+        {
+          dayOfWeek: 1,
+          slots: [{ startTime: '09:00', endTime: '17:00', tenantId }],
+          isAvailable: true,
+        },
+        {
+          dayOfWeek: 2,
+          slots: [{ startTime: '09:00', endTime: '17:00', tenantId }],
+          isAvailable: true,
+        },
+        {
+          dayOfWeek: 3,
+          slots: [{ startTime: '09:00', endTime: '17:00', tenantId }],
+          isAvailable: true,
+        },
+        {
+          dayOfWeek: 4,
+          slots: [{ startTime: '09:00', endTime: '17:00', tenantId }],
+          isAvailable: true,
+        },
+        {
+          dayOfWeek: 5,
+          slots: [{ startTime: '09:00', endTime: '17:00', tenantId }],
+          isAvailable: true,
+        },
+      ];
 
-    await this.staffAvailabilityService.create({
-      tenantId,
-      userId,
-      weeklyAvailability: defaultAvailability.map((item) => ({
-        dayOfWeek: item.dayOfWeek,
-        startTime: item.startTime,
-        endTime: item.endTime,
-        breakStartTime: item.breakStartTime,
-        breakEndTime: item.breakEndTime,
-        isAvailable: true,
-      })),
-    });
+      await this.staffAvailabilityService.create({
+        userId,
+        weeklyAvailability: defaultAvailability,
+      });
+    }
 
     return {
       message: 'Staff member created successfully',
@@ -355,24 +339,6 @@ export class StaffService {
     };
   }
 
-  async getAnyOtherAvailability(currentUser: JwtPayload) {
-    const currentTenantId = this.getTenantIdOrThrow(currentUser);
-    const userId = this.getUserIdOrThrow(currentUser);
-
-    const otherAvailability = await this.staffAvailabilityService.findOtherByUserId(
-      userId,
-      currentTenantId,
-    );
-
-    if (!otherAvailability) {
-      throw new NotFoundException('No other availability found to sync from');
-    }
-
-    return {
-      weeklyAvailability: otherAvailability.weeklyAvailability || [],
-    };
-  }
-
   async listStaff(currentUser: JwtPayload) {
     const tenantId = this.getTenantIdOrThrow(currentUser);
 
@@ -413,18 +379,23 @@ export class StaffService {
   async getMyAvailability(currentUser: JwtPayload) {
     const tenantId = this.getTenantIdOrThrow(currentUser);
     const userId = this.getUserIdOrThrow(currentUser);
-
-    const availability = await this.staffAvailabilityService.findByStaff(tenantId, userId);
+    const availability = await this.staffAvailabilityService.findByUser(userId);
 
     if (!availability) {
       throw new NotFoundException('Staff availability not found');
     }
 
+    // Filter slots by current tenantId
+    const filteredWeeklyAvailability = (availability.weeklyAvailability ?? []).map((day) => ({
+      dayOfWeek: day.dayOfWeek,
+      isAvailable: day.isAvailable,
+      slots: (day.slots ?? []).filter((slot) => slot.tenantId.toString() === tenantId),
+    }));
+
     return {
       id: availability._id.toString(),
-      tenantId: availability.tenantId.toString(),
       userId: availability.userId.toString(),
-      weeklyAvailability: availability.weeklyAvailability ?? [],
+      weeklyAvailability: filteredWeeklyAvailability,
     };
   }
 
@@ -432,21 +403,63 @@ export class StaffService {
     const tenantId = this.getTenantIdOrThrow(currentUser);
     const userId = this.getUserIdOrThrow(currentUser);
 
-    const updated = await this.staffAvailabilityService.upsertByStaff(tenantId, userId, dto);
+    const existing = await this.staffAvailabilityService.findByUser(userId);
 
+    if (!existing) {
+      // If no availability exists, create one with the provided slots
+      const updated = await this.staffAvailabilityService.upsertByUser(
+        userId,
+        dto.weeklyAvailability.map((day) => ({
+          ...day,
+          slots: (day.slots ?? []).map((s) => ({ ...s, tenantId })),
+        })),
+      );
+
+      return {
+        id: updated._id.toString(),
+        userId: updated.userId.toString(),
+        weeklyAvailability: updated.weeklyAvailability ?? [],
+      };
+    }
+
+    // Merge: For each day, keep slots from other tenants and replace slots for current tenant
+    const newWeeklyAvailability = dto.weeklyAvailability.map((newDay) => {
+      const existingDay = existing.weeklyAvailability.find((d) => d.dayOfWeek === newDay.dayOfWeek);
+
+      const otherTenantsSlots = (existingDay?.slots ?? []).filter(
+        (slot) => slot.tenantId.toString() !== tenantId,
+      );
+
+      const currentTenantSlots = (newDay.slots ?? []).map((slot) => ({
+        ...slot,
+        tenantId,
+      }));
+
+      return {
+        dayOfWeek: newDay.dayOfWeek,
+        isAvailable: newDay.isAvailable, // We keep the day's availability status from the DTO
+        slots: [...otherTenantsSlots, ...currentTenantSlots],
+      };
+    });
+
+    const updated = await this.staffAvailabilityService.upsertByUser(userId, newWeeklyAvailability);
+
+    // Return only the current tenant's view
     return {
       id: updated._id.toString(),
-      tenantId: updated.tenantId.toString(),
       userId: updated.userId.toString(),
-      weeklyAvailability: updated.weeklyAvailability ?? [],
+      weeklyAvailability: (updated.weeklyAvailability ?? []).map((day) => ({
+        dayOfWeek: day.dayOfWeek,
+        isAvailable: day.isAvailable,
+        slots: (day.slots ?? []).filter((slot) => slot.tenantId.toString() === tenantId),
+      })),
     };
   }
 
   async getMyTimeOff(currentUser: JwtPayload): Promise<StaffTimeOffResponseItem[]> {
-    const tenantId = this.getTenantIdOrThrow(currentUser);
     const userId = this.getUserIdOrThrow(currentUser);
 
-    const items = await this.staffTimeOffService.findAllByStaff(tenantId, userId);
+    const items = await this.staffTimeOffService.findAllByStaff(userId);
 
     return items.map((item) => {
       return {
@@ -488,10 +501,9 @@ export class StaffService {
   }
 
   async removeMyTimeOff(currentUser: JwtPayload, id: string) {
-    const tenantId = this.getTenantIdOrThrow(currentUser);
     const userId = this.getUserIdOrThrow(currentUser);
 
-    const items = await this.staffTimeOffService.findAllByStaff(tenantId, userId);
+    const items = await this.staffTimeOffService.findAllByStaff(userId);
     const existing = items.find((item) => item._id.toString() === id);
 
     if (!existing) {

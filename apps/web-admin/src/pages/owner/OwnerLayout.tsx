@@ -1,4 +1,10 @@
-import { getMyTenants, landingColors, useAuth, useToast } from '@barber/shared';
+import {
+  type AvailableTenant,
+  getMyTenants,
+  landingColors,
+  useAuth,
+  useToast,
+} from '@barber/shared';
 import ContentCutRoundedIcon from '@mui/icons-material/ContentCutRounded';
 import DashboardRoundedIcon from '@mui/icons-material/DashboardRounded';
 import EventAvailableRoundedIcon from '@mui/icons-material/EventAvailableRounded';
@@ -9,7 +15,7 @@ import { Box, Drawer, IconButton, useMediaQuery, useTheme } from '@mui/material'
 import { alpha } from '@mui/material/styles';
 import * as React from 'react';
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
-import UnifiedSidebar, { type AvailableTenant, type NavItem } from '../../layout/UnifiedSidebar';
+import UnifiedSidebar, { type NavItem } from '../../layout/UnifiedSidebar';
 
 type TenantResponse = {
   _id?: string;

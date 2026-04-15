@@ -34,11 +34,7 @@ export class StaffBlockedSlotController {
 
   @Get('me')
   findMySlots(@CurrentUser() user: JwtPayload, @Query('includeInactive') includeInactive?: string) {
-    return this.blockedSlotService.findAllByStaff(
-      this.getTenantId(user),
-      user.sub,
-      includeInactive === 'true',
-    );
+    return this.blockedSlotService.findAllByStaff(user.sub, includeInactive === 'true');
   }
 
   @Post('me')
@@ -65,14 +61,13 @@ export class StaffBlockedSlotController {
   @Get()
   findAllByStaff(
     @CurrentUser() user: JwtPayload,
-    @Query('tenantId') tenantId: string,
     @Query('userId') userId: string,
     @Query('includeInactive') includeInactive?: string,
   ) {
     if (user.role !== 'owner' && user.sub !== userId) {
       throw new UnauthorizedException('Access denied');
     }
-    return this.blockedSlotService.findAllByStaff(tenantId, userId, includeInactive === 'true');
+    return this.blockedSlotService.findAllByStaff(userId, includeInactive === 'true');
   }
 
   @Patch(':id')

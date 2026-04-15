@@ -690,10 +690,9 @@ export class PublicBookingService {
       staffProfile,
     ] = await Promise.all([
       this.tenantDetailsModel.findOne({ tenantId: String(tenantId), isPublished: true }).lean(),
-      this.staffAvailabilityModel.findOne({ tenantId, userId: new Types.ObjectId(staffId) }).lean(),
+      this.staffAvailabilityModel.findOne({ userId: new Types.ObjectId(staffId) }).lean(),
       this.staffTimeOffModel
         .find({
-          tenantId,
           userId: new Types.ObjectId(staffId),
           status: 'approved',
           startDate: { $lt: dayEnd },
@@ -702,7 +701,6 @@ export class PublicBookingService {
         .lean(),
       this.staffBlockedSlotModel
         .find({
-          tenantId,
           userId: new Types.ObjectId(staffId),
           isActive: true,
           date: dateStr,
@@ -710,7 +708,6 @@ export class PublicBookingService {
         .lean(),
       this.reservationModel
         .find({
-          tenantId,
           staffId: new Types.ObjectId(staffId),
           status: { $in: ['pending', 'confirmed'] },
           startTime: { $lt: dayEnd },
@@ -720,7 +717,6 @@ export class PublicBookingService {
         .lean(),
       this.reservationLockModel
         .find({
-          tenantId,
           staffId: new Types.ObjectId(staffId),
           expiresAt: { $gt: new Date() },
           startTime: { $lt: dayEnd },
@@ -736,7 +732,11 @@ export class PublicBookingService {
         (entry) => entry.dayOfWeek === weekday && entry.isAvailable,
       ) ?? [];
 
-    if (staffDayEntries.length === 0) {
+    const currentTenantSlots = staffDayEntries.flatMap((entry) =>
+      (entry.slots || []).filter((slot) => String(slot.tenantId) === String(tenantId)),
+    );
+
+    if (currentTenantSlots.length === 0) {
       return [];
     }
 
@@ -752,27 +752,10 @@ export class PublicBookingService {
       return [];
     }
 
-    const staffWindows = staffDayEntries.flatMap((entry) => {
-      const windows: TimeRange[] = [];
-      const start = buildDateTimeOnDay(requestedDate, entry.startTime);
-      const end = buildDateTimeOnDay(requestedDate, entry.endTime);
-
-      if (entry.breakStartTime && entry.breakEndTime) {
-        const breakStart = buildDateTimeOnDay(requestedDate, entry.breakStartTime);
-        const breakEnd = buildDateTimeOnDay(requestedDate, entry.breakEndTime);
-
-        if (start < breakStart) {
-          windows.push({ start, end: breakStart });
-        }
-
-        if (breakEnd < end) {
-          windows.push({ start: breakEnd, end });
-        }
-      } else {
-        windows.push({ start, end });
-      }
-
-      return windows;
+    const staffWindows = currentTenantSlots.map((slot) => {
+      const start = buildDateTimeOnDay(requestedDate, slot.startTime);
+      const end = buildDateTimeOnDay(requestedDate, slot.endTime);
+      return { start, end };
     });
 
     const mergedWorkingWindows = this.intersectMany(staffWindows, salonWindows);
@@ -945,14 +928,12 @@ export class PublicBookingService {
 
     const [overlappingReservation, overlappingLock] = await Promise.all([
       this.reservationModel.findOne({
-        tenantId,
         staffId,
         status: { $in: ['pending', 'confirmed'] },
         startTime: { $lt: endTime },
         endTime: { $gt: startTime },
       }),
       this.reservationLockModel.findOne({
-        tenantId,
         staffId,
         expiresAt: { $gt: new Date() },
         startTime: { $lt: endTime },

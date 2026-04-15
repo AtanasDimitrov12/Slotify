@@ -6,6 +6,7 @@ import {
   landingColors,
   premium,
   updateMyStaffService,
+  useAuth,
   useToast,
 } from '@barber/shared';
 import AddRoundedIcon from '@mui/icons-material/AddRounded';
@@ -27,6 +28,7 @@ import ServiceEditorDialog, { type ServicePayload } from './components/ServiceEd
 import type { CatalogServiceOption, StaffService } from './components/types';
 
 export default function StaffServicesPage() {
+  const { user } = useAuth();
   const { showError, showSuccess } = useToast();
   const [open, setOpen] = React.useState(false);
   const [items, setItems] = React.useState<StaffService[]>([]);
@@ -146,7 +148,12 @@ export default function StaffServicesPage() {
             Services & Prices
           </Typography>
           <Typography sx={{ color: '#64748B', fontWeight: 600, fontSize: 18 }}>
-            Select which services you offer and set your personal overrides.
+            Configure the services you offer for the currently selected salon and set your personal
+            overrides.
+          </Typography>
+          <Typography sx={{ color: '#94A3B8', fontWeight: 700, fontSize: 13, mt: 1 }}>
+            Service assignments are tenant-specific, just like availability. Switch salons from the
+            sidebar to manage a different catalog.
           </Typography>
         </Box>
 
@@ -204,8 +211,9 @@ export default function StaffServicesPage() {
                 No services available
               </Typography>
               <Typography sx={{ color: '#64748B', fontWeight: 600, maxWidth: 480 }}>
-                The salon owner must first create the master service catalog before you can assign
-                services to yourself.
+                {user?.tenantId
+                  ? 'The owner of this salon must first create the service catalog before you can assign services to yourself here.'
+                  : 'The salon owner must first create the master service catalog before you can assign services to yourself.'}
               </Typography>
             </Stack>
           </CardContent>
@@ -228,8 +236,8 @@ export default function StaffServicesPage() {
                 No services assigned
               </Typography>
               <Typography sx={{ color: '#64748B', fontWeight: 600, maxWidth: 480 }}>
-                Your salon has catalog services, but you haven't added any to your personal profile
-                yet.
+                This salon has catalog services, but you have not added any to your profile for this
+                tenant yet.
               </Typography>
               <Button
                 variant="outlined"

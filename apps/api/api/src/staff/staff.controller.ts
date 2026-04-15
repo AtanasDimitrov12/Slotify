@@ -103,12 +103,6 @@ export class StaffController {
     return this.staffService.getAnyOtherProfile(currentUser);
   }
 
-  @Get('me/sync-availability')
-  @UseGuards(JwtAuthGuard)
-  getOtherAvailability(@CurrentUser() currentUser: JwtPayload) {
-    return this.staffService.getAnyOtherAvailability(currentUser);
-  }
-
   @Get('available')
   @UseGuards(JwtAuthGuard)
   listAvailable(@CurrentUser() currentUser: JwtPayload) {

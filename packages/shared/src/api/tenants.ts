@@ -26,6 +26,13 @@ export type UpdateTenantPayload = Partial<CreateTenantPayload> & {
   status?: Tenant['status'];
 };
 
+export type AvailableTenant = {
+  _id: string;
+  name?: string;
+  slug?: string;
+  role?: string;
+};
+
 /* -------------------- ADMIN TENANTS -------------------- */
 
 export async function listTenants(): Promise<Tenant[]> {

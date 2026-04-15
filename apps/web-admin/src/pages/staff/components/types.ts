@@ -7,14 +7,17 @@ export type StaffProfile = {
   expertiseTags: string[];
 };
 
+export type AvailabilitySlot = {
+  startTime: string;
+  endTime: string;
+  tenantId: string;
+};
+
 export type DaySchedule = {
   dayOfWeek: number;
   label: string;
   enabled: boolean;
-  start: string;
-  end: string;
-  breakStart?: string;
-  breakEnd?: string;
+  slots: AvailabilitySlot[];
 };
 
 export type TimeOffRequest = {

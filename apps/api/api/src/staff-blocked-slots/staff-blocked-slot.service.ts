@@ -39,9 +39,8 @@ export class StaffBlockedSlotService {
     return this.mapSlot(created.toObject());
   }
 
-  async findAllByStaff(tenantId: string, userId: string, includeInactive = false) {
+  async findAllByStaff(userId: string, includeInactive = false) {
     const query: any = {
-      tenantId: new Types.ObjectId(tenantId),
       userId: new Types.ObjectId(userId),
     };
 
@@ -53,15 +52,12 @@ export class StaffBlockedSlotService {
     return items.map((item) => this.mapSlot(item));
   }
 
-  async findActiveByStaffAndDateRange(tenantId: string, userId: string, start: Date, end: Date) {
-    // We need to fetch slots that might overlap with the given date range.
-    // Since date is stored as a string YYYY-MM-DD, we'll convert the range to strings.
+  async findActiveByStaffAndDateRange(userId: string, start: Date, end: Date) {
     const startStr = start.toISOString().split('T')[0];
     const endStr = end.toISOString().split('T')[0];
 
     const items = await this.blockedSlotModel
       .find({
-        tenantId: new Types.ObjectId(tenantId),
         userId: new Types.ObjectId(userId),
         isActive: true,
         date: { $gte: startStr, $lte: endStr },

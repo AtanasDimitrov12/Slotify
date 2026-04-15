@@ -24,7 +24,6 @@ export { default as BookingDialog } from './components/booking/BookingDialog';
 export * from './components/landing/ChoosePath';
 export * from './components/landing/constants';
 // Components
-export * from './components/landing/constants';
 export * from './components/landing/Features';
 export * from './components/landing/FinalCTA';
 export * from './components/landing/Footer';

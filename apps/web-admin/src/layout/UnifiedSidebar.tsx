@@ -1,4 +1,4 @@
-import { landingColors } from '@barber/shared';
+import { type AvailableTenant, landingColors } from '@barber/shared';
 import type { SvgIconComponent } from '@mui/icons-material';
 import AddRoundedIcon from '@mui/icons-material/AddRounded';
 import ChevronLeftRoundedIcon from '@mui/icons-material/ChevronLeftRounded';
@@ -38,13 +38,6 @@ export type NavItem = {
   label: string;
   to: string;
   icon: SvgIconComponent;
-};
-
-export type AvailableTenant = {
-  _id: string;
-  name?: string;
-  slug?: string;
-  role?: string;
 };
 
 interface UnifiedSidebarProps {

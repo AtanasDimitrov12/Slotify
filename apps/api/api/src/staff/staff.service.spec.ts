@@ -59,6 +59,7 @@ describe('StaffService', () => {
             create: jest.fn(),
             findByTenantAndUser: jest.fn(),
             updateByTenantAndUser: jest.fn(),
+            findAnyByUserId: jest.fn(),
           },
         },
         {
@@ -66,6 +67,7 @@ describe('StaffService', () => {
           useValue: {
             create: jest.fn(),
             findByStaff: jest.fn(),
+            findByUser: jest.fn(),
             upsertByStaff: jest.fn(),
           },
         },

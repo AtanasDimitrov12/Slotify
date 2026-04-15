@@ -51,8 +51,8 @@ export class StaffTimeOffController {
   }
 
   @Get()
-  findAllByStaff(@Query('tenantId') tenantId: string, @Query('userId') userId: string) {
-    return this.staffTimeOffService.findAllByStaff(tenantId, userId);
+  findAllByStaff(@Query('userId') userId: string) {
+    return this.staffTimeOffService.findAllByStaff(userId);
   }
 
   @Patch(':id')

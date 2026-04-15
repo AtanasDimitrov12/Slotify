@@ -143,9 +143,15 @@ describe('PublicBookingService (Production Logic)', () => {
           weeklyAvailability: [
             {
               dayOfWeek: 1,
-              startTime: '09:00',
-              endTime: '17:00',
               isAvailable: true,
+              slots: [
+                {
+                  startTime: '09:00',
+                  endTime: '17:00',
+                  tenantId,
+                  isAvailable: true,
+                },
+              ],
             },
           ],
         }),

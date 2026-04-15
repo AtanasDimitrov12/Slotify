@@ -12,53 +12,41 @@ export class StaffAvailabilityService {
     private readonly availabilityModel: Model<StaffAvailabilityDocument>,
   ) {}
 
-  create(dto: CreateStaffAvailabilityDto) {
+  create(dto: { userId: string; weeklyAvailability: any[] }) {
     return this.availabilityModel.create({
-      tenantId: new Types.ObjectId(dto.tenantId),
       userId: new Types.ObjectId(dto.userId),
       weeklyAvailability: dto.weeklyAvailability,
     });
   }
 
+  findByUser(userId: string) {
+    if (!Types.ObjectId.isValid(userId)) {
+      return null;
+    }
+
+    return this.availabilityModel
+      .findOne({
+        userId: new Types.ObjectId(userId),
+      })
+      .lean();
+  }
+
   findByStaff(tenantId: string, userId: string) {
-    return this.availabilityModel
-      .findOne({
-        tenantId: new Types.ObjectId(tenantId),
-        userId: new Types.ObjectId(userId),
-      })
-      .lean();
+    // Current implementation ignores tenantId because availability is stored per-user
+    // but the slots inside contain tenantId. This method is used by tests and some services.
+    return this.findByUser(userId);
   }
 
-  findAnyByUserId(userId: string) {
-    return this.availabilityModel
-      .findOne({
-        userId: new Types.ObjectId(userId),
-      })
-      .lean();
-  }
-
-  findOtherByUserId(userId: string, currentTenantId: string) {
-    return this.availabilityModel
-      .findOne({
-        userId: new Types.ObjectId(userId),
-        tenantId: { $ne: new Types.ObjectId(currentTenantId) },
-      })
-      .sort({ updatedAt: -1 })
-      .lean();
-  }
-
-  async upsertByStaff(tenantId: string, userId: string, dto: UpdateStaffAvailabilityDto) {
+  async upsertByUser(userId: string, weeklyAvailability: any[]) {
     return this.availabilityModel
       .findOneAndUpdate(
         {
-          tenantId: new Types.ObjectId(tenantId),
           userId: new Types.ObjectId(userId),
         },
         {
           $set: {
-            tenantId: new Types.ObjectId(tenantId),
             userId: new Types.ObjectId(userId),
-            weeklyAvailability: dto.weeklyAvailability,
+            weeklyAvailability,
           },
         },
         { returnDocument: 'after', upsert: true },
