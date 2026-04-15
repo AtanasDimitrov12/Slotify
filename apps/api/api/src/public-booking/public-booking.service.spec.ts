@@ -6,6 +6,7 @@ import { Reservation } from '../reservations/reservation.schema';
 import { ReservationLock } from '../reservations/reservation-lock.schema';
 import { Service } from '../services/service.schema';
 import { StaffAvailability } from '../staff-availability/staff-availability.schema';
+import { StaffBlockedSlot } from '../staff-blocked-slots/staff-blocked-slot.schema';
 import { StaffBookingSettings } from '../staff-booking-settings/staff-booking-settings.schema';
 import { StaffProfile } from '../staff-profiles/staff-profile.schema';
 import { StaffServiceAssignment } from '../staff-service-assignments/staff-service-assignment.schema';
@@ -32,6 +33,7 @@ describe('PublicBookingService (Production Logic)', () => {
     staffProfile: { find: jest.fn(), findOne: jest.fn() },
     staffAvailability: { findOne: jest.fn() },
     staffTimeOff: { find: jest.fn() },
+    staffBlockedSlot: { find: jest.fn() },
     staffServiceAssignment: { find: jest.fn(), findOne: jest.fn() },
     tenantBookingSettings: { findOne: jest.fn() },
     staffBookingSettings: { findOne: jest.fn() },
@@ -65,6 +67,10 @@ describe('PublicBookingService (Production Logic)', () => {
         {
           provide: getModelToken(StaffTimeOff.name),
           useValue: mockModels.staffTimeOff,
+        },
+        {
+          provide: getModelToken(StaffBlockedSlot.name),
+          useValue: mockModels.staffBlockedSlot,
         },
         {
           provide: getModelToken(StaffServiceAssignment.name),
@@ -146,6 +152,7 @@ describe('PublicBookingService (Production Logic)', () => {
       );
 
       mockModels.staffTimeOff.find.mockReturnValue(mockQuery([]));
+      mockModels.staffBlockedSlot.find.mockReturnValue(mockQuery([]));
       mockModels.reservation.find.mockReturnValue(mockQuery([]));
       mockModels.reservationLock.find.mockReturnValue(mockQuery([]));
     });

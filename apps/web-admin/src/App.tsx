@@ -14,6 +14,7 @@ import OwnerServicesPage from './pages/owner/OwnerServicesPage';
 import OwnerSettingsPage from './pages/owner/OwnerSettingsPage';
 import OwnerTeamPage from './pages/owner/OwnerTeamPage';
 import StaffAvailabilityPage from './pages/staff/StaffAvailabilityPage';
+import StaffBlockedSlotsPage from './pages/staff/StaffBlockedSlotsPage';
 import StaffBookingRulesPage from './pages/staff/StaffBookingRulesPage';
 import StaffDashboardPage from './pages/staff/StaffDashboardPage';
 import StaffLayout from './pages/staff/StaffLayout';
@@ -57,6 +58,7 @@ export default function App() {
 
             <Route path="availability" element={<StaffAvailabilityPage />} />
             <Route path="time-off" element={<StaffTimeOffPage />} />
+            <Route path="blocked-slots" element={<StaffBlockedSlotsPage />} />
             <Route path="services" element={<StaffServicesPage />} />
             <Route path="booking-rules" element={<StaffBookingRulesPage />} />
           </Route>

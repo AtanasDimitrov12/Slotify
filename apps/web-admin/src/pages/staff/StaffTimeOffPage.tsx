@@ -8,6 +8,7 @@ import {
 } from '@barber/shared';
 import AddRoundedIcon from '@mui/icons-material/AddRounded';
 import CalendarMonthRoundedIcon from '@mui/icons-material/CalendarMonthRounded';
+import SearchRoundedIcon from '@mui/icons-material/SearchRounded';
 import {
   Alert,
   alpha,
@@ -17,7 +18,9 @@ import {
   CardContent,
   Chip,
   CircularProgress,
+  InputAdornment,
   Stack,
+  TextField,
   Typography,
 } from '@mui/material';
 import * as React from 'react';
@@ -57,6 +60,7 @@ export default function StaffTimeOffPage() {
   const [loading, setLoading] = React.useState(true);
   const [submitting, setSubmitting] = React.useState(false);
   const [error, setError] = React.useState('');
+  const [filterDate, setFilterDate] = React.useState('');
 
   const loadTimeOff = React.useCallback(async () => {
     setLoading(true);
@@ -115,6 +119,14 @@ export default function StaffTimeOffPage() {
     );
   }
 
+  const filteredItems = items.filter((item) => {
+    if (!filterDate) return true;
+    // For time off, we check if the filtered date falls within the range
+    const start = item.startDate; // YYYY-MM-DD
+    const end = item.endDate;
+    return filterDate >= start && filterDate <= end;
+  });
+
   return (
     <Stack spacing={4}>
       <Stack direction="row" justifyContent="space-between" alignItems="flex-start" spacing={2}>
@@ -146,6 +158,45 @@ export default function StaffTimeOffPage() {
         </Button>
       </Stack>
 
+      <Box
+        sx={{
+          display: 'flex',
+          gap: 2,
+          alignItems: 'center',
+          bgcolor: '#FFFFFF',
+          p: 2,
+          borderRadius: 3,
+          border: '1px solid rgba(15,23,42,0.06)',
+          boxShadow: '0 4px 20px rgba(15,23,42,0.02)',
+        }}
+      >
+        <TextField
+          label="Check Availability on Date"
+          type="date"
+          size="small"
+          value={filterDate}
+          onChange={(e) => setFilterDate(e.target.value)}
+          InputLabelProps={{ shrink: true }}
+          sx={{ minWidth: 250 }}
+          InputProps={{
+            startAdornment: (
+              <InputAdornment position="start">
+                <SearchRoundedIcon sx={{ color: '#94A3B8', fontSize: 20 }} />
+              </InputAdornment>
+            ),
+          }}
+        />
+        {filterDate && (
+          <Button
+            size="small"
+            onClick={() => setFilterDate('')}
+            sx={{ fontWeight: 700, color: '#64748B' }}
+          >
+            Clear Filter
+          </Button>
+        )}
+      </Box>
+
       {error ? (
         <Alert severity="error" sx={{ borderRadius: 3 }}>
           {error}
@@ -153,7 +204,7 @@ export default function StaffTimeOffPage() {
       ) : null}
 
       <Stack spacing={2}>
-        {items.length === 0 ? (
+        {filteredItems.length === 0 ? (
           <Card
             sx={{
               borderRadius: `${premium.rLg * 4}px`,
@@ -179,14 +230,18 @@ export default function StaffTimeOffPage() {
               >
                 <CalendarMonthRoundedIcon />
               </Box>
-              <Typography sx={{ fontWeight: 800, color: '#64748B' }}>No requests yet</Typography>
+              <Typography sx={{ fontWeight: 800, color: '#64748B' }}>
+                {filterDate ? 'No leave requests covering this date' : 'No requests yet'}
+              </Typography>
               <Typography sx={{ color: '#94A3B8', mt: 1 }}>
-                Create a request when you need to take some days off.
+                {filterDate
+                  ? 'Try selecting a different date or clear the filter.'
+                  : 'Create a request when you need to take some days off.'}
               </Typography>
             </CardContent>
           </Card>
         ) : (
-          items.map((r) => (
+          filteredItems.map((r) => (
             <Card
               key={r.id}
               sx={{

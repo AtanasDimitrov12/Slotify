@@ -19,6 +19,7 @@ import { EffectiveBookingSettings, TimeRange } from '../public-booking/types/ava
 import { Reservation, type ReservationDocument } from '../reservations/reservation.schema';
 import { Service } from '../services/service.schema';
 import { StaffAvailability } from '../staff-availability/staff-availability.schema';
+import { StaffBlockedSlot } from '../staff-blocked-slots/staff-blocked-slot.schema';
 import { StaffBookingSettings } from '../staff-booking-settings/staff-booking-settings.schema';
 import { StaffProfile } from '../staff-profiles/staff-profile.schema';
 import { StaffServiceAssignment } from '../staff-service-assignments/staff-service-assignment.schema';
@@ -43,6 +44,8 @@ export class StaffAppointmentsService {
     private readonly staffAvailabilityModel: Model<StaffAvailability>,
     @InjectModel(StaffTimeOff.name)
     private readonly staffTimeOffModel: Model<StaffTimeOff>,
+    @InjectModel(StaffBlockedSlot.name)
+    private readonly staffBlockedSlotModel: Model<StaffBlockedSlot>,
     @InjectModel(TenantDetails.name)
     private readonly tenantDetailsModel: Model<TenantDetails>,
     @InjectModel(TenantBookingSettings.name)
@@ -658,32 +661,42 @@ export class StaffAppointmentsService {
     const dayStart = startOfDay(requestedDate);
     const dayEnd = endOfDay(requestedDate);
     const weekday = requestedDate.getDay();
+    const dateStr = requestedDate.toISOString().split('T')[0];
 
-    const [tenantDetails, availability, timeOffEntries, reservations] = await Promise.all([
-      this.tenantDetailsModel.findOne({ tenantId: String(tenantId), isPublished: true }).lean(),
-      this.staffAvailabilityModel.findOne({ tenantId, userId: staffId }).lean(),
-      this.staffTimeOffModel
-        .find({
-          tenantId,
-          userId: staffId,
-          status: 'approved',
-          startDate: { $lt: dayEnd },
-          endDate: { $gt: dayStart },
-        })
-        .lean(),
-      this.reservationModel
-        .find({
-          tenantId,
-          staffId,
-          _id: ignoreReservationId
-            ? { $ne: new Types.ObjectId(ignoreReservationId) }
-            : { $exists: true },
-          status: { $in: ['pending', 'confirmed'] },
-          startTime: { $lt: dayEnd },
-          endTime: { $gt: dayStart },
-        })
-        .lean(),
-    ]);
+    const [tenantDetails, availability, timeOffEntries, blockedSlots, reservations] =
+      await Promise.all([
+        this.tenantDetailsModel.findOne({ tenantId: String(tenantId), isPublished: true }).lean(),
+        this.staffAvailabilityModel.findOne({ tenantId, userId: staffId }).lean(),
+        this.staffTimeOffModel
+          .find({
+            tenantId,
+            userId: staffId,
+            status: 'approved',
+            startDate: { $lt: dayEnd },
+            endDate: { $gt: dayStart },
+          })
+          .lean(),
+        this.staffBlockedSlotModel
+          .find({
+            tenantId,
+            userId: staffId,
+            isActive: true,
+            date: dateStr,
+          })
+          .lean(),
+        this.reservationModel
+          .find({
+            tenantId,
+            staffId,
+            _id: ignoreReservationId
+              ? { $ne: new Types.ObjectId(ignoreReservationId) }
+              : { $exists: true },
+            status: { $in: ['pending', 'confirmed'] },
+            startTime: { $lt: dayEnd },
+            endTime: { $gt: dayStart },
+          })
+          .lean(),
+      ]);
 
     const staffDayEntries =
       availability?.weeklyAvailability?.filter(
@@ -727,6 +740,10 @@ export class StaffAppointmentsService {
       ...timeOffEntries.map((entry) => ({
         start: new Date(entry.startDate),
         end: new Date(entry.endDate),
+      })),
+      ...blockedSlots.map((slot) => ({
+        start: buildDateTimeOnDay(requestedDate, slot.startTime),
+        end: buildDateTimeOnDay(requestedDate, slot.endTime),
       })),
       ...reservations.map((reservation) => ({
         start: addMinutes(new Date(reservation.startTime), -settings.bufferBeforeMinutes),

@@ -47,12 +47,14 @@ export default function AdminLayout() {
   return (
     <Box
       sx={{
-        minHeight: '100vh',
+        minHeight: 'calc(100vh - 74px)',
         bgcolor: '#F8FAFC',
         backgroundImage: `
           radial-gradient(900px 480px at 18% -10%, ${alpha(landingColors.purple, 0.06)} 0%, transparent 60%),
           radial-gradient(900px 520px at 110% 0%, ${alpha(landingColors.blue, 0.05)} 0%, transparent 55%)
         `,
+        display: 'flex',
+        flexDirection: 'column',
       }}
     >
       <Box
@@ -60,6 +62,7 @@ export default function AdminLayout() {
           display: 'grid',
           gridTemplateColumns: isDesktop ? `${currentDrawerWidth}px 1fr` : '1fr',
           transition: 'grid-template-columns 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+          flex: 1,
         }}
       >
         {isDesktop ? (

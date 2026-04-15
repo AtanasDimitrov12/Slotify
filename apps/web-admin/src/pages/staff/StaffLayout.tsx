@@ -1,5 +1,6 @@
 import { landingColors, useAuth } from '@barber/shared';
 import BeachAccessRoundedIcon from '@mui/icons-material/BeachAccessRounded';
+import BlockRoundedIcon from '@mui/icons-material/BlockRounded';
 import DashboardRoundedIcon from '@mui/icons-material/DashboardRounded';
 import LocalOfferRoundedIcon from '@mui/icons-material/LocalOfferRounded';
 import MenuRoundedIcon from '@mui/icons-material/MenuRounded';
@@ -39,6 +40,7 @@ export default function StaffLayout() {
     { label: 'Profile', to: '/staff/profile', icon: PersonRoundedIcon },
     { label: 'Availability', to: '/staff/availability', icon: ScheduleRoundedIcon },
     { label: 'Time off', to: '/staff/time-off', icon: BeachAccessRoundedIcon },
+    { label: 'Blocked slots', to: '/staff/blocked-slots', icon: BlockRoundedIcon },
     { label: 'Services & prices', to: '/staff/services', icon: LocalOfferRoundedIcon },
     { label: 'Booking rules', to: '/staff/booking-rules', icon: TuneRoundedIcon },
   ];
@@ -58,12 +60,14 @@ export default function StaffLayout() {
   return (
     <Box
       sx={{
-        minHeight: '100vh',
+        minHeight: 'calc(100vh - 74px)',
         bgcolor: '#F8FAFC',
         backgroundImage: `
           radial-gradient(900px 480px at 18% -10%, ${alpha(landingColors.purple, 0.06)} 0%, transparent 60%),
           radial-gradient(900px 520px at 110% 0%, ${alpha(landingColors.blue, 0.05)} 0%, transparent 55%)
         `,
+        display: 'flex',
+        flexDirection: 'column',
       }}
     >
       <Box
@@ -71,6 +75,7 @@ export default function StaffLayout() {
           display: 'grid',
           gridTemplateColumns: isDesktop ? `${currentDrawerWidth}px 1fr` : '1fr',
           transition: 'grid-template-columns 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+          flex: 1,
         }}
       >
         {isDesktop ? (

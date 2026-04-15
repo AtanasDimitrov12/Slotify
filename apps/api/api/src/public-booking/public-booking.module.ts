@@ -12,6 +12,10 @@ import {
   StaffAvailabilitySchema,
 } from '../staff-availability/staff-availability.schema';
 import {
+  StaffBlockedSlot,
+  StaffBlockedSlotSchema,
+} from '../staff-blocked-slots/staff-blocked-slot.schema';
+import {
   StaffBookingSettings,
   StaffBookingSettingsSchema,
 } from '../staff-booking-settings/staff-booking-settings.schema';
@@ -35,6 +39,7 @@ import { PublicBookingService } from './public-booking.service';
       { name: StaffProfile.name, schema: StaffProfileSchema },
       { name: StaffAvailability.name, schema: StaffAvailabilitySchema },
       { name: StaffTimeOff.name, schema: StaffTimeOffSchema },
+      { name: StaffBlockedSlot.name, schema: StaffBlockedSlotSchema },
       {
         name: StaffServiceAssignment.name,
         schema: StaffServiceAssignmentSchema,

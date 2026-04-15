@@ -1,8 +1,11 @@
 import {
+  getOwnerStaffBlockedSlots,
   getOwnerStaffTimeOffRequests,
   landingColors,
   type OwnerStaffTimeOffItem,
   reviewOwnerStaffTimeOffRequest,
+  type StaffBlockedSlotItem,
+  useAuth,
   useToast,
 } from '@barber/shared';
 import {
@@ -44,25 +47,31 @@ export default function ManageStaffTimeOffDialog({
   staffName,
   onUpdated,
 }: Props) {
+  const { user } = useAuth();
   const { showError, showSuccess } = useToast();
   const [items, setItems] = React.useState<OwnerStaffTimeOffItem[]>([]);
+  const [blockedSlots, setBlockedSlots] = React.useState<StaffBlockedSlotItem[]>([]);
   const [loading, setLoading] = React.useState(false);
   const [actionLoadingId, setActionLoadingId] = React.useState<string | null>(null);
 
   const load = React.useCallback(async () => {
-    if (!open || !staffId) return;
+    if (!open || !staffId || !user?.tenantId) return;
 
     setLoading(true);
 
     try {
-      const data = await getOwnerStaffTimeOffRequests(staffId);
-      setItems(data);
+      const [requests, slots] = await Promise.all([
+        getOwnerStaffTimeOffRequests(staffId),
+        getOwnerStaffBlockedSlots(user.tenantId, staffId, true),
+      ]);
+      setItems(requests);
+      setBlockedSlots(slots);
     } catch (err) {
       showError(err);
     } finally {
       setLoading(false);
     }
-  }, [open, staffId, showError]);
+  }, [open, staffId, user?.tenantId, showError]);
 
   React.useEffect(() => {
     void load();
@@ -266,6 +275,83 @@ export default function ManageStaffTimeOffDialog({
                                   : alpha('#F43F5E', 0.1),
                               color: item.status === 'approved' ? landingColors.success : '#F43F5E',
                               border: `1px solid ${item.status === 'approved' ? alpha(landingColors.success, 0.2) : alpha('#F43F5E', 0.2)}`,
+                            }}
+                          />
+                        </Box>
+                      </Box>
+                    ))}
+                  </Stack>
+                )}
+              </Box>
+
+              <Box>
+                <Typography
+                  sx={{
+                    fontWeight: 900,
+                    fontSize: 14,
+                    textTransform: 'uppercase',
+                    letterSpacing: 1,
+                    color: '#64748B',
+                    mb: 2,
+                    mt: 4,
+                  }}
+                >
+                  Direct Blocked Slots (Self-Managed)
+                </Typography>
+
+                {blockedSlots.length === 0 ? (
+                  <Typography sx={{ color: '#94A3B8', fontWeight: 600, py: 2 }}>
+                    No blocked slots recorded.
+                  </Typography>
+                ) : (
+                  <Stack spacing={1.5}>
+                    {blockedSlots.map((slot) => (
+                      <Box
+                        key={slot.id}
+                        sx={{
+                          border: '1px solid',
+                          borderColor: 'rgba(15,23,42,0.04)',
+                          borderRadius: 3,
+                          p: 2.5,
+                          bgcolor: alpha('#F8FAFC', 0.5),
+                          opacity: slot.isActive ? 1 : 0.6,
+                        }}
+                      >
+                        <Box
+                          sx={{
+                            display: 'flex',
+                            justifyContent: 'space-between',
+                            alignItems: 'center',
+                            gap: 2,
+                          }}
+                        >
+                          <Box>
+                            <Typography sx={{ fontWeight: 800, fontSize: 15, color: '#475569' }}>
+                              {new Date(slot.date).toLocaleDateString([], {
+                                day: '2-digit',
+                                month: 'short',
+                                year: 'numeric',
+                              })}{' '}
+                              · {slot.startTime} — {slot.endTime}
+                            </Typography>
+                            <Typography sx={{ color: '#94A3B8', fontSize: 13, fontWeight: 600 }}>
+                              {slot.reason || 'No reason provided'}
+                            </Typography>
+                          </Box>
+
+                          <Chip
+                            label={slot.isActive ? 'ACTIVE' : 'INACTIVE'}
+                            size="small"
+                            sx={{
+                              fontWeight: 1000,
+                              fontSize: 10,
+                              letterSpacing: 0.8,
+                              bgcolor: alpha(
+                                slot.isActive ? landingColors.success : '#94A3B8',
+                                0.1,
+                              ),
+                              color: slot.isActive ? landingColors.success : '#64748B',
+                              border: `1px solid ${alpha(slot.isActive ? landingColors.success : '#94A3B8', 0.2)}`,
                             }}
                           />
                         </Box>

@@ -3,10 +3,12 @@ import {
   cancelStaffAppointment,
   createStaffAppointment,
   getCustomerInsights,
+  getMyStaffBlockedSlots,
   landingColors,
   listStaffAppointments,
   listStaffServices,
   type StaffAppointment,
+  type StaffBlockedSlotItem,
   updateStaffAppointment,
   updateStaffAppointmentStatus,
 } from '@barber/shared';
@@ -45,6 +47,7 @@ function formatHumanDate(dateString: string) {
 export default function StaffSchedulePage() {
   const [selectedDate, setSelectedDate] = React.useState<string>(formatDateInput(new Date()));
   const [appointments, setAppointments] = React.useState<StaffAppointment[]>([]);
+  const [blockedSlots, setBlockedSlots] = React.useState<StaffBlockedSlotItem[]>([]);
   const [services, setServices] = React.useState<
     {
       id: string;
@@ -79,10 +82,17 @@ export default function StaffSchedulePage() {
     try {
       setLoading(true);
       setError('');
-      const result = await listStaffAppointments({ date: selectedDate });
-      setAppointments(result);
+      const [appts, slots] = await Promise.all([
+        listStaffAppointments({ date: selectedDate }),
+        getMyStaffBlockedSlots(false),
+      ]);
+
+      const activeSlotsForDay = slots.filter((s) => s.date === selectedDate && s.isActive);
+
+      setAppointments(appts);
+      setBlockedSlots(activeSlotsForDay);
       setSelectedAppointmentId((prev) =>
-        prev && result.some((item) => item.id === prev) ? prev : null,
+        prev && appts.some((item) => item.id === prev) ? prev : null,
       );
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load appointments');
@@ -434,6 +444,7 @@ export default function StaffSchedulePage() {
               <ScheduleAgenda
                 selectedDate={selectedDate}
                 appointments={appointments}
+                blockedSlots={blockedSlots}
                 selectedAppointmentId={selectedAppointmentId}
                 onSelectAppointment={setSelectedAppointmentId}
                 onAddAppointmentAt={handleAddAppointmentAt}
@@ -443,6 +454,7 @@ export default function StaffSchedulePage() {
               <ScheduleCalendar
                 selectedDate={selectedDate}
                 appointments={appointments}
+                blockedSlots={blockedSlots}
                 loading={loading}
                 selectedAppointmentId={selectedAppointmentId}
                 onSelectAppointment={setSelectedAppointmentId}

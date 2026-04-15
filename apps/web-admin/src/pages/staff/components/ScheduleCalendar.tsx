@@ -1,4 +1,4 @@
-import type { StaffAppointment } from '@barber/shared';
+import type { StaffAppointment, StaffBlockedSlotItem } from '@barber/shared';
 import { landingColors } from '@barber/shared';
 import ShieldRoundedIcon from '@mui/icons-material/ShieldRounded';
 import {
@@ -25,7 +25,12 @@ const APPOINTMENT_RIGHT_GAP = 24;
 const APPOINTMENT_GAP = 12;
 
 type LayoutItem = {
-  appointment: StaffAppointment;
+  id: string;
+  type: 'appt' | 'block';
+  startTime: string;
+  endTime?: string; // for blocks we calculate end from startTime/endTime strings
+  durationMin: number;
+  original: any;
   laneIndex: number;
   laneCount: number;
 };
@@ -35,13 +40,17 @@ function parseTimeToMinutes(value: string) {
   return date.getHours() * 60 + date.getMinutes();
 }
 
-function getAppointmentTop(startTime: string) {
-  const startMinutes = parseTimeToMinutes(startTime);
-  const startOfSchedule = CALENDAR_START_HOUR * 60;
-  return ((startMinutes - startOfSchedule) / 60) * SLOT_HEIGHT;
+function parseHHMMToMinutes(value: string) {
+  const [hh, mm] = value.split(':').map(Number);
+  return hh * 60 + mm;
 }
 
-function getAppointmentHeight(durationMin: number) {
+function getTop(minutes: number) {
+  const startOfSchedule = CALENDAR_START_HOUR * 60;
+  return ((minutes - startOfSchedule) / 60) * SLOT_HEIGHT;
+}
+
+function getHeight(durationMin: number) {
   return Math.max((durationMin / 60) * SLOT_HEIGHT, 42);
 }
 
@@ -64,57 +73,53 @@ function isDraggableStatus(status: StaffAppointment['status']) {
   return status === 'pending' || status === 'confirmed';
 }
 
-function getStatusPriority(status: StaffAppointment['status']) {
-  switch (status) {
-    case 'confirmed':
-      return 0;
-    case 'pending':
-      return 1;
-    case 'completed':
-      return 2;
-    case 'no-show':
-      return 3;
-    case 'cancelled':
-      return 4;
-    default:
-      return 5;
-  }
-}
+function buildLayout(
+  appointments: StaffAppointment[],
+  blockedSlots: StaffBlockedSlotItem[],
+): LayoutItem[] {
+  const allItems = [
+    ...appointments.map((a) => ({
+      id: a.id,
+      type: 'appt' as const,
+      startMin: parseTimeToMinutes(a.startTime),
+      endMin: parseTimeToMinutes(a.endTime),
+      durationMin: a.durationMin,
+      original: a,
+    })),
+    ...blockedSlots.map((s) => {
+      const startMin = parseHHMMToMinutes(s.startTime);
+      const endMin = parseHHMMToMinutes(s.endTime);
+      return {
+        id: s.id,
+        type: 'block' as const,
+        startMin,
+        endMin,
+        durationMin: endMin - startMin,
+        original: s,
+      };
+    }),
+  ].sort((a, b) => a.startMin - b.startMin || b.durationMin - a.durationMin);
 
-function buildLayout(appointments: StaffAppointment[]): LayoutItem[] {
-  if (!appointments.length) return [];
+  if (!allItems.length) return [];
 
-  const sorted = [...appointments].sort((a, b) => {
-    const timeDiff = new Date(a.startTime).getTime() - new Date(b.startTime).getTime();
-    if (timeDiff !== 0) return timeDiff;
-
-    const priorityDiff = getStatusPriority(a.status) - getStatusPriority(b.status);
-    if (priorityDiff !== 0) return priorityDiff;
-
-    return a.customerName.localeCompare(b.customerName);
-  });
-
-  const clusters: StaffAppointment[][] = [];
-  let currentCluster: StaffAppointment[] = [];
+  const clusters: (typeof allItems)[] = [];
+  let currentCluster: typeof allItems = [];
   let currentClusterMaxEnd = 0;
 
-  for (const appointment of sorted) {
-    const start = new Date(appointment.startTime).getTime();
-    const end = new Date(appointment.endTime).getTime();
-
+  for (const item of allItems) {
     if (currentCluster.length === 0) {
-      currentCluster = [appointment];
-      currentClusterMaxEnd = end;
+      currentCluster = [item];
+      currentClusterMaxEnd = item.endMin;
       continue;
     }
 
-    if (start < currentClusterMaxEnd) {
-      currentCluster.push(appointment);
-      currentClusterMaxEnd = Math.max(currentClusterMaxEnd, end);
+    if (item.startMin < currentClusterMaxEnd) {
+      currentCluster.push(item);
+      currentClusterMaxEnd = Math.max(currentClusterMaxEnd, item.endMin);
     } else {
       clusters.push(currentCluster);
-      currentCluster = [appointment];
-      currentClusterMaxEnd = end;
+      currentCluster = [item];
+      currentClusterMaxEnd = item.endMin;
     }
   }
 
@@ -125,40 +130,31 @@ function buildLayout(appointments: StaffAppointment[]): LayoutItem[] {
   const layout: LayoutItem[] = [];
 
   for (const cluster of clusters) {
-    const clusterSorted = [...cluster].sort((a, b) => {
-      const priorityDiff = getStatusPriority(a.status) - getStatusPriority(b.status);
-      if (priorityDiff !== 0) return priorityDiff;
-
-      const timeDiff = new Date(a.startTime).getTime() - new Date(b.startTime).getTime();
-      if (timeDiff !== 0) return timeDiff;
-
-      return a.customerName.localeCompare(b.customerName);
-    });
-
     const laneEndTimes: number[] = [];
     const clusterItems: LayoutItem[] = [];
 
-    for (const appointment of clusterSorted) {
-      const start = new Date(appointment.startTime).getTime();
-      const end = new Date(appointment.endTime).getTime();
-
+    for (const item of cluster) {
       let assignedLane = -1;
 
       for (let laneIndex = 0; laneIndex < laneEndTimes.length; laneIndex += 1) {
-        if (start >= laneEndTimes[laneIndex]) {
+        if (item.startMin >= laneEndTimes[laneIndex]) {
           assignedLane = laneIndex;
-          laneEndTimes[laneIndex] = end;
+          laneEndTimes[laneIndex] = item.endMin;
           break;
         }
       }
 
       if (assignedLane === -1) {
         assignedLane = laneEndTimes.length;
-        laneEndTimes.push(end);
+        laneEndTimes.push(item.endMin);
       }
 
       clusterItems.push({
-        appointment,
+        id: item.id,
+        type: item.type,
+        startTime: item.type === 'appt' ? item.original.startTime : item.original.startTime,
+        durationMin: item.durationMin,
+        original: item.original,
         laneIndex: assignedLane,
         laneCount: 0,
       });
@@ -180,6 +176,7 @@ function buildLayout(appointments: StaffAppointment[]): LayoutItem[] {
 export default function ScheduleCalendar({
   selectedDate,
   appointments,
+  blockedSlots = [],
   loading,
   selectedAppointmentId,
   onSelectAppointment,
@@ -188,6 +185,7 @@ export default function ScheduleCalendar({
 }: {
   selectedDate: string;
   appointments: StaffAppointment[];
+  blockedSlots?: StaffBlockedSlotItem[];
   loading: boolean;
   selectedAppointmentId: string | null;
   onSelectAppointment: (id: string) => void;
@@ -230,7 +228,10 @@ export default function ScheduleCalendar({
     return () => observer.disconnect();
   }, []);
 
-  function handleMouseDown(event: React.MouseEvent<HTMLDivElement>, appointment: StaffAppointment) {
+  function handleMouseDown(event: React.MouseEvent<HTMLDivElement>, item: LayoutItem) {
+    if (item.type !== 'appt') return;
+    const appointment = item.original as StaffAppointment;
+
     if (!isDraggableStatus(appointment.status)) {
       onSelectAppointment(appointment.id);
       return;
@@ -263,7 +264,7 @@ export default function ScheduleCalendar({
 
       const containerRect = containerRef.current.getBoundingClientRect();
       const rawTop = event.clientY - containerRect.top - meta.offsetY;
-      const maxTop = HOURS.length * SLOT_HEIGHT - getAppointmentHeight(appointment.durationMin);
+      const maxTop = HOURS.length * SLOT_HEIGHT - getHeight(appointment.durationMin);
       const clampedTop = clamp(rawTop, 0, maxTop);
 
       const minutesFromStart = roundToStep(clampedTop / PIXELS_PER_MINUTE, SNAP_MINUTES);
@@ -292,7 +293,7 @@ export default function ScheduleCalendar({
 
       const containerRect = containerRef.current.getBoundingClientRect();
       const rawTop = event.clientY - containerRect.top - meta.offsetY;
-      const maxTop = HOURS.length * SLOT_HEIGHT - getAppointmentHeight(appointment.durationMin);
+      const maxTop = HOURS.length * SLOT_HEIGHT - getHeight(appointment.durationMin);
       const clampedTop = clamp(rawTop, 0, maxTop);
 
       const minutesFromStart = roundToStep(clampedTop / PIXELS_PER_MINUTE, SNAP_MINUTES);
@@ -313,7 +314,10 @@ export default function ScheduleCalendar({
     };
   }, [appointments, onMoveAppointment, selectedDate]);
 
-  const layoutItems = React.useMemo(() => buildLayout(appointments), [appointments]);
+  const layoutItems = React.useMemo(
+    () => buildLayout(appointments, blockedSlots),
+    [appointments, blockedSlots],
+  );
 
   const totalHorizontalSpace = contentWidth - APPOINTMENT_LEFT - APPOINTMENT_RIGHT_GAP;
 
@@ -421,26 +425,26 @@ export default function ScheduleCalendar({
             </Box>
           )}
 
-          {layoutItems.map(({ appointment, laneIndex, laneCount }) => {
-            const selected = selectedAppointmentId === appointment.id;
-            const isDragging = draggingId === appointment.id;
-            const draggable = isDraggableStatus(appointment.status);
+          {layoutItems.map((item) => {
+            const { laneIndex, laneCount, type, id, durationMin } = item;
+            const isAppt = type === 'appt';
+            const appointment = isAppt ? (item.original as StaffAppointment) : null;
+            const blockedSlot = !isAppt ? (item.original as StaffBlockedSlotItem) : null;
+
+            const selected = isAppt && selectedAppointmentId === id;
+            const isDragging = isAppt && draggingId === id;
+            const draggable = isAppt && isDraggableStatus(appointment!.status);
 
             const top =
-              previewTopById[appointment.id] !== undefined
-                ? previewTopById[appointment.id]
-                : getAppointmentTop(appointment.startTime);
+              isAppt && previewTopById[id] !== undefined
+                ? previewTopById[id]
+                : getTop(
+                    isAppt
+                      ? parseTimeToMinutes(appointment!.startTime)
+                      : parseHHMMToMinutes(blockedSlot!.startTime),
+                  );
 
-            const height = getAppointmentHeight(appointment.durationMin);
-
-            const isCancelled = appointment.status === 'cancelled';
-            const isCompleted = appointment.status === 'completed';
-            const isNoShow = appointment.status === 'no-show';
-            const isUpcoming =
-              appointment.status === 'confirmed' || appointment.status === 'pending';
-
-            const startTime = new Date(appointment.startTime);
-            const isOverdue = isUpcoming && startTime < now;
+            const height = getHeight(durationMin);
 
             const innerGapTotal = Math.max(0, (laneCount - 1) * APPOINTMENT_GAP);
             const laneWidth = Math.max(
@@ -453,6 +457,66 @@ export default function ScheduleCalendar({
             const dense = laneCount > 1 || laneWidth < 280 || height < 64;
             const veryDense = laneWidth < 200 || height < 50;
 
+            if (!isAppt) {
+              return (
+                <Box
+                  key={id}
+                  sx={{
+                    position: 'absolute',
+                    top,
+                    left,
+                    width: laneWidth,
+                    height: height - 2,
+                    boxSizing: 'border-box',
+                    borderRadius: 2.5,
+                    px: dense ? 1.5 : 2,
+                    py: dense ? 1 : 1.5,
+                    border: '1px dashed',
+                    borderColor: 'rgba(15,23,42,0.15)',
+                    bgcolor: alpha('#94A3B8', 0.05),
+                    display: 'flex',
+                    flexDirection: 'column',
+                    justifyContent: 'center',
+                    zIndex: 5,
+                  }}
+                >
+                  <Typography
+                    sx={{
+                      fontWeight: 800,
+                      fontSize: dense ? 11 : 12,
+                      color: '#64748B',
+                      textTransform: 'uppercase',
+                    }}
+                  >
+                    Blocked Slot
+                  </Typography>
+                  {!veryDense && (
+                    <Typography
+                      sx={{
+                        fontWeight: 600,
+                        fontSize: dense ? 12 : 13,
+                        color: '#475569',
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                        whiteSpace: 'nowrap',
+                      }}
+                    >
+                      {blockedSlot!.reason || 'No reason'}
+                    </Typography>
+                  )}
+                </Box>
+              );
+            }
+
+            const isCancelled = appointment!.status === 'cancelled';
+            const isCompleted = appointment!.status === 'completed';
+            const isNoShow = appointment!.status === 'no-show';
+            const isUpcoming =
+              appointment!.status === 'confirmed' || appointment!.status === 'pending';
+
+            const startTimeDate = new Date(appointment!.startTime);
+            const isOverdue = isUpcoming && startTimeDate < now;
+
             const showMetaLine = !veryDense && height >= 58;
             const showDnaIcon = !veryDense && height >= 48;
 
@@ -463,13 +527,13 @@ export default function ScheduleCalendar({
               return '#EF4444';
             };
 
-            const riskColor = getRiskColor(appointment.riskScore);
+            const riskColor = getRiskColor(appointment!.riskScore);
 
             return (
               <Box
-                key={appointment.id}
-                onMouseDown={(event) => handleMouseDown(event, appointment)}
-                onClick={() => onSelectAppointment(appointment.id)}
+                key={id}
+                onMouseDown={(event) => handleMouseDown(event, item)}
+                onClick={() => onSelectAppointment(id)}
                 sx={{
                   position: 'absolute',
                   top,
@@ -550,7 +614,7 @@ export default function ScheduleCalendar({
                       flex: 1,
                     }}
                   >
-                    {appointment.customerName}
+                    {appointment!.customerName}
                   </Typography>
 
                   <Stack
@@ -560,12 +624,12 @@ export default function ScheduleCalendar({
                     onMouseDown={(e) => e.stopPropagation()}
                   >
                     {showDnaIcon && (
-                      <Tooltip title={`Risk: ${appointment.riskScore ?? 'N/A'}%`} arrow>
+                      <Tooltip title={`Risk: ${appointment!.riskScore ?? 'N/A'}%`} arrow>
                         <IconButton
                           size="small"
                           onClick={(e) => {
                             e.stopPropagation();
-                            onViewInsights?.(appointment.id);
+                            onViewInsights?.(id);
                           }}
                           sx={{
                             p: 0.4,
@@ -578,7 +642,7 @@ export default function ScheduleCalendar({
                         </IconButton>
                       </Tooltip>
                     )}
-                    {!veryDense && <AppointmentStatusChip status={appointment.status} />}
+                    {!veryDense && <AppointmentStatusChip status={appointment!.status} />}
                   </Stack>
                 </Stack>
 
@@ -593,7 +657,7 @@ export default function ScheduleCalendar({
                       whiteSpace: 'nowrap',
                     }}
                   >
-                    {formatTimeOnly(appointment.startTime)} · {appointment.serviceName}
+                    {formatTimeOnly(appointment!.startTime)} · {appointment!.serviceName}
                     {isOverdue && ' · Running Late'}
                   </Typography>
                 )}

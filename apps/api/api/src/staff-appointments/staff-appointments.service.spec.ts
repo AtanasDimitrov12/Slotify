@@ -7,6 +7,7 @@ import { CustomerProfile } from '../customer-profiles/customer-profile.schema';
 import { Reservation } from '../reservations/reservation.schema';
 import { Service } from '../services/service.schema';
 import { StaffAvailability } from '../staff-availability/staff-availability.schema';
+import { StaffBlockedSlot } from '../staff-blocked-slots/staff-blocked-slot.schema';
 import { StaffBookingSettings } from '../staff-booking-settings/staff-booking-settings.schema';
 import { StaffProfile } from '../staff-profiles/staff-profile.schema';
 import { StaffServiceAssignment } from '../staff-service-assignments/staff-service-assignment.schema';
@@ -44,6 +45,7 @@ describe('StaffAppointmentsService (Production Life Cycle)', () => {
     tenantDetails: { findOne: jest.fn() },
     staffAvailability: { findOne: jest.fn() },
     staffTimeOff: { find: jest.fn() },
+    staffBlockedSlot: { find: jest.fn() },
     user: { findById: jest.fn() },
     customerProfile: { findOne: jest.fn() },
   };
@@ -72,6 +74,10 @@ describe('StaffAppointmentsService (Production Life Cycle)', () => {
         {
           provide: getModelToken(StaffTimeOff.name),
           useValue: mockModels.staffTimeOff,
+        },
+        {
+          provide: getModelToken(StaffBlockedSlot.name),
+          useValue: mockModels.staffBlockedSlot,
         },
         {
           provide: getModelToken(TenantDetails.name),
@@ -262,6 +268,7 @@ describe('StaffAppointmentsService (Production Life Cycle)', () => {
         }),
       );
       mockModels.staffTimeOff.find.mockReturnValue(mockQuery([]));
+      mockModels.staffBlockedSlot.find.mockReturnValue(mockQuery([]));
       mockModels.reservation.find.mockReturnValue(mockQuery([]));
     });
 
