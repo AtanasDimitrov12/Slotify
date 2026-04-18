@@ -111,4 +111,23 @@ describe('StaffServiceAssignmentsService', () => {
       ).rejects.toThrow(NotFoundException);
     });
   });
+
+  describe('remove', () => {
+    it('should remove and return assignment', async () => {
+      mockAssignmentModel.findByIdAndDelete.mockReturnValue({
+        lean: jest.fn().mockResolvedValue(mockAssignment),
+      });
+
+      const result = await service.remove(mockAssignment._id.toString());
+      expect(result).toEqual(mockAssignment);
+    });
+
+    it('should throw NotFoundException if assignment missing', async () => {
+      mockAssignmentModel.findByIdAndDelete.mockReturnValue({
+        lean: jest.fn().mockResolvedValue(null),
+      });
+
+      await expect(service.remove('id1')).rejects.toThrow(NotFoundException);
+    });
+  });
 });

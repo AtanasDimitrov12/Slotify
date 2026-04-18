@@ -117,4 +117,70 @@ describe('MembershipsService', () => {
       expect(result).toHaveLength(1);
     });
   });
+
+  describe('update', () => {
+    it('should update and return membership', async () => {
+      mockMembershipModel.findByIdAndUpdate.mockReturnValue({
+        lean: jest.fn().mockResolvedValue(mockMembership),
+      });
+
+      const result = await service.update('id1', { role: 'owner' });
+
+      expect(mockMembershipModel.findByIdAndUpdate).toHaveBeenCalledWith(
+        'id1',
+        { $set: { role: 'owner' } },
+        { returnDocument: 'after' },
+      );
+      expect(result).toEqual(mockMembership);
+    });
+  });
+
+  describe('findByUserId', () => {
+    it('should return membership if found', async () => {
+      mockMembershipModel.findOne.mockReturnValue({
+        exec: jest.fn().mockResolvedValue(mockMembership),
+      });
+
+      const result = await service.findByUserId('u1');
+      expect(result).toEqual(mockMembership);
+    });
+  });
+
+  describe('findByTenantAndRole', () => {
+    it('should return memberships for tenant and role', async () => {
+      mockMembershipModel.find.mockReturnValue({
+        lean: jest.fn().mockResolvedValue([mockMembership]),
+      });
+
+      const result = await service.findByTenantAndRole('t1', 'staff');
+      expect(result).toHaveLength(1);
+    });
+  });
+
+  describe('findByUserIdAndTenantId', () => {
+    it('should return membership if found', async () => {
+      mockMembershipModel.findOne.mockReturnValue({
+        exec: jest.fn().mockResolvedValue(mockMembership),
+      });
+
+      const result = await service.findByUserIdAndTenantId('u1', 't1');
+      expect(result).toEqual(mockMembership);
+    });
+  });
+
+  describe('findActiveByUserIdAndTenantId', () => {
+    it('should return active membership if found', async () => {
+      mockMembershipModel.findOne.mockReturnValue({
+        exec: jest.fn().mockResolvedValue(mockMembership),
+      });
+
+      const result = await service.findActiveByUserIdAndTenantId('u1', 't1');
+      expect(result).toEqual(mockMembership);
+      expect(mockMembershipModel.findOne).toHaveBeenCalledWith({
+        userId: 'u1',
+        tenantId: 't1',
+        isActive: true,
+      });
+    });
+  });
 });

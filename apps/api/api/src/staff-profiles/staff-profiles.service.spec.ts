@@ -126,5 +126,37 @@ describe('StaffProfilesService', () => {
         { upsert: true, returnDocument: 'after' },
       );
     });
+
+    it('should throw BadRequestException for invalid userId', async () => {
+      await expect(service.upsert('invalid', {})).rejects.toThrow(BadRequestException);
+    });
+  });
+
+  describe('findAnyByUserId', () => {
+    it('should call findByUserId', async () => {
+      mockStaffProfileModel.findOne.mockReturnValue({
+        lean: jest.fn().mockResolvedValue(mockStaffProfile),
+      });
+      const result = await service.findAnyByUserId(mockStaffProfile.userId.toString());
+      expect(result).toEqual(mockStaffProfile);
+    });
+  });
+
+  describe('update', () => {
+    it('should throw NotFoundException if profile not found', async () => {
+      mockStaffProfileModel.findByIdAndUpdate.mockReturnValue({
+        lean: jest.fn().mockResolvedValue(null),
+      });
+      await expect(service.update('id1', {})).rejects.toThrow(NotFoundException);
+    });
+  });
+
+  describe('remove', () => {
+    it('should throw NotFoundException if profile not found', async () => {
+      mockStaffProfileModel.findByIdAndUpdate.mockReturnValue({
+        lean: jest.fn().mockResolvedValue(null),
+      });
+      await expect(service.remove('id1')).rejects.toThrow(NotFoundException);
+    });
   });
 });
