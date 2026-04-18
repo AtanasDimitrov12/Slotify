@@ -50,14 +50,18 @@ describe('StaffService', () => {
           useValue: {
             create: jest.fn(),
             findByTenantAndRole: jest.fn(),
+            findActiveByUserIdAndTenantId: jest.fn(),
+            findAllByUserId: jest.fn(),
           },
         },
         {
           provide: StaffProfilesService,
           useValue: {
             create: jest.fn(),
-            findByTenantAndUser: jest.fn(),
-            updateByTenantAndUser: jest.fn(),
+            findByUserId: jest.fn(),
+            updateByUserId: jest.fn(),
+            findAnyByUserId: jest.fn(),
+            upsert: jest.fn(),
           },
         },
         {
@@ -65,7 +69,9 @@ describe('StaffService', () => {
           useValue: {
             create: jest.fn(),
             findByStaff: jest.fn(),
+            findByUser: jest.fn(),
             upsertByStaff: jest.fn(),
+            upsertByUser: jest.fn(),
           },
         },
         {
@@ -117,7 +123,7 @@ describe('StaffService', () => {
         _id: 'm1',
         role: 'staff',
       } as any);
-      staffProfilesService.create.mockResolvedValue({ _id: 'p1' } as any);
+      staffProfilesService.upsert.mockResolvedValue({ _id: 'p1' } as any);
 
       // Act
       const result = await service.onboard(mockOwnerUser, onboardDto);
@@ -133,7 +139,7 @@ describe('StaffService', () => {
       expect(membershipsService.create).toHaveBeenCalledWith(
         expect.objectContaining({ role: 'staff', tenantId: mockTenantId }),
       );
-      expect(staffProfilesService.create).toHaveBeenCalled();
+      expect(staffProfilesService.upsert).toHaveBeenCalled();
     });
 
     it('should throw UnauthorizedException if requester is not an owner', async () => {
@@ -144,8 +150,9 @@ describe('StaffService', () => {
       await expect(service.onboard(staffUser, onboardDto)).rejects.toThrow(UnauthorizedException);
     });
 
-    it('should throw BadRequestException if email is already in use', async () => {
+    it('should throw BadRequestException if user is already a member of this tenant', async () => {
       usersService.findByEmail.mockResolvedValue({ _id: 'exists' } as any);
+      membershipsService.findActiveByUserIdAndTenantId.mockResolvedValue({ _id: 'm1' } as any);
       await expect(service.onboard(mockOwnerUser, onboardDto)).rejects.toThrow(BadRequestException);
     });
   });
@@ -167,9 +174,8 @@ describe('StaffService', () => {
         name: 'John',
         email: 'john@doe.com',
       } as any);
-      staffProfilesService.findByTenantAndUser.mockResolvedValue({
+      staffProfilesService.findByUserId.mockResolvedValue({
         _id: new Types.ObjectId(),
-        tenantId: new Types.ObjectId(mockTenantId),
         userId: new Types.ObjectId(userId),
         displayName: 'John the Barber',
         isActive: true,
@@ -183,7 +189,7 @@ describe('StaffService', () => {
     });
 
     it('should throw NotFoundException if profile does not exist', async () => {
-      staffProfilesService.findByTenantAndUser.mockResolvedValue(null);
+      staffProfilesService.findByUserId.mockResolvedValue(null);
       await expect(service.getMyProfile(mockOwnerUser)).rejects.toThrow(NotFoundException);
     });
   });
@@ -196,7 +202,7 @@ describe('StaffService', () => {
 
       // Mock subsequent calls for the one staff found
       usersService.findById.mockResolvedValue({ name: 'Staff 1' } as any);
-      staffProfilesService.findByTenantAndUser.mockResolvedValue({
+      staffProfilesService.findByUserId.mockResolvedValue({
         displayName: 'Profile 1',
       } as any);
 

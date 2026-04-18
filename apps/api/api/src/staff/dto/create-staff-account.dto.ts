@@ -1,5 +1,5 @@
 import { Transform } from 'class-transformer';
-import { IsEmail, IsNotEmpty, IsString, MaxLength, MinLength } from 'class-validator';
+import { IsEmail, IsNotEmpty, IsOptional, IsString, MaxLength, MinLength } from 'class-validator';
 
 export class CreateStaffAccountDto {
   @IsString()
@@ -13,7 +13,7 @@ export class CreateStaffAccountDto {
   email!: string;
 
   @IsString()
-  @IsNotEmpty()
+  @IsOptional()
   @MinLength(6)
-  password!: string;
+  password?: string;
 }

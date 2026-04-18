@@ -260,9 +260,15 @@ describe('StaffAppointmentsService (Production Life Cycle)', () => {
           weeklyAvailability: [
             {
               dayOfWeek: 1,
-              startTime: '09:00',
-              endTime: '18:00',
               isAvailable: true,
+              slots: [
+                {
+                  startTime: '09:00',
+                  endTime: '18:00',
+                  tenantId,
+                  isAvailable: true,
+                },
+              ],
             },
           ],
         }),

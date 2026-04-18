@@ -198,13 +198,13 @@ export class StaffAppointmentsService {
   }
 
   async list(params: {
-    tenantId: string;
+    tenantIds: string[];
     userId: string;
     date?: string;
     startDate?: string;
     endDate?: string;
   }) {
-    const tenantId = new Types.ObjectId(params.tenantId);
+    const tenantObjectIds = params.tenantIds.map((id) => new Types.ObjectId(id));
     const userId = new Types.ObjectId(params.userId);
 
     let queryStart: Date;
@@ -226,7 +226,7 @@ export class StaffAppointmentsService {
 
     const reservations = await this.reservationModel
       .find({
-        tenantId,
+        tenantId: { $in: tenantObjectIds },
         staffId: userId,
         startTime: { $lt: queryEnd },
         endTime: { $gt: queryStart },
@@ -234,15 +234,21 @@ export class StaffAppointmentsService {
       .sort({ startTime: 1 })
       .lean();
 
+    const tenantDetails = await this.tenantDetailsModel
+      .find({ tenantId: { $in: params.tenantIds } })
+      .lean();
+    const tenantDetailsMap = new Map(tenantDetails.map((d) => [d.tenantId, d]));
+
     const result = await Promise.all(
       reservations.map(async (reservation) => {
         const insights = await this.calculateFullRisk(
-          params.tenantId,
+          String(reservation.tenantId),
           reservation.customerPhone,
           String(reservation._id),
         );
         return {
           id: String(reservation._id),
+          tenantId: String(reservation.tenantId),
           startTime: reservation.startTime,
           endTime: reservation.endTime,
           durationMin: reservation.durationMin,
@@ -263,13 +269,13 @@ export class StaffAppointmentsService {
     return result;
   }
 
-  async listBookableServicesForStaff(params: { tenantId: string; userId: string }) {
-    const tenantId = new Types.ObjectId(params.tenantId);
+  async listBookableServicesForStaff(params: { tenantIds: string[]; userId: string }) {
+    const tenantObjectIds = params.tenantIds.map((id) => new Types.ObjectId(id));
     const userId = new Types.ObjectId(params.userId);
 
     const assignments = await this.staffServiceAssignmentModel
       .find({
-        tenantId,
+        tenantId: { $in: tenantObjectIds },
         userId,
         isOffered: true,
       })
@@ -284,7 +290,6 @@ export class StaffAppointmentsService {
     const services = await this.serviceModel
       .find({
         _id: { $in: serviceIds },
-        tenantId,
         isActive: true,
       })
       .lean();
@@ -298,6 +303,7 @@ export class StaffAppointmentsService {
 
         return {
           id: String(assignment._id), // IMPORTANT: bookable id = assignment id
+          tenantId: String(assignment.tenantId),
           serviceId: String(service._id),
           name: service.name,
           durationMin: assignment.customDurationMinutes ?? service.durationMin,
@@ -666,10 +672,9 @@ export class StaffAppointmentsService {
     const [tenantDetails, availability, timeOffEntries, blockedSlots, reservations] =
       await Promise.all([
         this.tenantDetailsModel.findOne({ tenantId: String(tenantId), isPublished: true }).lean(),
-        this.staffAvailabilityModel.findOne({ tenantId, userId: staffId }).lean(),
+        this.staffAvailabilityModel.findOne({ userId: staffId }).lean(),
         this.staffTimeOffModel
           .find({
-            tenantId,
             userId: staffId,
             status: 'approved',
             startDate: { $lt: dayEnd },
@@ -678,7 +683,6 @@ export class StaffAppointmentsService {
           .lean(),
         this.staffBlockedSlotModel
           .find({
-            tenantId,
             userId: staffId,
             isActive: true,
             date: dateStr,
@@ -686,7 +690,6 @@ export class StaffAppointmentsService {
           .lean(),
         this.reservationModel
           .find({
-            tenantId,
             staffId,
             _id: ignoreReservationId
               ? { $ne: new Types.ObjectId(ignoreReservationId) }
@@ -703,8 +706,12 @@ export class StaffAppointmentsService {
         (entry) => entry.dayOfWeek === weekday && entry.isAvailable,
       ) ?? [];
 
-    if (!staffDayEntries.length) {
-      throw new BadRequestException('Staff is not available on this day');
+    const currentTenantSlots = staffDayEntries.flatMap((entry) =>
+      (entry.slots || []).filter((slot) => String(slot.tenantId) === String(tenantId)),
+    );
+
+    if (!currentTenantSlots.length) {
+      throw new BadRequestException('Staff is not available on this day in this salon');
     }
 
     const salonWindows = this.extractTenantOpeningWindowsForDate(
@@ -716,22 +723,10 @@ export class StaffAppointmentsService {
       throw new BadRequestException('Salon is closed on this day');
     }
 
-    const staffWindows = staffDayEntries.flatMap((entry) => {
-      const windows: TimeRange[] = [];
-      const start = buildDateTimeOnDay(requestedDate, entry.startTime);
-      const end = buildDateTimeOnDay(requestedDate, entry.endTime);
-
-      if (entry.breakStartTime && entry.breakEndTime) {
-        const breakStart = buildDateTimeOnDay(requestedDate, entry.breakStartTime);
-        const breakEnd = buildDateTimeOnDay(requestedDate, entry.breakEndTime);
-
-        if (start < breakStart) windows.push({ start, end: breakStart });
-        if (breakEnd < end) windows.push({ start: breakEnd, end });
-      } else {
-        windows.push({ start, end });
-      }
-
-      return windows;
+    const staffWindows = currentTenantSlots.map((slot) => {
+      const start = buildDateTimeOnDay(requestedDate, slot.startTime);
+      const end = buildDateTimeOnDay(requestedDate, slot.endTime);
+      return { start, end };
     });
 
     const workingWindows = this.intersectMany(staffWindows, salonWindows);

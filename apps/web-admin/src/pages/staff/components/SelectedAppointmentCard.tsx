@@ -1,6 +1,6 @@
-import type { StaffAppointment } from '@barber/shared';
-import { landingColors } from '@barber/shared';
+import { type AvailableTenant, landingColors, type StaffAppointment } from '@barber/shared';
 import AccessTimeRoundedIcon from '@mui/icons-material/AccessTimeRounded';
+import BusinessRoundedIcon from '@mui/icons-material/BusinessRounded';
 import ContentCutRoundedIcon from '@mui/icons-material/ContentCutRounded';
 import NotesRoundedIcon from '@mui/icons-material/NotesRounded';
 import PersonRoundedIcon from '@mui/icons-material/PersonRounded';
@@ -31,6 +31,7 @@ export default function SelectedAppointmentCard({
   onMarkDone,
   onMarkNoShow,
   onViewInsights,
+  salons,
 }: {
   selectedAppointment: StaffAppointment | null;
   onEdit: () => void;
@@ -38,6 +39,7 @@ export default function SelectedAppointmentCard({
   onMarkDone: () => void;
   onMarkNoShow: () => void;
   onViewInsights?: () => void;
+  salons: AvailableTenant[];
 }) {
   if (!selectedAppointment) {
     return (
@@ -69,6 +71,8 @@ export default function SelectedAppointmentCard({
   const isOverdue =
     (status === 'pending' || status === 'confirmed') &&
     new Date(selectedAppointment.startTime) < new Date();
+
+  const salon = salons.find((s) => s._id === selectedAppointment.tenantId);
 
   return (
     <Card
@@ -198,6 +202,17 @@ export default function SelectedAppointmentCard({
                   {selectedAppointment.serviceName}
                 </Typography>
               </Stack>
+
+              {salon && (
+                <Stack direction="row" spacing={2} alignItems="center">
+                  <Box sx={{ color: '#94A3B8', display: 'flex' }}>
+                    <BusinessRoundedIcon sx={{ fontSize: 18 }} />
+                  </Box>
+                  <Typography sx={{ fontWeight: 700, fontSize: 14, color: landingColors.purple }}>
+                    {salon.name}
+                  </Typography>
+                </Stack>
+              )}
 
               {selectedAppointment.notes ? (
                 <Box

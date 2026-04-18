@@ -1,8 +1,11 @@
-import { landingColors, useToast } from '@barber/shared';
+import type { AvailableStaffListItem } from '@barber/shared';
+import { landingColors, listAvailableStaffForOwner, useToast } from '@barber/shared';
 import {
+  Avatar,
   alpha,
   Box,
   Button,
+  Chip,
   Dialog,
   DialogActions,
   DialogContent,
@@ -19,7 +22,7 @@ import * as React from 'react';
 export type AddStaffPayload = {
   name: string;
   email: string;
-  password: string;
+  password?: string;
 };
 
 type Props = {
@@ -37,11 +40,14 @@ export default function AddStaffDialog({ open, onClose, onCreate }: Props) {
   const [email, setEmail] = React.useState('');
   const [password, setPassword] = React.useState('');
   const [submitting, setSubmitting] = React.useState(false);
+  const [availableStaff, setAvailableStaff] = React.useState<AvailableStaffListItem[]>([]);
+  const [isSelectedExisting, setIsSelectedExisting] = React.useState(false);
 
   const resetForm = React.useCallback(() => {
     setName('');
     setEmail('');
     setPassword('');
+    setIsSelectedExisting(false);
   }, []);
 
   const handleClose = React.useCallback(() => {
@@ -52,25 +58,28 @@ export default function AddStaffDialog({ open, onClose, onCreate }: Props) {
   const canSubmit =
     name.trim().length > 1 &&
     email.trim().includes('@') &&
-    password.trim().length >= 6 &&
+    (isSelectedExisting || password.trim().length >= 6) &&
     !submitting;
 
   async function handleCreate() {
     const payload: AddStaffPayload = {
       name: name.trim(),
       email: email.trim().toLowerCase(),
-      password: password.trim(),
     };
+
+    if (!isSelectedExisting) {
+      payload.password = password.trim();
+    }
 
     setSubmitting(true);
 
     try {
       await onCreate(payload);
       resetForm();
-      showSuccess('Staff member created successfully.');
+      showSuccess('Staff member added successfully.');
       onClose();
     } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : 'Failed to create staff member.';
+      const message = err instanceof Error ? err.message : 'Failed to add staff member.';
       showError(message);
     } finally {
       setSubmitting(false);
@@ -78,10 +87,19 @@ export default function AddStaffDialog({ open, onClose, onCreate }: Props) {
   }
 
   React.useEffect(() => {
-    if (!open) {
+    if (open) {
+      void listAvailableStaffForOwner().then(setAvailableStaff).catch(console.error);
+    } else {
       resetForm();
     }
   }, [open, resetForm]);
+
+  const handleSelectExisting = (staff: AvailableStaffListItem) => {
+    setName(staff.name);
+    setEmail(staff.email);
+    setPassword('');
+    setIsSelectedExisting(true);
+  };
 
   return (
     <Dialog
@@ -111,15 +129,59 @@ export default function AddStaffDialog({ open, onClose, onCreate }: Props) {
 
       <DialogContent sx={{ px: 4, pb: 4 }}>
         <Stack spacing={3}>
+          {availableStaff.length > 0 && (
+            <Box>
+              <Typography
+                sx={{
+                  fontWeight: 800,
+                  fontSize: 13,
+                  color: '#64748B',
+                  mb: 1.5,
+                  textTransform: 'uppercase',
+                  letterSpacing: 0.5,
+                }}
+              >
+                Available from your other salons
+              </Typography>
+              <Stack direction="row" spacing={1} sx={{ flexWrap: 'wrap', gap: 1 }}>
+                {availableStaff.map((staff) => (
+                  <Chip
+                    key={staff.userId}
+                    avatar={<Avatar src={staff.photoUrl}>{staff.name.charAt(0)}</Avatar>}
+                    label={staff.name}
+                    onClick={() => handleSelectExisting(staff)}
+                    sx={{
+                      fontWeight: 700,
+                      bgcolor:
+                        email === staff.email ? alpha(landingColors.purple, 0.1) : 'transparent',
+                      borderColor:
+                        email === staff.email ? landingColors.purple : 'rgba(15,23,42,0.1)',
+                      borderWidth: 1,
+                      borderStyle: 'solid',
+                      '&:hover': {
+                        bgcolor: alpha(landingColors.purple, 0.05),
+                      },
+                    }}
+                  />
+                ))}
+              </Stack>
+            </Box>
+          )}
+
           <Typography sx={{ color: '#64748B', fontWeight: 600, fontSize: 15 }}>
-            Create a new administrative account for your staff member.
+            {isSelectedExisting
+              ? 'Re-assigning existing staff member to this salon. Their profile and settings will be reused.'
+              : 'Create a new administrative account for your staff member.'}
           </Typography>
 
           <Stack spacing={2.5}>
             <TextField
               label="Full Name"
               value={name}
-              onChange={(e) => setName(e.target.value)}
+              onChange={(e) => {
+                setName(e.target.value);
+                setIsSelectedExisting(false);
+              }}
               autoFocus
               disabled={submitting}
               fullWidth
@@ -130,22 +192,27 @@ export default function AddStaffDialog({ open, onClose, onCreate }: Props) {
               label="Email Address"
               type="email"
               value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              onChange={(e) => {
+                setEmail(e.target.value);
+                setIsSelectedExisting(false);
+              }}
               disabled={submitting}
               fullWidth
               required
             />
 
-            <TextField
-              label="Account Password"
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              helperText="Minimum 6 characters required."
-              disabled={submitting}
-              fullWidth
-              required
-            />
+            {!isSelectedExisting && (
+              <TextField
+                label="Account Password"
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                helperText="Minimum 6 characters required."
+                disabled={submitting}
+                fullWidth
+                required
+              />
+            )}
 
             <Box
               sx={{
@@ -156,8 +223,8 @@ export default function AddStaffDialog({ open, onClose, onCreate }: Props) {
               }}
             >
               <Typography sx={{ color: landingColors.purple, fontWeight: 700, fontSize: 14 }}>
-                The new member will be created with the <b>staff</b> role and can immediately setup
-                their profile.
+                The member will have the <b>staff</b> role and can immediately manage their schedule
+                for this salon.
               </Typography>
             </Box>
           </Stack>
@@ -198,7 +265,7 @@ export default function AddStaffDialog({ open, onClose, onCreate }: Props) {
             },
           }}
         >
-          {submitting ? 'Creating...' : 'Create Account'}
+          {submitting ? 'Processing...' : isSelectedExisting ? 'Add to Team' : 'Create Account'}
         </Button>
       </DialogActions>
     </Dialog>

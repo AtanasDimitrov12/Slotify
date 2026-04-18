@@ -145,47 +145,6 @@ export default function OwnerOverviewPage() {
           </Stack>
         </CardContent>
       </Card>
-
-      <Grid container spacing={3}>
-        <Grid item xs={12} md={6}>
-          <Card
-            sx={{
-              borderRadius: `${premium.rLg * 4}px`,
-              border: '1px solid',
-              borderColor: 'rgba(15,23,42,0.06)',
-              height: '100%',
-            }}
-          >
-            <CardContent sx={{ p: 4 }}>
-              <Typography sx={{ fontWeight: 1000, fontSize: 20, mb: 2 }}>
-                Upcoming Appointments
-              </Typography>
-              <Typography sx={{ color: '#64748B', fontWeight: 600 }}>
-                Feature coming soon: Live view of your next 5 bookings.
-              </Typography>
-            </CardContent>
-          </Card>
-        </Grid>
-        <Grid item xs={12} md={6}>
-          <Card
-            sx={{
-              borderRadius: `${premium.rLg * 4}px`,
-              border: '1px solid',
-              borderColor: 'rgba(15,23,42,0.06)',
-              height: '100%',
-            }}
-          >
-            <CardContent sx={{ p: 4 }}>
-              <Typography sx={{ fontWeight: 1000, fontSize: 20, mb: 2 }}>
-                Staff Performance
-              </Typography>
-              <Typography sx={{ color: '#64748B', fontWeight: 600 }}>
-                Feature coming soon: Booking distribution across your team.
-              </Typography>
-            </CardContent>
-          </Card>
-        </Grid>
-      </Grid>
     </Stack>
   );
 }

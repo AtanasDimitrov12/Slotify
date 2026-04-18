@@ -3,6 +3,7 @@ import { getModelToken } from '@nestjs/mongoose';
 import { Test, type TestingModule } from '@nestjs/testing';
 import type { Model } from 'mongoose';
 import { BookingSettingsService } from '../booking-settings/booking-settings.service';
+import { MembershipsService } from '../memberships/memberships.service';
 import { Tenant } from './tenant.schema';
 import { TenantsService } from './tenants.service';
 
@@ -41,6 +42,10 @@ describe('TenantsService', () => {
     getOrCreateByTenantId: jest.fn(),
   };
 
+  const mockMembershipsService = {
+    create: jest.fn(),
+  };
+
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
@@ -52,6 +57,10 @@ describe('TenantsService', () => {
         {
           provide: BookingSettingsService,
           useValue: mockBookingSettingsService,
+        },
+        {
+          provide: MembershipsService,
+          useValue: mockMembershipsService,
         },
       ],
     }).compile();

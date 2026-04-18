@@ -15,6 +15,7 @@ export type GeneralSettingsResponse = {
   instagram: string;
   facebook: string;
   tiktok: string;
+  notes: string;
   openingHours: Record<string, { start: string; end: string }[]>;
 };
 
@@ -33,6 +34,7 @@ export type SaveGeneralSettingsPayload = {
   instagram: string;
   facebook: string;
   tiktok: string;
+  notes: string;
 };
 
 export type SaveOpeningHoursPayload = {
@@ -68,6 +70,7 @@ export async function saveGeneralSettings(payload: SaveGeneralSettingsPayload) {
       instagram: payload.instagram,
       facebook: payload.facebook,
       tiktok: payload.tiktok,
+      notes: payload.notes,
     }),
   });
 }

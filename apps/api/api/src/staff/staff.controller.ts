@@ -97,6 +97,12 @@ export class StaffController {
     return this.staffService.removeMyService(currentUser, id);
   }
 
+  @Get('available')
+  @UseGuards(JwtAuthGuard)
+  listAvailable(@CurrentUser() currentUser: JwtPayload) {
+    return this.staffService.listAvailableStaffForOwner(currentUser);
+  }
+
   @Post('onboard')
   @UseGuards(JwtAuthGuard)
   onboard(@CurrentUser() currentUser: JwtPayload, @Body() dto: CreateStaffAccountDto) {

@@ -26,6 +26,14 @@ export class TenantsController {
     return this.tenantsService.create(dto);
   }
 
+  @Post('my-salons')
+  createMySalon(@CurrentUser() user: JwtPayload, @Body() dto: CreateTenantDto) {
+    if (user.role !== 'owner' && user.accountType !== 'internal') {
+      throw new ForbiddenException('Only owners can create additional salons');
+    }
+    return this.tenantsService.createForOwner(user.sub, dto);
+  }
+
   @Get()
   findAll() {
     return this.tenantsService.findAll();

@@ -12,35 +12,41 @@ export class StaffAvailabilityService {
     private readonly availabilityModel: Model<StaffAvailabilityDocument>,
   ) {}
 
-  create(dto: CreateStaffAvailabilityDto) {
+  create(dto: { userId: string; weeklyAvailability: any[] }) {
     return this.availabilityModel.create({
-      tenantId: new Types.ObjectId(dto.tenantId),
       userId: new Types.ObjectId(dto.userId),
       weeklyAvailability: dto.weeklyAvailability,
     });
   }
 
-  findByStaff(tenantId: string, userId: string) {
+  findByUser(userId: string) {
+    if (!Types.ObjectId.isValid(userId)) {
+      return null;
+    }
+
     return this.availabilityModel
       .findOne({
-        tenantId: new Types.ObjectId(tenantId),
         userId: new Types.ObjectId(userId),
       })
       .lean();
   }
 
-  async upsertByStaff(tenantId: string, userId: string, dto: UpdateStaffAvailabilityDto) {
+  findByStaff(tenantId: string, userId: string) {
+    // Current implementation ignores tenantId because availability is stored per-user
+    // but the slots inside contain tenantId. This method is used by tests and some services.
+    return this.findByUser(userId);
+  }
+
+  async upsertByUser(userId: string, weeklyAvailability: any[]) {
     return this.availabilityModel
       .findOneAndUpdate(
         {
-          tenantId: new Types.ObjectId(tenantId),
           userId: new Types.ObjectId(userId),
         },
         {
           $set: {
-            tenantId: new Types.ObjectId(tenantId),
             userId: new Types.ObjectId(userId),
-            weeklyAvailability: dto.weeklyAvailability,
+            weeklyAvailability,
           },
         },
         { returnDocument: 'after', upsert: true },

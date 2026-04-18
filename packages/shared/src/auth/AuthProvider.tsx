@@ -11,6 +11,7 @@ type AuthState = {
   user: AuthApi.AuthUser | null;
   isLoading: boolean;
   login: (email: string, password: string, tenantId?: string) => Promise<LoginResult>;
+  switchTenant: (tenantId: string) => Promise<AuthApi.AuthUser>;
   registerCustomer: (payload: AuthApi.RegisterCustomerPayload) => Promise<AuthApi.AuthUser>;
   logout: () => void;
 };
@@ -78,6 +79,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setUser(res.account);
 
         return { kind: 'loggedIn', account: res.account };
+      },
+      switchTenant: async (tenantId) => {
+        const res = await AuthApi.switchTenant(tenantId);
+
+        if (!res?.accessToken || !res?.account) {
+          throw new Error('Switch failed: Invalid response from server.');
+        }
+
+        localStorage.setItem('accessToken', res.accessToken);
+        localStorage.setItem('account', JSON.stringify(res.account));
+        setUser(res.account);
+
+        return res.account;
       },
       registerCustomer: async (payload) => {
         const res = await AuthApi.registerCustomer(payload);

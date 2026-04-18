@@ -1,4 +1,10 @@
-import { landingColors, useAuth } from '@barber/shared';
+import {
+  type AvailableTenant,
+  getMyTenants,
+  landingColors,
+  useAuth,
+  useToast,
+} from '@barber/shared';
 import ContentCutRoundedIcon from '@mui/icons-material/ContentCutRounded';
 import DashboardRoundedIcon from '@mui/icons-material/DashboardRounded';
 import EventAvailableRoundedIcon from '@mui/icons-material/EventAvailableRounded';
@@ -11,8 +17,15 @@ import * as React from 'react';
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 import UnifiedSidebar, { type NavItem } from '../../layout/UnifiedSidebar';
 
+type TenantResponse = {
+  _id?: string;
+  name?: string;
+  slug?: string;
+};
+
 export default function OwnerLayout() {
-  const { user } = useAuth();
+  const { user, switchTenant } = useAuth();
+  const { showSuccess, showError } = useToast();
   const theme = useTheme();
   const isDesktop = useMediaQuery(theme.breakpoints.up('md'));
   const [open, setOpen] = React.useState(false);
@@ -21,8 +34,42 @@ export default function OwnerLayout() {
     return saved === 'true';
   });
 
+  const [availableTenants, setAvailableTenants] = React.useState<AvailableTenant[]>([]);
+
   const navigate = useNavigate();
   const location = useLocation();
+
+  React.useEffect(() => {
+    getMyTenants()
+      .then((tenants: TenantResponse[]) => {
+        const mappedTenants: AvailableTenant[] = tenants
+          .filter(
+            (tenant): tenant is Required<Pick<TenantResponse, '_id' | 'name'>> & TenantResponse => {
+              return typeof tenant._id === 'string' && typeof tenant.name === 'string';
+            },
+          )
+          .map((tenant) => ({
+            _id: tenant._id,
+            name: tenant.name,
+            slug: tenant.slug,
+          }));
+
+        setAvailableTenants(mappedTenants);
+      })
+      .catch((err) => {
+        console.error('Failed to fetch tenants', err);
+      });
+  }, []);
+
+  const handleSwitchTenant = async (tenantId: string) => {
+    try {
+      await switchTenant(tenantId);
+      showSuccess('Switched salon successfully');
+      window.location.reload();
+    } catch (err) {
+      showError('Failed to switch salon');
+    }
+  };
 
   const handleToggleCollapse = () => {
     setCollapsed((prev) => {
@@ -96,6 +143,10 @@ export default function OwnerLayout() {
               title="Salon Console"
               userName={user?.name}
               userEmail={user?.email}
+              availableTenants={availableTenants}
+              currentTenantId={user?.tenantId}
+              onSwitchTenant={handleSwitchTenant}
+              onAddTenant={() => navigate('/owner/settings')}
             />
           </Box>
         ) : (
@@ -148,6 +199,10 @@ export default function OwnerLayout() {
                 title="Salon Console"
                 userName={user?.name}
                 userEmail={user?.email}
+                availableTenants={availableTenants}
+                currentTenantId={user?.tenantId}
+                onSwitchTenant={handleSwitchTenant}
+                onAddTenant={() => navigate('/owner/settings')}
               />
             </Drawer>
           </>

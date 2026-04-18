@@ -61,4 +61,8 @@ export class UpdateBusinessGeneralDto {
   @IsOptional()
   @IsString()
   tiktok?: string;
+
+  @IsOptional()
+  @IsString()
+  notes?: string;
 }

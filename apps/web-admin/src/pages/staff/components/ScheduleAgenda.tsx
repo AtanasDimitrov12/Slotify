@@ -1,4 +1,4 @@
-import type { StaffAppointment, StaffBlockedSlotItem } from '@barber/shared';
+import type { AvailableTenant, StaffAppointment, StaffBlockedSlotItem } from '@barber/shared';
 import AddRoundedIcon from '@mui/icons-material/AddRounded';
 import ShieldRoundedIcon from '@mui/icons-material/ShieldRounded';
 import { alpha, Box, IconButton, Stack, Tooltip, Typography } from '@mui/material';
@@ -239,15 +239,18 @@ function AppointmentItem({
   selected,
   onSelect,
   onViewInsights,
+  salons,
 }: {
   appointment: StaffAppointment;
   selected: boolean;
   onSelect: () => void;
   onViewInsights?: () => void;
+  salons: AvailableTenant[];
 }) {
   const riskColor = getRiskColor(appointment.riskScore);
   const isCancelled = appointment.status === 'cancelled';
   const end = new Date(appointment.endTime);
+  const salon = salons.find((s) => s._id === appointment.tenantId);
 
   return (
     <Box
@@ -304,19 +307,34 @@ function AppointmentItem({
             >
               {appointment.customerName}
             </Typography>
-            <Typography
-              sx={{
-                color: profileColors.textSoft,
-                fontWeight: 600,
-                fontSize: 12.5,
-                mt: 0.25,
-                overflow: 'hidden',
-                textOverflow: 'ellipsis',
-                whiteSpace: 'nowrap',
-              }}
-            >
-              {appointment.serviceName}
-            </Typography>
+            <Stack direction="row" spacing={0.5} alignItems="center">
+              <Typography
+                sx={{
+                  color: profileColors.textSoft,
+                  fontWeight: 600,
+                  fontSize: 12.5,
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                  whiteSpace: 'nowrap',
+                }}
+              >
+                {appointment.serviceName}
+              </Typography>
+              {salon && (
+                <Typography
+                  sx={{
+                    color: profileColors.purple,
+                    fontWeight: 700,
+                    fontSize: 11,
+                    bgcolor: alpha(profileColors.purple, 0.08),
+                    px: 0.6,
+                    borderRadius: 0.5,
+                  }}
+                >
+                  {salon.name}
+                </Typography>
+              )}
+            </Stack>
           </Box>
           <AppointmentStatusChip status={appointment.status} />
         </Stack>
@@ -406,6 +424,7 @@ export default function ScheduleAgenda({
   onSelectAppointment,
   onAddAppointmentAt,
   onViewInsights,
+  salons,
 }: {
   selectedDate: string;
   appointments: StaffAppointment[];
@@ -414,6 +433,7 @@ export default function ScheduleAgenda({
   onSelectAppointment: (id: string) => void;
   onAddAppointmentAt: (time: string) => void;
   onViewInsights?: (id: string) => void;
+  salons: AvailableTenant[];
 }) {
   const [now, setNow] = React.useState(new Date());
 
@@ -533,6 +553,7 @@ export default function ScheduleAgenda({
                               onViewInsights={
                                 onViewInsights ? () => onViewInsights(appointment.id) : undefined
                               }
+                              salons={salons}
                             />
                             {isOverdue && (
                               <Typography

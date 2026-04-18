@@ -23,6 +23,18 @@ export class AuthController {
     return user;
   }
 
+  @UseGuards(JwtAuthGuard)
+  @Get('my-tenants')
+  getMyTenants(@CurrentUser() user: JwtPayload) {
+    return this.authService.getMyTenants(user.sub);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Post('switch')
+  switchTenant(@CurrentUser() user: JwtPayload, @Body('tenantId') tenantId: string) {
+    return this.authService.switchTenant(user.sub, tenantId);
+  }
+
   @Post('register')
   register(@Body() dto: RegisterDto) {
     return this.authService.register(dto);

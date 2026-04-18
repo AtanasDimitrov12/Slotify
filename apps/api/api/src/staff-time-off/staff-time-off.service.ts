@@ -23,10 +23,9 @@ export class StaffTimeOffService {
     });
   }
 
-  findAllByStaff(tenantId: string, userId: string) {
+  findAllByStaff(userId: string) {
     return this.timeOffModel
       .find({
-        tenantId: new Types.ObjectId(tenantId),
         userId: new Types.ObjectId(userId),
       })
       .sort({ startDate: -1, createdAt: -1 })

@@ -54,6 +54,7 @@ export class OwnerSettingsService {
       instagram: details?.socialLinks?.instagram ?? '',
       facebook: details?.socialLinks?.facebook ?? '',
       tiktok: details?.socialLinks?.tiktok ?? '',
+      notes: details?.notes ?? '',
       openingHours: details?.openingHours ?? {},
     };
   }
@@ -73,6 +74,7 @@ export class OwnerSettingsService {
       contactEmail: dto.contactEmail ?? '',
       timezone: dto.timezone ?? 'Europe/Amsterdam',
       websiteUrl: dto.websiteUrl ?? '',
+      notes: dto.notes ?? '',
       address: {
         street: dto.street ?? '',
         houseNumber: dto.houseNumber ?? '',

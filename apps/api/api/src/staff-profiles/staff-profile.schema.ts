@@ -1,16 +1,18 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { type HydratedDocument, Types } from 'mongoose';
-import { Tenant } from '../tenants/tenant.schema';
 import { User } from '../users/user.schema';
 
 export type StaffProfileDocument = HydratedDocument<StaffProfile>;
 
 @Schema({ timestamps: true })
 export class StaffProfile {
-  @Prop({ type: Types.ObjectId, ref: Tenant.name, required: true, index: true })
-  tenantId!: Types.ObjectId;
-
-  @Prop({ type: Types.ObjectId, ref: User.name, required: true, index: true })
+  @Prop({
+    type: Types.ObjectId,
+    ref: User.name,
+    required: true,
+    index: true,
+    unique: true,
+  })
   userId!: Types.ObjectId;
 
   @Prop({ trim: true, default: '' })
@@ -36,5 +38,3 @@ export class StaffProfile {
 }
 
 export const StaffProfileSchema = SchemaFactory.createForClass(StaffProfile);
-
-StaffProfileSchema.index({ tenantId: 1, userId: 1 }, { unique: true });

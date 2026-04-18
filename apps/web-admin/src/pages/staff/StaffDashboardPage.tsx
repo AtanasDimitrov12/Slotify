@@ -1,4 +1,9 @@
-import { landingColors, listStaffAppointments, type StaffAppointment } from '@barber/shared';
+import {
+  getMyTenants,
+  landingColors,
+  listStaffAppointments,
+  type StaffAppointment,
+} from '@barber/shared';
 import AccessTimeRoundedIcon from '@mui/icons-material/AccessTimeRounded';
 import CalendarMonthRoundedIcon from '@mui/icons-material/CalendarMonthRounded';
 import CheckCircleRoundedIcon from '@mui/icons-material/CheckCircleRounded';
@@ -41,6 +46,7 @@ export default function StaffDashboardPage() {
   const [loading, setLoading] = React.useState(true);
   const [todayAppointments, setTodayAppointments] = React.useState<StaffAppointment[]>([]);
   const [weekAppointments, setWeekAppointments] = React.useState<StaffAppointment[]>([]);
+  const [salons, setSalons] = React.useState<any[]>([]);
 
   React.useEffect(() => {
     async function loadData() {
@@ -49,9 +55,13 @@ export default function StaffDashboardPage() {
         const today = new Date();
         const todayStr = formatDateInput(today);
 
-        // Get today's appointments
-        const todayRes = await listStaffAppointments({ date: todayStr });
+        const [todayRes, myTenants] = await Promise.all([
+          listStaffAppointments({ date: todayStr }),
+          getMyTenants(),
+        ]);
+
         setTodayAppointments(todayRes);
+        setSalons(myTenants);
 
         // Get this week's appointments (from Monday to Sunday)
         const currentDay = today.getDay();
@@ -99,6 +109,10 @@ export default function StaffDashboardPage() {
     0,
   );
 
+  const getSalonName = (tenantId: string) => {
+    return salons.find((s) => s._id === tenantId)?.name || 'Salon';
+  };
+
   return (
     <Stack spacing={4}>
       <Stack direction="row" justifyContent="space-between" alignItems="center">
@@ -109,7 +123,7 @@ export default function StaffDashboardPage() {
             Welcome back!
           </Typography>
           <Typography sx={{ color: '#64748B', fontWeight: 600, fontSize: 18 }}>
-            Here is what is happening in your salon today.
+            Here is what is happening across all your salons today.
           </Typography>
         </Box>
         <Button
@@ -259,7 +273,7 @@ export default function StaffDashboardPage() {
                     {nextAppointment.customerName}
                   </Typography>
                   <Typography sx={{ fontWeight: 600, fontSize: 13, color: '#64748B' }}>
-                    {nextAppointment.serviceName}
+                    {nextAppointment.serviceName} · {getSalonName(nextAppointment.tenantId)}
                   </Typography>
                 </Stack>
               ) : (
@@ -337,7 +351,7 @@ export default function StaffDashboardPage() {
                           {a.customerName}
                         </Typography>
                         <Typography sx={{ fontWeight: 600, fontSize: 14, color: '#64748B' }}>
-                          {a.serviceName}
+                          {a.serviceName} · {getSalonName(a.tenantId)}
                         </Typography>
                       </Box>
                       <Avatar

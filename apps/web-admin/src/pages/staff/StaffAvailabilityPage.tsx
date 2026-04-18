@@ -1,5 +1,7 @@
 import {
+  type AvailableTenant,
   getMyStaffAvailability,
+  getMyTenants,
   landingColors,
   updateMyStaffAvailability,
   useToast,
@@ -10,62 +12,19 @@ import type { DaySchedule } from './components/types';
 import WeeklyScheduleEditor from './components/WeeklyScheduleEditor';
 
 const defaultSchedule: DaySchedule[] = [
-  {
-    dayOfWeek: 1,
-    label: 'Mon',
-    enabled: true,
-    start: '09:00',
-    end: '18:00',
-    breakStart: '13:00',
-    breakEnd: '13:30',
-  },
-  {
-    dayOfWeek: 2,
-    label: 'Tue',
-    enabled: true,
-    start: '09:00',
-    end: '18:00',
-    breakStart: '13:00',
-    breakEnd: '13:30',
-  },
-  {
-    dayOfWeek: 3,
-    label: 'Wed',
-    enabled: true,
-    start: '09:00',
-    end: '18:00',
-    breakStart: '13:00',
-    breakEnd: '13:30',
-  },
-  {
-    dayOfWeek: 4,
-    label: 'Thu',
-    enabled: true,
-    start: '09:00',
-    end: '18:00',
-    breakStart: '13:00',
-    breakEnd: '13:30',
-  },
-  {
-    dayOfWeek: 5,
-    label: 'Fri',
-    enabled: true,
-    start: '09:00',
-    end: '18:00',
-    breakStart: '13:00',
-    breakEnd: '13:30',
-  },
-  { dayOfWeek: 6, label: 'Sat', enabled: true, start: '10:00', end: '16:00' },
-  { dayOfWeek: 0, label: 'Sun', enabled: false, start: '09:00', end: '18:00' },
+  { dayOfWeek: 1, label: 'Mon', enabled: true, slots: [] },
+  { dayOfWeek: 2, label: 'Tue', enabled: true, slots: [] },
+  { dayOfWeek: 3, label: 'Wed', enabled: true, slots: [] },
+  { dayOfWeek: 4, label: 'Thu', enabled: true, slots: [] },
+  { dayOfWeek: 5, label: 'Fri', enabled: true, slots: [] },
+  { dayOfWeek: 6, label: 'Sat', enabled: true, slots: [] },
+  { dayOfWeek: 0, label: 'Sun', enabled: false, slots: [] },
 ];
 
 function mapApiToUi(
   weeklyAvailability?: {
     dayOfWeek: number;
-    startTime: string;
-    endTime: string;
-    breakStartTime?: string;
-    breakEndTime?: string;
+    slots: { startTime: string; endTime: string; tenantId: string }[];
     isAvailable: boolean;
   }[],
 ): DaySchedule[] {
@@ -80,10 +39,7 @@ function mapApiToUi(
         dayOfWeek: found.dayOfWeek,
         label: defaultDay.label,
         enabled: found.isAvailable,
-        start: found.startTime,
-        end: found.endTime,
-        breakStart: found.breakStartTime,
-        breakEnd: found.breakEndTime,
+        slots: found.slots || [],
       };
     })
     .sort((a, b) => {
@@ -95,17 +51,27 @@ function mapApiToUi(
 export default function StaffAvailabilityPage() {
   const { showError, showSuccess } = useToast();
   const [schedule, setSchedule] = React.useState<DaySchedule[]>(defaultSchedule);
+  const [salons, setSalons] = React.useState<AvailableTenant[]>([]);
   const [loading, setLoading] = React.useState(true);
   const [saving, setSaving] = React.useState(false);
   const [error, setError] = React.useState('');
 
-  const loadAvailability = React.useCallback(async () => {
+  const loadData = React.useCallback(async () => {
     setLoading(true);
     setError('');
 
     try {
-      const data = await getMyStaffAvailability();
-      setSchedule(mapApiToUi(data.weeklyAvailability));
+      const [availability, myTenants] = await Promise.all([
+        getMyStaffAvailability(),
+        getMyTenants(),
+      ]);
+
+      const mappedTenants: AvailableTenant[] = myTenants
+        .filter((t: any) => t._id && t.name)
+        .map((t: any) => ({ _id: t._id, name: t.name }));
+
+      setSalons(mappedTenants);
+      setSchedule(mapApiToUi(availability.weeklyAvailability));
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load availability');
     } finally {
@@ -114,8 +80,8 @@ export default function StaffAvailabilityPage() {
   }, []);
 
   React.useEffect(() => {
-    void loadAvailability();
-  }, [loadAvailability]);
+    void loadData();
+  }, [loadData]);
 
   async function handleSave() {
     setSaving(true);
@@ -124,10 +90,11 @@ export default function StaffAvailabilityPage() {
       await updateMyStaffAvailability({
         weeklyAvailability: schedule.map((day) => ({
           dayOfWeek: day.dayOfWeek,
-          startTime: day.start,
-          endTime: day.end,
-          breakStartTime: day.breakStart || undefined,
-          breakEndTime: day.breakEnd || undefined,
+          slots: day.slots.map((s) => ({
+            startTime: s.startTime,
+            endTime: s.endTime,
+            tenantId: s.tenantId,
+          })),
           isAvailable: day.enabled,
         })),
       });
@@ -166,7 +133,10 @@ export default function StaffAvailabilityPage() {
             Availability
           </Typography>
           <Typography sx={{ color: '#64748B', fontWeight: 600, fontSize: 18 }}>
-            Set your weekly working hours and break times.
+            Set your working hours and select which salon you'll be working in for each shift.
+          </Typography>
+          <Typography sx={{ color: '#94A3B8', fontWeight: 700, fontSize: 13, mt: 1 }}>
+            Your schedule is shared across all salons you work in to prevent double-booking.
           </Typography>
         </Box>
 
@@ -196,7 +166,7 @@ export default function StaffAvailabilityPage() {
         </Alert>
       ) : null}
 
-      <WeeklyScheduleEditor value={schedule} onChange={setSchedule} />
+      <WeeklyScheduleEditor value={schedule} onChange={setSchedule} salons={salons} />
     </Stack>
   );
 }

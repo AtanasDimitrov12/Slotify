@@ -26,6 +26,13 @@ export type UpdateTenantPayload = Partial<CreateTenantPayload> & {
   status?: Tenant['status'];
 };
 
+export type AvailableTenant = {
+  _id: string;
+  name?: string;
+  slug?: string;
+  role?: string;
+};
+
 /* -------------------- ADMIN TENANTS -------------------- */
 
 export async function listTenants(): Promise<Tenant[]> {
@@ -58,5 +65,12 @@ export async function getTenant(id: string): Promise<Tenant> {
 export async function getMyTenant(): Promise<Tenant> {
   return apiFetch<Tenant>('/tenants/me', {
     method: 'GET',
+  });
+}
+
+export async function createMySalon(name: string): Promise<Tenant> {
+  return apiFetch<Tenant>('/tenants/my-salons', {
+    method: 'POST',
+    body: JSON.stringify({ name }),
   });
 }

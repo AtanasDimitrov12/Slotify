@@ -23,6 +23,7 @@ export * from './auth/RequireAuth';
 export { default as BookingDialog } from './components/booking/BookingDialog';
 export * from './components/landing/ChoosePath';
 export * from './components/landing/constants';
+// Components
 export * from './components/landing/Features';
 export * from './components/landing/FinalCTA';
 export * from './components/landing/Footer';
@@ -32,7 +33,6 @@ export * from './components/landing/Showcase';
 export * from './components/landing/SmartSpotlight';
 export * from './components/landing/TrustStrip';
 export { default as RequireRole } from './components/RequireRole';
-// Components
 export { ToastProvider, useToast } from './components/ToastProvider';
 export * from './constants/locations';
 // Hooks

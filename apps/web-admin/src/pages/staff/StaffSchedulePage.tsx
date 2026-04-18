@@ -1,16 +1,20 @@
 import {
+  type AvailableTenant,
   type CustomerInsights,
   cancelStaffAppointment,
   createStaffAppointment,
   getCustomerInsights,
   getMyStaffBlockedSlots,
+  getMyTenants,
   landingColors,
   listStaffAppointments,
   listStaffServices,
   type StaffAppointment,
   type StaffBlockedSlotItem,
+  type StaffServiceOption,
   updateStaffAppointment,
   updateStaffAppointmentStatus,
+  useAuth,
 } from '@barber/shared';
 import AddRoundedIcon from '@mui/icons-material/AddRounded';
 import ChevronLeftRoundedIcon from '@mui/icons-material/ChevronLeftRounded';
@@ -45,19 +49,12 @@ function formatHumanDate(dateString: string) {
 }
 
 export default function StaffSchedulePage() {
+  const { user, switchTenant } = useAuth();
   const [selectedDate, setSelectedDate] = React.useState<string>(formatDateInput(new Date()));
   const [appointments, setAppointments] = React.useState<StaffAppointment[]>([]);
   const [blockedSlots, setBlockedSlots] = React.useState<StaffBlockedSlotItem[]>([]);
-  const [services, setServices] = React.useState<
-    {
-      id: string;
-      serviceId: string;
-      name: string;
-      durationMin: number;
-      priceEUR: number;
-      description?: string;
-    }[]
-  >([]);
+  const [services, setServices] = React.useState<StaffServiceOption[]>([]);
+  const [salons, setSalons] = React.useState<AvailableTenant[]>([]);
   const [selectedAppointmentId, setSelectedAppointmentId] = React.useState<string | null>(null);
   const [loading, setLoading] = React.useState(true);
   const [error, setError] = React.useState('');
@@ -82,11 +79,17 @@ export default function StaffSchedulePage() {
     try {
       setLoading(true);
       setError('');
-      const [appts, slots] = await Promise.all([
+      const [appts, slots, myTenants] = await Promise.all([
         listStaffAppointments({ date: selectedDate }),
         getMyStaffBlockedSlots(false),
+        getMyTenants(),
       ]);
 
+      const mappedTenants: AvailableTenant[] = myTenants
+        .filter((t: any) => t._id && t.name)
+        .map((t: any) => ({ _id: t._id, name: t.name }));
+
+      setSalons(mappedTenants);
       const activeSlotsForDay = slots.filter((s) => s.date === selectedDate && s.isActive);
 
       setAppointments(appts);
@@ -258,7 +261,7 @@ export default function StaffSchedulePage() {
         <Stack
           direction={{ xs: 'column', lg: 'row' }}
           justifyContent="space-between"
-          alignItems={{ xs: 'stretch', lg: 'center' }}
+          alignItems={{ xs: 'stretch', lg: 'flex-start' }}
           spacing={3}
         >
           <Box>
@@ -273,26 +276,33 @@ export default function StaffSchedulePage() {
             >
               Your Schedule
             </Typography>
+
             <Typography sx={{ color: '#64748B', fontWeight: 500, fontSize: { xs: 15, md: 16 } }}>
-              Manage appointments and optimize your day.
+              Manage appointments across all your salons and optimize your day.
             </Typography>
           </Box>
 
           <Stack
-            direction={{ xs: 'column', sm: 'row' }}
-            spacing={2}
-            sx={{ alignItems: { xs: 'stretch', sm: 'center' } }}
+            spacing={1.5}
+            sx={{
+              width: { xs: '100%', lg: 'auto' },
+              alignItems: { xs: 'stretch', lg: 'flex-end' },
+            }}
           >
+            {/* Date Navigation */}
             <Stack
               direction="row"
-              spacing={1}
+              spacing={0.5}
               sx={{
                 bgcolor: '#FFF',
                 p: 0.5,
-                borderRadius: 3,
+                borderRadius: 999,
                 border: '1px solid rgba(15,23,42,0.08)',
-                boxShadow: '0 2px 10px rgba(15,23,42,0.02)',
+                boxShadow: '0 8px 24px rgba(15,23,42,0.04)',
                 alignItems: 'center',
+                height: 48,
+                width: { xs: '100%', sm: 'fit-content' },
+                alignSelf: { xs: 'stretch', sm: 'flex-start', lg: 'flex-end' },
               }}
             >
               <IconButton
@@ -300,8 +310,10 @@ export default function StaffSchedulePage() {
                 onClick={goToPreviousDay}
                 sx={{
                   color: '#64748B',
+                  width: 36,
+                  height: 36,
                   '&:hover': {
-                    bgcolor: alpha(landingColors.purple, 0.05),
+                    bgcolor: alpha(landingColors.purple, 0.08),
                     color: landingColors.purple,
                   },
                 }}
@@ -313,15 +325,16 @@ export default function StaffSchedulePage() {
                 variant="text"
                 onClick={goToToday}
                 sx={{
-                  borderRadius: 2,
-                  fontWeight: 700,
+                  borderRadius: 999,
+                  fontWeight: 800,
                   color: '#475569',
                   px: 2,
-                  minWidth: 'auto',
-                  height: 32,
-                  fontSize: 13,
+                  minWidth: 74,
+                  height: 36,
+                  fontSize: 14,
+                  textTransform: 'none',
                   '&:hover': {
-                    bgcolor: alpha(landingColors.purple, 0.05),
+                    bgcolor: alpha(landingColors.purple, 0.08),
                     color: landingColors.purple,
                   },
                 }}
@@ -331,13 +344,15 @@ export default function StaffSchedulePage() {
 
               <Typography
                 sx={{
-                  fontWeight: 700,
-                  fontSize: 14,
+                  fontWeight: 900,
+                  fontSize: { xs: 13, sm: 15 },
                   color: '#0F172A',
                   whiteSpace: 'nowrap',
-                  px: 1,
+                  px: { xs: 1.5, sm: 2.5 },
                   borderLeft: '1px solid rgba(15,23,42,0.08)',
                   borderRight: '1px solid rgba(15,23,42,0.08)',
+                  flex: { xs: 1, sm: 'unset' },
+                  textAlign: 'center',
                 }}
               >
                 {formatHumanDate(selectedDate)}
@@ -348,8 +363,10 @@ export default function StaffSchedulePage() {
                 onClick={goToNextDay}
                 sx={{
                   color: '#64748B',
+                  width: 36,
+                  height: 36,
                   '&:hover': {
-                    bgcolor: alpha(landingColors.purple, 0.05),
+                    bgcolor: alpha(landingColors.purple, 0.08),
                     color: landingColors.purple,
                   },
                 }}
@@ -358,72 +375,98 @@ export default function StaffSchedulePage() {
               </IconButton>
             </Stack>
 
-            <ToggleButtonGroup
-              exclusive
-              value={viewMode}
-              onChange={(_, value) => {
-                if (value) setViewMode(value);
-              }}
+            {/* View Toggle + Add Button */}
+            <Stack
+              direction={{ xs: 'column', sm: 'row' }}
+              spacing={1.5}
               sx={{
-                bgcolor: '#FFF',
-                p: 0.5,
-                borderRadius: 3,
-                border: '1px solid rgba(15,23,42,0.08)',
-                boxShadow: '0 2px 10px rgba(15,23,42,0.02)',
-                '& .MuiToggleButton-root': {
-                  border: 'none',
-                  borderRadius: 2,
-                  px: 1.5,
-                  py: 0.5,
-                  height: 32,
-                  textTransform: 'none',
-                  fontWeight: 700,
-                  fontSize: 13,
-                  color: '#64748B',
-                  '&.Mui-selected': {
-                    bgcolor: alpha(landingColors.purple, 0.1),
-                    color: landingColors.purple,
-                    '&:hover': {
-                      bgcolor: alpha(landingColors.purple, 0.15),
+                width: { xs: '100%', sm: 'auto' },
+                alignItems: { xs: 'stretch', sm: 'center' },
+                justifyContent: 'flex-end',
+              }}
+            >
+              <ToggleButtonGroup
+                exclusive
+                value={viewMode}
+                onChange={(_, value) => {
+                  if (value) setViewMode(value);
+                }}
+                sx={{
+                  bgcolor: '#FFF',
+                  p: 0.5,
+                  borderRadius: 999,
+                  border: '1px solid rgba(15,23,42,0.08)',
+                  boxShadow: '0 8px 24px rgba(15,23,42,0.04)',
+                  height: 48,
+                  width: { xs: '100%', sm: 'auto' },
+                  '& .MuiToggleButtonGroup-grouped': {
+                    margin: 0,
+                    border: 0,
+                    '&:not(:first-of-type)': {
+                      borderRadius: 999,
+                      borderLeft: 0,
+                    },
+                    '&:first-of-type': {
+                      borderRadius: 999,
                     },
                   },
-                },
-              }}
-            >
-              <ToggleButton value="smart">
-                <Stack direction="row" spacing={0.75} alignItems="center">
-                  <ViewAgendaRoundedIcon sx={{ fontSize: 16 }} />
-                  <span>Smart Day</span>
-                </Stack>
-              </ToggleButton>
-              <ToggleButton value="timeline">
-                <Stack direction="row" spacing={0.75} alignItems="center">
-                  <ViewStreamRoundedIcon sx={{ fontSize: 16 }} />
-                  <span>Timeline</span>
-                </Stack>
-              </ToggleButton>
-            </ToggleButtonGroup>
+                  '& .MuiToggleButton-root': {
+                    flex: { xs: 1, sm: 'unset' },
+                    border: 'none',
+                    borderRadius: 999,
+                    px: { xs: 1.5, md: 2.5 },
+                    height: 38,
+                    textTransform: 'none',
+                    fontWeight: 900,
+                    fontSize: 14,
+                    color: '#64748B',
+                    gap: 1,
+                    '&.Mui-selected': {
+                      bgcolor: alpha(landingColors.purple, 0.12),
+                      color: landingColors.purple,
+                      '&:hover': {
+                        bgcolor: alpha(landingColors.purple, 0.16),
+                      },
+                    },
+                  },
+                }}
+              >
+                <ToggleButton value="smart">
+                  <ViewAgendaRoundedIcon sx={{ fontSize: 19 }} />
+                  <Box component="span">Smart Day</Box>
+                </ToggleButton>
 
-            <Button
-              variant="contained"
-              startIcon={<AddRoundedIcon />}
-              onClick={() => setAddOpen(true)}
-              sx={{
-                height: 44,
-                px: 3,
-                borderRadius: 3,
-                fontWeight: 700,
-                bgcolor: landingColors.purple,
-                boxShadow: `0 8px 20px ${alpha(landingColors.purple, 0.25)}`,
-                textTransform: 'none',
-                '&:hover': {
-                  bgcolor: alpha(landingColors.purple, 0.9),
-                  boxShadow: `0 10px 25px ${alpha(landingColors.purple, 0.35)}`,
-                },
-              }}
-            >
-              Add Appointment
-            </Button>
+                <ToggleButton value="timeline">
+                  <ViewStreamRoundedIcon sx={{ fontSize: 19 }} />
+                  <Box component="span">Timeline</Box>
+                </ToggleButton>
+              </ToggleButtonGroup>
+
+              <Button
+                variant="contained"
+                startIcon={<AddRoundedIcon />}
+                onClick={() => setAddOpen(true)}
+                sx={{
+                  height: 48,
+                  px: 3.5,
+                  borderRadius: 999,
+                  fontWeight: 900,
+                  fontSize: 15,
+                  bgcolor: landingColors.purple,
+                  boxShadow: `0 12px 28px ${alpha(landingColors.purple, 0.28)}`,
+                  textTransform: 'none',
+                  whiteSpace: 'nowrap',
+                  minWidth: { xs: '100%', sm: 210 },
+                  '&:hover': {
+                    bgcolor: landingColors.purple,
+                    filter: 'brightness(1.05)',
+                    boxShadow: `0 14px 32px ${alpha(landingColors.purple, 0.36)}`,
+                  },
+                }}
+              >
+                Add Appointment
+              </Button>
+            </Stack>
           </Stack>
         </Stack>
 
@@ -449,6 +492,7 @@ export default function StaffSchedulePage() {
                 onSelectAppointment={setSelectedAppointmentId}
                 onAddAppointmentAt={handleAddAppointmentAt}
                 onViewInsights={handleViewInsights}
+                salons={salons}
               />
             ) : (
               <ScheduleCalendar
@@ -460,6 +504,7 @@ export default function StaffSchedulePage() {
                 onSelectAppointment={setSelectedAppointmentId}
                 onMoveAppointment={handleMoveAppointment}
                 onViewInsights={handleViewInsights}
+                salons={salons}
               />
             )}
           </Grid>
@@ -475,6 +520,7 @@ export default function StaffSchedulePage() {
                 onMarkDone={handleMarkDone}
                 onMarkNoShow={handleMarkNoShow}
                 onViewInsights={() => setInsightsOpen(true)}
+                salons={salons}
               />
             </Stack>
           </Grid>
@@ -496,14 +542,34 @@ export default function StaffSchedulePage() {
         }}
         creating={creating}
         services={services}
+        salons={salons}
         initialStartTime={prefillStartTime}
         onSubmit={async (payload) => {
           try {
             setCreating(true);
-            await createStaffAppointment({
-              ...payload,
-              startTime: new Date(`${selectedDate}T${payload.startTime}:00`).toISOString(),
-            });
+            const originalTenantId = user?.tenantId;
+
+            // Switch to the target salon if different
+            if (payload.tenantId !== originalTenantId) {
+              await switchTenant(payload.tenantId);
+            }
+
+            try {
+              await createStaffAppointment({
+                staffServiceAssignmentId: payload.staffServiceAssignmentId,
+                startTime: new Date(`${selectedDate}T${payload.startTime}:00`).toISOString(),
+                customerName: payload.customerName,
+                customerPhone: payload.customerPhone,
+                customerEmail: payload.customerEmail,
+                notes: payload.notes,
+              });
+            } finally {
+              // Switch back to original salon if we switched away
+              if (originalTenantId && payload.tenantId !== originalTenantId) {
+                await switchTenant(originalTenantId);
+              }
+            }
+
             setAddOpen(false);
             setPrefillStartTime(undefined);
             await loadAppointments();

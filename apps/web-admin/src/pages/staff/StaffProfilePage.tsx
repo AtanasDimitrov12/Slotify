@@ -109,28 +109,30 @@ export default function StaffProfilePage() {
           <Typography
             sx={{ color: '#64748B', fontWeight: 600, fontSize: { xs: 14, md: 18 }, mt: 1 }}
           >
-            This information will be visible to customers on your booking page.
+            This information is shared across all salons you work in and visible to customers.
           </Typography>
         </Box>
 
-        <Button
-          variant="contained"
-          size="large"
-          onClick={handleSave}
-          disabled={saving}
-          sx={{
-            display: { xs: 'none', md: 'inline-flex' },
-            minHeight: 48,
-            px: 4,
-            borderRadius: 2,
-            fontWeight: 900,
-            bgcolor: landingColors.purple,
-            boxShadow: `0 12px 30px ${alpha(landingColors.purple, 0.2)}`,
-            textTransform: 'none',
-          }}
-        >
-          {saving ? 'Saving...' : 'Save Changes'}
-        </Button>
+        <Stack direction="row" spacing={2}>
+          <Button
+            variant="contained"
+            size="large"
+            onClick={handleSave}
+            disabled={saving}
+            sx={{
+              display: { xs: 'none', md: 'inline-flex' },
+              minHeight: 48,
+              px: 4,
+              borderRadius: 2,
+              fontWeight: 900,
+              bgcolor: landingColors.purple,
+              boxShadow: `0 12px 30px ${alpha(landingColors.purple, 0.2)}`,
+              textTransform: 'none',
+            }}
+          >
+            {saving ? 'Saving...' : 'Save Changes'}
+          </Button>
+        </Stack>
       </Stack>
 
       {error ? (

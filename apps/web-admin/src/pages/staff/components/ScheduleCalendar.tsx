@@ -1,4 +1,4 @@
-import type { StaffAppointment, StaffBlockedSlotItem } from '@barber/shared';
+import type { AvailableTenant, StaffAppointment, StaffBlockedSlotItem } from '@barber/shared';
 import { landingColors } from '@barber/shared';
 import ShieldRoundedIcon from '@mui/icons-material/ShieldRounded';
 import {
@@ -182,6 +182,7 @@ export default function ScheduleCalendar({
   onSelectAppointment,
   onMoveAppointment,
   onViewInsights,
+  salons,
 }: {
   selectedDate: string;
   appointments: StaffAppointment[];
@@ -191,6 +192,7 @@ export default function ScheduleCalendar({
   onSelectAppointment: (id: string) => void;
   onMoveAppointment: (appointment: StaffAppointment, nextStartIso: string) => Promise<void>;
   onViewInsights?: (id: string) => void;
+  salons: AvailableTenant[];
 }) {
   const containerRef = React.useRef<HTMLDivElement | null>(null);
   const [draggingId, setDraggingId] = React.useState<string | null>(null);
@@ -528,6 +530,7 @@ export default function ScheduleCalendar({
             };
 
             const riskColor = getRiskColor(appointment!.riskScore);
+            const salon = salons.find((s) => s._id === appointment!.tenantId);
 
             return (
               <Box
@@ -658,6 +661,7 @@ export default function ScheduleCalendar({
                     }}
                   >
                     {formatTimeOnly(appointment!.startTime)} · {appointment!.serviceName}
+                    {salon && ` · ${salon.name}`}
                     {isOverdue && ' · Running Late'}
                   </Typography>
                 )}
