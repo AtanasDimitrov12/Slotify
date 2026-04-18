@@ -8,7 +8,6 @@ export type CreateStaffPayload = {
 
 export type StaffProfileResponse = {
   id: string;
-  tenantId: string;
   userId: string;
   name: string;
   email: string;
@@ -44,18 +43,6 @@ export async function createStaff(payload: CreateStaffPayload) {
 
 export async function listAvailableStaffForOwner(): Promise<AvailableStaffListItem[]> {
   return apiFetch('/staff/available', {
-    method: 'GET',
-  });
-}
-
-export async function getOtherProfileSync(): Promise<Partial<StaffProfileResponse>> {
-  return apiFetch('/staff/me/sync-profile', {
-    method: 'GET',
-  });
-}
-
-export async function getOtherAvailabilitySync(): Promise<any> {
-  return apiFetch('/staff/me/sync-availability', {
     method: 'GET',
   });
 }

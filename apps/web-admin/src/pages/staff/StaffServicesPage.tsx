@@ -1,8 +1,10 @@
 import {
+  type AvailableTenant,
   createMyStaffService,
   deleteMyStaffService,
   getCatalogServices,
   getMyStaffServices,
+  getMyTenants,
   landingColors,
   premium,
   updateMyStaffService,
@@ -20,7 +22,9 @@ import {
   CardContent,
   CircularProgress,
   Grid,
+  MenuItem,
   Stack,
+  TextField,
   Typography,
 } from '@mui/material';
 import * as React from 'react';
@@ -28,11 +32,12 @@ import ServiceEditorDialog, { type ServicePayload } from './components/ServiceEd
 import type { CatalogServiceOption, StaffService } from './components/types';
 
 export default function StaffServicesPage() {
-  const { user } = useAuth();
+  const { user, switchTenant } = useAuth();
   const { showError, showSuccess } = useToast();
   const [open, setOpen] = React.useState(false);
   const [items, setItems] = React.useState<StaffService[]>([]);
   const [catalogOptions, setCatalogOptions] = React.useState<CatalogServiceOption[]>([]);
+  const [salons, setSalons] = React.useState<AvailableTenant[]>([]);
   const [editingService, setEditingService] = React.useState<StaffService | null>(null);
   const [loading, setLoading] = React.useState(true);
   const [saving, setSaving] = React.useState(false);
@@ -43,11 +48,17 @@ export default function StaffServicesPage() {
     setError('');
 
     try {
-      const [assignedServices, catalogServices] = await Promise.all([
+      const [assignedServices, catalogServices, myTenants] = await Promise.all([
         getMyStaffServices(),
         getCatalogServices(),
+        getMyTenants(),
       ]);
 
+      const mappedTenants: AvailableTenant[] = myTenants
+        .filter((t: any) => t._id && t.name)
+        .map((t: any) => ({ _id: t._id, name: t.name }));
+
+      setSalons(mappedTenants);
       setItems(assignedServices ?? []);
       setCatalogOptions(catalogServices ?? []);
     } catch (err) {
@@ -62,6 +73,18 @@ export default function StaffServicesPage() {
   React.useEffect(() => {
     void loadData();
   }, [loadData]);
+
+  async function handleSalonChange(tenantId: string) {
+    try {
+      setLoading(true);
+      await switchTenant(tenantId);
+      await loadData();
+    } catch (err) {
+      showError(err);
+    } finally {
+      setLoading(false);
+    }
+  }
 
   function handleAddClick() {
     setEditingService(null);
@@ -127,7 +150,7 @@ export default function StaffServicesPage() {
       !items.some((assignedItem) => assignedItem.serviceId === catalogItem.id),
   );
 
-  if (loading) {
+  if (loading && salons.length === 0) {
     return (
       <Box sx={{ minHeight: 400, display: 'grid', placeItems: 'center' }}>
         <CircularProgress sx={{ color: landingColors.purple }} />
@@ -135,8 +158,9 @@ export default function StaffServicesPage() {
     );
   }
 
-  const showNoCatalogMessage = !error && catalogOptions.length === 0;
-  const showNoAssignedServicesMessage = !error && catalogOptions.length > 0 && items.length === 0;
+  const showNoCatalogMessage = !error && !loading && catalogOptions.length === 0;
+  const showNoAssignedServicesMessage =
+    !error && !loading && catalogOptions.length > 0 && items.length === 0;
 
   return (
     <Stack spacing={4}>
@@ -148,31 +172,46 @@ export default function StaffServicesPage() {
             Services & Prices
           </Typography>
           <Typography sx={{ color: '#64748B', fontWeight: 600, fontSize: 18 }}>
-            Configure the services you offer for the currently selected salon and set your personal
-            overrides.
-          </Typography>
-          <Typography sx={{ color: '#94A3B8', fontWeight: 700, fontSize: 13, mt: 1 }}>
-            Service assignments are tenant-specific, just like availability. Switch salons from the
-            sidebar to manage a different catalog.
+            Configure the services you offer and set your personal overrides.
           </Typography>
         </Box>
 
-        <Button
-          variant="contained"
-          startIcon={<AddRoundedIcon />}
-          onClick={handleAddClick}
-          disabled={catalogOptions.length === 0}
-          sx={{
-            minHeight: 52,
-            px: 3,
-            borderRadius: 999,
-            fontWeight: 900,
-            bgcolor: landingColors.purple,
-            boxShadow: `0 12px 30px ${alpha(landingColors.purple, 0.24)}`,
-          }}
-        >
-          Add Service
-        </Button>
+        <Stack direction="row" spacing={2}>
+          {salons.length > 1 && (
+            <TextField
+              select
+              size="small"
+              label="Active Salon"
+              value={user?.tenantId || ''}
+              onChange={(e) => handleSalonChange(e.target.value)}
+              sx={{ minWidth: 200 }}
+              disabled={loading}
+            >
+              {salons.map((s) => (
+                <MenuItem key={s._id} value={s._id}>
+                  {s.name}
+                </MenuItem>
+              ))}
+            </TextField>
+          )}
+
+          <Button
+            variant="contained"
+            startIcon={<AddRoundedIcon />}
+            onClick={handleAddClick}
+            disabled={catalogOptions.length === 0 || loading}
+            sx={{
+              minHeight: 44,
+              px: 3,
+              borderRadius: 999,
+              fontWeight: 900,
+              bgcolor: landingColors.purple,
+              boxShadow: `0 12px 30px ${alpha(landingColors.purple, 0.24)}`,
+            }}
+          >
+            Add Service
+          </Button>
+        </Stack>
       </Stack>
 
       {error ? (
@@ -181,166 +220,182 @@ export default function StaffServicesPage() {
         </Alert>
       ) : null}
 
-      {showNoCatalogMessage ? (
-        <Card
-          sx={{
-            borderRadius: `${premium.rLg * 4}px`,
-            border: '1px dashed',
-            borderColor: '#CBD5E1',
-            bgcolor: 'transparent',
-            py: 8,
-          }}
-        >
-          <CardContent>
-            <Stack spacing={2} alignItems="center" textAlign="center">
-              <Box
-                sx={{
-                  width: 80,
-                  height: 80,
-                  borderRadius: 4,
-                  bgcolor: alpha(landingColors.purple, 0.06),
-                  display: 'grid',
-                  placeItems: 'center',
-                  color: landingColors.purple,
-                  mb: 1,
-                }}
-              >
-                <BuildCircleOutlinedIcon sx={{ fontSize: 40 }} />
-              </Box>
-              <Typography sx={{ fontWeight: 1000, fontSize: 24, color: '#0F172A' }}>
-                No services available
-              </Typography>
-              <Typography sx={{ color: '#64748B', fontWeight: 600, maxWidth: 480 }}>
-                {user?.tenantId
-                  ? 'The owner of this salon must first create the service catalog before you can assign services to yourself here.'
-                  : 'The salon owner must first create the master service catalog before you can assign services to yourself.'}
-              </Typography>
-            </Stack>
-          </CardContent>
-        </Card>
-      ) : null}
+      {loading ? (
+        <Box sx={{ minHeight: 200, display: 'grid', placeItems: 'center' }}>
+          <CircularProgress sx={{ color: landingColors.purple }} />
+        </Box>
+      ) : (
+        <>
+          {showNoCatalogMessage ? (
+            <Card
+              sx={{
+                borderRadius: `${premium.rLg * 4}px`,
+                border: '1px dashed',
+                borderColor: '#CBD5E1',
+                bgcolor: 'transparent',
+                py: 8,
+              }}
+            >
+              <CardContent>
+                <Stack spacing={2} alignItems="center" textAlign="center">
+                  <Box
+                    sx={{
+                      width: 80,
+                      height: 80,
+                      borderRadius: 4,
+                      bgcolor: alpha(landingColors.purple, 0.06),
+                      display: 'grid',
+                      placeItems: 'center',
+                      color: landingColors.purple,
+                      mb: 1,
+                    }}
+                  >
+                    <BuildCircleOutlinedIcon sx={{ fontSize: 40 }} />
+                  </Box>
+                  <Typography sx={{ fontWeight: 1000, fontSize: 24, color: '#0F172A' }}>
+                    No services available
+                  </Typography>
+                  <Typography sx={{ color: '#64748B', fontWeight: 600, maxWidth: 480 }}>
+                    {user?.tenantId
+                      ? 'The owner of this salon must first create the service catalog before you can assign services to yourself here.'
+                      : 'The salon owner must first create the master service catalog before you can assign services to yourself.'}
+                  </Typography>
+                </Stack>
+              </CardContent>
+            </Card>
+          ) : null}
 
-      {showNoAssignedServicesMessage ? (
-        <Card
-          sx={{
-            borderRadius: `${premium.rLg * 4}px`,
-            border: '1px dashed',
-            borderColor: '#CBD5E1',
-            bgcolor: 'transparent',
-            py: 8,
-          }}
-        >
-          <CardContent>
-            <Stack spacing={2} alignItems="center" textAlign="center">
-              <Typography sx={{ fontWeight: 1000, fontSize: 24, color: '#0F172A' }}>
-                No services assigned
-              </Typography>
-              <Typography sx={{ color: '#64748B', fontWeight: 600, maxWidth: 480 }}>
-                This salon has catalog services, but you have not added any to your profile for this
-                tenant yet.
-              </Typography>
-              <Button
-                variant="outlined"
-                onClick={handleAddClick}
-                sx={{ mt: 2, borderRadius: 999, fontWeight: 900 }}
-              >
-                Assign your first service
-              </Button>
-            </Stack>
-          </CardContent>
-        </Card>
-      ) : null}
+          {showNoAssignedServicesMessage ? (
+            <Card
+              sx={{
+                borderRadius: `${premium.rLg * 4}px`,
+                border: '1px dashed',
+                borderColor: '#CBD5E1',
+                bgcolor: 'transparent',
+                py: 8,
+              }}
+            >
+              <CardContent>
+                <Stack spacing={2} alignItems="center" textAlign="center">
+                  <Typography sx={{ fontWeight: 1000, fontSize: 24, color: '#0F172A' }}>
+                    No services assigned
+                  </Typography>
+                  <Typography sx={{ color: '#64748B', fontWeight: 600, maxWidth: 480 }}>
+                    This salon has catalog services, but you have not added any to your profile yet.
+                  </Typography>
+                  <Button
+                    variant="outlined"
+                    onClick={handleAddClick}
+                    sx={{ mt: 2, borderRadius: 999, fontWeight: 900 }}
+                  >
+                    Assign your first service
+                  </Button>
+                </Stack>
+              </CardContent>
+            </Card>
+          ) : null}
 
-      {items.length > 0 ? (
-        <Grid container spacing={3}>
-          {items.map((s) => (
-            <Grid item xs={12} md={6} key={s.id}>
-              <Card
-                sx={{
-                  borderRadius: `${premium.rLg * 4}px`,
-                  border: '1px solid',
-                  borderColor: 'rgba(15,23,42,0.06)',
-                  bgcolor: '#FFFFFF',
-                  boxShadow: '0 10px 40px rgba(15,23,42,0.04)',
-                  transition: 'all 0.2s ease',
-                  '&:hover': {
-                    transform: 'translateY(-2px)',
-                    boxShadow: '0 16px 48px rgba(15,23,42,0.08)',
-                    borderColor: alpha(landingColors.purple, 0.1),
-                  },
-                }}
-              >
-                <CardContent sx={{ p: 3.5 }}>
-                  <Stack spacing={2.5}>
-                    <Box>
-                      <Stack direction="row" justifyContent="space-between" alignItems="flex-start">
-                        <Typography sx={{ fontWeight: 1000, fontSize: 20, color: '#0F172A' }}>
-                          {s.name}
-                        </Typography>
-                        <Typography
-                          sx={{ fontWeight: 900, fontSize: 18, color: landingColors.purple }}
-                        >
-                          €{s.priceEUR}
-                        </Typography>
+          {items.length > 0 ? (
+            <Grid container spacing={3}>
+              {items.map((s) => (
+                <Grid item xs={12} md={6} key={s.id}>
+                  <Card
+                    sx={{
+                      borderRadius: `${premium.rLg * 4}px`,
+                      border: '1px solid',
+                      borderColor: 'rgba(15,23,42,0.06)',
+                      bgcolor: '#FFFFFF',
+                      boxShadow: '0 10px 40px rgba(15,23,42,0.04)',
+                      transition: 'all 0.2s ease',
+                      '&:hover': {
+                        transform: 'translateY(-2px)',
+                        boxShadow: '0 16px 48px rgba(15,23,42,0.08)',
+                        borderColor: alpha(landingColors.purple, 0.1),
+                      },
+                    }}
+                  >
+                    <CardContent sx={{ p: 3.5 }}>
+                      <Stack spacing={2.5}>
+                        <Box>
+                          <Stack
+                            direction="row"
+                            justifyContent="space-between"
+                            alignItems="flex-start"
+                          >
+                            <Typography sx={{ fontWeight: 1000, fontSize: 20, color: '#0F172A' }}>
+                              {s.name}
+                            </Typography>
+                            <Typography
+                              sx={{ fontWeight: 900, fontSize: 18, color: landingColors.purple }}
+                            >
+                              €{s.priceEUR}
+                            </Typography>
+                          </Stack>
+
+                          <Typography
+                            sx={{ color: '#64748B', fontWeight: 700, fontSize: 14, mt: 0.5 }}
+                          >
+                            {s.durationMin} minutes
+                          </Typography>
+
+                          {s.description ? (
+                            <Typography
+                              sx={{
+                                mt: 2,
+                                color: '#475569',
+                                fontSize: 15,
+                                lineHeight: 1.6,
+                                fontWeight: 500,
+                              }}
+                            >
+                              {s.description}
+                            </Typography>
+                          ) : null}
+                        </Box>
+
+                        <Stack direction="row" spacing={1.5}>
+                          <Button
+                            variant="outlined"
+                            fullWidth
+                            onClick={() => handleEditClick(s)}
+                            sx={{
+                              borderRadius: 999,
+                              fontWeight: 900,
+                              borderColor: 'rgba(15,23,42,0.12)',
+                              color: '#475569',
+                              '&:hover': { bgcolor: '#F8FAFC', borderColor: landingColors.purple },
+                            }}
+                          >
+                            Adjust Override
+                          </Button>
+                          <Button
+                            variant="outlined"
+                            color="error"
+                            fullWidth
+                            onClick={() => handleDelete(s.id)}
+                            sx={{
+                              borderRadius: 999,
+                              fontWeight: 900,
+                              borderColor: alpha('#F43F5E', 0.2),
+                              bgcolor: alpha('#F43F5E', 0.02),
+                              '&:hover': {
+                                bgcolor: alpha('#F43F5E', 0.05),
+                                borderColor: '#F43F5E',
+                              },
+                            }}
+                          >
+                            Remove
+                          </Button>
+                        </Stack>
                       </Stack>
-
-                      <Typography sx={{ color: '#64748B', fontWeight: 700, fontSize: 14, mt: 0.5 }}>
-                        {s.durationMin} minutes
-                      </Typography>
-
-                      {s.description ? (
-                        <Typography
-                          sx={{
-                            mt: 2,
-                            color: '#475569',
-                            fontSize: 15,
-                            lineHeight: 1.6,
-                            fontWeight: 500,
-                          }}
-                        >
-                          {s.description}
-                        </Typography>
-                      ) : null}
-                    </Box>
-
-                    <Stack direction="row" spacing={1.5}>
-                      <Button
-                        variant="outlined"
-                        fullWidth
-                        onClick={() => handleEditClick(s)}
-                        sx={{
-                          borderRadius: 999,
-                          fontWeight: 900,
-                          borderColor: 'rgba(15,23,42,0.12)',
-                          color: '#475569',
-                          '&:hover': { bgcolor: '#F8FAFC', borderColor: landingColors.purple },
-                        }}
-                      >
-                        Adjust Override
-                      </Button>
-                      <Button
-                        variant="outlined"
-                        color="error"
-                        fullWidth
-                        onClick={() => handleDelete(s.id)}
-                        sx={{
-                          borderRadius: 999,
-                          fontWeight: 900,
-                          borderColor: alpha('#F43F5E', 0.2),
-                          bgcolor: alpha('#F43F5E', 0.02),
-                          '&:hover': { bgcolor: alpha('#F43F5E', 0.05), borderColor: '#F43F5E' },
-                        }}
-                      >
-                        Remove
-                      </Button>
-                    </Stack>
-                  </Stack>
-                </CardContent>
-              </Card>
+                    </CardContent>
+                  </Card>
+                </Grid>
+              ))}
             </Grid>
-          ))}
-        </Grid>
-      ) : null}
+          ) : null}
+        </>
+      )}
 
       <ServiceEditorDialog
         open={open}

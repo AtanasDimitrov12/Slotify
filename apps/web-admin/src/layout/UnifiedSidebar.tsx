@@ -106,6 +106,9 @@ export default function UnifiedSidebar({
   const displayName = userName || userEmail || 'User';
   const userInitial = displayName.charAt(0).toUpperCase();
 
+  const canSwitchTenants =
+    userRole !== 'staff' && (availableTenants.length > 1 || (userRole === 'owner' && onAddTenant));
+
   return (
     <Box
       sx={{
@@ -128,18 +131,12 @@ export default function UnifiedSidebar({
           minHeight: 100,
           transition: 'padding 0.3s',
           overflow: 'hidden',
-          cursor:
-            availableTenants.length > 1 || (userRole === 'owner' && onAddTenant)
-              ? 'pointer'
-              : 'default',
+          cursor: canSwitchTenants ? 'pointer' : 'default',
           '&:hover': {
-            bgcolor:
-              availableTenants.length > 1 || (userRole === 'owner' && onAddTenant)
-                ? alpha('#FFFFFF', 0.5)
-                : 'transparent',
+            bgcolor: canSwitchTenants ? alpha('#FFFFFF', 0.5) : 'transparent',
           },
         }}
-        onClick={handleOpenSwitcher}
+        onClick={canSwitchTenants ? handleOpenSwitcher : undefined}
       >
         <Box sx={{ position: 'relative' }}>
           <Avatar
@@ -157,7 +154,7 @@ export default function UnifiedSidebar({
           >
             {userInitial}
           </Avatar>
-          {(availableTenants.length > 1 || (userRole === 'owner' && onAddTenant)) && (
+          {canSwitchTenants && (
             <Box
               sx={{
                 position: 'absolute',

@@ -16,6 +16,7 @@ export type GeneralSettingsValues = {
   instagram: string;
   facebook: string;
   tiktok: string;
+  notes: string;
 };
 
 type Props = {
@@ -129,6 +130,18 @@ export default function GeneralSettingsForm({ value, onChange }: Props) {
               label="Official Website URL"
               value={value.websiteUrl}
               onChange={(e) => updateField('websiteUrl', e.target.value)}
+            />
+          </Grid>
+
+          <Grid item xs={12}>
+            <TextField
+              fullWidth
+              multiline
+              rows={4}
+              label="Salon Description"
+              placeholder="Tell your customers about your salon, your style, and what makes you unique..."
+              value={value.notes}
+              onChange={(e) => updateField('notes', e.target.value)}
             />
           </Grid>
         </Grid>

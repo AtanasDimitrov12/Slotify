@@ -10,7 +10,6 @@ describe('StaffProfilesService', () => {
 
   const mockStaffProfile = {
     _id: new Types.ObjectId(),
-    tenantId: new Types.ObjectId(),
     userId: new Types.ObjectId(),
     displayName: 'Barber John',
     bio: 'Expert barber',
@@ -55,21 +54,19 @@ describe('StaffProfilesService', () => {
       mockStaffProfileModel.create.mockResolvedValue(mockStaffProfile);
 
       const dto = {
-        tenantId: mockStaffProfile.tenantId.toString(),
         userId: mockStaffProfile.userId.toString(),
         displayName: 'Barber John',
       };
 
-      const result = await service.create(dto);
+      const result = await service.create(dto as any);
 
       expect(mockStaffProfileModel.create).toHaveBeenCalled();
       expect(result).toBeDefined();
     });
 
-    it('should throw BadRequestException for invalid tenantId', () => {
+    it('should throw BadRequestException for invalid userId', () => {
       const dto = {
-        tenantId: 'invalid',
-        userId: mockStaffProfile.userId.toString(),
+        userId: 'invalid',
         displayName: 'John',
       };
 
@@ -77,33 +74,26 @@ describe('StaffProfilesService', () => {
     });
   });
 
-  describe('findByTenantAndUser', () => {
+  describe('findByUserId', () => {
     it('should return a profile if found', async () => {
       mockStaffProfileModel.findOne.mockReturnValue({
         lean: jest.fn().mockResolvedValue(mockStaffProfile),
       });
 
-      const result = await service.findByTenantAndUser(
-        mockStaffProfile.tenantId.toString(),
-        mockStaffProfile.userId.toString(),
-      );
+      const result = await service.findByUserId(mockStaffProfile.userId.toString());
 
       expect(result).toEqual(mockStaffProfile);
     });
   });
 
-  describe('updateByTenantAndUser', () => {
+  describe('updateByUserId', () => {
     it('should update and return the profile', async () => {
       mockStaffProfileModel.findOneAndUpdate.mockReturnValue({
         lean: jest.fn().mockResolvedValue(mockStaffProfile),
       });
 
       const dto = { displayName: 'John Updated' };
-      const result = await service.updateByTenantAndUser(
-        mockStaffProfile.tenantId.toString(),
-        mockStaffProfile.userId.toString(),
-        dto,
-      );
+      const result = await service.updateByUserId(mockStaffProfile.userId.toString(), dto);
 
       expect(result).toEqual(mockStaffProfile);
     });
@@ -114,12 +104,27 @@ describe('StaffProfilesService', () => {
       });
 
       await expect(
-        service.updateByTenantAndUser(
-          new Types.ObjectId().toString(),
-          new Types.ObjectId().toString(),
-          { displayName: 'New' },
-        ),
+        service.updateByUserId(new Types.ObjectId().toString(), { displayName: 'New' }),
       ).rejects.toThrow(NotFoundException);
+    });
+  });
+
+  describe('upsert', () => {
+    it('should upsert and return the profile', async () => {
+      mockStaffProfileModel.findOneAndUpdate.mockReturnValue({
+        lean: jest.fn().mockResolvedValue(mockStaffProfile),
+      });
+
+      const result = await service.upsert(mockStaffProfile.userId.toString(), {
+        displayName: 'Upserted',
+      });
+
+      expect(result).toEqual(mockStaffProfile);
+      expect(mockStaffProfileModel.findOneAndUpdate).toHaveBeenCalledWith(
+        { userId: mockStaffProfile.userId },
+        expect.any(Object),
+        { upsert: true, returnDocument: 'after' },
+      );
     });
   });
 });

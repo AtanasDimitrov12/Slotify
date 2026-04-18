@@ -95,6 +95,7 @@ describe('OwnerSettingsService', () => {
         salonName: 'New Salon Name',
         contactEmail: 'new@salon.com',
         city: 'Amsterdam',
+        notes: 'Best salon in town',
       };
 
       await service.updateGeneral(mockUser, dto);
@@ -106,6 +107,7 @@ describe('OwnerSettingsService', () => {
         mockTenantId,
         expect.objectContaining({
           contactEmail: 'new@salon.com',
+          notes: 'Best salon in town',
           address: expect.objectContaining({ city: 'Amsterdam' }),
         }),
       );
@@ -124,6 +126,7 @@ describe('OwnerSettingsService', () => {
         _id: new Types.ObjectId(),
         tenantId: new Types.ObjectId(mockTenantId),
         contactEmail: 'x@x.com',
+        notes: 'Description of salon',
         __v: 0,
       } as never);
 
@@ -132,6 +135,7 @@ describe('OwnerSettingsService', () => {
       expect(result.salonName).toBe('Salon X');
       expect(result.timezone).toBe('Europe/Amsterdam');
       expect(result.city).toBe('');
+      expect(result.notes).toBe('Description of salon');
     });
   });
 });

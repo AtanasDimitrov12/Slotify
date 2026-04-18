@@ -1,4 +1,4 @@
-import { landingColors, useToast } from '@barber/shared';
+import { type AvailableTenant, landingColors, useToast } from '@barber/shared';
 import {
   alpha,
   Button,
@@ -18,6 +18,7 @@ import * as React from 'react';
 
 type ServiceOption = {
   id: string;
+  tenantId: string;
   name: string;
   durationMin: number;
   priceEUR: number;
@@ -29,6 +30,7 @@ export default function AddAppointmentDialog({
   onSubmit,
   creating,
   services,
+  salons,
   initialStartTime,
 }: {
   open: boolean;
@@ -40,14 +42,17 @@ export default function AddAppointmentDialog({
     customerPhone: string;
     customerEmail?: string;
     notes?: string;
+    tenantId: string;
   }) => Promise<void>;
   creating: boolean;
   services: ServiceOption[];
+  salons: AvailableTenant[];
   initialStartTime?: string;
 }) {
   const { showError, showSuccess } = useToast();
   const theme = useTheme();
   const fullScreen = useMediaQuery(theme.breakpoints.down('sm'));
+  const [selectedTenantId, setSelectedTenantId] = React.useState('');
   const [staffServiceAssignmentId, setStaffServiceAssignmentId] = React.useState('');
   const [startTime, setStartTime] = React.useState(initialStartTime ?? '10:00');
   const [customerName, setCustomerName] = React.useState('');
@@ -60,13 +65,16 @@ export default function AddAppointmentDialog({
       return;
     }
 
+    setSelectedTenantId(salons[0]?._id || '');
     setStaffServiceAssignmentId('');
     setStartTime(initialStartTime ?? '10:00');
     setCustomerName('');
     setCustomerPhone('');
     setCustomerEmail('');
     setNotes('');
-  }, [open, initialStartTime]);
+  }, [open, initialStartTime, salons]);
+
+  const filteredServices = services.filter((s) => s.tenantId === selectedTenantId);
 
   const validateEmail = (email: string) => {
     if (!email) return true;
@@ -82,6 +90,10 @@ export default function AddAppointmentDialog({
   };
 
   async function handleSubmit() {
+    if (!selectedTenantId) {
+      showError('Please select a salon.');
+      return;
+    }
     if (!staffServiceAssignmentId) {
       showError('Please select a service.');
       return;
@@ -111,6 +123,7 @@ export default function AddAppointmentDialog({
         customerPhone: customerPhone.trim(),
         customerEmail: customerEmail.trim().toLowerCase() || undefined,
         notes: notes.trim() || undefined,
+        tenantId: selectedTenantId,
       });
       showSuccess('Appointment booked successfully.');
     } catch (err) {
@@ -142,13 +155,32 @@ export default function AddAppointmentDialog({
           <Stack spacing={2.5}>
             <TextField
               select
+              label="Select Salon"
+              value={selectedTenantId}
+              onChange={(e) => {
+                setSelectedTenantId(e.target.value);
+                setStaffServiceAssignmentId('');
+              }}
+              fullWidth
+              required
+            >
+              {salons.map((salon) => (
+                <MenuItem key={salon._id} value={salon._id}>
+                  {salon.name}
+                </MenuItem>
+              ))}
+            </TextField>
+
+            <TextField
+              select
               label="Select Service"
               value={staffServiceAssignmentId}
               onChange={(e) => setStaffServiceAssignmentId(e.target.value)}
               fullWidth
               required
+              disabled={!selectedTenantId}
             >
-              {services.map((service) => (
+              {filteredServices.map((service) => (
                 <MenuItem key={service.id} value={service.id}>
                   {service.name} · {service.durationMin} min · €{service.priceEUR}
                 </MenuItem>

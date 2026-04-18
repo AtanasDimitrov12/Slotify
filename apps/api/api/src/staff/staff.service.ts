@@ -106,11 +106,10 @@ export class StaffService {
   }
 
   async getMyProfile(currentUser: JwtPayload) {
-    const tenantId = this.getTenantIdOrThrow(currentUser);
     const userId = this.getUserIdOrThrow(currentUser);
 
     const user = await this.usersService.findById(userId);
-    const profile = await this.staffProfilesService.findByTenantAndUser(tenantId, userId);
+    const profile = await this.staffProfilesService.findByUserId(userId);
 
     if (!profile) {
       throw new NotFoundException('Staff profile not found');
@@ -118,7 +117,6 @@ export class StaffService {
 
     return {
       id: profile._id.toString(),
-      tenantId: profile.tenantId.toString(),
       userId: profile.userId.toString(),
       name: profile.displayName || user?.name || '',
       email: user?.email || '',
@@ -132,16 +130,14 @@ export class StaffService {
   }
 
   async updateMyProfile(currentUser: JwtPayload, dto: UpdateStaffProfileDto) {
-    const tenantId = this.getTenantIdOrThrow(currentUser);
     const userId = this.getUserIdOrThrow(currentUser);
 
-    const updated = await this.staffProfilesService.updateByTenantAndUser(tenantId, userId, dto);
+    const updated = await this.staffProfilesService.updateByUserId(userId, dto);
 
     const user = await this.usersService.findById(userId);
 
     return {
       id: updated._id.toString(),
-      tenantId: updated.tenantId.toString(),
       userId: updated.userId.toString(),
       name: updated.displayName || user?.name || '',
       email: user?.email || '',
@@ -202,9 +198,7 @@ export class StaffService {
     // Try to reuse profile data if user already exists in other salons
     const existingProfile = await this.staffProfilesService.findAnyByUserId(userId);
 
-    const staffProfile = await this.staffProfilesService.create({
-      tenantId,
-      userId,
+    const staffProfile = await this.staffProfilesService.upsert(userId, {
       displayName: existingProfile?.displayName || dto.name.trim(),
       bio: existingProfile?.bio || '',
       experienceYears: existingProfile?.experienceYears || 0,
@@ -317,28 +311,6 @@ export class StaffService {
     return result;
   }
 
-  async getAnyOtherProfile(currentUser: JwtPayload) {
-    const currentTenantId = this.getTenantIdOrThrow(currentUser);
-    const userId = this.getUserIdOrThrow(currentUser);
-
-    // Find profiles for this user NOT in the current tenant
-    const otherProfile = await this.staffProfilesService.findOtherByUserId(userId, currentTenantId);
-
-    if (!otherProfile) {
-      throw new NotFoundException('No other profile found to sync from');
-    }
-
-    const user = await this.usersService.findById(userId);
-
-    return {
-      displayName: otherProfile.displayName || user?.name || '',
-      bio: otherProfile.bio || '',
-      experienceYears: otherProfile.experienceYears || 0,
-      expertiseTags: otherProfile.expertise || [],
-      avatarUrl: otherProfile.avatarUrl || '',
-    };
-  }
-
   async listStaff(currentUser: JwtPayload) {
     const tenantId = this.getTenantIdOrThrow(currentUser);
 
@@ -355,7 +327,7 @@ export class StaffService {
         const userId = membership.userId.toString();
 
         const user = await this.usersService.findById(userId);
-        const profile = await this.staffProfilesService.findByTenantAndUser(tenantId, userId);
+        const profile = await this.staffProfilesService.findByUserId(userId);
 
         return {
           id: profile?._id?.toString() ?? userId,
@@ -377,7 +349,6 @@ export class StaffService {
   }
 
   async getMyAvailability(currentUser: JwtPayload) {
-    const tenantId = this.getTenantIdOrThrow(currentUser);
     const userId = this.getUserIdOrThrow(currentUser);
     const availability = await this.staffAvailabilityService.findByUser(userId);
 
@@ -385,74 +356,55 @@ export class StaffService {
       throw new NotFoundException('Staff availability not found');
     }
 
-    // Filter slots by current tenantId
-    const filteredWeeklyAvailability = (availability.weeklyAvailability ?? []).map((day) => ({
-      dayOfWeek: day.dayOfWeek,
-      isAvailable: day.isAvailable,
-      slots: (day.slots ?? []).filter((slot) => slot.tenantId.toString() === tenantId),
-    }));
-
     return {
       id: availability._id.toString(),
       userId: availability.userId.toString(),
-      weeklyAvailability: filteredWeeklyAvailability,
+      weeklyAvailability: availability.weeklyAvailability ?? [],
     };
   }
 
   async updateMyAvailability(currentUser: JwtPayload, dto: UpdateStaffAvailabilityDto) {
-    const tenantId = this.getTenantIdOrThrow(currentUser);
     const userId = this.getUserIdOrThrow(currentUser);
 
-    const existing = await this.staffAvailabilityService.findByUser(userId);
+    // Validate no overlaps across ALL slots for each day
+    for (const day of dto.weeklyAvailability) {
+      const slots = day.slots || [];
+      for (let i = 0; i < slots.length; i++) {
+        for (let j = i + 1; j < slots.length; j++) {
+          const s1 = slots[i];
+          const s2 = slots[j];
 
-    if (!existing) {
-      // If no availability exists, create one with the provided slots
-      const updated = await this.staffAvailabilityService.upsertByUser(
-        userId,
-        dto.weeklyAvailability.map((day) => ({
-          ...day,
-          slots: (day.slots ?? []).map((s) => ({ ...s, tenantId })),
-        })),
-      );
+          const start1 = s1.startTime;
+          const end1 = s1.endTime;
+          const start2 = s2.startTime;
+          const end2 = s2.endTime;
 
-      return {
-        id: updated._id.toString(),
-        userId: updated.userId.toString(),
-        weeklyAvailability: updated.weeklyAvailability ?? [],
-      };
+          if (start1 < end2 && start2 < end1) {
+            throw new BadRequestException(
+              `Time conflict detected on day ${day.dayOfWeek} between ${start1}-${end1} and ${start2}-${end2}`,
+            );
+          }
+        }
+      }
     }
 
-    // Merge: For each day, keep slots from other tenants and replace slots for current tenant
-    const newWeeklyAvailability = dto.weeklyAvailability.map((newDay) => {
-      const existingDay = existing.weeklyAvailability.find((d) => d.dayOfWeek === newDay.dayOfWeek);
+    const updated = await this.staffAvailabilityService.upsertByUser(
+      userId,
+      dto.weeklyAvailability.map((day) => ({
+        dayOfWeek: day.dayOfWeek,
+        isAvailable: day.isAvailable,
+        slots: (day.slots ?? []).map((s) => ({
+          startTime: s.startTime,
+          endTime: s.endTime,
+          tenantId: new Types.ObjectId(s.tenantId),
+        })),
+      })),
+    );
 
-      const otherTenantsSlots = (existingDay?.slots ?? []).filter(
-        (slot) => slot.tenantId.toString() !== tenantId,
-      );
-
-      const currentTenantSlots = (newDay.slots ?? []).map((slot) => ({
-        ...slot,
-        tenantId,
-      }));
-
-      return {
-        dayOfWeek: newDay.dayOfWeek,
-        isAvailable: newDay.isAvailable, // We keep the day's availability status from the DTO
-        slots: [...otherTenantsSlots, ...currentTenantSlots],
-      };
-    });
-
-    const updated = await this.staffAvailabilityService.upsertByUser(userId, newWeeklyAvailability);
-
-    // Return only the current tenant's view
     return {
       id: updated._id.toString(),
       userId: updated.userId.toString(),
-      weeklyAvailability: (updated.weeklyAvailability ?? []).map((day) => ({
-        dayOfWeek: day.dayOfWeek,
-        isAvailable: day.isAvailable,
-        slots: (day.slots ?? []).filter((slot) => slot.tenantId.toString() === tenantId),
-      })),
+      weeklyAvailability: updated.weeklyAvailability ?? [],
     };
   }
 

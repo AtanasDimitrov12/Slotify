@@ -69,16 +69,8 @@ export class PublicBookingService {
 
     const tenantId = new Types.ObjectId(String(tenant._id));
 
-    const [details, staffProfiles, assignments, bookingSettings] = await Promise.all([
+    const [details, assignments, bookingSettings] = await Promise.all([
       this.tenantDetailsModel.findOne({ tenantId: String(tenant._id), isPublished: true }).lean(),
-      this.staffProfileModel
-        .find({
-          tenantId,
-          isBookable: true,
-          isActive: true,
-        })
-        .sort({ displayName: 1 })
-        .lean(),
       this.staffServiceAssignmentModel
         .find({
           tenantId,
@@ -87,6 +79,29 @@ export class PublicBookingService {
         .lean(),
       this.tenantBookingSettingsModel.findOne({ tenantId }).lean(),
     ]);
+
+    const staffUserIds = [...new Set(assignments.map((a) => a.userId))];
+
+    const allStaffProfiles = await this.staffProfileModel
+      .find({
+        userId: { $in: staffUserIds },
+        isBookable: true,
+        isActive: true,
+      })
+      .sort({ updatedAt: -1 })
+      .lean();
+
+    // Deduplicate profiles by userId in case legacy duplicates exist
+    const staffProfilesMap = new Map();
+    for (const p of allStaffProfiles) {
+      const uid = p.userId.toString();
+      if (!staffProfilesMap.has(uid)) {
+        staffProfilesMap.set(uid, p);
+      }
+    }
+    const staffProfiles = Array.from(staffProfilesMap.values()).sort((a, b) =>
+      a.displayName.localeCompare(b.displayName),
+    );
 
     const activeStaffIds = new Set(staffProfiles.map((staff) => String(staff.userId)));
 
@@ -297,7 +312,6 @@ export class PublicBookingService {
     const [staffProfile, assignment] = await Promise.all([
       this.staffProfileModel
         .findOne({
-          tenantId,
           userId: staffId,
           isBookable: true,
           isActive: true,
@@ -396,7 +410,6 @@ export class PublicBookingService {
     const [staffProfile, assignment] = await Promise.all([
       this.staffProfileModel
         .findOne({
-          tenantId,
           userId: staffId,
           isBookable: true,
           isActive: true,
@@ -574,7 +587,6 @@ export class PublicBookingService {
 
     const activeStaffProfiles = await this.staffProfileModel
       .find({
-        tenantId,
         userId: { $in: assignments.map((assignment) => assignment.userId) },
         isBookable: true,
         isActive: true,
@@ -724,7 +736,7 @@ export class PublicBookingService {
         })
         .sort({ startTime: 1 })
         .lean(),
-      this.staffProfileModel.findOne({ tenantId, userId: new Types.ObjectId(staffId) }).lean(),
+      this.staffProfileModel.findOne({ userId: new Types.ObjectId(staffId) }).lean(),
     ]);
 
     const staffDayEntries =

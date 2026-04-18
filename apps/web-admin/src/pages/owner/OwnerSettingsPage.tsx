@@ -67,6 +67,7 @@ const emptyGeneralSettings: GeneralSettingsValues = {
   instagram: '',
   facebook: '',
   tiktok: '',
+  notes: '',
 };
 
 const defaultOpeningHours: OpeningDay[] = [
@@ -137,6 +138,7 @@ export default function OwnerSettingsPage() {
         instagram: data.instagram ?? '',
         facebook: data.facebook ?? '',
         tiktok: data.tiktok ?? '',
+        notes: data.notes ?? '',
       });
 
       setOpeningHours(mapOpeningHoursFromApi(data.openingHours));

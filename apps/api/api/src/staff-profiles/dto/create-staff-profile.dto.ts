@@ -12,9 +12,6 @@ import {
 
 export class CreateStaffProfileDto {
   @IsMongoId()
-  tenantId!: string;
-
-  @IsMongoId()
   userId!: string;
 
   @IsString()

@@ -198,13 +198,13 @@ export class StaffAppointmentsService {
   }
 
   async list(params: {
-    tenantId: string;
+    tenantIds: string[];
     userId: string;
     date?: string;
     startDate?: string;
     endDate?: string;
   }) {
-    const tenantId = new Types.ObjectId(params.tenantId);
+    const tenantObjectIds = params.tenantIds.map((id) => new Types.ObjectId(id));
     const userId = new Types.ObjectId(params.userId);
 
     let queryStart: Date;
@@ -226,7 +226,7 @@ export class StaffAppointmentsService {
 
     const reservations = await this.reservationModel
       .find({
-        tenantId,
+        tenantId: { $in: tenantObjectIds },
         staffId: userId,
         startTime: { $lt: queryEnd },
         endTime: { $gt: queryStart },
@@ -234,15 +234,21 @@ export class StaffAppointmentsService {
       .sort({ startTime: 1 })
       .lean();
 
+    const tenantDetails = await this.tenantDetailsModel
+      .find({ tenantId: { $in: params.tenantIds } })
+      .lean();
+    const tenantDetailsMap = new Map(tenantDetails.map((d) => [d.tenantId, d]));
+
     const result = await Promise.all(
       reservations.map(async (reservation) => {
         const insights = await this.calculateFullRisk(
-          params.tenantId,
+          String(reservation.tenantId),
           reservation.customerPhone,
           String(reservation._id),
         );
         return {
           id: String(reservation._id),
+          tenantId: String(reservation.tenantId),
           startTime: reservation.startTime,
           endTime: reservation.endTime,
           durationMin: reservation.durationMin,
@@ -263,13 +269,13 @@ export class StaffAppointmentsService {
     return result;
   }
 
-  async listBookableServicesForStaff(params: { tenantId: string; userId: string }) {
-    const tenantId = new Types.ObjectId(params.tenantId);
+  async listBookableServicesForStaff(params: { tenantIds: string[]; userId: string }) {
+    const tenantObjectIds = params.tenantIds.map((id) => new Types.ObjectId(id));
     const userId = new Types.ObjectId(params.userId);
 
     const assignments = await this.staffServiceAssignmentModel
       .find({
-        tenantId,
+        tenantId: { $in: tenantObjectIds },
         userId,
         isOffered: true,
       })
@@ -284,7 +290,6 @@ export class StaffAppointmentsService {
     const services = await this.serviceModel
       .find({
         _id: { $in: serviceIds },
-        tenantId,
         isActive: true,
       })
       .lean();
@@ -298,6 +303,7 @@ export class StaffAppointmentsService {
 
         return {
           id: String(assignment._id), // IMPORTANT: bookable id = assignment id
+          tenantId: String(assignment.tenantId),
           serviceId: String(service._id),
           name: service.name,
           durationMin: assignment.customDurationMinutes ?? service.durationMin,

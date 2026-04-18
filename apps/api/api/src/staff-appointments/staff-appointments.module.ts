@@ -8,6 +8,7 @@ import {
   CustomerProfile,
   CustomerProfileSchema,
 } from '../customer-profiles/customer-profile.schema';
+import { MembershipsModule } from '../memberships/memberships.module';
 import { Reservation, ReservationSchema } from '../reservations/reservation.schema';
 import { Service, ServiceSchema } from '../services/service.schema';
 import {
@@ -35,6 +36,7 @@ import { StaffAppointmentsService } from './staff-appointments.service';
 
 @Module({
   imports: [
+    MembershipsModule,
     MongooseModule.forFeature([
       { name: Reservation.name, schema: ReservationSchema },
       { name: Service.name, schema: ServiceSchema },

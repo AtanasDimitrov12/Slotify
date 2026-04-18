@@ -1,5 +1,7 @@
 import {
+  type AvailableTenant,
   getMyStaffAvailability,
+  getMyTenants,
   landingColors,
   updateMyStaffAvailability,
   useToast,
@@ -49,6 +51,7 @@ function mapApiToUi(
 export default function StaffAvailabilityPage() {
   const { showError, showSuccess } = useToast();
   const [schedule, setSchedule] = React.useState<DaySchedule[]>(defaultSchedule);
+  const [salons, setSalons] = React.useState<AvailableTenant[]>([]);
   const [loading, setLoading] = React.useState(true);
   const [saving, setSaving] = React.useState(false);
   const [error, setError] = React.useState('');
@@ -58,7 +61,16 @@ export default function StaffAvailabilityPage() {
     setError('');
 
     try {
-      const availability = await getMyStaffAvailability();
+      const [availability, myTenants] = await Promise.all([
+        getMyStaffAvailability(),
+        getMyTenants(),
+      ]);
+
+      const mappedTenants: AvailableTenant[] = myTenants
+        .filter((t: any) => t._id && t.name)
+        .map((t: any) => ({ _id: t._id, name: t.name }));
+
+      setSalons(mappedTenants);
       setSchedule(mapApiToUi(availability.weeklyAvailability));
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load availability');
@@ -87,7 +99,7 @@ export default function StaffAvailabilityPage() {
         })),
       });
 
-      showSuccess('Availability updated for the current salon.');
+      showSuccess('Availability updated successfully.');
     } catch (err) {
       showError(err);
     } finally {
@@ -121,11 +133,10 @@ export default function StaffAvailabilityPage() {
             Availability
           </Typography>
           <Typography sx={{ color: '#64748B', fontWeight: 600, fontSize: 18 }}>
-            Set your working hours for the currently selected salon.
+            Set your working hours and select which salon you'll be working in for each shift.
           </Typography>
           <Typography sx={{ color: '#94A3B8', fontWeight: 700, fontSize: 13, mt: 1 }}>
-            Availability is salon-specific. Switch salons from the sidebar to manage a different
-            schedule.
+            Your schedule is shared across all salons you work in to prevent double-booking.
           </Typography>
         </Box>
 
@@ -155,7 +166,7 @@ export default function StaffAvailabilityPage() {
         </Alert>
       ) : null}
 
-      <WeeklyScheduleEditor value={schedule} onChange={setSchedule} />
+      <WeeklyScheduleEditor value={schedule} onChange={setSchedule} salons={salons} />
     </Stack>
   );
 }

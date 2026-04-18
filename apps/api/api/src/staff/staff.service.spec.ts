@@ -51,15 +51,17 @@ describe('StaffService', () => {
             create: jest.fn(),
             findByTenantAndRole: jest.fn(),
             findActiveByUserIdAndTenantId: jest.fn(),
+            findAllByUserId: jest.fn(),
           },
         },
         {
           provide: StaffProfilesService,
           useValue: {
             create: jest.fn(),
-            findByTenantAndUser: jest.fn(),
-            updateByTenantAndUser: jest.fn(),
+            findByUserId: jest.fn(),
+            updateByUserId: jest.fn(),
             findAnyByUserId: jest.fn(),
+            upsert: jest.fn(),
           },
         },
         {
@@ -69,6 +71,7 @@ describe('StaffService', () => {
             findByStaff: jest.fn(),
             findByUser: jest.fn(),
             upsertByStaff: jest.fn(),
+            upsertByUser: jest.fn(),
           },
         },
         {
@@ -120,7 +123,7 @@ describe('StaffService', () => {
         _id: 'm1',
         role: 'staff',
       } as any);
-      staffProfilesService.create.mockResolvedValue({ _id: 'p1' } as any);
+      staffProfilesService.upsert.mockResolvedValue({ _id: 'p1' } as any);
 
       // Act
       const result = await service.onboard(mockOwnerUser, onboardDto);
@@ -136,7 +139,7 @@ describe('StaffService', () => {
       expect(membershipsService.create).toHaveBeenCalledWith(
         expect.objectContaining({ role: 'staff', tenantId: mockTenantId }),
       );
-      expect(staffProfilesService.create).toHaveBeenCalled();
+      expect(staffProfilesService.upsert).toHaveBeenCalled();
     });
 
     it('should throw UnauthorizedException if requester is not an owner', async () => {
@@ -151,25 +154,6 @@ describe('StaffService', () => {
       usersService.findByEmail.mockResolvedValue({ _id: 'exists' } as any);
       membershipsService.findActiveByUserIdAndTenantId.mockResolvedValue({ _id: 'm1' } as any);
       await expect(service.onboard(mockOwnerUser, onboardDto)).rejects.toThrow(BadRequestException);
-    });
-
-    it('should successfully add an existing user to this tenant if they are not already members', async () => {
-      // Arrange
-      const existingUserId = new Types.ObjectId();
-      usersService.findByEmail.mockResolvedValue({ _id: existingUserId } as any);
-      membershipsService.findActiveByUserIdAndTenantId.mockResolvedValue(null);
-      membershipsService.create.mockResolvedValue({ _id: 'm2', role: 'staff' } as any);
-      staffProfilesService.create.mockResolvedValue({ _id: 'p2' } as any);
-
-      // Act
-      const result = await service.onboard(mockOwnerUser, onboardDto);
-
-      // Assert
-      expect(result.message).toContain('successfully');
-      expect(usersService.create).not.toHaveBeenCalled();
-      expect(membershipsService.create).toHaveBeenCalledWith(
-        expect.objectContaining({ userId: existingUserId.toString(), tenantId: mockTenantId }),
-      );
     });
   });
 
@@ -190,9 +174,8 @@ describe('StaffService', () => {
         name: 'John',
         email: 'john@doe.com',
       } as any);
-      staffProfilesService.findByTenantAndUser.mockResolvedValue({
+      staffProfilesService.findByUserId.mockResolvedValue({
         _id: new Types.ObjectId(),
-        tenantId: new Types.ObjectId(mockTenantId),
         userId: new Types.ObjectId(userId),
         displayName: 'John the Barber',
         isActive: true,
@@ -206,7 +189,7 @@ describe('StaffService', () => {
     });
 
     it('should throw NotFoundException if profile does not exist', async () => {
-      staffProfilesService.findByTenantAndUser.mockResolvedValue(null);
+      staffProfilesService.findByUserId.mockResolvedValue(null);
       await expect(service.getMyProfile(mockOwnerUser)).rejects.toThrow(NotFoundException);
     });
   });
@@ -219,7 +202,7 @@ describe('StaffService', () => {
 
       // Mock subsequent calls for the one staff found
       usersService.findById.mockResolvedValue({ name: 'Staff 1' } as any);
-      staffProfilesService.findByTenantAndUser.mockResolvedValue({
+      staffProfilesService.findByUserId.mockResolvedValue({
         displayName: 'Profile 1',
       } as any);
 

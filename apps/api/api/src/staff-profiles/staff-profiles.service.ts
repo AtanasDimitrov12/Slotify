@@ -12,70 +12,51 @@ export class StaffProfilesService {
     private readonly staffProfileModel: Model<StaffProfileDocument>,
   ) {}
 
-  create(dto: CreateStaffProfileDto) {
-    if (!Types.ObjectId.isValid(dto.tenantId)) {
-      throw new BadRequestException('Invalid tenantId');
+  async upsert(userId: string, dto: UpdateStaffProfileDto) {
+    if (!Types.ObjectId.isValid(userId)) {
+      throw new BadRequestException('Invalid userId');
     }
 
+    return this.staffProfileModel
+      .findOneAndUpdate(
+        { userId: new Types.ObjectId(userId) },
+        { $set: { ...dto, userId: new Types.ObjectId(userId) } },
+        { upsert: true, returnDocument: 'after' },
+      )
+      .lean();
+  }
+
+  create(dto: CreateStaffProfileDto) {
     if (!Types.ObjectId.isValid(dto.userId)) {
       throw new BadRequestException('Invalid userId');
     }
 
     return this.staffProfileModel.create({
       ...dto,
-      tenantId: new Types.ObjectId(dto.tenantId),
       userId: new Types.ObjectId(dto.userId),
     });
   }
 
-  findAllByTenant(tenantId: string) {
-    return this.staffProfileModel.find({ tenantId, isActive: true }).lean();
+  findByUserId(userId: string) {
+    if (!Types.ObjectId.isValid(userId)) {
+      throw new BadRequestException('Invalid userId');
+    }
+
+    return this.staffProfileModel
+      .findOne({
+        userId: new Types.ObjectId(userId),
+        isActive: true,
+      })
+      .lean();
   }
 
+  // Backwards compatibility for findAnyByUserId
   findAnyByUserId(userId: string) {
-    if (!Types.ObjectId.isValid(userId)) {
-      throw new BadRequestException('Invalid userId');
-    }
-
-    return this.staffProfileModel
-      .findOne({
-        userId: new Types.ObjectId(userId),
-        isActive: true,
-      })
-      .lean();
-  }
-
-  findOtherByUserId(userId: string, currentTenantId: string) {
-    if (!Types.ObjectId.isValid(userId)) {
-      throw new BadRequestException('Invalid userId');
-    }
-
-    return this.staffProfileModel
-      .findOne({
-        userId: new Types.ObjectId(userId),
-        tenantId: { $ne: new Types.ObjectId(currentTenantId) },
-        isActive: true,
-      })
-      .sort({ updatedAt: -1 })
-      .lean();
+    return this.findByUserId(userId);
   }
 
   findOne(id: string) {
     return this.staffProfileModel.findById(id).lean();
-  }
-
-  findByTenantAndUser(tenantId: string, userId: string) {
-    if (!Types.ObjectId.isValid(tenantId) || !Types.ObjectId.isValid(userId)) {
-      throw new BadRequestException('Invalid tenantId or userId');
-    }
-
-    return this.staffProfileModel
-      .findOne({
-        tenantId: new Types.ObjectId(tenantId),
-        userId: new Types.ObjectId(userId),
-        isActive: true,
-      })
-      .lean();
   }
 
   async update(id: string, dto: UpdateStaffProfileDto) {
@@ -87,11 +68,10 @@ export class StaffProfilesService {
     return updated;
   }
 
-  async updateByTenantAndUser(tenantId: string, userId: string, dto: UpdateStaffProfileDto) {
+  async updateByUserId(userId: string, dto: UpdateStaffProfileDto) {
     const updated = await this.staffProfileModel
       .findOneAndUpdate(
         {
-          tenantId: new Types.ObjectId(tenantId),
           userId: new Types.ObjectId(userId),
           isActive: true,
         },

@@ -12,11 +12,6 @@ export class StaffProfilesController {
     return this.staffProfilesService.create(dto);
   }
 
-  @Get()
-  findAllByTenant(@Query('tenantId') tenantId: string) {
-    return this.staffProfilesService.findAllByTenant(tenantId);
-  }
-
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.staffProfilesService.findOne(id);

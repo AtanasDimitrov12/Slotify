@@ -1,4 +1,4 @@
-import { landingColors } from '@barber/shared';
+import { type AvailableTenant, landingColors } from '@barber/shared';
 import AddRoundedIcon from '@mui/icons-material/AddRounded';
 import DeleteRoundedIcon from '@mui/icons-material/DeleteRounded';
 import {
@@ -8,6 +8,7 @@ import {
   Card,
   CardContent,
   Grid,
+  MenuItem,
   Stack,
   Switch,
   TextField,
@@ -18,9 +19,10 @@ import type { DaySchedule } from './types';
 type Props = {
   value: DaySchedule[];
   onChange: (next: DaySchedule[]) => void;
+  salons: AvailableTenant[];
 };
 
-export default function WeeklyScheduleEditor({ value, onChange }: Props) {
+export default function WeeklyScheduleEditor({ value, onChange, salons }: Props) {
   function patch(dayOfWeek: number, patchObj: Partial<DaySchedule>) {
     onChange(value.map((d) => (d.dayOfWeek === dayOfWeek ? { ...d, ...patchObj } : d)));
   }
@@ -32,7 +34,7 @@ export default function WeeklyScheduleEditor({ value, onChange }: Props) {
     const newSlot = {
       startTime: '09:00',
       endTime: '17:00',
-      tenantId: '', // Backend will fill this from token
+      tenantId: salons[0]?._id || '',
     };
 
     patch(dayOfWeek, { slots: [...day.slots, newSlot] });
@@ -70,7 +72,7 @@ export default function WeeklyScheduleEditor({ value, onChange }: Props) {
           Weekly Availability
         </Typography>
         <Typography sx={{ color: '#64748B', fontWeight: 600, fontSize: 15, mb: 4 }}>
-          Set your working hours for the currently selected salon.
+          Set your working hours and select the salon for each time slot.
         </Typography>
 
         <Stack spacing={2.5}>
@@ -138,56 +140,78 @@ export default function WeeklyScheduleEditor({ value, onChange }: Props) {
 
                 {d.enabled && d.slots.length > 0 && (
                   <Stack spacing={1.5}>
-                    {d.slots.map((slot, idx) => (
-                      <Grid container spacing={2} key={idx} alignItems="center">
-                        <Grid item xs={5} sm={5}>
-                          <TextField
-                            fullWidth
-                            label="Start"
-                            type="time"
-                            size="small"
-                            value={slot.startTime}
-                            onChange={(e) =>
-                              updateSlot(d.dayOfWeek, idx, { startTime: e.target.value })
-                            }
-                            InputLabelProps={{ shrink: true }}
-                          />
-                        </Grid>
-                        <Grid item xs={5} sm={5}>
-                          <TextField
-                            fullWidth
-                            label="End"
-                            type="time"
-                            size="small"
-                            value={slot.endTime}
-                            onChange={(e) =>
-                              updateSlot(d.dayOfWeek, idx, { endTime: e.target.value })
-                            }
-                            InputLabelProps={{ shrink: true }}
-                          />
-                        </Grid>
-                        <Grid
-                          item
-                          xs={2}
-                          sm={2}
-                          sx={{ display: 'flex', justifyContent: 'flex-end' }}
-                        >
-                          <Button
-                            size="small"
-                            onClick={() => removeSlot(d.dayOfWeek, idx)}
-                            sx={{
-                              minWidth: 40,
-                              height: 40,
-                              borderRadius: 2,
-                              color: '#94A3B8',
-                              '&:hover': { color: '#F43F5E', bgcolor: alpha('#F43F5E', 0.05) },
-                            }}
+                    {d.slots.map((slot, idx) => {
+                      const slotKey = `${d.dayOfWeek}-${slot.tenantId}-${slot.startTime}-${slot.endTime}`;
+
+                      return (
+                        <Grid container spacing={2} key={slotKey} alignItems="center">
+                          <Grid item xs={12} sm={3.5}>
+                            <TextField
+                              fullWidth
+                              label="Start"
+                              type="time"
+                              size="small"
+                              value={slot.startTime}
+                              onChange={(e) =>
+                                updateSlot(d.dayOfWeek, idx, { startTime: e.target.value })
+                              }
+                              InputLabelProps={{ shrink: true }}
+                            />
+                          </Grid>
+                          <Grid item xs={12} sm={3.5}>
+                            <TextField
+                              fullWidth
+                              label="End"
+                              type="time"
+                              size="small"
+                              value={slot.endTime}
+                              onChange={(e) =>
+                                updateSlot(d.dayOfWeek, idx, { endTime: e.target.value })
+                              }
+                              InputLabelProps={{ shrink: true }}
+                            />
+                          </Grid>
+                          <Grid item xs={10} sm={4}>
+                            <TextField
+                              select
+                              fullWidth
+                              label="Salon"
+                              size="small"
+                              value={slot.tenantId}
+                              onChange={(e) =>
+                                updateSlot(d.dayOfWeek, idx, { tenantId: e.target.value })
+                              }
+                            >
+                              {salons.map((salon) => (
+                                <MenuItem key={salon._id} value={salon._id}>
+                                  {salon.name}
+                                </MenuItem>
+                              ))}
+                            </TextField>
+                          </Grid>
+                          <Grid
+                            item
+                            xs={2}
+                            sm={1}
+                            sx={{ display: 'flex', justifyContent: 'flex-end' }}
                           >
-                            <DeleteRoundedIcon fontSize="small" />
-                          </Button>
+                            <Button
+                              size="small"
+                              onClick={() => removeSlot(d.dayOfWeek, idx)}
+                              sx={{
+                                minWidth: 40,
+                                height: 40,
+                                borderRadius: 2,
+                                color: '#94A3B8',
+                                '&:hover': { color: '#F43F5E', bgcolor: alpha('#F43F5E', 0.05) },
+                              }}
+                            >
+                              <DeleteRoundedIcon fontSize="small" />
+                            </Button>
+                          </Grid>
                         </Grid>
-                      </Grid>
-                    ))}
+                      );
+                    })}
                   </Stack>
                 )}
               </Stack>

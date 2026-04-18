@@ -2,6 +2,7 @@ import { apiFetch } from './http';
 
 export type StaffAppointment = {
   id: string;
+  tenantId: string;
   startTime: string;
   endTime: string;
   durationMin: number;
@@ -19,6 +20,7 @@ export type StaffAppointment = {
 
 export type StaffServiceOption = {
   id: string; // assignment id
+  tenantId: string;
   serviceId: string;
   name: string;
   durationMin: number;
@@ -63,13 +65,13 @@ export async function listStaffAppointments(params: {
 }): Promise<StaffAppointment[]> {
   const query = new URLSearchParams();
   if (params.date) {
-    query.set('date', new Date(`${params.date}T12:00:00`).toISOString());
+    query.set('date', params.date);
   }
   if (params.startDate) {
-    query.set('startDate', new Date(`${params.startDate}T12:00:00`).toISOString());
+    query.set('startDate', params.startDate);
   }
   if (params.endDate) {
-    query.set('endDate', new Date(`${params.endDate}T12:00:00`).toISOString());
+    query.set('endDate', params.endDate);
   }
 
   return apiFetch<StaffAppointment[]>(`/staff/me/appointments?${query.toString()}`);

@@ -97,12 +97,6 @@ export class StaffController {
     return this.staffService.removeMyService(currentUser, id);
   }
 
-  @Get('me/sync-profile')
-  @UseGuards(JwtAuthGuard)
-  getOtherProfile(@CurrentUser() currentUser: JwtPayload) {
-    return this.staffService.getAnyOtherProfile(currentUser);
-  }
-
   @Get('available')
   @UseGuards(JwtAuthGuard)
   listAvailable(@CurrentUser() currentUser: JwtPayload) {
