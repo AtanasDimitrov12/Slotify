@@ -2,6 +2,7 @@ import { BadRequestException, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { Test, type TestingModule } from '@nestjs/testing';
 import * as bcrypt from 'bcryptjs';
+import { Types } from 'mongoose';
 import { CustomerProfilesService } from '../customer-profiles/customer-profiles.service';
 import { MembershipsService } from '../memberships/memberships.service';
 import { TenantsService } from '../tenants/tenants.service';
@@ -130,6 +131,81 @@ describe('AuthService (Security & Multi-tenancy)', () => {
       expect(result).toHaveProperty('accessToken');
       expect(result.account.accountType).toBe('customer');
       expect(result.account.role).toBe('customer');
+    });
+
+    it('should throw UnauthorizedException if internal user has no memberships', async () => {
+      (usersService.findByEmail as jest.Mock).mockResolvedValue(mockUser);
+      (bcrypt.compare as jest.Mock).mockResolvedValue(true);
+      (membershipsService.findAllByUserId as jest.Mock).mockResolvedValue([]);
+
+      await expect(service.login(loginDto)).rejects.toThrow(UnauthorizedException);
+    });
+
+    it('should throw UnauthorizedException if provided tenantId is not linked to user', async () => {
+      (usersService.findByEmail as jest.Mock).mockResolvedValue(mockUser);
+      (bcrypt.compare as jest.Mock).mockResolvedValue(true);
+      (membershipsService.findActiveByUserIdAndTenantId as jest.Mock).mockResolvedValue(null);
+
+      await expect(service.login({ ...loginDto, tenantId: 'wrong-t' })).rejects.toThrow(
+        UnauthorizedException,
+      );
+    });
+  });
+
+  describe('switchTenant Logic', () => {
+    it('should successfully switch tenant', async () => {
+      const mockUserDoc = { _id: 'u1', name: 'John', email: 'j@j.com' };
+      const mockMembership = { tenantId: 't2', role: 'staff' };
+
+      (usersService.findById as jest.Mock).mockResolvedValue(mockUserDoc);
+      (membershipsService.findActiveByUserIdAndTenantId as jest.Mock).mockResolvedValue(
+        mockMembership,
+      );
+
+      const result = await service.switchTenant('u1', 't2');
+
+      expect(result).toHaveProperty('accessToken');
+      expect(result.account.tenantId).toBe('t2');
+    });
+
+    it('should throw UnauthorizedException if user not found', async () => {
+      (usersService.findById as jest.Mock).mockResolvedValue(null);
+      await expect(service.switchTenant('u1', 't2')).rejects.toThrow(UnauthorizedException);
+    });
+
+    it('should throw UnauthorizedException if membership not found for switched tenant', async () => {
+      (usersService.findById as jest.Mock).mockResolvedValue({ _id: 'u1' });
+      (membershipsService.findActiveByUserIdAndTenantId as jest.Mock).mockResolvedValue(null);
+      await expect(service.switchTenant('u1', 't2')).rejects.toThrow(UnauthorizedException);
+    });
+  });
+
+  describe('getMyTenants', () => {
+    it('should return list of tenants for user', async () => {
+      const mockMemberships = [
+        { tenantId: { _id: 't1', name: 'T1', slug: 's1' }, role: 'owner' },
+        { tenantId: { _id: 't2', name: 'T2', slug: 's2' }, role: 'staff' },
+      ];
+      (membershipsService.findAllByUserId as jest.Mock).mockResolvedValue(mockMemberships);
+
+      const result = await service.getMyTenants('u1');
+
+      expect(result).toHaveLength(2);
+      expect(result[0]).toEqual({ _id: 't1', name: 'T1', slug: 's1', role: 'owner' });
+    });
+  });
+
+  describe('getId (Private/Internal Utility)', () => {
+    it('should handle various ID formats correctly', () => {
+      const serviceAny = service as any;
+      const objectId = new Types.ObjectId();
+
+      expect(serviceAny.getId(null)).toBe('');
+      expect(serviceAny.getId('string-id')).toBe('string-id');
+      expect(serviceAny.getId(objectId)).toBe(objectId.toString());
+      expect(serviceAny.getId({ _id: objectId })).toBe(objectId.toString());
+      expect(serviceAny.getId({ id: 'prop-id' })).toBe('prop-id');
+      expect(serviceAny.getId(123)).toBe('123');
     });
   });
 

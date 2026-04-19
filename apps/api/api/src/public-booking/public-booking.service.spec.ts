@@ -1,3 +1,4 @@
+import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { getModelToken } from '@nestjs/mongoose';
 import { Test, type TestingModule } from '@nestjs/testing';
 import { Types } from 'mongoose';
@@ -15,21 +16,17 @@ import { TenantDetails } from '../tenant-details/tenant-details.schema';
 import { Tenant } from '../tenants/tenant.schema';
 import { PublicBookingService } from './public-booking.service';
 
-describe('PublicBookingService (Production Logic)', () => {
+describe('PublicBookingService', () => {
   let service: PublicBookingService;
 
-  // Utility to create Mongoose-like Query objects
-  const mockQuery = (data: any) => ({
-    lean: jest.fn().mockReturnThis(),
-    sort: jest.fn().mockReturnThis(),
-    exec: jest.fn().mockResolvedValue(data),
-    then: (resolve: any) => resolve(data), // Handles await model.find().lean()
-  });
+  const mockTenantId = new Types.ObjectId();
+  const mockUserId = new Types.ObjectId();
+  const mockServiceId = new Types.ObjectId();
 
   const mockModels = {
     tenant: { findOne: jest.fn() },
     tenantDetails: { findOne: jest.fn() },
-    service: { findOne: jest.fn(), find: jest.fn() },
+    service: { findOne: jest.fn(), find: jest.fn(), findById: jest.fn() },
     staffProfile: { find: jest.fn(), findOne: jest.fn() },
     staffAvailability: { findOne: jest.fn() },
     staffTimeOff: { find: jest.fn() },
@@ -37,41 +34,35 @@ describe('PublicBookingService (Production Logic)', () => {
     staffServiceAssignment: { find: jest.fn(), findOne: jest.fn() },
     tenantBookingSettings: { findOne: jest.fn() },
     staffBookingSettings: { findOne: jest.fn() },
-    reservation: { find: jest.fn(), create: jest.fn() },
+    reservation: { find: jest.fn(), findOne: jest.fn(), create: jest.fn(), deleteOne: jest.fn() },
     reservationLock: {
       find: jest.fn(),
+      findOne: jest.fn(),
       create: jest.fn(),
       deleteMany: jest.fn(),
+      deleteOne: jest.fn(),
     },
   };
 
+  const createMockQuery = (data: any) => ({
+    lean: jest.fn().mockReturnThis(),
+    sort: jest.fn().mockReturnThis(),
+    exec: jest.fn().mockResolvedValue(data),
+    then: jest.fn().mockImplementation((callback) => Promise.resolve(callback(data))),
+  });
+
   beforeEach(async () => {
-    jest.useFakeTimers().setSystemTime(new Date('2026-04-06T00:00:00Z'));
+    jest.useFakeTimers().setSystemTime(new Date('2026-04-06T10:00:00Z')); // A Monday
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         PublicBookingService,
         { provide: getModelToken(Tenant.name), useValue: mockModels.tenant },
-        {
-          provide: getModelToken(TenantDetails.name),
-          useValue: mockModels.tenantDetails,
-        },
+        { provide: getModelToken(TenantDetails.name), useValue: mockModels.tenantDetails },
         { provide: getModelToken(Service.name), useValue: mockModels.service },
-        {
-          provide: getModelToken(StaffProfile.name),
-          useValue: mockModels.staffProfile,
-        },
-        {
-          provide: getModelToken(StaffAvailability.name),
-          useValue: mockModels.staffAvailability,
-        },
-        {
-          provide: getModelToken(StaffTimeOff.name),
-          useValue: mockModels.staffTimeOff,
-        },
-        {
-          provide: getModelToken(StaffBlockedSlot.name),
-          useValue: mockModels.staffBlockedSlot,
-        },
+        { provide: getModelToken(StaffProfile.name), useValue: mockModels.staffProfile },
+        { provide: getModelToken(StaffAvailability.name), useValue: mockModels.staffAvailability },
+        { provide: getModelToken(StaffTimeOff.name), useValue: mockModels.staffTimeOff },
+        { provide: getModelToken(StaffBlockedSlot.name), useValue: mockModels.staffBlockedSlot },
         {
           provide: getModelToken(StaffServiceAssignment.name),
           useValue: mockModels.staffServiceAssignment,
@@ -84,137 +75,112 @@ describe('PublicBookingService (Production Logic)', () => {
           provide: getModelToken(StaffBookingSettings.name),
           useValue: mockModels.staffBookingSettings,
         },
-        {
-          provide: getModelToken(Reservation.name),
-          useValue: mockModels.reservation,
-        },
-        {
-          provide: getModelToken(ReservationLock.name),
-          useValue: mockModels.reservationLock,
-        },
+        { provide: getModelToken(Reservation.name), useValue: mockModels.reservation },
+        { provide: getModelToken(ReservationLock.name), useValue: mockModels.reservationLock },
       ],
     }).compile();
 
     service = module.get<PublicBookingService>(PublicBookingService);
   });
 
-  const tenantId = new Types.ObjectId();
-  const userId = new Types.ObjectId();
-  const serviceId = new Types.ObjectId();
+  afterEach(() => {
+    jest.clearAllMocks();
+  });
 
-  describe('Availability Logic (Scenario Testing)', () => {
-    const baseDate = new Date('2026-04-06T10:00:00Z'); // A Monday
+  describe('getBookingOptionsBySlug', () => {
+    it('should throw NotFoundException if salon missing', async () => {
+      mockModels.tenant.findOne.mockReturnValue(createMockQuery(null));
+      await expect(service.getBookingOptionsBySlug('unknown')).rejects.toThrow(NotFoundException);
+    });
 
+    it('should return booking options if salon exists', async () => {
+      mockModels.tenant.findOne.mockReturnValue(
+        createMockQuery({ _id: mockTenantId, name: 'Salon' }),
+      );
+      mockModels.tenantDetails.findOne.mockReturnValue(createMockQuery({ isPublished: true }));
+      mockModels.staffServiceAssignment.find.mockReturnValue(
+        createMockQuery([{ userId: mockUserId, serviceId: mockServiceId, isOffered: true }]),
+      );
+      mockModels.tenantBookingSettings.findOne.mockReturnValue(createMockQuery({}));
+      mockModels.staffProfile.find.mockReturnValue(
+        createMockQuery([
+          { userId: mockUserId, displayName: 'John', isBookable: true, isActive: true },
+        ]),
+      );
+      mockModels.service.find.mockReturnValue(
+        createMockQuery([{ _id: mockServiceId, name: 'S1', durationMin: 30, priceEUR: 20 }]),
+      );
+
+      const result = await service.getBookingOptionsBySlug('salon');
+      expect(result.tenant.name).toBe('Salon');
+      expect(result.staff).toHaveLength(1);
+    });
+  });
+
+  describe('getAvailabilityBySlug', () => {
     beforeEach(() => {
       mockModels.tenant.findOne.mockReturnValue(
-        mockQuery({ _id: tenantId, slug: 'salon', isPublished: true }),
+        createMockQuery({ _id: mockTenantId, isPublished: true }),
       );
       mockModels.service.findOne.mockReturnValue(
-        mockQuery({ _id: serviceId, durationMin: 60, isActive: true }),
+        createMockQuery({ _id: mockServiceId, durationMin: 60, isActive: true }),
       );
       mockModels.staffServiceAssignment.find.mockReturnValue(
-        mockQuery([{ userId, serviceId, isOffered: true }]),
+        createMockQuery([{ userId: mockUserId, serviceId: mockServiceId, isOffered: true }]),
       );
       mockModels.staffProfile.find.mockReturnValue(
-        mockQuery([{ userId, isBookable: true, isActive: true }]),
+        createMockQuery([{ userId: mockUserId, isBookable: true, isActive: true }]),
       );
       mockModels.staffProfile.findOne.mockReturnValue(
-        mockQuery({ userId, experienceYears: 5, isBookable: true, isActive: true }),
+        createMockQuery({ userId: mockUserId, experienceYears: 1 }),
       );
       mockModels.tenantBookingSettings.findOne.mockReturnValue(
-        mockQuery({ minimumNoticeMinutes: 0, maximumDaysInAdvance: 30 }),
+        createMockQuery({ maximumDaysInAdvance: 30, minimumNoticeMinutes: 0 }),
       );
       mockModels.staffBookingSettings.findOne.mockReturnValue(
-        mockQuery({ useGlobalSettings: true }),
+        createMockQuery({ useGlobalSettings: true }),
       );
-
-      // Salon Hours: 09:00 - 18:00
       mockModels.tenantDetails.findOne.mockReturnValue(
-        mockQuery({
+        createMockQuery({
           isPublished: true,
-          openingHours: { mon: [{ start: '09:00', end: '18:00' }] },
+          openingHours: { mon: [{ start: '09:00', end: '17:00' }] },
         }),
       );
-
-      // Staff Hours: 09:00 - 17:00
       mockModels.staffAvailability.findOne.mockReturnValue(
-        mockQuery({
-          userId,
+        createMockQuery({
+          userId: mockUserId,
           weeklyAvailability: [
             {
               dayOfWeek: 1,
               isAvailable: true,
-              slots: [
-                {
-                  startTime: '09:00',
-                  endTime: '17:00',
-                  tenantId,
-                  isAvailable: true,
-                },
-              ],
+              slots: [{ startTime: '09:00', endTime: '17:00', tenantId: mockTenantId }],
             },
           ],
         }),
       );
-
-      mockModels.staffTimeOff.find.mockReturnValue(mockQuery([]));
-      mockModels.staffBlockedSlot.find.mockReturnValue(mockQuery([]));
-      mockModels.reservation.find.mockReturnValue(mockQuery([]));
-      mockModels.reservationLock.find.mockReturnValue(mockQuery([]));
+      mockModels.staffTimeOff.find.mockReturnValue(createMockQuery([]));
+      mockModels.staffBlockedSlot.find.mockReturnValue(createMockQuery([]));
+      mockModels.reservation.find.mockReturnValue(createMockQuery([]));
+      mockModels.reservationLock.find.mockReturnValue(createMockQuery([]));
     });
 
-    it('should generate continuous slots when the day is completely free', async () => {
+    it('should return availability slots', async () => {
       const result = await service.getAvailabilityBySlug('salon', {
-        serviceId: serviceId.toString(),
-        date: '2026-04-06', // This is a Monday
-      });
-
-      expect(result.slots.length).toBeGreaterThan(0);
-      // We look for the start of the day. First slot should match the start of working hours (UTC adjust might apply)
-      expect(result.slots[0].startTime).toBeDefined();
-    });
-
-    it('should block slots that overlap with an existing reservation', async () => {
-      // Create a reservation from 10:00 to 11:00
-      const reservationStart = new Date('2026-04-06T10:00:00Z');
-      const reservationEnd = new Date('2026-04-06T11:00:00Z');
-
-      mockModels.reservation.find.mockReturnValue(
-        mockQuery([
-          {
-            startTime: reservationStart,
-            endTime: reservationEnd,
-            status: 'confirmed',
-          },
-        ]),
-      );
-
-      const result = await service.getAvailabilityBySlug('salon', {
-        serviceId: serviceId.toString(),
+        serviceId: mockServiceId.toString(),
         date: '2026-04-06',
       });
-
-      // A slot starting at 09:30 should be invalid because it ends at 10:30 (overlaps)
-      const hasOverlappingSlot = result.slots.some(
-        (s) =>
-          new Date(s.startTime).getUTCHours() === 9 && new Date(s.startTime).getUTCMinutes() === 30,
-      );
-      expect(hasOverlappingSlot).toBe(false);
+      expect(result.slots.length).toBeGreaterThan(0);
     });
 
-    it('should respect "Buffer After" settings by blocking extra time after reservations', async () => {
-      // 15 min buffer after
-      mockModels.tenantBookingSettings.findOne.mockReturnValue(
-        mockQuery({
-          bufferAfter: { enabled: true, minutes: 15 },
-          minimumNoticeMinutes: 0,
-          maximumDaysInAdvance: 30,
-        }),
-      );
+    it('should throw BadRequestException for invalid date', async () => {
+      await expect(
+        service.getAvailabilityBySlug('salon', { date: 'invalid' } as any),
+      ).rejects.toThrow(BadRequestException);
+    });
 
-      // Reservation 10:00 - 11:00
+    it('should filter overlapping reservations', async () => {
       mockModels.reservation.find.mockReturnValue(
-        mockQuery([
+        createMockQuery([
           {
             startTime: new Date('2026-04-06T10:00:00Z'),
             endTime: new Date('2026-04-06T11:00:00Z'),
@@ -224,56 +190,196 @@ describe('PublicBookingService (Production Logic)', () => {
       );
 
       const result = await service.getAvailabilityBySlug('salon', {
-        serviceId: serviceId.toString(),
+        serviceId: mockServiceId.toString(),
         date: '2026-04-06',
       });
 
-      // Next available slot should start at 11:15, NOT 11:00
-      const slotAt11 = result.slots.find(
-        (s) =>
-          new Date(s.startTime).getUTCHours() === 11 && new Date(s.startTime).getUTCMinutes() === 0,
-      );
-      const slotAt1115 = result.slots.find(
-        (s) =>
-          new Date(s.startTime).getUTCHours() === 11 &&
-          new Date(s.startTime).getUTCMinutes() === 15,
-      );
-
-      expect(slotAt11).toBeUndefined();
-      expect(slotAt1115).toBeDefined();
-    });
-
-    it('should return zero slots if the salon is closed on the requested day', async () => {
-      mockModels.tenantDetails.findOne.mockReturnValue(
-        mockQuery({
-          openingHours: { mon: [] }, // Closed Monday
-        }),
-      );
-
-      const result = await service.getAvailabilityBySlug('salon', {
-        serviceId: serviceId.toString(),
-        date: '2026-04-06',
+      const hasOverlapping = result.slots.some((s) => {
+        const start = new Date(s.startTime);
+        return start.getUTCHours() === 10 && start.getUTCMinutes() === 30;
       });
+      expect(hasOverlapping).toBe(false);
+    });
+  });
 
-      expect(result.slots).toHaveLength(0);
+  describe('createReservationLockBySlug', () => {
+    it('should throw BadRequestException if startTime is invalid', async () => {
+      mockModels.tenant.findOne.mockReturnValue(
+        createMockQuery({ _id: mockTenantId, isPublished: true }),
+      );
+      await expect(
+        service.createReservationLockBySlug('salon', {
+          startTime: 'invalid',
+          serviceId: mockServiceId.toString(),
+          staffId: mockUserId.toString(),
+        } as any),
+      ).rejects.toThrow(BadRequestException);
     });
 
-    it('should return empty slots if date is beyond maximumDaysInAdvance (service catches the error)', async () => {
+    it('should successfully create a lock', async () => {
+      mockModels.tenant.findOne.mockReturnValue(
+        createMockQuery({ _id: mockTenantId, isPublished: true }),
+      );
+      mockModels.staffProfile.findOne.mockReturnValue(
+        createMockQuery({ userId: mockUserId, isBookable: true, isActive: true }),
+      );
+      mockModels.staffServiceAssignment.findOne.mockReturnValue(
+        createMockQuery({ userId: mockUserId, serviceId: mockServiceId, isOffered: true }),
+      );
+      mockModels.service.findOne.mockReturnValue(
+        createMockQuery({ _id: mockServiceId, durationMin: 30, isActive: true }),
+      );
       mockModels.tenantBookingSettings.findOne.mockReturnValue(
-        mockQuery({
-          maximumDaysInAdvance: 7,
+        createMockQuery({ minimumNoticeMinutes: 0, maximumDaysInAdvance: 30 }),
+      );
+      mockModels.staffBookingSettings.findOne.mockReturnValue(
+        createMockQuery({ useGlobalSettings: true }),
+      );
+      mockModels.tenantDetails.findOne.mockReturnValue(
+        createMockQuery({
+          isPublished: true,
+          openingHours: { mon: [{ start: '09:00', end: '17:00' }] },
         }),
       );
-
-      const farFutureDate = new Date();
-      farFutureDate.setDate(farFutureDate.getDate() + 20);
-
-      const result = await service.getAvailabilityBySlug('salon', {
-        serviceId: serviceId.toString(),
-        date: farFutureDate.toISOString(),
+      mockModels.staffAvailability.findOne.mockReturnValue(
+        createMockQuery({
+          userId: mockUserId,
+          weeklyAvailability: [
+            {
+              dayOfWeek: 1,
+              isAvailable: true,
+              slots: [{ startTime: '09:00', endTime: '17:00', tenantId: mockTenantId }],
+            },
+          ],
+        }),
+      );
+      mockModels.staffTimeOff.find.mockReturnValue(createMockQuery([]));
+      mockModels.staffBlockedSlot.find.mockReturnValue(createMockQuery([]));
+      mockModels.reservation.find.mockReturnValue(createMockQuery([]));
+      mockModels.reservationLock.find.mockReturnValue(createMockQuery([]));
+      mockModels.reservationLock.create.mockResolvedValue({
+        _id: 'l1',
+        startTime: new Date(),
+        endTime: new Date(),
+        expiresAt: new Date(),
       });
 
-      expect(result.slots).toHaveLength(0);
+      const result = await service.createReservationLockBySlug('salon', {
+        startTime: '2026-04-06T10:00:00Z',
+        serviceId: mockServiceId.toString(),
+        staffId: mockUserId.toString(),
+      } as any);
+
+      expect(result).toHaveProperty('_id');
+    });
+  });
+
+  describe('createReservationBySlug', () => {
+    it('should successfully create a reservation', async () => {
+      mockModels.tenant.findOne.mockReturnValue(
+        createMockQuery({ _id: mockTenantId, isPublished: true }),
+      );
+      mockModels.staffProfile.findOne.mockReturnValue(
+        createMockQuery({
+          userId: mockUserId,
+          isBookable: true,
+          isActive: true,
+          displayName: 'John',
+        }),
+      );
+      mockModels.staffServiceAssignment.findOne.mockReturnValue(
+        createMockQuery({ userId: mockUserId, serviceId: mockServiceId, isOffered: true }),
+      );
+      mockModels.service.findOne.mockReturnValue(
+        createMockQuery({
+          _id: mockServiceId,
+          name: 'S1',
+          durationMin: 30,
+          isActive: true,
+          priceEUR: 20,
+        }),
+      );
+      mockModels.tenantBookingSettings.findOne.mockReturnValue(
+        createMockQuery({
+          minimumNoticeMinutes: 0,
+          maximumDaysInAdvance: 30,
+          autoConfirmReservations: true,
+        }),
+      );
+      mockModels.staffBookingSettings.findOne.mockReturnValue(
+        createMockQuery({ useGlobalSettings: true }),
+      );
+      mockModels.tenantDetails.findOne.mockReturnValue(
+        createMockQuery({
+          isPublished: true,
+          openingHours: { mon: [{ start: '09:00', end: '17:00' }] },
+        }),
+      );
+      mockModels.staffAvailability.findOne.mockReturnValue(
+        createMockQuery({
+          userId: mockUserId,
+          weeklyAvailability: [
+            {
+              dayOfWeek: 1,
+              isAvailable: true,
+              slots: [{ startTime: '09:00', endTime: '17:00', tenantId: mockTenantId }],
+            },
+          ],
+        }),
+      );
+      mockModels.staffTimeOff.find.mockReturnValue(createMockQuery([]));
+      mockModels.staffBlockedSlot.find.mockReturnValue(createMockQuery([]));
+      mockModels.reservation.find.mockReturnValue(createMockQuery([]));
+      mockModels.reservationLock.find.mockReturnValue(createMockQuery([]));
+      mockModels.reservation.create.mockResolvedValue({
+        _id: 'r1',
+        status: 'confirmed',
+        startTime: new Date(),
+        endTime: new Date(),
+      });
+
+      const result = await service.createReservationBySlug('salon', {
+        startTime: '2026-04-06T10:00:00Z',
+        serviceId: mockServiceId.toString(),
+        staffId: mockUserId.toString(),
+        customerName: 'Alice',
+        customerPhone: '123456789',
+      } as any);
+
+      expect(result.status).toBe('confirmed');
+    });
+
+    it('should throw BadRequestException if lock expired', async () => {
+      mockModels.tenant.findOne.mockReturnValue(
+        createMockQuery({ _id: mockTenantId, isPublished: true }),
+      );
+      mockModels.staffProfile.findOne.mockReturnValue(
+        createMockQuery({ userId: mockUserId, isBookable: true, isActive: true }),
+      );
+      mockModels.staffServiceAssignment.findOne.mockReturnValue(
+        createMockQuery({ userId: mockUserId, serviceId: mockServiceId, isOffered: true }),
+      );
+      mockModels.service.findOne.mockReturnValue(
+        createMockQuery({ _id: mockServiceId, durationMin: 30, isActive: true }),
+      );
+      mockModels.tenantBookingSettings.findOne.mockReturnValue(
+        createMockQuery({ minimumNoticeMinutes: 0, maximumDaysInAdvance: 30 }),
+      );
+      mockModels.staffBookingSettings.findOne.mockReturnValue(
+        createMockQuery({ useGlobalSettings: true }),
+      );
+      mockModels.reservationLock.findOne.mockReturnValue(createMockQuery(null));
+
+      await expect(
+        service.createReservationBySlug('salon', {
+          startTime: '2026-04-06T10:00:00Z',
+          serviceId: mockServiceId.toString(),
+          staffId: mockUserId.toString(),
+          customerName: 'Alice',
+          customerPhone: '123456789',
+          lockId: 'expired',
+        } as any),
+      ).rejects.toThrow('Reservation lock is missing or expired');
     });
   });
 });

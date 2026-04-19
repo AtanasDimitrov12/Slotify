@@ -30,9 +30,19 @@ describe('Staff Management (Integration)', () => {
   };
 
   async function getOwnerAuth() {
+    const testId = Math.random().toString(36).slice(2, 8);
     const response = await request(ctx.app.getHttpServer())
       .post('/auth/register')
-      .send(ownerRegisterDto);
+      .send({
+        ...ownerRegisterDto,
+        email: `owner_${testId}@slotify.com`,
+        tenantName: `Salon ${testId}`,
+      });
+
+    if (response.status !== 201) {
+      throw new Error(`Failed to register owner: ${JSON.stringify(response.body)}`);
+    }
+
     return {
       token: response.body.accessToken,
       tenantId: response.body.account.tenantId,
@@ -141,6 +151,8 @@ describe('Staff Management (Integration)', () => {
     });
 
     it('should allow staff to update their availability', async () => {
+      const { tenantId } = await getOwnerAuth(); // Need a tenantId for the slots
+
       const currentAvail = await request(ctx.app.getHttpServer())
         .get('/staff/me/availability')
         .set('Authorization', `Bearer ${joeToken}`)
@@ -150,9 +162,14 @@ describe('Staff Management (Integration)', () => {
         weeklyAvailability: [
           {
             dayOfWeek: 1,
-            startTime: '10:00',
-            endTime: '18:00',
             isAvailable: true,
+            slots: [
+              {
+                startTime: '10:00',
+                endTime: '18:00',
+                tenantId,
+              },
+            ],
           },
         ],
       };
@@ -168,7 +185,7 @@ describe('Staff Management (Integration)', () => {
         .set('Authorization', `Bearer ${joeToken}`)
         .expect(200);
 
-      expect(updatedAvail.body.weeklyAvailability[0].startTime).toBe('10:00');
+      expect(updatedAvail.body.weeklyAvailability[0].slots[0].startTime).toBe('10:00');
     });
   });
 });

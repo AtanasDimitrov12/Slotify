@@ -13,12 +13,22 @@ describe('StaffTimeOffService', () => {
     sort: jest.fn().mockReturnThis(),
   });
 
+  const mockSlot = {
+    _id: new Types.ObjectId(),
+    tenantId: new Types.ObjectId(),
+    userId: new Types.ObjectId(),
+    startDate: new Date('2026-01-01'),
+    endDate: new Date('2026-01-02'),
+    status: 'requested',
+  };
+
   const mockTimeOffModel = {
     create: jest.fn(),
     find: jest.fn(),
     aggregate: jest.fn(),
     findOneAndUpdate: jest.fn(),
     findByIdAndDelete: jest.fn(),
+    findByIdAndUpdate: jest.fn(),
   };
 
   beforeEach(async () => {
@@ -35,8 +45,69 @@ describe('StaffTimeOffService', () => {
     service = module.get<StaffTimeOffService>(StaffTimeOffService);
   });
 
+  afterEach(() => {
+    jest.clearAllMocks();
+  });
+
   const tenantId = new Types.ObjectId().toString();
   const requestId = new Types.ObjectId().toString();
+
+  describe('create', () => {
+    it('should create a request with "requested" as default status', async () => {
+      const dto = {
+        tenantId,
+        userId: new Types.ObjectId().toString(),
+        startDate: '2026-04-01',
+        endDate: '2026-04-05',
+        reason: 'Spring break',
+      };
+      mockTimeOffModel.create.mockResolvedValue({
+        ...dto,
+        _id: new Types.ObjectId(),
+        status: 'requested',
+        startDate: new Date(dto.startDate),
+        endDate: new Date(dto.endDate),
+      });
+
+      const result = await service.create(dto);
+      expect(result.status).toBe('requested');
+      expect(result.startDate).toBeInstanceOf(Date);
+    });
+  });
+
+  describe('findAllByStaff', () => {
+    it('should return list of time off requests', async () => {
+      mockTimeOffModel.find.mockReturnValue(mockQuery([mockSlot]));
+      const result = await service.findAllByStaff(new Types.ObjectId().toString());
+      expect(result).toHaveLength(1);
+    });
+  });
+
+  describe('update', () => {
+    it('should update and return request', async () => {
+      mockTimeOffModel.findByIdAndUpdate.mockReturnValue(mockQuery({ ...mockSlot, reason: 'New' }));
+      const result = await service.update(requestId, { reason: 'New' });
+      expect(result.reason).toBe('New');
+    });
+
+    it('should throw NotFoundException if missing', async () => {
+      mockTimeOffModel.findByIdAndUpdate.mockReturnValue(mockQuery(null));
+      await expect(service.update(requestId, {})).rejects.toThrow(NotFoundException);
+    });
+  });
+
+  describe('remove', () => {
+    it('should remove and return request', async () => {
+      mockTimeOffModel.findByIdAndDelete.mockReturnValue(mockQuery(mockSlot));
+      const result = await service.remove(requestId);
+      expect(result).toBeDefined();
+    });
+
+    it('should throw NotFoundException if missing', async () => {
+      mockTimeOffModel.findByIdAndDelete.mockReturnValue(mockQuery(null));
+      await expect(service.remove(requestId)).rejects.toThrow(NotFoundException);
+    });
+  });
 
   describe('reviewRequest (State Machine)', () => {
     it('should approve a request and return updated document', async () => {
@@ -52,7 +123,7 @@ describe('StaffTimeOffService', () => {
           tenantId: new Types.ObjectId(tenantId),
         },
         { $set: { status: 'approved' } },
-        expect.anything(),
+        { returnDocument: 'after' },
       );
     });
 
@@ -82,23 +153,15 @@ describe('StaffTimeOffService', () => {
     });
   });
 
-  describe('Lifecycle', () => {
-    it('should create a request with "requested" as default status', async () => {
-      const dto = {
-        tenantId,
-        userId: new Types.ObjectId().toString(),
-        startDate: '2026-04-01',
-        endDate: '2026-04-05',
-        reason: 'Spring break',
-      };
-      mockTimeOffModel.create.mockImplementation((data) => ({
-        ...data,
-        _id: new Types.ObjectId(),
-      }));
-
-      const result = await service.create(dto);
-      expect(result.status).toBe('requested');
-      expect(result.startDate).toBeInstanceOf(Date);
+  describe('findAllForOwnerByStaff', () => {
+    it('should return all requests for tenant and staff', async () => {
+      mockTimeOffModel.find.mockReturnValue(mockQuery([]));
+      const mockUserId = new Types.ObjectId().toString();
+      await service.findAllForOwnerByStaff(tenantId, mockUserId);
+      expect(mockTimeOffModel.find).toHaveBeenCalledWith({
+        tenantId: new Types.ObjectId(tenantId),
+        userId: new Types.ObjectId(mockUserId),
+      });
     });
   });
 });
