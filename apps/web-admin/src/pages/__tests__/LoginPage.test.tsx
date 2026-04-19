@@ -4,14 +4,15 @@ import { MemoryRouter } from 'react-router-dom';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import LoginPage from '../LoginPage';
 
-// Mock the hooks
-vi.mock('../../auth/AuthProvider', () => ({
-  useAuth: vi.fn(),
-}));
-
-vi.mock('../../components/ToastProvider', () => ({
-  useToast: vi.fn(),
-}));
+// Mock the hooks from @barber/shared
+vi.mock('@barber/shared', async (importOriginal) => {
+  const actual = await importOriginal<any>();
+  return {
+    ...actual,
+    useAuth: vi.fn(),
+    useToast: vi.fn(),
+  };
+});
 
 const mockNavigate = vi.fn();
 vi.mock('react-router-dom', async () => {

@@ -1,11 +1,16 @@
-import { useToast } from '@barber/shared';
+import { listAvailableStaffForOwner, useToast } from '@barber/shared';
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import AddStaffDialog from '../AddStaffDialog';
 
-vi.mock('../../../../components/ToastProvider', () => ({
-  useToast: vi.fn(),
-}));
+vi.mock('@barber/shared', async (importOriginal) => {
+  const actual = await importOriginal<any>();
+  return {
+    ...actual,
+    useToast: vi.fn(),
+    listAvailableStaffForOwner: vi.fn().mockResolvedValue([]),
+  };
+});
 
 describe('AddStaffDialog', () => {
   const mockOnClose = vi.fn();
