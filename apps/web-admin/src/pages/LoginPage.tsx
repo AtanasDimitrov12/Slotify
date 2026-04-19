@@ -276,6 +276,7 @@ export default function LoginPage() {
           <Stack spacing={4}>
             <Stack spacing={1}>
               <Typography
+                component="h1"
                 sx={{ fontWeight: 1000, fontSize: 40, letterSpacing: -1.5, lineHeight: 1 }}
               >
                 Partner login
@@ -288,6 +289,7 @@ export default function LoginPage() {
             <Box component="form" onSubmit={onSubmit}>
               <Stack spacing={2.5}>
                 <TextField
+                  id="email"
                   label="Email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
@@ -310,6 +312,7 @@ export default function LoginPage() {
                 />
 
                 <TextField
+                  id="password"
                   label="Password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}

@@ -356,10 +356,14 @@ export default function BookingDialog({ open, slug, salonName, onClose }: Bookin
             {submitLoading
               ? 'Processing...'
               : step === STEP_OVERVIEW
-                ? 'Confirm Booking'
+                ? 'Confirm Reservation'
                 : step === STEP_SERVICE
                   ? 'Pick Time'
-                  : 'Continue'}
+                  : step === STEP_TIME
+                    ? 'Enter Details'
+                    : step === STEP_DETAILS
+                      ? 'Review Booking'
+                      : 'Continue'}
           </Button>
         </Box>
       )}

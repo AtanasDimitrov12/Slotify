@@ -343,7 +343,6 @@ export class StaffAppointmentsService {
     const [staffProfile, assignment] = await Promise.all([
       this.staffProfileModel
         .findOne({
-          tenantId,
           userId,
           isBookable: true,
           isActive: true,
