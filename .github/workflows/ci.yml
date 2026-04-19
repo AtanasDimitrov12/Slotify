@@ -18,8 +18,9 @@ jobs:
       MONGO_URI: mongodb://localhost:27017/barber_reservation
       MONGO_URI_TEST: mongodb://localhost:27017/barber_reservation_test
       MONGO_URI_E2E: mongodb://localhost:27017/barber_reservation_e2e
-      JWT_SECRET: test-jwt-secret
-      GEMINI_API_KEY: test-gemini-key
+      JWT_SECRET: test-jwt-secret-for-ci
+      GEMINI_API_KEY: test-gemini-key-for-ci
+      VITE_API_URL: http://localhost:4000
 
     services:
       mongodb:
