@@ -38,7 +38,7 @@ describe('Staff Management (Integration)', () => {
         email: `owner_${testId}@slotify.com`,
         tenantName: `Salon ${testId}`,
       });
-    
+
     if (response.status !== 201) {
       throw new Error(`Failed to register owner: ${JSON.stringify(response.body)}`);
     }
@@ -152,7 +152,7 @@ describe('Staff Management (Integration)', () => {
 
     it('should allow staff to update their availability', async () => {
       const { tenantId } = await getOwnerAuth(); // Need a tenantId for the slots
-      
+
       const currentAvail = await request(ctx.app.getHttpServer())
         .get('/staff/me/availability')
         .set('Authorization', `Bearer ${joeToken}`)

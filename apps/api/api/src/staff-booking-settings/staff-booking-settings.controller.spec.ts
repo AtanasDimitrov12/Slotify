@@ -90,7 +90,9 @@ describe('StaffBookingSettingsController', () => {
 
     it('should throw UnauthorizedException if not owner', async () => {
       const targetUserId = new Types.ObjectId().toString();
-      await expect(controller.getForStaff(mockStaffUser, targetUserId)).rejects.toThrow(UnauthorizedException);
+      await expect(controller.getForStaff(mockStaffUser, targetUserId)).rejects.toThrow(
+        UnauthorizedException,
+      );
     });
   });
 

@@ -262,11 +262,11 @@ describe('StaffService', () => {
   describe('listAvailableStaffForOwner', () => {
     it('should return list of unique other staff for owner', async () => {
       membershipsService.findAllByUserId.mockResolvedValue([
-        { tenantId: { _id: 't1' }, role: 'owner' },
-        { tenantId: { _id: 't2' }, role: 'owner' },
-      ]);
+        { tenantId: { _id: new Types.ObjectId() }, role: 'owner' },
+        { tenantId: { _id: new Types.ObjectId() }, role: 'owner' },
+      ] as any);
       membershipsService.findByTenantAndRole.mockResolvedValue([
-        { userId: 'u2', tenantId: 't2', role: 'staff' }
+        { userId: 'u2', tenantId: new Types.ObjectId().toString(), role: 'staff' },
       ] as any);
       usersService.findById.mockResolvedValue({ name: 'Other' } as any);
       staffProfilesService.findAnyByUserId.mockResolvedValue({ avatarUrl: '' } as any);
@@ -279,16 +279,26 @@ describe('StaffService', () => {
 
   describe('Time Off Management', () => {
     it('should return my time off', async () => {
-      const mockTimeOff = { _id: new Types.ObjectId(), startDate: new Date(), endDate: new Date(), status: 'approved' };
+      const mockTimeOff = {
+        _id: new Types.ObjectId(),
+        startDate: new Date(),
+        endDate: new Date(),
+        status: 'approved',
+      };
       (service as any).staffTimeOffService.findAllByStaff.mockResolvedValue([mockTimeOff]);
-      
+
       const result = await service.getMyTimeOff(mockOwnerUser);
       expect(result).toHaveLength(1);
     });
 
     it('should create my time off', async () => {
       const dto = { startDate: '2026-01-01', endDate: '2026-01-02' };
-      (service as any).staffTimeOffService.create.mockResolvedValue({ _id: 'id1', ...dto, startDate: new Date(dto.startDate), endDate: new Date(dto.endDate) });
+      (service as any).staffTimeOffService.create.mockResolvedValue({
+        _id: 'id1',
+        ...dto,
+        startDate: new Date(dto.startDate),
+        endDate: new Date(dto.endDate),
+      });
 
       const result = await service.createMyTimeOff(mockOwnerUser, dto);
       expect(result.id).toBe('id1');
@@ -296,13 +306,15 @@ describe('StaffService', () => {
 
     it('should throw BadRequestException if end before start', async () => {
       const dto = { startDate: '2026-01-02', endDate: '2026-01-01' };
-      await expect(service.createMyTimeOff(mockOwnerUser, dto)).rejects.toThrow(BadRequestException);
+      await expect(service.createMyTimeOff(mockOwnerUser, dto)).rejects.toThrow(
+        BadRequestException,
+      );
     });
 
     it('should remove my time off', async () => {
       const id = new Types.ObjectId().toString();
       (service as any).staffTimeOffService.findAllByStaff.mockResolvedValue([{ _id: id }]);
-      
+
       const result = await service.removeMyTimeOff(mockOwnerUser, id);
       expect(result.message).toContain('successfully');
     });
@@ -311,7 +323,9 @@ describe('StaffService', () => {
   describe('Staff Services', () => {
     it('should get my services', async () => {
       const mockAssign = { _id: new Types.ObjectId(), serviceId: new Types.ObjectId() };
-      (service as any).staffServiceAssignmentsService.findAllByStaff.mockResolvedValue([mockAssign]);
+      (service as any).staffServiceAssignmentsService.findAllByStaff.mockResolvedValue([
+        mockAssign,
+      ]);
 
       const result = await service.getMyServices(mockOwnerUser);
       expect(result).toHaveLength(1);

@@ -1,6 +1,6 @@
 import { Test, type TestingModule } from '@nestjs/testing';
-import { CreateStaffAvailabilityDto } from './dto/create-staff-availability.dto';
-import { UpdateStaffAvailabilityDto } from './dto/update-staff-availability.dto';
+import type { CreateStaffAvailabilityDto } from './dto/create-staff-availability.dto';
+import type { UpdateStaffAvailabilityDto } from './dto/update-staff-availability.dto';
 import { StaffAvailabilityController } from './staff-availability.controller';
 import { StaffAvailabilityService } from './staff-availability.service';
 

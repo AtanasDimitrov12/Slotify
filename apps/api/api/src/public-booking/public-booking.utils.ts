@@ -38,11 +38,15 @@ export function clampToStep(date: Date, stepMinutes: number): Date {
 }
 
 export function startOfDay(date: Date): Date {
-  return new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate(), 0, 0, 0, 0));
+  return new Date(
+    Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate(), 0, 0, 0, 0),
+  );
 }
 
 export function endOfDay(date: Date): Date {
-  return new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate(), 23, 59, 59, 999));
+  return new Date(
+    Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate(), 23, 59, 59, 999),
+  );
 }
 
 export function buildDateTimeOnDay(baseDate: Date, hhmm: string): Date {
@@ -50,15 +54,17 @@ export function buildDateTimeOnDay(baseDate: Date, hhmm: string): Date {
   const hours = Math.floor(total / 60);
   const minutes = total % 60;
 
-  return new Date(Date.UTC(
-    baseDate.getUTCFullYear(),
-    baseDate.getUTCMonth(),
-    baseDate.getUTCDate(),
-    hours,
-    minutes,
-    0,
-    0,
-  ));
+  return new Date(
+    Date.UTC(
+      baseDate.getUTCFullYear(),
+      baseDate.getUTCMonth(),
+      baseDate.getUTCDate(),
+      hours,
+      minutes,
+      0,
+      0,
+    ),
+  );
 }
 
 export function subtractRanges(source: TimeRange, blockers: TimeRange[]): TimeRange[] {

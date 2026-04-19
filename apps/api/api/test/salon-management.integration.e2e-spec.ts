@@ -47,7 +47,7 @@ describe('Salon Management (Integration)', () => {
         description: 'Testing description',
       })
       .expect(201);
-    
+
     const serviceId = createResponse.body._id;
     expect(createResponse.body.name).toBe('Test Service');
 
@@ -56,7 +56,7 @@ describe('Salon Management (Integration)', () => {
       .get('/services/catalog')
       .set('Authorization', `Bearer ${token}`)
       .expect(200);
-    
+
     expect(listResponse.body.some((s: any) => s._id === serviceId)).toBe(true);
 
     // 3. Update Service
@@ -70,7 +70,7 @@ describe('Salon Management (Integration)', () => {
       .get(`/services/${serviceId}`)
       .set('Authorization', `Bearer ${token}`)
       .expect(200);
-    
+
     expect(updated.body.priceEUR).toBe(50);
 
     // 4. Remove Service
@@ -78,12 +78,12 @@ describe('Salon Management (Integration)', () => {
       .delete(`/services/${serviceId}`)
       .set('Authorization', `Bearer ${token}`)
       .expect(200);
-    
+
     const listAfterDelete = await request(ctx.app.getHttpServer())
       .get('/services/catalog')
       .set('Authorization', `Bearer ${token}`)
       .expect(200);
-    
+
     expect(listAfterDelete.body.some((s: any) => s._id === serviceId)).toBe(false);
   });
 
@@ -96,9 +96,7 @@ describe('Salon Management (Integration)', () => {
       .put('/owner/settings/opening-hours')
       .set('Authorization', `Bearer ${token}`)
       .send({
-        days: [
-          { key: 'mon', enabled: true, start: '10:00', end: '20:00' },
-        ],
+        days: [{ key: 'mon', enabled: true, start: '10:00', end: '20:00' }],
       })
       .expect(200);
 
@@ -108,7 +106,7 @@ describe('Salon Management (Integration)', () => {
       .set('Authorization', `Bearer ${token}`)
       .send({ name: 'Second Salon' })
       .expect(201);
-    
+
     const secondTenantId = secondSaloneResponse.body._id;
 
     // 3. List my tenants
@@ -116,7 +114,7 @@ describe('Salon Management (Integration)', () => {
       .get('/auth/my-tenants')
       .set('Authorization', `Bearer ${token}`)
       .expect(200);
-    
+
     expect(tenantsResponse.body.length).toBe(2);
     expect(tenantsResponse.body.some((t: any) => t.name === 'Second Salon')).toBe(true);
 
@@ -126,7 +124,7 @@ describe('Salon Management (Integration)', () => {
       .set('Authorization', `Bearer ${token}`)
       .send({ tenantId: secondTenantId })
       .expect(201);
-    
+
     expect(switchResponse.body.account.tenantId).toBe(secondTenantId);
     const newToken = switchResponse.body.accessToken;
 
@@ -135,7 +133,7 @@ describe('Salon Management (Integration)', () => {
       .get('/services/catalog')
       .set('Authorization', `Bearer ${newToken}`)
       .expect(200);
-    
+
     expect(servicesInSecond.body.length).toBe(0);
   });
 });

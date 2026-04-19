@@ -16,7 +16,9 @@ describe('StaffBlockedSlotService', () => {
     startTime: '10:00',
     endTime: '11:00',
     isActive: true,
-    toObject: jest.fn().mockReturnValue({ _id: new Types.ObjectId(), date: '2026-12-01', startTime: '10:00' }),
+    toObject: jest
+      .fn()
+      .mockReturnValue({ _id: new Types.ObjectId(), date: '2026-12-01', startTime: '10:00' }),
   };
 
   const mockBlockedSlotModel = {
@@ -81,7 +83,9 @@ describe('StaffBlockedSlotService', () => {
   describe('update', () => {
     it('should update a future slot', async () => {
       mockBlockedSlotModel.findById.mockReturnValue({ lean: () => mockSlot });
-      mockBlockedSlotModel.findByIdAndUpdate.mockReturnValue({ lean: () => ({ ...mockSlot, reason: 'New' }) });
+      mockBlockedSlotModel.findByIdAndUpdate.mockReturnValue({
+        lean: () => ({ ...mockSlot, reason: 'New' }),
+      });
 
       const result = await service.update(mockSlot._id.toString(), { reason: 'New' });
       expect(result.reason).toBe('New');
@@ -96,7 +100,9 @@ describe('StaffBlockedSlotService', () => {
   describe('remove', () => {
     it('should deactivate a future slot', async () => {
       mockBlockedSlotModel.findById.mockReturnValue({ lean: () => mockSlot });
-      mockBlockedSlotModel.findByIdAndUpdate.mockReturnValue({ lean: () => ({ ...mockSlot, isActive: false }) });
+      mockBlockedSlotModel.findByIdAndUpdate.mockReturnValue({
+        lean: () => ({ ...mockSlot, isActive: false }),
+      });
 
       const result = await service.remove(mockSlot._id.toString());
       expect(result.isActive).toBe(false);

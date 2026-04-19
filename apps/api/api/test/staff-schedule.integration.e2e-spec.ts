@@ -31,7 +31,7 @@ describe('Staff Schedule & Blocked Slots (Integration)', () => {
     const ownerToken = ownerResponse.body.accessToken;
     const tenantId = ownerResponse.body.account.tenantId;
     const slug = ownerResponse.body.account.tenantId; // Actually we should get slug from body but tenantId works if we know how it is generated. Wait, the API returns slug in tenant object usually.
-    
+
     // Let's get the real slug from the database or just use what register returns
     const realSlug = ownerResponse.body.account.tenantId; // In our tests tenantId is often used as a fallback if slug is not known, but let's be precise.
 
@@ -51,7 +51,11 @@ describe('Staff Schedule & Blocked Slots (Integration)', () => {
     const serviceId = serviceResponse.body._id;
 
     // 4. Onboard Staff
-    const staffDto = { name: `Joe ${id}`, email: `joe_${id}@schedule.com`, password: 'password123' };
+    const staffDto = {
+      name: `Joe ${id}`,
+      email: `joe_${id}@schedule.com`,
+      password: 'password123',
+    };
     const onboardResponse = await request(ctx.app.getHttpServer())
       .post('/staff/onboard')
       .set('Authorization', `Bearer ${ownerToken}`)
@@ -83,13 +87,13 @@ describe('Staff Schedule & Blocked Slots (Integration)', () => {
       .post('/staff/me/services')
       .set('Authorization', `Bearer ${staffToken}`)
       .send({ serviceId });
-    
+
     // Get the slug from the tenant
     const tenantResponse = await request(ctx.app.getHttpServer())
       .get('/auth/my-tenants')
       .set('Authorization', `Bearer ${ownerToken}`)
       .expect(200);
-    
+
     const tenant = tenantResponse.body.find((t: any) => t.name === `Salon ${id}`);
     const actualSlug = tenant.slug;
 
@@ -105,7 +109,7 @@ describe('Staff Schedule & Blocked Slots (Integration)', () => {
       .get(`/public/tenants/${slug}/availability`)
       .query({ serviceId, date: testDate })
       .expect(200);
-    
+
     expect(initialAvail.body.slots.length).toBeGreaterThan(0);
     const nineAmSlot = initialAvail.body.slots.find((s: any) => s.startTime.includes('09:00:00'));
     expect(nineAmSlot).toBeDefined();
@@ -127,11 +131,15 @@ describe('Staff Schedule & Blocked Slots (Integration)', () => {
       .get(`/public/tenants/${slug}/availability`)
       .query({ serviceId, date: testDate })
       .expect(200);
-    
-    const nineAmBlocked = blockedAvail.body.slots.find((s: any) => s.startTime.includes('09:00:00'));
+
+    const nineAmBlocked = blockedAvail.body.slots.find((s: any) =>
+      s.startTime.includes('09:00:00'),
+    );
     const tenAmBlocked = blockedAvail.body.slots.find((s: any) => s.startTime.includes('10:00:00'));
-    const elevenAmAvailable = blockedAvail.body.slots.find((s: any) => s.startTime.includes('11:00:00'));
-    
+    const elevenAmAvailable = blockedAvail.body.slots.find((s: any) =>
+      s.startTime.includes('11:00:00'),
+    );
+
     expect(nineAmBlocked).toBeUndefined();
     expect(tenAmBlocked).toBeUndefined();
     expect(elevenAmAvailable).toBeDefined();
@@ -160,10 +168,14 @@ describe('Staff Schedule & Blocked Slots (Integration)', () => {
       .get(`/public/tenants/${slug}/availability`)
       .query({ serviceId, date: testDate })
       .expect(200);
-    
-    const fourteenBlocked = finalAvail.body.slots.find((s: any) => s.startTime.includes('14:00:00'));
-    const fifteenAvailable = finalAvail.body.slots.find((s: any) => s.startTime.includes('15:00:00'));
-    
+
+    const fourteenBlocked = finalAvail.body.slots.find((s: any) =>
+      s.startTime.includes('14:00:00'),
+    );
+    const fifteenAvailable = finalAvail.body.slots.find((s: any) =>
+      s.startTime.includes('15:00:00'),
+    );
+
     expect(fourteenBlocked).toBeUndefined();
     expect(fifteenAvailable).toBeDefined();
   });
@@ -188,7 +200,7 @@ describe('Staff Schedule & Blocked Slots (Integration)', () => {
         customerPhone: '+31611111111',
       })
       .expect(201);
-    
+
     const appointmentId = createResponse.body.id;
 
     // 2. Mark as Completed
@@ -203,14 +215,14 @@ describe('Staff Schedule & Blocked Slots (Integration)', () => {
       .delete(`/staff/me/appointments/${appointmentId}`)
       .set('Authorization', `Bearer ${staffToken}`)
       .expect(200);
-    
+
     // 4. Verify it is cancelled (status should be 'cancelled')
     const apptsResponse = await request(ctx.app.getHttpServer())
       .get('/staff/me/appointments')
       .set('Authorization', `Bearer ${staffToken}`)
       .query({ date: testDate })
       .expect(200);
-    
+
     const cancelledAppt = apptsResponse.body.find((a: any) => a.id === appointmentId);
     expect(cancelledAppt.status).toBe('cancelled');
   });

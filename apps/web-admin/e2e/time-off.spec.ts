@@ -41,7 +41,10 @@ test.describe('Time Off Workflow', () => {
     await expect(page).toHaveURL(/\/owner/);
 
     await page.goto('/owner/team');
-    await page.getByRole('button', { name: /Requests/i }).first().click();
+    await page
+      .getByRole('button', { name: /Requests/i })
+      .first()
+      .click();
     await page.getByRole('button', { name: /Approve/i }).click();
     await expect(page.getByText(/Request approved successfully/i)).toBeVisible();
   });

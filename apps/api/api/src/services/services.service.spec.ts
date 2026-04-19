@@ -77,25 +77,41 @@ describe('ServicesService', () => {
   describe('createManyForTenant', () => {
     it('should create multiple services', async () => {
       mockServiceModel.insertMany.mockResolvedValue([mockService]);
-      const result = await service.createManyForTenant(new Types.ObjectId().toString(), [{ name: 'S1', durationMin: 30, priceEUR: 20 }]);
+      const result = await service.createManyForTenant(new Types.ObjectId().toString(), [
+        { name: 'S1', durationMin: 30, priceEUR: 20 },
+      ]);
       expect(result).toHaveLength(1);
     });
 
     it('should throw BadRequestException if any name missing', async () => {
-      await expect(service.createManyForTenant(new Types.ObjectId().toString(), [{ name: '', durationMin: 30, priceEUR: 20 }])).rejects.toThrow(BadRequestException);
+      await expect(
+        service.createManyForTenant(new Types.ObjectId().toString(), [
+          { name: '', durationMin: 30, priceEUR: 20 },
+        ]),
+      ).rejects.toThrow(BadRequestException);
     });
   });
 
   describe('updateForTenant', () => {
     it('should update and return service', async () => {
       mockServiceModel.findOneAndUpdate.mockReturnValue({ lean: () => mockService });
-      const result = await service.updateForTenant(new Types.ObjectId().toString(), new Types.ObjectId().toString(), { name: 'New Name' });
+      const result = await service.updateForTenant(
+        new Types.ObjectId().toString(),
+        new Types.ObjectId().toString(),
+        { name: 'New Name' },
+      );
       expect(result).toBeDefined();
     });
 
     it('should throw NotFoundException if missing', async () => {
       mockServiceModel.findOneAndUpdate.mockReturnValue({ lean: () => null });
-      await expect(service.updateForTenant(new Types.ObjectId().toString(), new Types.ObjectId().toString(), {})).rejects.toThrow(NotFoundException);
+      await expect(
+        service.updateForTenant(
+          new Types.ObjectId().toString(),
+          new Types.ObjectId().toString(),
+          {},
+        ),
+      ).rejects.toThrow(NotFoundException);
     });
   });
 

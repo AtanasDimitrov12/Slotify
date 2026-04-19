@@ -12,6 +12,7 @@ describe('StaffAppointmentsController', () => {
   const mockUser: JwtPayload = {
     sub: 'u1',
     _id: 'u1',
+    name: 'Staff Member',
     tenantId: 't1',
     role: 'staff',
     email: 's@s.com',
@@ -79,7 +80,12 @@ describe('StaffAppointmentsController', () => {
 
   describe('create', () => {
     it('should call service.createForStaff', async () => {
-      const dto = { staffServiceAssignmentId: 'a1', startTime: '...', customerName: 'C', customerPhone: '1' };
+      const dto = {
+        staffServiceAssignmentId: 'a1',
+        startTime: '...',
+        customerName: 'C',
+        customerPhone: '1',
+      };
       await controller.create(mockUser, dto as any);
       expect(service.createForStaff).toHaveBeenCalledWith({
         tenantId: 't1',

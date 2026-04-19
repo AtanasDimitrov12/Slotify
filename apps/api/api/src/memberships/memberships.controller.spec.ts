@@ -1,6 +1,6 @@
 import { Test, type TestingModule } from '@nestjs/testing';
-import { CreateMembershipDto } from './dto/create-membership.dto';
-import { UpdateMembershipDto } from './dto/update-membership.dto';
+import type { CreateMembershipDto } from './dto/create-membership.dto';
+import type { UpdateMembershipDto } from './dto/update-membership.dto';
 import { MembershipsController } from './memberships.controller';
 import { MembershipsService } from './memberships.service';
 

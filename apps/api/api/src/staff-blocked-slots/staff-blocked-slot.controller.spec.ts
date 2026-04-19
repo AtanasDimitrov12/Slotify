@@ -26,9 +26,7 @@ describe('StaffBlockedSlotController', () => {
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       controllers: [StaffBlockedSlotController],
-      providers: [
-        { provide: StaffBlockedSlotService, useValue: mockService },
-      ],
+      providers: [{ provide: StaffBlockedSlotService, useValue: mockService }],
     }).compile();
 
     controller = module.get<StaffBlockedSlotController>(StaffBlockedSlotController);
@@ -60,7 +58,13 @@ describe('StaffBlockedSlotController', () => {
 
   describe('create', () => {
     it('should allow owner to create for anyone', async () => {
-      const dto = { userId: 'u2', tenantId: 't1', date: '2026-01-01', startTime: '10:00', endTime: '11:00' };
+      const dto = {
+        userId: 'u2',
+        tenantId: 't1',
+        date: '2026-01-01',
+        startTime: '10:00',
+        endTime: '11:00',
+      };
       await controller.create(mockUser as any, dto as any);
       expect(service.create).toHaveBeenCalledWith(dto);
     });

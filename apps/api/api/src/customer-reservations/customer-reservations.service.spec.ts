@@ -66,7 +66,11 @@ describe('CustomerReservationsService', () => {
 
   describe('cancelReservation', () => {
     it('should successfully cancel reservation', async () => {
-      const res = { ...mockReservation, status: 'confirmed', save: jest.fn().mockResolvedValue({ status: 'cancelled' }) };
+      const res = {
+        ...mockReservation,
+        status: 'confirmed',
+        save: jest.fn().mockResolvedValue({ status: 'cancelled' }),
+      };
       mockReservationModel.findById.mockResolvedValue(res);
 
       const result = await service.cancelReservation(res._id.toString(), 'j@j.com');
@@ -77,39 +81,52 @@ describe('CustomerReservationsService', () => {
 
     it('should throw NotFoundException if reservation not found', async () => {
       mockReservationModel.findById.mockResolvedValue(null);
-      await expect(service.cancelReservation(new Types.ObjectId().toString(), 'j@j.com')).rejects.toThrow(NotFoundException);
+      await expect(
+        service.cancelReservation(new Types.ObjectId().toString(), 'j@j.com'),
+      ).rejects.toThrow(NotFoundException);
     });
 
     it('should throw ForbiddenException if user is not the owner', async () => {
       const res = { ...mockReservation, customerEmail: 'other@o.com' };
       mockReservationModel.findById.mockResolvedValue(res);
-      await expect(service.cancelReservation(res._id.toString(), 'j@j.com')).rejects.toThrow(ForbiddenException);
+      await expect(service.cancelReservation(res._id.toString(), 'j@j.com')).rejects.toThrow(
+        ForbiddenException,
+      );
     });
 
     it('should throw ForbiddenException if reservation is already completed', async () => {
       const res = { ...mockReservation, status: 'completed' };
       mockReservationModel.findById.mockResolvedValue(res);
-      await expect(service.cancelReservation(res._id.toString(), 'j@j.com')).rejects.toThrow(ForbiddenException);
+      await expect(service.cancelReservation(res._id.toString(), 'j@j.com')).rejects.toThrow(
+        ForbiddenException,
+      );
     });
   });
 
   describe('addReview', () => {
     it('should successfully add review to completed reservation', async () => {
-      const res = { ...mockReservation, status: 'completed', save: jest.fn().mockResolvedValue({ review: {} }) };
+      const res = {
+        ...mockReservation,
+        status: 'completed',
+        save: jest.fn().mockResolvedValue({ review: {} }),
+      };
       mockReservationModel.findById.mockResolvedValue(res);
 
       const dto = { rating: 5, comment: 'Great!' };
       await service.addReview(res._id.toString(), dto, 'j@j.com');
 
-      expect(res.review).toBeDefined();
-      expect(res.review.rating).toBe(5);
+      const updatedRes = res as any;
+      expect(updatedRes.review).toBeDefined();
+      expect(updatedRes.review.rating).toBe(5);
       expect(res.save).toHaveBeenCalled();
     });
 
     it('should throw ForbiddenException if reservation is not completed', async () => {
       const res = { ...mockReservation, status: 'confirmed' };
       mockReservationModel.findById.mockResolvedValue(res);
-      await expect(service.addReview(res._id.toString(), { rating: 5 }, 'j@j.com')).rejects.toThrow(ForbiddenException);
+      await expect(service.addReview(res._id.toString(), { rating: 5 }, 'j@j.com')).rejects.toThrow(
+        ForbiddenException,
+      );
     });
   });
 });

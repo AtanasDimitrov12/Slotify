@@ -41,7 +41,13 @@ describe('PublicBookingController', () => {
   });
 
   it('createReservation should call service', async () => {
-    const dto = { serviceId: 's1', staffId: 'u1', startTime: '...', customerName: 'X', customerPhone: '1' };
+    const dto = {
+      serviceId: 's1',
+      staffId: 'u1',
+      startTime: '...',
+      customerName: 'X',
+      customerPhone: '1',
+    };
     await controller.createReservation('slug1', dto as any);
     expect(service.createReservationBySlug).toHaveBeenCalledWith('slug1', dto);
   });

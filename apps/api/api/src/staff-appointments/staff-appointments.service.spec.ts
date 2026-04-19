@@ -147,15 +147,21 @@ describe('StaffAppointmentsService (Production Life Cycle)', () => {
     });
 
     it('should throw BadRequestException for invalid list date', async () => {
-      await expect(service.list({ tenantIds: [tenantId], userId, date: 'invalid' })).rejects.toThrow(BadRequestException);
+      await expect(
+        service.list({ tenantIds: [tenantId], userId, date: 'invalid' }),
+      ).rejects.toThrow(BadRequestException);
     });
 
     it('should return list of appointments', async () => {
-      mockModels.reservation.find.mockReturnValue(mockQuery([{
-        _id: reservationId,
-        tenantId,
-        customerPhone: '123'
-      }]));
+      mockModels.reservation.find.mockReturnValue(
+        mockQuery([
+          {
+            _id: reservationId,
+            tenantId,
+            customerPhone: '123',
+          },
+        ]),
+      );
       mockModels.tenantDetails.find.mockReturnValue(mockQuery([]));
       mockModels.customerProfile.findOne.mockReturnValue(mockQuery(null));
 
@@ -164,8 +170,12 @@ describe('StaffAppointmentsService (Production Life Cycle)', () => {
     });
 
     it('should list bookable services', async () => {
-      mockModels.staffServiceAssignment.find.mockReturnValue(mockQuery([{ serviceId, tenantId, isOffered: true }]));
-      mockModels.service.find.mockReturnValue(mockQuery([{ _id: serviceId, name: 'S1', durationMin: 30, priceEUR: 20 }]));
+      mockModels.staffServiceAssignment.find.mockReturnValue(
+        mockQuery([{ serviceId, tenantId, isOffered: true }]),
+      );
+      mockModels.service.find.mockReturnValue(
+        mockQuery([{ _id: serviceId, name: 'S1', durationMin: 30, priceEUR: 20 }]),
+      );
 
       const result = await service.listBookableServicesForStaff({ tenantIds: [tenantId], userId });
       expect(result).toHaveLength(1);
@@ -177,7 +187,10 @@ describe('StaffAppointmentsService (Production Life Cycle)', () => {
       mockModels.reservation.findOne.mockResolvedValue(res);
 
       await service.updateForStaff({
-        tenantId, userId, reservationId, dto: { customerName: 'New Name' }
+        tenantId,
+        userId,
+        reservationId,
+        dto: { customerName: 'New Name' },
       });
 
       expect(res.save).toHaveBeenCalled();
@@ -188,12 +201,30 @@ describe('StaffAppointmentsService (Production Life Cycle)', () => {
     it('should successfully create appointment', async () => {
       const assignmentId = new Types.ObjectId().toString();
       mockModels.staffProfile.findOne.mockReturnValue(mockQuery({ displayName: 'John' }));
-      mockModels.staffServiceAssignment.findOne.mockReturnValue(mockQuery({ _id: assignmentId, serviceId }));
-      mockModels.service.findOne.mockReturnValue(mockQuery({ _id: serviceId, name: 'S', durationMin: 30 }));
-      mockModels.tenantDetails.findOne.mockReturnValue(mockQuery({ openingHours: { mon: [{ start: '09:00', end: '17:00' }] } }));
-      mockModels.staffAvailability.findOne.mockReturnValue(mockQuery({ weeklyAvailability: [{ dayOfWeek: 1, isAvailable: true, slots: [{ startTime: '09:00', endTime: '17:00', tenantId }] }] }));
+      mockModels.staffServiceAssignment.findOne.mockReturnValue(
+        mockQuery({ _id: assignmentId, serviceId }),
+      );
+      mockModels.service.findOne.mockReturnValue(
+        mockQuery({ _id: serviceId, name: 'S', durationMin: 30 }),
+      );
+      mockModels.tenantDetails.findOne.mockReturnValue(
+        mockQuery({ openingHours: { mon: [{ start: '09:00', end: '17:00' }] } }),
+      );
+      mockModels.staffAvailability.findOne.mockReturnValue(
+        mockQuery({
+          weeklyAvailability: [
+            {
+              dayOfWeek: 1,
+              isAvailable: true,
+              slots: [{ startTime: '09:00', endTime: '17:00', tenantId }],
+            },
+          ],
+        }),
+      );
       mockModels.tenantBookingSettings.findOne.mockReturnValue(mockQuery({}));
-      mockModels.staffBookingSettings.findOne.mockReturnValue(mockQuery({ useGlobalSettings: true }));
+      mockModels.staffBookingSettings.findOne.mockReturnValue(
+        mockQuery({ useGlobalSettings: true }),
+      );
       mockModels.staffTimeOff.find.mockReturnValue(mockQuery([]));
       mockModels.staffBlockedSlot.find.mockReturnValue(mockQuery([]));
       mockModels.reservation.find.mockReturnValue(mockQuery([]));
@@ -206,8 +237,8 @@ describe('StaffAppointmentsService (Production Life Cycle)', () => {
           staffServiceAssignmentId: assignmentId,
           startTime: '2026-04-06T10:00:00Z',
           customerName: 'Alice',
-          customerPhone: '123'
-        }
+          customerPhone: '123',
+        },
       });
       expect(result.status).toBe('confirmed');
     });
