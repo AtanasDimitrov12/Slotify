@@ -37,9 +37,41 @@ describe('AIService', () => {
     expect(service).toBeDefined();
   });
 
-  it('should throw error if GEMINI_API_KEY is not defined', () => {
+  it('should throw error if GEMINI_API_KEY is not defined outside test environment', () => {
+    const originalNodeEnv = process.env.NODE_ENV;
+    process.env.NODE_ENV = 'development';
+
     (configService.get as jest.Mock).mockReturnValue(null);
+
     expect(() => new AIService(configService)).toThrow('GEMINI_API_KEY is not defined');
+
+    process.env.NODE_ENV = originalNodeEnv;
+  });
+
+  it('should not throw if GEMINI_API_KEY is missing in test environment', () => {
+    const originalNodeEnv = process.env.NODE_ENV;
+    process.env.NODE_ENV = 'test';
+
+    (configService.get as jest.Mock).mockReturnValue(null);
+
+    expect(() => new AIService(configService)).not.toThrow();
+
+    process.env.NODE_ENV = originalNodeEnv;
+  });
+
+  it('should throw InternalServerErrorException when extractServices is called without configured AI', async () => {
+    const originalNodeEnv = process.env.NODE_ENV;
+    process.env.NODE_ENV = 'test';
+
+    (configService.get as jest.Mock).mockReturnValue(null);
+
+    service = new AIService(configService);
+
+    await expect(service.extractServices(Buffer.from('test'), 'image/jpeg')).rejects.toThrow(
+      InternalServerErrorException,
+    );
+
+    process.env.NODE_ENV = originalNodeEnv;
   });
 
   describe('extractServices', () => {

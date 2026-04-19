@@ -11,12 +11,16 @@ type ExtractedService = {
 
 @Injectable()
 export class AIService {
-  private readonly genAI: GoogleGenAI;
+  private readonly genAI?: GoogleGenAI;
 
   constructor(private readonly configService: ConfigService) {
     const apiKey = this.configService.get<string>('GEMINI_API_KEY');
 
     if (!apiKey) {
+      if (process.env.NODE_ENV === 'test') {
+        return;
+      }
+
       throw new Error('GEMINI_API_KEY is not defined');
     }
 
@@ -24,6 +28,10 @@ export class AIService {
   }
 
   async extractServices(fileBuffer: Buffer, mimeType: string): Promise<ExtractedService[]> {
+    if (!this.genAI) {
+      throw new InternalServerErrorException('AI service is not configured');
+    }
+
     const prompt = `
 Extract barber or salon services from the attached image or PDF pricelist.
 
