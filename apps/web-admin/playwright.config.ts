@@ -32,8 +32,12 @@ export default defineConfig({
       cwd: '../../',
       timeout: 180 * 1000,
       env: {
+        ...process.env,
         NODE_ENV: 'test',
         MONGO_URI: process.env.MONGO_URI_E2E || 'mongodb://localhost:27017/barber_reservation_e2e',
+        JWT_SECRET: process.env.JWT_SECRET || 'test-jwt-secret-for-e2e',
+        GEMINI_API_KEY: process.env.GEMINI_API_KEY || 'test-gemini-key-for-e2e',
+        CORS_ORIGINS: 'http://localhost:5173,http://localhost:5174',
       },
     },
     {
@@ -42,6 +46,10 @@ export default defineConfig({
       reuseExistingServer: !process.env.CI,
       cwd: '../../',
       timeout: 180 * 1000,
+      env: {
+        ...process.env,
+        VITE_API_URL: 'http://localhost:4000',
+      },
     },
     {
       command: 'pnpm dev:web-user',
@@ -49,6 +57,10 @@ export default defineConfig({
       reuseExistingServer: !process.env.CI,
       cwd: '../../',
       timeout: 180 * 1000,
+      env: {
+        ...process.env,
+        VITE_API_URL: 'http://localhost:4000',
+      },
     },
   ],
 });
