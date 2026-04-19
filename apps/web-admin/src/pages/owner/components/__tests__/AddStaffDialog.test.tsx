@@ -1,4 +1,4 @@
-import { listAvailableStaffForOwner, useToast } from '@barber/shared';
+import { useToast } from '@barber/shared';
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import AddStaffDialog from '../AddStaffDialog';
