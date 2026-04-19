@@ -99,14 +99,14 @@ describe('Booking Flow (Integration)', () => {
       .get(`/public/tenants/${slug}/availability`)
       .query({
         serviceId,
-        date: '2026-04-06',
+        date: '2026-05-04',
       })
       .expect(200);
 
     expect(availabilityResponse.body.slots.length).toBeGreaterThan(0);
     const firstSlot = availabilityResponse.body.slots[0];
     // We check that the slot is on the requested day
-    expect(firstSlot.startTime).toContain('2026-04-06');
+    expect(firstSlot.startTime).toContain('2026-05-04');
 
     // 7. Create Public Reservation
     const reservationDto = {
@@ -134,7 +134,7 @@ describe('Booking Flow (Integration)', () => {
       .get(`/public/tenants/${slug}/availability`)
       .query({
         serviceId,
-        date: '2026-04-06',
+        date: '2026-05-04',
       })
       .expect(200);
 

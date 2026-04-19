@@ -201,7 +201,7 @@ test.describe('Staff Operations', () => {
     await page
       .getByText(/Test Client/i)
       .first()
-      .click();
+      .click({ force: true });
 
     await page.getByRole('button', { name: /Mark as Done/i }).click();
 
