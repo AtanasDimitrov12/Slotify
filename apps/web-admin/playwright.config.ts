@@ -31,6 +31,10 @@ export default defineConfig({
       reuseExistingServer: !process.env.CI,
       cwd: '../../',
       timeout: 180 * 1000,
+      env: {
+        NODE_ENV: 'test',
+        MONGO_URI: process.env.MONGO_URI_E2E || 'mongodb://localhost:27017/barber_reservation_e2e',
+      },
     },
     {
       command: 'pnpm dev:web-admin',
