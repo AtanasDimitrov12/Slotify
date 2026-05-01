@@ -4,6 +4,7 @@ import AppShell from './layout/AppShell';
 import AdminLayout from './pages/admin/AdminLayout';
 import AdminOverviewPage from './pages/admin/AdminOverviewPage';
 import AdminTenantsPage from './pages/admin/AdminTenantsPage';
+import QualityMetricsPage from './pages/admin/QualityMetricsPage';
 import LandingPage from './pages/LandingPage';
 import LoginPage from './pages/LoginPage';
 import NotFoundPage from './pages/NotFoundPage';
@@ -35,6 +36,7 @@ export default function App() {
             <Route index element={<AdminOverviewPage />} />
             <Route path="overview" element={<AdminOverviewPage />} />
             <Route path="tenants" element={<AdminTenantsPage />} />
+            <Route path="quality" element={<QualityMetricsPage />} />
           </Route>
         </Route>
 
@@ -46,6 +48,7 @@ export default function App() {
             <Route path="services" element={<OwnerServicesPage />} />
             <Route path="settings" element={<OwnerSettingsPage />} />
             <Route path="booking-rules" element={<OwnerBookingRulesPage />} />
+            <Route path="quality" element={<QualityMetricsPage />} />
           </Route>
         </Route>
 

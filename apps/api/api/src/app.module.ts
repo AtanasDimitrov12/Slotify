@@ -22,6 +22,7 @@ import { StaffServiceAssignmentsModule } from './staff-service-assignments/staff
 import { StaffTimeOffModule } from './staff-time-off/staff-time-off.module';
 import { TenantDetailsModule } from './tenant-details/tenant-details.module';
 import { TenantsModule } from './tenants/tenants.module';
+import { QualityMetricsModule } from './quality-metrics/quality-metrics.module';
 
 @Module({
   imports: [
@@ -54,6 +55,7 @@ import { TenantsModule } from './tenants/tenants.module';
     StaffAppointmentsModule,
     CustomerProfilesModule,
     CustomerReservationsModule,
+    QualityMetricsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

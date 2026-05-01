@@ -7,6 +7,7 @@ export * from './api/http';
 export * from './api/memberships';
 export * from './api/ownerSettings';
 export * from './api/publicTenants';
+export * from './api/qualityMetrics';
 export * from './api/servicesCatalog';
 export * from './api/staff';
 export * from './api/staffAppointments';

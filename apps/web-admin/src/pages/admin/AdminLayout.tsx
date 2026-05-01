@@ -1,5 +1,6 @@
 import { landingColors, useAuth } from '@barber/shared';
 import DashboardRoundedIcon from '@mui/icons-material/DashboardRounded';
+import InsightsRoundedIcon from '@mui/icons-material/InsightsRounded';
 import MenuRoundedIcon from '@mui/icons-material/MenuRounded';
 import StorefrontRoundedIcon from '@mui/icons-material/StorefrontRounded';
 import { Box, Drawer, IconButton, useMediaQuery, useTheme } from '@mui/material';
@@ -32,6 +33,7 @@ export default function AdminLayout() {
   const items: NavItem[] = [
     { label: 'Dashboard', to: '/admin', icon: DashboardRoundedIcon },
     { label: 'Tenants', to: '/admin/tenants', icon: StorefrontRoundedIcon },
+    { label: 'System Quality', to: '/admin/quality', icon: InsightsRoundedIcon },
   ];
 
   const isActive = (to: string) =>

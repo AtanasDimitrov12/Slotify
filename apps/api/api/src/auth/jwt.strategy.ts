@@ -9,7 +9,7 @@ export type JwtPayload = {
   _id: string; // same as sub, for consistency
   name: string;
   tenantId?: string; // tenant scope, optional for customer
-  role: 'owner' | 'staff' | 'customer';
+  role: 'admin' | 'owner' | 'staff' | 'customer';
   email: string;
   accountType: 'internal' | 'customer';
 };
