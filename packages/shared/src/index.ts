@@ -17,6 +17,7 @@ export * from './api/staffServices';
 export * from './api/staffTimeOff';
 export * from './api/tenantDetails';
 export * from './api/tenants';
+export * from './api/tickets';
 export * from './api/types';
 // Auth
 export * from './auth/AuthProvider';
@@ -34,6 +35,7 @@ export * from './components/landing/Showcase';
 export * from './components/landing/SmartSpotlight';
 export * from './components/landing/TrustStrip';
 export { default as RequireRole } from './components/RequireRole';
+export { default as TicketRequestDialog } from './components/TicketRequestDialog';
 export { ToastProvider, useToast } from './components/ToastProvider';
 export * from './constants/locations';
 // Hooks

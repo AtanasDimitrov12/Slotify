@@ -39,16 +39,28 @@ export class GithubMetricsService {
   private readonly workflowFile: string;
 
   constructor(private configService: ConfigService) {
-    this.token = this.configService.get<string>('GITHUB_TOKEN');
-    this.owner = this.configService.get<string>('GITHUB_OWNER');
-    this.repo = this.configService.get<string>('GITHUB_REPO');
-    this.workflowFile = this.configService.get<string>('GITHUB_WORKFLOW_ID') || 'ci.yml';
+    this.token = this.configService
+      .get<string>('GITHUB_TOKEN')
+      ?.trim()
+      .replace(/^["']|["']$/g, '');
+    this.owner = this.configService
+      .get<string>('GITHUB_OWNER')
+      ?.trim()
+      .replace(/^["']|["']$/g, '');
+    this.repo = this.configService
+      .get<string>('GITHUB_REPO')
+      ?.trim()
+      .replace(/^["']|["']$/g, '');
+    this.workflowFile = (this.configService.get<string>('GITHUB_WORKFLOW_ID') || 'ci.yml')
+      .trim()
+      .replace(/^["']|["']$/g, '');
   }
 
   private get headers() {
     return {
       Authorization: `Bearer ${this.token}`,
       Accept: 'application/vnd.github+json',
+      'User-Agent': 'Slotify-Quality-Metrics',
       'X-GitHub-Api-Version': '2022-11-28',
     };
   }
@@ -68,13 +80,17 @@ export class GithubMetricsService {
       since.setDate(since.getDate() - days);
       const sinceIso = since.toISOString();
 
-      // We might need multiple pages if there are many runs, 
-      // but for 30-90 days, 100 runs per page might be enough for many projects.
-      const url = `https://api.github.com/repos/${this.owner}/${this.repo}/actions/workflows/${this.workflowFile}/runs?per_page=100&created=>${sinceIso}`;
-      
+      // Fix URL encoding for > character
+      const url = `https://api.github.com/repos/${this.owner}/${this.repo}/actions/workflows/${this.workflowFile}/runs?per_page=100&created=%3E${sinceIso}`;
+
       const response = await fetch(url, { headers: this.headers });
       if (!response.ok) {
-        throw new Error(`GitHub API error: ${response.statusText}`);
+        if (response.status === 401) {
+          this.logger.error(
+            `GitHub API Unauthorized. Please check if GITHUB_TOKEN is valid and has correct permissions. Owner: ${this.owner}, Repo: ${this.repo}`,
+          );
+        }
+        throw new Error(`GitHub API error: ${response.status} ${response.statusText}`);
       }
 
       const data = await response.json();

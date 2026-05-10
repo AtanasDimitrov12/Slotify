@@ -1,4 +1,5 @@
 import { landingColors, useAuth } from '@barber/shared';
+import AssignmentRoundedIcon from '@mui/icons-material/AssignmentRounded';
 import DashboardRoundedIcon from '@mui/icons-material/DashboardRounded';
 import InsightsRoundedIcon from '@mui/icons-material/InsightsRounded';
 import MenuRoundedIcon from '@mui/icons-material/MenuRounded';
@@ -33,6 +34,7 @@ export default function AdminLayout() {
   const items: NavItem[] = [
     { label: 'Dashboard', to: '/admin', icon: DashboardRoundedIcon },
     { label: 'Tenants', to: '/admin/tenants', icon: StorefrontRoundedIcon },
+    { label: 'Backlog', to: '/admin/tickets', icon: AssignmentRoundedIcon },
     { label: 'System Quality', to: '/admin/quality', icon: InsightsRoundedIcon },
   ];
 

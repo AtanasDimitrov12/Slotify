@@ -1,9 +1,9 @@
 import { Controller, Get, Query, UseGuards, ForbiddenException } from '@nestjs/common';
-import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { CurrentUser } from '../auth/current-user.decorator';
 import type { JwtPayload } from '../auth/jwt.strategy';
-import { QualityMetricsService } from './quality-metrics.service';
+import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { QualityMetricsReport } from './dto/quality-metrics-report.dto';
+import { QualityMetricsService } from './quality-metrics.service';
 
 @Controller('quality-metrics')
 @UseGuards(JwtAuthGuard)
@@ -21,6 +21,7 @@ export class QualityMetricsController {
     }
 
     const periodDays = days ? parseInt(days, 10) : 30;
-    return this.qualityMetricsService.getReport(periodDays);
+    const tenantId = user.role === 'admin' ? undefined : user.tenantId;
+    return this.qualityMetricsService.getReport(periodDays, tenantId);
   }
 }

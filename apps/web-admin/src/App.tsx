@@ -5,6 +5,7 @@ import AdminLayout from './pages/admin/AdminLayout';
 import AdminOverviewPage from './pages/admin/AdminOverviewPage';
 import AdminTenantsPage from './pages/admin/AdminTenantsPage';
 import QualityMetricsPage from './pages/admin/QualityMetricsPage';
+import TicketsPage from './pages/admin/TicketsPage';
 import LandingPage from './pages/LandingPage';
 import LoginPage from './pages/LoginPage';
 import NotFoundPage from './pages/NotFoundPage';
@@ -36,6 +37,7 @@ export default function App() {
             <Route index element={<AdminOverviewPage />} />
             <Route path="overview" element={<AdminOverviewPage />} />
             <Route path="tenants" element={<AdminTenantsPage />} />
+            <Route path="tickets" element={<TicketsPage />} />
             <Route path="quality" element={<QualityMetricsPage />} />
           </Route>
         </Route>

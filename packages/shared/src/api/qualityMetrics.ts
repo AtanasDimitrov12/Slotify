@@ -14,9 +14,22 @@ export interface CiRunSummary {
 
 export interface DoraMetrics {
   deploymentFrequency: number;
-  leadTimeMinutes: number;
+  leadTimeMinutes: number; // CI Lead Time
   changeFailureRate: number;
   recoveryTimeMinutes: number | null;
+  // Ticket-based metrics
+  ticketLeadTimeMinutes: number; // Development time: Start to Finish
+  cycleTimeMinutes: number; // Total time: Request to Finish
+  velocity: number; // Completed tickets per period
+}
+
+export interface TicketMetricSummary {
+  totalRequested: number;
+  totalCompleted: number;
+  avgLeadTimeMinutes: number;
+  avgCycleTimeMinutes: number;
+  byType: Record<string, number>;
+  byPriority: Record<string, number>;
 }
 
 export interface CiStepStatus {
@@ -35,6 +48,7 @@ export interface QualityMetricsReport {
     successRate: number;
     averageDurationMinutes: number;
   };
+  ticketMetrics: TicketMetricSummary;
   doraMetrics: DoraMetrics;
   recentRuns: CiRunSummary[];
   stepStatus?: CiStepStatus[];

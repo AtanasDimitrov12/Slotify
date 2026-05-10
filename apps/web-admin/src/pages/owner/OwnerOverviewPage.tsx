@@ -1,5 +1,7 @@
-import { landingColors, premium } from '@barber/shared';
-import { alpha, Box, Card, CardContent, Grid, Stack, Typography } from '@mui/material';
+import { landingColors, premium, TicketRequestDialog } from '@barber/shared';
+import RequestQuoteRoundedIcon from '@mui/icons-material/RequestQuoteRounded';
+import { alpha, Box, Button, Card, CardContent, Grid, Stack, Typography } from '@mui/material';
+import * as React from 'react';
 import {
   CartesianGrid,
   Line,
@@ -64,16 +66,45 @@ function StatCard({ label, value, color }: { label: string; value: string; color
 }
 
 export default function OwnerOverviewPage() {
+  const [requestDialogOpen, setRequestDialogOpen] = React.useState(false);
+
   return (
     <Stack spacing={4}>
-      <Box>
-        <Typography sx={{ fontWeight: 1000, fontSize: 36, letterSpacing: -1.5, color: '#0F172A' }}>
-          Overview
-        </Typography>
-        <Typography sx={{ color: '#64748B', fontWeight: 600, fontSize: 18 }}>
-          Real-time performance of your salon.
-        </Typography>
-      </Box>
+      <Stack direction="row" justifyContent="space-between" alignItems="center">
+        <Box>
+          <Typography
+            sx={{ fontWeight: 1000, fontSize: 36, letterSpacing: -1.5, color: '#0F172A' }}
+          >
+            Overview
+          </Typography>
+          <Typography sx={{ color: '#64748B', fontWeight: 600, fontSize: 18 }}>
+            Real-time performance of your salon.
+          </Typography>
+        </Box>
+        <Button
+          variant="contained"
+          disableElevation
+          startIcon={<RequestQuoteRoundedIcon />}
+          onClick={() => setRequestDialogOpen(true)}
+          sx={{
+            bgcolor: '#0F172A',
+            color: '#FFFFFF',
+            borderRadius: 1.5,
+            px: 2.5,
+            py: 1,
+            fontWeight: 600,
+            fontSize: 14,
+            textTransform: 'none',
+            '&:hover': {
+              bgcolor: '#1E293B',
+              transform: 'translateY(-1px)',
+            },
+            transition: 'all 0.2s ease',
+          }}
+        >
+          Request Feature
+        </Button>
+      </Stack>
 
       <Grid container spacing={3}>
         {kpis.map((k) => (
@@ -145,6 +176,12 @@ export default function OwnerOverviewPage() {
           </Stack>
         </CardContent>
       </Card>
+
+      <TicketRequestDialog
+        open={requestDialogOpen}
+        onClose={() => setRequestDialogOpen(false)}
+        requestType="owner"
+      />
     </Stack>
   );
 }

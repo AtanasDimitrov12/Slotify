@@ -5,14 +5,21 @@ import {
   getMyReservations,
   listPublicTenants,
   type PublicTenantListItem,
+  TicketRequestDialog,
   useAuth,
   useToast,
 } from '@barber/shared';
-import { CalendarMonthRounded, HistoryRounded, SettingsRounded } from '@mui/icons-material';
+import {
+  CalendarMonthRounded,
+  ChatBubbleRounded,
+  HistoryRounded,
+  SettingsRounded,
+} from '@mui/icons-material';
 import {
   Avatar,
   alpha,
   Box,
+  Button,
   Card,
   CardContent,
   CircularProgress,
@@ -64,6 +71,7 @@ export default function ProfilePage() {
   const [allSalons, setAllSalons] = useState<PublicTenantListItem[]>([]);
   const [reservations, setReservations] = useState<CustomerReservation[]>([]);
   const [activeTab, setActiveTab] = useState(0);
+  const [requestDialogOpen, setRequestDialogOpen] = useState(false);
 
   const loadData = useCallback(async () => {
     try {
@@ -171,12 +179,39 @@ export default function ProfilePage() {
               </Avatar>
 
               <Box sx={{ flexGrow: 1 }}>
-                <Typography variant="h4" sx={{ fontWeight: 1000, letterSpacing: -1.5, mb: 0.5 }}>
-                  {user?.name}
-                </Typography>
-                <Typography sx={{ color: 'rgba(255,255,255,0.6)', fontWeight: 600, mb: 3 }}>
-                  {user?.email}
-                </Typography>
+                <Stack direction="row" justifyContent="space-between" alignItems="flex-start">
+                  <Box>
+                    <Typography
+                      variant="h4"
+                      sx={{ fontWeight: 1000, letterSpacing: -1.5, mb: 0.5 }}
+                    >
+                      {user?.name}
+                    </Typography>
+                    <Typography sx={{ color: 'rgba(255,255,255,0.6)', fontWeight: 600, mb: 3 }}>
+                      {user?.email}
+                    </Typography>
+                  </Box>
+                  <Button
+                    variant="outlined"
+                    startIcon={<ChatBubbleRounded />}
+                    onClick={() => setRequestDialogOpen(true)}
+                    sx={{
+                      color: 'white',
+                      borderColor: 'rgba(255,255,255,0.2)',
+                      borderRadius: 1.5,
+                      fontWeight: 600,
+                      textTransform: 'none',
+                      fontSize: 14,
+                      px: 2,
+                      '&:hover': {
+                        borderColor: 'white',
+                        bgcolor: 'rgba(255,255,255,0.05)',
+                      },
+                    }}
+                  >
+                    Feedback
+                  </Button>
+                </Stack>
 
                 <Stack
                   direction="row"
@@ -267,6 +302,12 @@ export default function ProfilePage() {
           )}
         </Box>
       </Stack>
+
+      <TicketRequestDialog
+        open={requestDialogOpen}
+        onClose={() => setRequestDialogOpen(false)}
+        requestType="user"
+      />
     </Container>
   );
 }
