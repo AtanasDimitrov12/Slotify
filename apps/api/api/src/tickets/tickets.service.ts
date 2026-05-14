@@ -1,6 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
+import { Counter, CounterDocument } from './counter.schema';
 import { CreateTicketDto } from './dto/create-ticket.dto';
 import { UpdateTicketDto } from './dto/update-ticket.dto';
 import { Ticket, TicketDocument } from './ticket.schema';
@@ -10,28 +11,50 @@ export class TicketsService {
   constructor(
     @InjectModel(Ticket.name)
     private readonly ticketModel: Model<TicketDocument>,
+    @InjectModel(Counter.name)
+    private readonly counterModel: Model<CounterDocument>,
   ) {}
+
+  private async getNextCode(tenantId: string): Promise<string> {
+    const counterName = `tickets_${tenantId}`;
+    const counter = await this.counterModel.findOneAndUpdate(
+      { name: counterName },
+      { $inc: { count: 1 } },
+      { upsert: true, new: true },
+    );
+
+    const num = counter.count.toString().padStart(3, '0');
+    return `SLT-${num}`;
+  }
 
   async create(
     tenantId: string,
     requestedBy: string,
     dto: CreateTicketDto,
   ): Promise<TicketDocument> {
+    const code = await this.getNextCode(tenantId);
     const createdTicket = new this.ticketModel({
       ...dto,
+      code,
       tenantId: new Types.ObjectId(tenantId),
       requestedBy: new Types.ObjectId(requestedBy),
     });
     return createdTicket.save();
   }
 
-  async findAll(tenantId?: string, filters?: { stage?: string }): Promise<TicketDocument[]> {
+  async findAll(tenantId?: string, filters?: { stage?: string; search?: string }): Promise<TicketDocument[]> {
     const query: any = {};
     if (tenantId) {
       query.tenantId = new Types.ObjectId(tenantId);
     }
     if (filters?.stage) {
       query.stage = filters.stage;
+    }
+    if (filters?.search) {
+      query.$or = [
+        { title: { $regex: filters.search, $options: 'i' } },
+        { code: { $regex: filters.search, $options: 'i' } },
+      ];
     }
     return this.ticketModel.find(query).sort({ createdAt: -1 }).exec();
   }
@@ -61,6 +84,11 @@ export class TicketsService {
     // If moving to 'done', set completedAt
     if (dto.stage === 'done' && ticket.stage !== 'done') {
       ticket.completedAt = new Date();
+    }
+
+    // Ensure ticket has a code (for legacy tickets being updated)
+    if (!ticket.code) {
+      ticket.code = await this.getNextCode(ticket.tenantId.toString());
     }
 
     Object.assign(ticket, dto);

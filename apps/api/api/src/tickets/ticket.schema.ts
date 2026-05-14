@@ -10,6 +10,9 @@ export class Ticket {
   @Prop({ type: Types.ObjectId, ref: Tenant.name, required: true, index: true })
   tenantId!: Types.ObjectId;
 
+  @Prop({ required: true, unique: true, index: true, sparse: true })
+  code!: string;
+
   @Prop({ required: true, trim: true, maxlength: 200 })
   title!: string;
 
@@ -41,7 +44,6 @@ export class Ticket {
 
   @Prop({
     required: true,
-    enum: ['user_requested', 'owner_requested', 'internal', 'in_progress', 'done'],
     default: 'internal',
     index: true,
   })

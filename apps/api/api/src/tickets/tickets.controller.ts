@@ -28,7 +28,11 @@ export class TicketsController {
   }
 
   @Get()
-  findAll(@CurrentUser() user: JwtPayload, @Query('stage') stage?: string) {
+  findAll(
+    @CurrentUser() user: JwtPayload,
+    @Query('stage') stage?: string,
+    @Query('search') search?: string,
+  ) {
     // If admin, they can see all tickets (tenantId: undefined)
     // If not admin, they are restricted to their own tenant
     const tenantId = user.role === 'admin' ? undefined : user.tenantId;
@@ -37,7 +41,7 @@ export class TicketsController {
       throw new Error('Tenant ID required for non-admin users');
     }
 
-    return this.ticketsService.findAll(tenantId, { stage });
+    return this.ticketsService.findAll(tenantId, { stage, search });
   }
 
   @Get(':id')

@@ -1,14 +1,19 @@
 import {
+  createStage,
   createTicket,
+  deleteStage,
   deleteTicket,
   finishTicket,
+  getStages,
   getTickets,
+  type Stage,
   startTicket,
   type Ticket,
   type TicketBadge,
   type TicketPriority,
   type TicketStage,
   type TicketType,
+  updateStage,
   updateTicket,
 } from '@barber/shared';
 import {
@@ -28,11 +33,15 @@ import { CSS } from '@dnd-kit/utilities';
 import AddRoundedIcon from '@mui/icons-material/AddRounded';
 import BugReportRoundedIcon from '@mui/icons-material/BugReportRounded';
 import CheckCircleOutlineRoundedIcon from '@mui/icons-material/CheckCircleOutlineRounded';
+import ExpandLessRoundedIcon from '@mui/icons-material/ExpandLessRounded';
+import ExpandMoreRoundedIcon from '@mui/icons-material/ExpandMoreRounded';
 import FeaturePlayListRoundedIcon from '@mui/icons-material/FeaturedPlayListRounded';
 import HelpRoundedIcon from '@mui/icons-material/HelpRounded';
 import MoreVertRoundedIcon from '@mui/icons-material/MoreVertRounded';
+import PaletteRoundedIcon from '@mui/icons-material/PaletteRounded';
 import PlayArrowRoundedIcon from '@mui/icons-material/PlayArrowRounded';
 import RequestQuoteRoundedIcon from '@mui/icons-material/RequestQuoteRounded';
+import SearchRoundedIcon from '@mui/icons-material/SearchRounded';
 import {
   alpha,
   Box,
@@ -48,23 +57,17 @@ import {
   FormControl,
   Grid,
   IconButton,
+  InputAdornment,
   InputLabel,
   Menu,
   MenuItem,
   Select,
   Stack,
   TextField,
+  Tooltip,
   Typography,
 } from '@mui/material';
 import * as React from 'react';
-
-const STAGE_LABELS: Record<TicketStage, string> = {
-  user_requested: 'User Requested',
-  owner_requested: 'Owner Requests',
-  internal: 'Internal Backlog',
-  in_progress: 'In Progress',
-  done: 'Done',
-};
 
 const PRIORITY_CONFIG: Record<TicketPriority, { color: string; bg: string }> = {
   low: { color: '#64748B', bg: '#F1F5F9' },
@@ -181,6 +184,9 @@ const TicketCard = React.forwardRef<
               overflow: 'hidden',
             }}
           >
+            <Box component="span" sx={{ color: '#64748B', mr: 1, fontWeight: 700 }}>
+              {ticket.code}
+            </Box>
             {ticket.title}
           </Typography>
 
@@ -321,8 +327,67 @@ function SortableTicket(props: TicketCardProps) {
   );
 }
 
-function DroppableColumn({ id, children }: { id: string; children: React.ReactNode }) {
+const COLUMN_COLORS = [
+  '#F8FAFC', // Slate (Default)
+  '#ff00008f', // Red (Stronger)
+  '#ffcc008e', // Amber (Stronger)
+  '#00ff5981', // Green (Stronger)
+  '#006eff8c', // Blue (Stronger)
+  '#623fff91', // Purple (Stronger)
+  '#f700ff7e', // Pink (Stronger)
+  '#ff910080', // Orange (Stronger)
+];
+
+function DroppableColumn({
+  id,
+  children,
+  isCollapsed,
+  color,
+  label,
+}: {
+  id: string;
+  children: React.ReactNode;
+  isCollapsed?: boolean;
+  color?: string;
+  label?: string;
+}) {
   const { setNodeRef } = useDroppable({ id });
+
+  if (isCollapsed) {
+    return (
+      <Box
+        ref={setNodeRef}
+        sx={{
+          width: '100%',
+          bgcolor: color || '#F8FAFC',
+          borderRadius: 2,
+          flex: 1,
+          minHeight: 'calc(100vh - 280px)',
+          border: '1px solid #F1F5F9',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          pt: 2,
+          transition: 'background-color 0.2s',
+        }}
+      >
+        <Typography
+          sx={{
+            writingMode: 'vertical-rl',
+            textTransform: 'uppercase',
+            fontWeight: 800,
+            fontSize: 11,
+            color: '#64748B',
+            letterSpacing: 1.5,
+            opacity: 0.8,
+            userSelect: 'none',
+          }}
+        >
+          {label}
+        </Typography>
+      </Box>
+    );
+  }
 
   return (
     <Stack
@@ -330,10 +395,11 @@ function DroppableColumn({ id, children }: { id: string; children: React.ReactNo
       spacing={1.5}
       sx={{
         p: 1.5,
-        bgcolor: '#F8FAFC',
+        bgcolor: color || '#F8FAFC',
         borderRadius: 2,
         minHeight: 'calc(100vh - 280px)',
         border: '1px solid #F1F5F9',
+        transition: 'background-color 0.2s',
       }}
     >
       {children}
@@ -343,10 +409,18 @@ function DroppableColumn({ id, children }: { id: string; children: React.ReactNo
 
 export default function TicketsPage() {
   const [tickets, setTickets] = React.useState<Ticket[]>([]);
+  const [stages, setStages] = React.useState<Stage[]>([]);
   const [loading, setLoading] = React.useState(true);
   const [open, setOpen] = React.useState(false);
+  const [stageDialogOpen, setStageDialogOpen] = React.useState(false);
   const [editingTicket, setEditingTicket] = React.useState<Ticket | null>(null);
   const [activeTicket, setActiveTicket] = React.useState<Ticket | null>(null);
+  const [searchQuery, setSearchQuery] = React.useState('');
+
+  const [colorMenuAnchor, setColorMenuAnchor] = React.useState<{
+    el: HTMLElement;
+    stageId: string;
+  } | null>(null);
 
   const [formData, setFormData] = React.useState({
     title: '',
@@ -360,20 +434,35 @@ export default function TicketsPage() {
     badges: [] as TicketBadge[],
   });
 
+  const [stageFormData, setStageFormData] = React.useState({
+    name: '',
+    label: '',
+  });
+
+  const fetchStages = React.useCallback(async () => {
+    try {
+      const data = await getStages();
+      setStages(data);
+    } catch (err) {
+      console.error('Failed to fetch stages:', err);
+    }
+  }, []);
+
   const fetchTickets = React.useCallback(async () => {
     try {
-      const data = await getTickets();
+      const data = await getTickets({ search: searchQuery });
       setTickets(data);
     } catch (err) {
       console.error('Failed to fetch tickets:', err);
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [searchQuery]);
 
   React.useEffect(() => {
+    fetchStages();
     fetchTickets();
-  }, [fetchTickets]);
+  }, [fetchStages, fetchTickets]);
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -401,10 +490,11 @@ export default function TicketsPage() {
     const ticketId = active.id as string;
     const overId = over.id as string;
 
-    // Find the target stage. overId can be a stage ID (column) or another ticket's ID.
-    let targetStage: TicketStage | null = null;
-    if (overId in STAGE_LABELS) {
-      targetStage = overId as TicketStage;
+    // overId can be a stage name (column) or another ticket's ID.
+    let targetStage: string | null = null;
+    const matchedStage = stages.find((s) => s.name === overId);
+    if (matchedStage) {
+      targetStage = matchedStage.name;
     } else {
       const overTicket = tickets.find((t) => t._id === overId);
       if (overTicket) {
@@ -429,8 +519,9 @@ export default function TicketsPage() {
     }
   };
 
-  const handleOpen = (ticket?: Ticket) => {
-    if (ticket) {
+  const handleOpen = (ticketOrStage?: Ticket | string) => {
+    if (ticketOrStage && typeof ticketOrStage === 'object' && '_id' in ticketOrStage) {
+      const ticket = ticketOrStage as Ticket;
       setEditingTicket(ticket);
       setFormData({
         title: ticket.title,
@@ -453,7 +544,7 @@ export default function TicketsPage() {
         nonTechnicalAcceptanceCriteria: '',
         priority: 'medium',
         type: 'feature',
-        stage: 'internal',
+        stage: typeof ticketOrStage === 'string' ? ticketOrStage : stages[0]?.name || 'internal',
         badges: [],
       });
     }
@@ -504,43 +595,123 @@ export default function TicketsPage() {
     }
   };
 
-  const columns: TicketStage[] = [
-    'user_requested',
-    'owner_requested',
-    'internal',
-    'in_progress',
-    'done',
-  ];
+  const handleDeleteStage = async (id: string) => {
+    if (
+      !window.confirm(
+        "Are you sure? This will delete the collection. Tickets in this collection will stay in the DB but won't be visible here until assigned to another collection.",
+      )
+    )
+      return;
+    try {
+      await deleteStage(id);
+      fetchStages();
+    } catch (err) {
+      console.error('Failed to delete stage:', err);
+    }
+  };
+
+  const handleCreateStage = async () => {
+    try {
+      await createStage(stageFormData);
+      setStageDialogOpen(false);
+      setStageFormData({ name: '', label: '' });
+      fetchStages();
+    } catch (err) {
+      console.error('Failed to create stage:', err);
+    }
+  };
+
+  const toggleCollapse = async (stage: Stage) => {
+    try {
+      await updateStage(stage._id, { isCollapsed: !stage.isCollapsed });
+      fetchStages();
+    } catch (err) {
+      console.error('Failed to toggle stage collapse:', err);
+    }
+  };
+
+  const handleColorClick = (event: React.MouseEvent<HTMLElement>, stageId: string) => {
+    setColorMenuAnchor({ el: event.currentTarget, stageId });
+  };
+
+  const handleColorSelect = async (color: string) => {
+    if (colorMenuAnchor) {
+      try {
+        await updateStage(colorMenuAnchor.stageId, { color });
+        fetchStages();
+      } catch (err) {
+        console.error('Failed to update stage color:', err);
+      }
+      setColorMenuAnchor(null);
+    }
+  };
 
   return (
     <Box sx={{ pb: 6 }}>
       <Stack direction="row" justifyContent="space-between" alignItems="flex-end" sx={{ mb: 4 }}>
-        <Box>
+        <Box sx={{ flex: 1 }}>
           <Typography sx={{ fontWeight: 800, fontSize: 30, letterSpacing: -0.5, color: '#0F172A' }}>
             Product Backlog
           </Typography>
-          <Typography sx={{ color: '#64748B', fontWeight: 500, fontSize: 16 }}>
+          <Typography sx={{ color: '#64748B', fontWeight: 500, fontSize: 16, mb: 2 }}>
             Orchestrate features, bugfixes and requests.
           </Typography>
+          <TextField
+            placeholder="Search by title or SLT ID..."
+            size="small"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            sx={{
+              width: '100%',
+              maxWidth: 400,
+              '& .MuiOutlinedInput-root': {
+                borderRadius: 2,
+                bgcolor: '#FFFFFF',
+              },
+            }}
+            InputProps={{
+              startAdornment: (
+                <InputAdornment position="start">
+                  <SearchRoundedIcon sx={{ color: '#94A3B8' }} />
+                </InputAdornment>
+              ),
+            }}
+          />
         </Box>
-        <Button
-          variant="contained"
-          disableElevation
-          startIcon={<AddRoundedIcon />}
-          onClick={() => handleOpen()}
-          sx={{
-            bgcolor: '#0F172A',
-            borderRadius: 1.5,
-            px: 2.5,
-            py: 1,
-            fontWeight: 600,
-            fontSize: 14,
-            textTransform: 'none',
-            '&:hover': { bgcolor: '#1E293B' },
-          }}
-        >
-          New Ticket
-        </Button>
+        <Stack direction="row" spacing={2}>
+          <Button
+            variant="outlined"
+            onClick={() => setStageDialogOpen(true)}
+            sx={{
+              borderRadius: 1.5,
+              fontWeight: 600,
+              textTransform: 'none',
+              borderColor: '#E2E8F0',
+              color: '#64748B',
+              '&:hover': { borderColor: '#CBD5E1', bgcolor: '#F8FAFC' },
+            }}
+          >
+            Manage Collections
+          </Button>
+          <Button
+            variant="contained"
+            disableElevation
+            startIcon={<AddRoundedIcon />}
+            onClick={() => handleOpen()}
+            sx={{
+              bgcolor: '#0F172A',
+              borderRadius: 1.5,
+              px: 2.5,
+              py: 1,
+              fontWeight: 600,
+              fontSize: 14,
+              textTransform: 'none',
+              '&:hover': { bgcolor: '#1E293B' },
+            }}
+          >
+            New Ticket
+          </Button>
+        </Stack>
       </Stack>
 
       <DndContext
@@ -552,57 +723,111 @@ export default function TicketsPage() {
       >
         <Box sx={{ overflowX: 'auto', mx: -2, px: 2 }}>
           <Stack direction="row" spacing={2.5} sx={{ minWidth: 1200 }}>
-            {columns.map((col) => (
-              <Box key={col} sx={{ flex: 1, minWidth: 260 }}>
-                <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 2, px: 0.5 }}>
-                  <Typography
-                    sx={{
-                      fontWeight: 700,
-                      fontSize: 12,
-                      color: '#64748B',
-                      textTransform: 'uppercase',
-                      letterSpacing: 0.5,
-                    }}
-                  >
-                    {STAGE_LABELS[col]}
-                  </Typography>
-                  <Typography
-                    sx={{
-                      fontWeight: 600,
-                      fontSize: 12,
-                      color: '#94A3B8',
-                      bgcolor: '#F1F5F9',
-                      px: 1,
-                      py: 0.2,
-                      borderRadius: 1,
-                    }}
-                  >
-                    {tickets.filter((t) => t.stage === col).length}
-                  </Typography>
-                </Stack>
+            {stages.map((stage) => {
+              const isCollapsed = stage.isCollapsed;
+              const color = stage.color;
+              const colTickets = tickets.filter((t) => t.stage === stage.name);
 
-                <SortableContext
-                  id={col}
-                  items={tickets.filter((t) => t.stage === col).map((t) => t._id)}
-                  strategy={verticalListSortingStrategy}
+              return (
+                <Box
+                  key={stage._id}
+                  sx={{
+                    flex: isCollapsed ? '0 0 52px' : '1 1 300px',
+                    minWidth: isCollapsed ? 52 : 280,
+                    maxWidth: isCollapsed ? 52 : 360,
+                    transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                    display: 'flex',
+                    flexDirection: 'column',
+                  }}
                 >
-                  <DroppableColumn id={col}>
-                    {tickets
-                      .filter((t) => t.stage === col)
-                      .map((ticket) => (
-                        <SortableTicket
-                          key={ticket._id}
-                          ticket={ticket}
-                          onStart={handleStart}
-                          onFinish={handleFinish}
-                          onEdit={handleOpen}
-                          onDelete={handleDelete}
-                        />
-                      ))}
-                  </DroppableColumn>
-                </SortableContext>
-              </Box>
-            ))}
+                  <Stack
+                    direction={isCollapsed ? 'column' : 'row'}
+                    spacing={1}
+                    alignItems="center"
+                    justifyContent={isCollapsed ? 'flex-start' : 'space-between'}
+                    sx={{ mb: 2, px: 1, minHeight: 32 }}
+                  >
+                    <Stack direction="row" spacing={1} alignItems="center">
+                      {!isCollapsed && (
+                        <Typography
+                          sx={{
+                            fontWeight: 700,
+                            fontSize: 12,
+                            color: '#64748B',
+                            textTransform: 'uppercase',
+                            letterSpacing: 0.5,
+                          }}
+                        >
+                          {stage.label}
+                        </Typography>
+                      )}
+                      <Typography
+                        sx={{
+                          fontWeight: 600,
+                          fontSize: 12,
+                          color: '#94A3B8',
+                          bgcolor: '#F1F5F9',
+                          px: 1,
+                          py: 0.2,
+                          borderRadius: 1,
+                        }}
+                      >
+                        {colTickets.length}
+                      </Typography>
+                    </Stack>
+
+                    <Stack direction={isCollapsed ? 'column' : 'row'} spacing={0.5}>
+                      {!isCollapsed && (
+                        <Tooltip title="Add Ticket">
+                          <IconButton size="small" onClick={() => handleOpen(stage.name)}>
+                            <AddRoundedIcon sx={{ fontSize: 18, color: '#94A3B8' }} />
+                          </IconButton>
+                        </Tooltip>
+                      )}
+                      <Tooltip title="Change Color">
+                        <IconButton size="small" onClick={(e) => handleColorClick(e, stage._id)}>
+                          <PaletteRoundedIcon sx={{ fontSize: 16, color: '#94A3B8' }} />
+                        </IconButton>
+                      </Tooltip>
+                      <Tooltip title={isCollapsed ? 'Expand' : 'Collapse'}>
+                        <IconButton size="small" onClick={() => toggleCollapse(stage)}>
+                          {isCollapsed ? (
+                            <ExpandMoreRoundedIcon sx={{ fontSize: 18, color: '#94A3B8' }} />
+                          ) : (
+                            <ExpandLessRoundedIcon sx={{ fontSize: 18, color: '#94A3B8' }} />
+                          )}
+                        </IconButton>
+                      </Tooltip>
+                    </Stack>
+                  </Stack>
+
+                  <SortableContext
+                    id={stage.name}
+                    items={colTickets.map((t) => t._id)}
+                    strategy={verticalListSortingStrategy}
+                  >
+                    <DroppableColumn
+                      id={stage.name}
+                      isCollapsed={isCollapsed}
+                      color={color}
+                      label={stage.label}
+                    >
+                      {!isCollapsed &&
+                        colTickets.map((ticket) => (
+                          <SortableTicket
+                            key={ticket._id}
+                            ticket={ticket}
+                            onStart={handleStart}
+                            onFinish={handleFinish}
+                            onEdit={handleOpen}
+                            onDelete={handleDelete}
+                          />
+                        ))}
+                    </DroppableColumn>
+                  </SortableContext>
+                </Box>
+              );
+            })}
           </Stack>
         </Box>
 
@@ -610,6 +835,30 @@ export default function TicketsPage() {
           {activeTicket ? <TicketCard ticket={activeTicket} onEdit={() => {}} isDragging /> : null}
         </DragOverlay>
       </DndContext>
+
+      <Menu
+        anchorEl={colorMenuAnchor?.el}
+        open={Boolean(colorMenuAnchor)}
+        onClose={() => setColorMenuAnchor(null)}
+      >
+        <Box sx={{ p: 1, display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 1 }}>
+          {COLUMN_COLORS.map((color) => (
+            <Box
+              key={color}
+              onClick={() => handleColorSelect(color)}
+              sx={{
+                width: 24,
+                height: 24,
+                bgcolor: color,
+                borderRadius: 1,
+                cursor: 'pointer',
+                border: '1px solid #E2E8F0',
+                '&:hover': { transform: 'scale(1.1)' },
+              }}
+            />
+          ))}
+        </Box>
+      </Menu>
 
       {/* Edit Dialog */}
       <Dialog
@@ -682,9 +931,9 @@ export default function TicketsPage() {
                     setFormData({ ...formData, stage: e.target.value as TicketStage })
                   }
                 >
-                  {columns.map((col) => (
-                    <MenuItem key={col} value={col}>
-                      {STAGE_LABELS[col]}
+                  {stages.map((stage) => (
+                    <MenuItem key={stage._id} value={stage.name}>
+                      {stage.label}
                     </MenuItem>
                   ))}
                 </Select>
@@ -800,6 +1049,124 @@ export default function TicketsPage() {
             }}
           >
             {editingTicket ? 'Update Ticket' : 'Create Ticket'}
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Stage Management Dialog */}
+      <Dialog
+        open={stageDialogOpen}
+        onClose={() => setStageDialogOpen(false)}
+        maxWidth="sm"
+        fullWidth
+        PaperProps={{
+          sx: { borderRadius: 2, boxShadow: '0 20px 25px -5px rgba(0,0,0,0.1)' },
+        }}
+      >
+        <DialogTitle sx={{ fontWeight: 700, fontSize: 20, pt: 3, pb: 1 }}>
+          Manage Collections
+        </DialogTitle>
+        <DialogContent sx={{ pt: 2 }}>
+          <Stack spacing={3}>
+            <Box>
+              <Typography sx={{ fontWeight: 700, fontSize: 13, color: '#64748B', mb: 2 }}>
+                ADD NEW COLLECTION
+              </Typography>
+              <Stack direction="row" spacing={2} alignItems="flex-start">
+                <TextField
+                  label="Label"
+                  size="small"
+                  fullWidth
+                  value={stageFormData.label}
+                  onChange={(e) => setStageFormData({ ...stageFormData, label: e.target.value })}
+                  placeholder="e.g. In Review"
+                />
+                <TextField
+                  label="ID"
+                  size="small"
+                  fullWidth
+                  value={stageFormData.name}
+                  onChange={(e) => setStageFormData({ ...stageFormData, name: e.target.value })}
+                  placeholder="e.g. in_review"
+                />
+                <Button
+                  variant="contained"
+                  disableElevation
+                  onClick={handleCreateStage}
+                  disabled={!stageFormData.name || !stageFormData.label}
+                  sx={{
+                    bgcolor: '#0F172A',
+                    borderRadius: 1.5,
+                    px: 3,
+                    height: 40,
+                    fontWeight: 600,
+                    textTransform: 'none',
+                    '&:hover': { bgcolor: '#1E293B' },
+                  }}
+                >
+                  Add
+                </Button>
+              </Stack>
+            </Box>
+
+            <Divider />
+
+            <Box>
+              <Typography sx={{ fontWeight: 700, fontSize: 13, color: '#64748B', mb: 2 }}>
+                CURRENT COLLECTIONS
+              </Typography>
+              <Stack spacing={1}>
+                {stages.map((stage) => (
+                  <Stack
+                    key={stage._id}
+                    direction="row"
+                    alignItems="center"
+                    justifyContent="space-between"
+                    sx={{
+                      p: 1.5,
+                      borderRadius: 2,
+                      bgcolor: '#F8FAFC',
+                      border: '1px solid #F1F5F9',
+                    }}
+                  >
+                    <Stack direction="row" spacing={2} alignItems="center">
+                      <Box
+                        sx={{
+                          width: 12,
+                          height: 12,
+                          borderRadius: '50%',
+                          bgcolor: stage.color,
+                          border: '1px solid #E2E8F0',
+                        }}
+                      />
+                      <Box>
+                        <Typography sx={{ fontWeight: 600, fontSize: 14, color: '#1E293B' }}>
+                          {stage.label}
+                        </Typography>
+                        <Typography sx={{ fontSize: 11, color: '#94A3B8' }}>
+                          ID: {stage.name}
+                        </Typography>
+                      </Box>
+                    </Stack>
+                    <Button
+                      size="small"
+                      onClick={() => handleDeleteStage(stage._id)}
+                      sx={{ color: '#EF4444', fontWeight: 700, fontSize: 12 }}
+                    >
+                      DELETE
+                    </Button>
+                  </Stack>
+                ))}
+              </Stack>
+            </Box>
+          </Stack>
+        </DialogContent>
+        <DialogActions sx={{ px: 3, py: 2, bgcolor: '#F8FAFC' }}>
+          <Button
+            onClick={() => setStageDialogOpen(false)}
+            sx={{ fontWeight: 600, color: '#64748B', textTransform: 'none' }}
+          >
+            Close
           </Button>
         </DialogActions>
       </Dialog>

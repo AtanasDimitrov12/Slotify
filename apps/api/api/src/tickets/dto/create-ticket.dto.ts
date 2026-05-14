@@ -1,4 +1,4 @@
-import { IsEnum, IsNotEmpty, IsOptional, IsString, MaxLength } from 'class-validator';
+import { IsArray, IsEnum, IsNotEmpty, IsOptional, IsString, MaxLength } from 'class-validator';
 
 export class CreateTicketDto {
   @IsString()
@@ -37,4 +37,11 @@ export class CreateTicketDto {
   @IsEnum(['user_requested', 'owner_requested', 'internal', 'in_progress', 'done'])
   @IsOptional()
   stage?: string;
+
+  @IsArray()
+  @IsEnum(['info_needed', 'blocked', 'requested_changes', 'hold', 'has_pr', 'awaiting_feedback'], {
+    each: true,
+  })
+  @IsOptional()
+  badges?: string[];
 }

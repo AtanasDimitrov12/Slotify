@@ -2,12 +2,48 @@ import { apiFetch } from './http';
 
 export type TicketPriority = 'low' | 'medium' | 'high' | 'urgent';
 export type TicketType = 'bugfix' | 'feature' | 'request' | 'question';
-export type TicketStage =
-  | 'user_requested'
-  | 'owner_requested'
-  | 'internal'
-  | 'in_progress'
-  | 'done';
+export type TicketStage = string;
+
+export interface Stage {
+  _id: string;
+  name: string;
+  label: string;
+  color: string;
+  isCollapsed: boolean;
+  order: number;
+  tenantId: string;
+}
+
+export const getStages = (): Promise<Stage[]> => {
+  return apiFetch<Stage[]>('/ticket-stages');
+};
+
+export const createStage = (dto: Partial<Stage>): Promise<Stage> => {
+  return apiFetch<Stage>('/ticket-stages', {
+    method: 'POST',
+    body: JSON.stringify(dto),
+  });
+};
+
+export const updateStage = (id: string, dto: Partial<Stage>): Promise<Stage> => {
+  return apiFetch<Stage>(`/ticket-stages/${id}`, {
+    method: 'PATCH',
+    body: JSON.stringify(dto),
+  });
+};
+
+export const deleteStage = (id: string): Promise<void> => {
+  return apiFetch<void>(`/ticket-stages/${id}`, {
+    method: 'DELETE',
+  });
+};
+
+export const updateStagesOrder = (stageOrders: { id: string; order: number }[]): Promise<void> => {
+  return apiFetch<void>('/ticket-stages/order', {
+    method: 'PUT',
+    body: JSON.stringify(stageOrders),
+  });
+};
 export type TicketBadge =
   | 'info_needed'
   | 'blocked'
@@ -18,6 +54,7 @@ export type TicketBadge =
 
 export interface Ticket {
   _id: string;
+  code: string;
   title: string;
   userStories: string;
   description: string;
@@ -44,6 +81,7 @@ export interface CreateTicketDto {
   priority: TicketPriority;
   type: TicketType;
   stage?: TicketStage;
+  badges?: TicketBadge[];
 }
 
 export interface UpdateTicketDto extends Partial<CreateTicketDto> {
@@ -51,9 +89,10 @@ export interface UpdateTicketDto extends Partial<CreateTicketDto> {
   stage?: TicketStage;
 }
 
-export const getTickets = (filters?: { stage?: TicketStage }): Promise<Ticket[]> => {
+export const getTickets = (filters?: { stage?: TicketStage; search?: string }): Promise<Ticket[]> => {
   const params = new URLSearchParams();
   if (filters?.stage) params.append('stage', filters.stage);
+  if (filters?.search) params.append('search', filters.search);
   return apiFetch<Ticket[]>(`/tickets?${params.toString()}`);
 };
 
