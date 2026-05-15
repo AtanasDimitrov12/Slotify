@@ -7,8 +7,8 @@ export type TicketDocument = HydratedDocument<Ticket>;
 
 @Schema({ timestamps: true })
 export class Ticket {
-  @Prop({ type: Types.ObjectId, ref: Tenant.name, required: true, index: true })
-  tenantId!: Types.ObjectId;
+  @Prop({ type: Types.ObjectId, ref: Tenant.name, required: false, index: true })
+  tenantId?: Types.ObjectId;
 
   @Prop({ required: true, unique: true, index: true, sparse: true })
   code!: string;

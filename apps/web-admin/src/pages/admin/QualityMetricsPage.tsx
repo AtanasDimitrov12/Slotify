@@ -137,13 +137,15 @@ function StatCard({
 }
 
 function StepBadge({ name, status }: { name: string; status: string }) {
-  const config = {
+  const configs = {
     passed: { color: COLORS.success, icon: <CheckCircleRoundedIcon sx={{ fontSize: 14 }} /> },
     failed: { color: COLORS.error, icon: <ErrorRoundedIcon sx={{ fontSize: 14 }} /> },
     pending: { color: COLORS.info, icon: <PendingRoundedIcon sx={{ fontSize: 14 }} /> },
     skipped: { color: COLORS.slateSoft, icon: <PendingRoundedIcon sx={{ fontSize: 14 }} /> },
     unknown: { color: COLORS.slateSoft, icon: <InfoRoundedIcon sx={{ fontSize: 14 }} /> },
-  }[status as keyof typeof config] || {
+  };
+
+  const config = configs[status as keyof typeof configs] || {
     color: COLORS.slateSoft,
     icon: <InfoRoundedIcon sx={{ fontSize: 14 }} />,
   };

@@ -410,7 +410,6 @@ function DroppableColumn({
 export default function TicketsPage() {
   const [tickets, setTickets] = React.useState<Ticket[]>([]);
   const [stages, setStages] = React.useState<Stage[]>([]);
-  const [loading, setLoading] = React.useState(true);
   const [open, setOpen] = React.useState(false);
   const [stageDialogOpen, setStageDialogOpen] = React.useState(false);
   const [editingTicket, setEditingTicket] = React.useState<Ticket | null>(null);
@@ -454,8 +453,6 @@ export default function TicketsPage() {
       setTickets(data);
     } catch (err) {
       console.error('Failed to fetch tickets:', err);
-    } finally {
-      setLoading(false);
     }
   }, [searchQuery]);
 
@@ -478,7 +475,7 @@ export default function TicketsPage() {
     }
   };
 
-  const handleDragOver = (event: DragOverEvent) => {
+  const handleDragOver = (_event: DragOverEvent) => {
     // We can use this to update state locally during drag for smooth UI
   };
 
