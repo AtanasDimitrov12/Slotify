@@ -135,11 +135,7 @@ export class TicketsService {
     return ticket.save();
   }
 
-  async remove(
-    tenantId: string | undefined,
-    id: string,
-    requestedBy?: string,
-  ): Promise<void> {
+  async remove(tenantId: string | undefined, id: string, requestedBy?: string): Promise<void> {
     const query: any = { _id: new Types.ObjectId(id) };
     if (tenantId) {
       query.tenantId = new Types.ObjectId(tenantId);

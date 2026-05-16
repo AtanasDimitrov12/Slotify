@@ -1,6 +1,6 @@
-import { Test, TestingModule } from '@nestjs/testing';
+import { Test, type TestingModule } from '@nestjs/testing';
+import { GithubMetricsService, type GithubWorkflowRun } from './github-metrics.service';
 import { QualityMetricsService } from './quality-metrics.service';
-import { GithubMetricsService, GithubWorkflowRun } from './github-metrics.service';
 
 describe('QualityMetricsService', () => {
   let service: QualityMetricsService;
@@ -63,9 +63,9 @@ describe('QualityMetricsService', () => {
       githubService.getRunJobs.mockResolvedValue([]);
 
       const report = await service.getReport(30);
-      
+
       // 1 success in 30 days = 1/30 = 0.0333...
-      expect(report.doraMetrics.deploymentFrequency).toBeCloseTo(1/30, 5);
+      expect(report.doraMetrics.deploymentFrequency).toBeCloseTo(1 / 30, 5);
     });
 
     it('should calculate change failure rate correctly', async () => {
@@ -73,7 +73,7 @@ describe('QualityMetricsService', () => {
       githubService.getRunJobs.mockResolvedValue([]);
 
       const report = await service.getReport(30);
-      
+
       // 1 fail out of 2 = 50%
       expect(report.doraMetrics.changeFailureRate).toBe(50);
     });
@@ -83,7 +83,7 @@ describe('QualityMetricsService', () => {
       githubService.getRunJobs.mockResolvedValue([]);
 
       const report = await service.getReport(30);
-      
+
       // Success run took 10 mins
       expect(report.doraMetrics.leadTimeMinutes).toBe(10);
     });
@@ -99,7 +99,10 @@ describe('QualityMetricsService', () => {
           updated_at: '2023-01-01T12:10:00Z',
           head_branch: 'main',
           run_duration_ms: 600000,
-          head_sha: 's1', html_url: 'u1', display_title: 't1', run_number: 1,
+          head_sha: 's1',
+          html_url: 'u1',
+          display_title: 't1',
+          run_number: 1,
         },
         {
           id: 2,
@@ -109,7 +112,10 @@ describe('QualityMetricsService', () => {
           updated_at: '2023-01-01T10:05:00Z',
           head_branch: 'main',
           run_duration_ms: 300000,
-          head_sha: 's2', html_url: 'u2', display_title: 't2', run_number: 2,
+          head_sha: 's2',
+          html_url: 'u2',
+          display_title: 't2',
+          run_number: 2,
         },
       ];
 
@@ -117,7 +123,7 @@ describe('QualityMetricsService', () => {
       githubService.getRunJobs.mockResolvedValue([]);
 
       const report = await service.getReport(30);
-      
+
       // Failure finished at 10:05, Success finished at 12:10
       // 12:10 - 10:05 = 2 hours 5 mins = 125 mins
       expect(report.doraMetrics.recoveryTimeMinutes).toBe(125);
@@ -129,7 +135,7 @@ describe('QualityMetricsService', () => {
       githubService.isConfigured.mockResolvedValue(false);
 
       const report = await service.getReport(30);
-      
+
       expect(report.isConfigured).toBe(false);
       expect(report.ciMetrics.totalRuns).toBe(0);
     });

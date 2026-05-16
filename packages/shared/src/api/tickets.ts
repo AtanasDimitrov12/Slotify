@@ -89,7 +89,10 @@ export interface UpdateTicketDto extends Partial<CreateTicketDto> {
   stage?: TicketStage;
 }
 
-export const getTickets = (filters?: { stage?: TicketStage; search?: string }): Promise<Ticket[]> => {
+export const getTickets = (filters?: {
+  stage?: TicketStage;
+  search?: string;
+}): Promise<Ticket[]> => {
   const params = new URLSearchParams();
   if (filters?.stage) params.append('stage', filters.stage);
   if (filters?.search) params.append('search', filters.search);

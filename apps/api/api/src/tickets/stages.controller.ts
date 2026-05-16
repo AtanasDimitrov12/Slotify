@@ -1,14 +1,4 @@
-import {
-  Body,
-  Controller,
-  Delete,
-  Get,
-  Param,
-  Patch,
-  Post,
-  Put,
-  UseGuards,
-} from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Patch, Post, Put, UseGuards } from '@nestjs/common';
 import { CurrentUser } from '../auth/current-user.decorator';
 import type { JwtPayload } from '../auth/jwt.strategy';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
@@ -34,11 +24,7 @@ export class StagesController {
   }
 
   @Patch(':id')
-  update(
-    @CurrentUser() user: JwtPayload,
-    @Param('id') id: string,
-    @Body() dto: UpdateStageDto,
-  ) {
+  update(@CurrentUser() user: JwtPayload, @Param('id') id: string, @Body() dto: UpdateStageDto) {
     if (!user.tenantId) throw new Error('Tenant ID required');
     return this.stagesService.update(user.tenantId, id, dto);
   }

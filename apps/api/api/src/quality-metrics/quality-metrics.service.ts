@@ -3,10 +3,10 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import { Ticket, TicketDocument } from '../tickets/ticket.schema';
 import {
-  QualityMetricsReport,
   CiRunSummary,
-  DoraMetrics,
   CiStepStatus,
+  DoraMetrics,
+  QualityMetricsReport,
   TicketMetricSummary,
 } from './dto/quality-metrics-report.dto';
 import { GithubMetricsService, GithubWorkflowRun } from './github-metrics.service';

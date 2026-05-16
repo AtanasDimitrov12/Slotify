@@ -1,4 +1,4 @@
-import { Controller, Get, Query, UseGuards, ForbiddenException } from '@nestjs/common';
+import { Controller, ForbiddenException, Get, Query, UseGuards } from '@nestjs/common';
 import { CurrentUser } from '../auth/current-user.decorator';
 import type { JwtPayload } from '../auth/jwt.strategy';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';

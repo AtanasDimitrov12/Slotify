@@ -21,7 +21,7 @@ export class StagesService {
   ];
 
   async findAll(tenantId: string): Promise<StageDocument[]> {
-    let stages = await this.stageModel
+    const stages = await this.stageModel
       .find({ tenantId: new Types.ObjectId(tenantId) })
       .sort({ order: 1 })
       .exec();
@@ -45,7 +45,7 @@ export class StagesService {
       .findOne({ tenantId: new Types.ObjectId(tenantId) })
       .sort({ order: -1 })
       .exec();
-    
+
     const order = dto.order ?? (lastStage ? lastStage.order + 1 : 0);
 
     const createdStage = new this.stageModel({

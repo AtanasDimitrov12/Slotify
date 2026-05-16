@@ -63,11 +63,7 @@ export class TicketsController {
   }
 
   @Patch(':id')
-  update(
-    @CurrentUser() user: JwtPayload,
-    @Param('id') id: string,
-    @Body() dto: UpdateTicketDto,
-  ) {
+  update(@CurrentUser() user: JwtPayload, @Param('id') id: string, @Body() dto: UpdateTicketDto) {
     if (user.role === 'admin') {
       return this.ticketsService.update(undefined, id, dto);
     }
