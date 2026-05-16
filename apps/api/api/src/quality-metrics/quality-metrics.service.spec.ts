@@ -1,4 +1,6 @@
+import { getModelToken } from '@nestjs/mongoose';
 import { Test, type TestingModule } from '@nestjs/testing';
+import { Ticket } from '../tickets/ticket.schema';
 import { GithubMetricsService, type GithubWorkflowRun } from './github-metrics.service';
 import { QualityMetricsService } from './quality-metrics.service';
 
@@ -13,10 +15,16 @@ describe('QualityMetricsService', () => {
       getRunJobs: jest.fn(),
     };
 
+    const mockTicketModel = {
+      find: jest.fn().mockReturnThis(),
+      exec: jest.fn().mockResolvedValue([]),
+    };
+
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         QualityMetricsService,
         { provide: GithubMetricsService, useValue: mockGithubService },
+        { provide: getModelToken(Ticket.name), useValue: mockTicketModel },
       ],
     }).compile();
 
