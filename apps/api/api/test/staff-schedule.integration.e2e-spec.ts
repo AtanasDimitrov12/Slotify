@@ -16,7 +16,7 @@ describe('Staff Schedule & Blocked Slots (Integration)', () => {
     await ctx.cleanup();
   });
 
-  const testDate = '2026-05-04'; // A Monday
+  const testDate = '2026-06-01'; // A Monday
 
   async function setupStaffEnvironment(id: string) {
     // 1. Register Owner
