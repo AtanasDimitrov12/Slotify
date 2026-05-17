@@ -10,6 +10,7 @@ import { CustomerReservationsModule } from './customer-reservations/customer-res
 import { MembershipsModule } from './memberships/memberships.module';
 import { OwnerModule } from './owner/owner.module';
 import { PublicBookingModule } from './public-booking/public-booking.module';
+import { QualityMetricsModule } from './quality-metrics/quality-metrics.module';
 import { ReservationsModule } from './reservations/reservations.module';
 import { ServicesModule } from './services/services.module';
 import { StaffModule } from './staff/staff.module';
@@ -22,6 +23,7 @@ import { StaffServiceAssignmentsModule } from './staff-service-assignments/staff
 import { StaffTimeOffModule } from './staff-time-off/staff-time-off.module';
 import { TenantDetailsModule } from './tenant-details/tenant-details.module';
 import { TenantsModule } from './tenants/tenants.module';
+import { TicketsModule } from './tickets/tickets.module';
 
 @Module({
   imports: [
@@ -54,6 +56,8 @@ import { TenantsModule } from './tenants/tenants.module';
     StaffAppointmentsModule,
     CustomerProfilesModule,
     CustomerReservationsModule,
+    QualityMetricsModule,
+    TicketsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

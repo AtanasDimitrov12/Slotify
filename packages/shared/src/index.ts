@@ -7,6 +7,7 @@ export * from './api/http';
 export * from './api/memberships';
 export * from './api/ownerSettings';
 export * from './api/publicTenants';
+export * from './api/qualityMetrics';
 export * from './api/servicesCatalog';
 export * from './api/staff';
 export * from './api/staffAppointments';
@@ -16,6 +17,7 @@ export * from './api/staffServices';
 export * from './api/staffTimeOff';
 export * from './api/tenantDetails';
 export * from './api/tenants';
+export * from './api/tickets';
 export * from './api/types';
 // Auth
 export * from './auth/AuthProvider';
@@ -33,6 +35,7 @@ export * from './components/landing/Showcase';
 export * from './components/landing/SmartSpotlight';
 export * from './components/landing/TrustStrip';
 export { default as RequireRole } from './components/RequireRole';
+export { default as TicketRequestDialog } from './components/TicketRequestDialog';
 export { ToastProvider, useToast } from './components/ToastProvider';
 export * from './constants/locations';
 // Hooks
