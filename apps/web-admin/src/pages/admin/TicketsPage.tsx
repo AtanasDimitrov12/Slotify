@@ -15,6 +15,7 @@ import {
   type TicketType,
   updateStage,
   updateTicket,
+  RichTextSection,
 } from '@barber/shared';
 import {
   closestCorners,
@@ -38,6 +39,7 @@ import ExpandMoreRoundedIcon from '@mui/icons-material/ExpandMoreRounded';
 import FeaturePlayListRoundedIcon from '@mui/icons-material/FeaturedPlayListRounded';
 import HelpRoundedIcon from '@mui/icons-material/HelpRounded';
 import MoreVertRoundedIcon from '@mui/icons-material/MoreVertRounded';
+import NotesRoundedIcon from '@mui/icons-material/NotesRounded';
 import PaletteRoundedIcon from '@mui/icons-material/PaletteRounded';
 import PlayArrowRoundedIcon from '@mui/icons-material/PlayArrowRounded';
 import RequestQuoteRoundedIcon from '@mui/icons-material/RequestQuoteRounded';
@@ -126,16 +128,17 @@ const TicketCard = React.forwardRef<
       ref={ref}
       elevation={0}
       sx={{
-        borderRadius: 2,
+        borderRadius: 1.5,
         border: '1px solid',
         borderColor: isDragging ? alpha('#0EA5E9', 0.5) : '#E2E8F0',
         bgcolor: '#FFFFFF',
         transition: 'all 0.2s ease-in-out',
         cursor: 'grab',
         opacity: isDragging ? 0.4 : 1,
+        position: 'relative',
         '&:hover': {
           borderColor: '#CBD5E1',
-          boxShadow: '0 4px 12px rgba(15, 23, 42, 0.05)',
+          boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
           transform: isDragging ? 'none' : 'translateY(-1px)',
         },
         '&:active': { cursor: 'grabbing' },
@@ -143,95 +146,94 @@ const TicketCard = React.forwardRef<
       onClick={() => onEdit(ticket)}
       {...dragHandleProps}
     >
-      <CardContent sx={{ p: 2, '&:last-child': { pb: 2 } }}>
-        <Stack spacing={1.5}>
-          <Stack direction="row" justifyContent="space-between" alignItems="center">
-            <Stack direction="row" spacing={1} alignItems="center">
-              <Box sx={{ color: '#94A3B8' }}>{TYPE_ICONS[ticket.type]}</Box>
-              <Chip
-                label={ticket.priority}
-                size="small"
-                sx={{
-                  height: 18,
-                  fontSize: 10,
-                  fontWeight: 700,
-                  textTransform: 'uppercase',
-                  bgcolor: priority.bg,
-                  color: priority.color,
-                  borderRadius: 1,
-                }}
-              />
-            </Stack>
-            <IconButton
-              size="small"
-              onClick={handleMenuClick}
-              sx={{ color: '#94A3B8' }}
-              onPointerDown={(e) => e.stopPropagation()} // Prevent dragging when clicking menu
-            >
-              <MoreVertRoundedIcon sx={{ fontSize: 18 }} />
-            </IconButton>
-          </Stack>
-
-          <Typography
-            sx={{
-              fontWeight: 600,
-              fontSize: 14,
-              color: '#1E293B',
-              lineHeight: 1.4,
-              display: '-webkit-box',
-              WebkitLineClamp: 2,
-              WebkitBoxOrient: 'vertical',
-              overflow: 'hidden',
-            }}
-          >
-            <Box component="span" sx={{ color: '#64748B', mr: 1, fontWeight: 700 }}>
-              {ticket.code}
-            </Box>
-            {ticket.title}
-          </Typography>
-
-          {ticket.badges.length > 0 && (
-            <Stack direction="row" spacing={0.5} flexWrap="wrap" useFlexGap>
-              {ticket.badges.map((badge) => (
-                <Chip
-                  key={badge}
-                  label={BADGE_CONFIG[badge].label}
-                  size="small"
+      <CardContent sx={{ p: 1.5, '&:last-child': { pb: 1.5 } }}>
+        <Stack spacing={1}>
+          {/* Labels/Badges at the top like Trello */}
+          {(ticket.badges.length > 0 || ticket.priority !== 'medium') && (
+            <Stack direction="row" spacing={0.5} flexWrap="wrap" useFlexGap sx={{ mb: 0.5 }}>
+              {ticket.priority !== 'medium' && (
+                <Box
                   sx={{
-                    height: 20,
-                    fontSize: 10,
-                    fontWeight: 600,
-                    bgcolor: alpha(BADGE_CONFIG[badge].color, 0.08),
-                    color: BADGE_CONFIG[badge].color,
+                    width: 32,
+                    height: 6,
                     borderRadius: 1,
-                    border: '1px solid',
-                    borderColor: alpha(BADGE_CONFIG[badge].color, 0.2),
+                    bgcolor: priority.color,
+                    opacity: 0.8,
+                  }}
+                />
+              )}
+              {ticket.badges.map((badge) => (
+                <Box
+                  key={badge}
+                  sx={{
+                    width: 32,
+                    height: 6,
+                    borderRadius: 1,
+                    bgcolor: BADGE_CONFIG[badge].color,
+                    opacity: 0.6,
                   }}
                 />
               ))}
             </Stack>
           )}
 
-          <Divider sx={{ my: 0.5, borderColor: '#F1F5F9' }} />
-
-          <Stack direction="row" justifyContent="space-between" alignItems="center">
-            <Typography sx={{ fontSize: 11, color: '#94A3B8', fontWeight: 500 }}>
-              {new Date(ticket.createdAt).toLocaleDateString()}
+          <Stack direction="row" justifyContent="space-between" alignItems="flex-start">
+            <Typography
+              sx={{
+                fontWeight: 500,
+                fontSize: 14,
+                color: '#1E293B',
+                lineHeight: 1.4,
+                flex: 1,
+              }}
+            >
+              <Box component="span" sx={{ color: '#94A3B8', mr: 1, fontWeight: 600, fontSize: 12 }}>
+                {ticket.code}
+              </Box>
+              {ticket.title}
             </Typography>
+            <IconButton
+              size="small"
+              onClick={handleMenuClick}
+              sx={{
+                p: 0.2,
+                mt: -0.5,
+                mr: -0.5,
+                color: '#94A3B8',
+                opacity: 0,
+                '.MuiCard-root:hover &': { opacity: 1 },
+              }}
+              onPointerDown={(e) => e.stopPropagation()}
+            >
+              <MoreVertRoundedIcon sx={{ fontSize: 16 }} />
+            </IconButton>
+          </Stack>
+
+          <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mt: 1 }}>
+            <Stack direction="row" spacing={1} alignItems="center">
+              <Box sx={{ color: '#94A3B8', display: 'flex' }}>{TYPE_ICONS[ticket.type]}</Box>
+              {ticket.description && ticket.description !== '<p><br></p>' && (
+                <Tooltip title="This ticket has a description">
+                  <Box sx={{ color: '#94A3B8', display: 'flex' }}>
+                    <NotesRoundedIcon sx={{ fontSize: 14 }} />
+                  </Box>
+                </Tooltip>
+              )}
+            </Stack>
+
             <Box onPointerDown={(e) => e.stopPropagation()}>
               {ticket.stage !== 'in_progress' && ticket.stage !== 'done' && onStart && (
                 <Button
                   size="small"
                   variant="text"
-                  startIcon={<PlayArrowRoundedIcon />}
                   onClick={(e) => {
                     e.stopPropagation();
                     onStart(ticket._id);
                   }}
                   sx={{
                     minWidth: 0,
-                    p: '2px 8px',
-                    fontSize: 11,
+                    p: '2px 6px',
+                    fontSize: 10,
                     fontWeight: 700,
                     color: '#10B981',
                     '&:hover': { bgcolor: alpha('#10B981', 0.05) },
@@ -244,15 +246,14 @@ const TicketCard = React.forwardRef<
                 <Button
                   size="small"
                   variant="text"
-                  startIcon={<CheckCircleOutlineRoundedIcon />}
                   onClick={(e) => {
                     e.stopPropagation();
                     onFinish(ticket._id);
                   }}
                   sx={{
                     minWidth: 0,
-                    p: '2px 8px',
-                    fontSize: 11,
+                    p: '2px 6px',
+                    fontSize: 10,
                     fontWeight: 700,
                     color: '#3B82F6',
                     '&:hover': { bgcolor: alpha('#3B82F6', 0.05) },
@@ -271,7 +272,7 @@ const TicketCard = React.forwardRef<
           onClose={handleMenuClose}
           elevation={2}
           PaperProps={{
-            sx: { borderRadius: 2, minWidth: 120, border: '1px solid #E2E8F0' },
+            sx: { borderRadius: 1.5, minWidth: 140, border: '1px solid #E2E8F0' },
           }}
         >
           <MenuItem
@@ -861,171 +862,208 @@ export default function TicketsPage() {
       <Dialog
         open={open}
         onClose={handleClose}
-        maxWidth="md"
+        maxWidth="lg"
         fullWidth
         PaperProps={{
-          sx: { borderRadius: 2, boxShadow: '0 20px 25px -5px rgba(0,0,0,0.1)' },
+          sx: {
+            borderRadius: 3,
+            boxShadow: '0 20px 25px -5px rgba(0,0,0,0.1)',
+            bgcolor: '#F8FAFC',
+          },
         }}
       >
-        <DialogTitle sx={{ fontWeight: 700, fontSize: 20, pt: 3, pb: 1 }}>
-          {editingTicket ? 'Edit Ticket' : 'Create New Ticket'}
+        <DialogTitle sx={{ pt: 3, pb: 1 }}>
+          <Stack direction="row" justifyContent="space-between" alignItems="center">
+            <Typography sx={{ fontWeight: 800, fontSize: 24, color: '#0F172A' }}>
+              {editingTicket ? `Edit Ticket: ${editingTicket.code}` : 'Create New Ticket'}
+            </Typography>
+            <IconButton onClick={handleClose} size="small">
+              <MoreVertRoundedIcon />
+            </IconButton>
+          </Stack>
         </DialogTitle>
-        <DialogContent sx={{ pt: 3 }}>
-          <Grid container spacing={2.5} sx={{ mt: 0.5 }}>
-            <Grid item xs={12}>
-              <TextField
-                fullWidth
-                label="Title"
-                value={formData.title}
-                onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                variant="outlined"
-                size="small"
-                InputLabelProps={{ shrink: true }}
-              />
+        <DialogContent sx={{ pb: 4 }}>
+          <Grid container spacing={3}>
+            {/* Main Content Column */}
+            <Grid item xs={12} md={8}>
+              <Box sx={{ bgcolor: '#FFFFFF', p: 3, borderRadius: 2, border: '1px solid #E2E8F0' }}>
+                <Stack spacing={3}>
+                  <TextField
+                    fullWidth
+                    label="Title"
+                    value={formData.title}
+                    onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                    variant="standard"
+                    placeholder="Enter ticket title..."
+                    InputProps={{
+                      disableUnderline: false,
+                      sx: {
+                        fontSize: 20,
+                        fontWeight: 700,
+                        '&:before, &:after': { borderColor: '#E2E8F0' },
+                      },
+                    }}
+                    InputLabelProps={{ shrink: true, sx: { fontWeight: 700, fontSize: 14 } }}
+                  />
+
+                  <RichTextSection
+                    label="User Stories"
+                    value={formData.userStories}
+                    onChange={(val) => setFormData({ ...formData, userStories: val })}
+                    placeholder="As a user, I want to..."
+                  />
+
+                  <RichTextSection
+                    label="Technical Description"
+                    value={formData.description}
+                    onChange={(val) => setFormData({ ...formData, description: val })}
+                    placeholder="Explain the technical implementation details..."
+                  />
+
+                  <Grid container spacing={2}>
+                    <Grid item xs={12} lg={6}>
+                      <RichTextSection
+                        label="Technical Acceptance Criteria"
+                        value={formData.acceptanceCriteria}
+                        onChange={(val) => setFormData({ ...formData, acceptanceCriteria: val })}
+                        placeholder="List the technical requirements for completion..."
+                      />
+                    </Grid>
+                    <Grid item xs={12} lg={6}>
+                      <RichTextSection
+                        label="Non-Technical / Business Value"
+                        value={formData.nonTechnicalAcceptanceCriteria}
+                        onChange={(val) =>
+                          setFormData({ ...formData, nonTechnicalAcceptanceCriteria: val })
+                        }
+                        placeholder="What is the business impact or user value?"
+                      />
+                    </Grid>
+                  </Grid>
+                </Stack>
+              </Box>
             </Grid>
+
+            {/* Sidebar Column */}
             <Grid item xs={12} md={4}>
-              <FormControl fullWidth size="small">
-                <InputLabel shrink>Priority</InputLabel>
-                <Select
-                  notched
-                  value={formData.priority}
-                  label="Priority"
-                  onChange={(e) =>
-                    setFormData({ ...formData, priority: e.target.value as TicketPriority })
-                  }
+              <Stack spacing={2.5}>
+                <Box
+                  sx={{ bgcolor: '#FFFFFF', p: 2.5, borderRadius: 2, border: '1px solid #E2E8F0' }}
                 >
-                  <MenuItem value="low">Low</MenuItem>
-                  <MenuItem value="medium">Medium</MenuItem>
-                  <MenuItem value="high">High</MenuItem>
-                  <MenuItem value="urgent">Urgent</MenuItem>
-                </Select>
-              </FormControl>
-            </Grid>
-            <Grid item xs={12} md={4}>
-              <FormControl fullWidth size="small">
-                <InputLabel shrink>Type</InputLabel>
-                <Select
-                  notched
-                  value={formData.type}
-                  label="Type"
-                  onChange={(e) => setFormData({ ...formData, type: e.target.value as TicketType })}
+                  <Typography sx={{ fontWeight: 700, fontSize: 13, color: '#64748B', mb: 2 }}>
+                    METADATA
+                  </Typography>
+                  <Stack spacing={2.5}>
+                    <FormControl fullWidth size="small">
+                      <InputLabel shrink>Priority</InputLabel>
+                      <Select
+                        notched
+                        value={formData.priority}
+                        label="Priority"
+                        onChange={(e) =>
+                          setFormData({ ...formData, priority: e.target.value as TicketPriority })
+                        }
+                      >
+                        <MenuItem value="low">Low</MenuItem>
+                        <MenuItem value="medium">Medium</MenuItem>
+                        <MenuItem value="high">High</MenuItem>
+                        <MenuItem value="urgent">Urgent</MenuItem>
+                      </Select>
+                    </FormControl>
+
+                    <FormControl fullWidth size="small">
+                      <InputLabel shrink>Type</InputLabel>
+                      <Select
+                        notched
+                        value={formData.type}
+                        label="Type"
+                        onChange={(e) =>
+                          setFormData({ ...formData, type: e.target.value as TicketType })
+                        }
+                      >
+                        <MenuItem value="bugfix">Bugfix</MenuItem>
+                        <MenuItem value="feature">Feature</MenuItem>
+                        <MenuItem value="request">Request</MenuItem>
+                        <MenuItem value="question">Question</MenuItem>
+                      </Select>
+                    </FormControl>
+
+                    <FormControl fullWidth size="small">
+                      <InputLabel shrink>Stage</InputLabel>
+                      <Select
+                        notched
+                        value={formData.stage}
+                        label="Stage"
+                        onChange={(e) =>
+                          setFormData({ ...formData, stage: e.target.value as TicketStage })
+                        }
+                      >
+                        {stages.map((stage) => (
+                          <MenuItem key={stage._id} value={stage.name}>
+                            {stage.label}
+                          </MenuItem>
+                        ))}
+                      </Select>
+                    </FormControl>
+                  </Stack>
+                </Box>
+
+                <Box
+                  sx={{ bgcolor: '#FFFFFF', p: 2.5, borderRadius: 2, border: '1px solid #E2E8F0' }}
                 >
-                  <MenuItem value="bugfix">Bugfix</MenuItem>
-                  <MenuItem value="feature">Feature</MenuItem>
-                  <MenuItem value="request">Request</MenuItem>
-                  <MenuItem value="question">Question</MenuItem>
-                </Select>
-              </FormControl>
-            </Grid>
-            <Grid item xs={12} md={4}>
-              <FormControl fullWidth size="small">
-                <InputLabel shrink>Stage</InputLabel>
-                <Select
-                  notched
-                  value={formData.stage}
-                  label="Stage"
-                  onChange={(e) =>
-                    setFormData({ ...formData, stage: e.target.value as TicketStage })
-                  }
-                >
-                  {stages.map((stage) => (
-                    <MenuItem key={stage._id} value={stage.name}>
-                      {stage.label}
-                    </MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
-            </Grid>
-            <Grid item xs={12}>
-              <FormControl fullWidth size="small">
-                <InputLabel shrink>Active Badges</InputLabel>
-                <Select
-                  notched
-                  multiple
-                  value={formData.badges}
-                  label="Active Badges"
-                  onChange={(e) =>
-                    setFormData({ ...formData, badges: e.target.value as TicketBadge[] })
-                  }
-                  renderValue={(selected) => (
-                    <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
-                      {(selected as TicketBadge[]).map((value) => (
-                        <Chip
-                          key={value}
-                          label={BADGE_CONFIG[value].label}
-                          size="small"
-                          sx={{ height: 24, borderRadius: 1 }}
-                        />
+                  <Typography sx={{ fontWeight: 700, fontSize: 13, color: '#64748B', mb: 2 }}>
+                    LABELS & BADGES
+                  </Typography>
+                  <FormControl fullWidth size="small">
+                    <Select
+                      multiple
+                      displayEmpty
+                      value={formData.badges}
+                      onChange={(e) =>
+                        setFormData({ ...formData, badges: e.target.value as TicketBadge[] })
+                      }
+                      renderValue={(selected) => {
+                        if (selected.length === 0) {
+                          return (
+                            <Typography sx={{ color: '#94A3B8', fontSize: 14 }}>
+                              Select badges...
+                            </Typography>
+                          );
+                        }
+                        return (
+                          <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+                            {(selected as TicketBadge[]).map((value) => (
+                              <Chip
+                                key={value}
+                                label={BADGE_CONFIG[value].label}
+                                size="small"
+                                sx={{
+                                  height: 24,
+                                  borderRadius: 1,
+                                  bgcolor: alpha(BADGE_CONFIG[value].color, 0.1),
+                                  color: BADGE_CONFIG[value].color,
+                                  fontWeight: 600,
+                                  fontSize: 11,
+                                }}
+                              />
+                            ))}
+                          </Box>
+                        );
+                      }}
+                    >
+                      {(Object.keys(BADGE_CONFIG) as TicketBadge[]).map((badge) => (
+                        <MenuItem key={badge} value={badge} sx={{ fontSize: 13, fontWeight: 500 }}>
+                          {BADGE_CONFIG[badge].label}
+                        </MenuItem>
                       ))}
-                    </Box>
-                  )}
-                >
-                  {(Object.keys(BADGE_CONFIG) as TicketBadge[]).map((badge) => (
-                    <MenuItem key={badge} value={badge} sx={{ fontSize: 13, fontWeight: 500 }}>
-                      {BADGE_CONFIG[badge].label}
-                    </MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
-            </Grid>
-            <Grid item xs={12}>
-              <TextField
-                fullWidth
-                multiline
-                rows={3}
-                label="User Stories"
-                value={formData.userStories}
-                onChange={(e) => setFormData({ ...formData, userStories: e.target.value })}
-                variant="outlined"
-                size="small"
-                InputLabelProps={{ shrink: true }}
-                placeholder="As a user..."
-              />
-            </Grid>
-            <Grid item xs={12}>
-              <TextField
-                fullWidth
-                multiline
-                rows={4}
-                label="Technical Description"
-                value={formData.description}
-                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                variant="outlined"
-                size="small"
-                InputLabelProps={{ shrink: true }}
-              />
-            </Grid>
-            <Grid item xs={12} md={6}>
-              <TextField
-                fullWidth
-                multiline
-                rows={3}
-                label="Technical Acceptance Criteria"
-                value={formData.acceptanceCriteria}
-                onChange={(e) => setFormData({ ...formData, acceptanceCriteria: e.target.value })}
-                variant="outlined"
-                size="small"
-                InputLabelProps={{ shrink: true }}
-              />
-            </Grid>
-            <Grid item xs={12} md={6}>
-              <TextField
-                fullWidth
-                multiline
-                rows={3}
-                label="Non-Technical / Business Value"
-                value={formData.nonTechnicalAcceptanceCriteria}
-                onChange={(e) =>
-                  setFormData({ ...formData, nonTechnicalAcceptanceCriteria: e.target.value })
-                }
-                variant="outlined"
-                size="small"
-                InputLabelProps={{ shrink: true }}
-              />
+                    </Select>
+                  </FormControl>
+                </Box>
+              </Stack>
             </Grid>
           </Grid>
         </DialogContent>
-        <DialogActions sx={{ px: 3, py: 2.5, bgcolor: '#F8FAFC', borderTop: '1px solid #F1F5F9' }}>
+        <DialogActions sx={{ px: 3, py: 2.5, bgcolor: '#FFFFFF', borderTop: '1px solid #E2E8F0' }}>
           <Button
             onClick={handleClose}
             sx={{ fontWeight: 600, color: '#64748B', textTransform: 'none' }}
@@ -1045,7 +1083,7 @@ export default function TicketsPage() {
               '&:hover': { bgcolor: '#1E293B' },
             }}
           >
-            {editingTicket ? 'Update Ticket' : 'Create Ticket'}
+            {editingTicket ? 'Save Changes' : 'Create Ticket'}
           </Button>
         </DialogActions>
       </Dialog>
