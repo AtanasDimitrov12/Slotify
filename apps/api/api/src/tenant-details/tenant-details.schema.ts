@@ -33,7 +33,7 @@ export type GeoLocation = {
 
 @Schema({ timestamps: true })
 export class TenantDetails {
-  @Prop({ required: true, index: true, unique: true })
+  @Prop({ type: String, required: true, unique: true })
   tenantId: string; // store as string uuid/objectId depending on your Tenant id
 
   @Prop({ type: Object, default: {} })
@@ -42,42 +42,41 @@ export class TenantDetails {
   @Prop({ type: Object, default: {} })
   openingHours: WeeklyOpeningHours;
 
-  @Prop({ default: '' })
+  @Prop({ type: String, default: '' })
   contactPersonName: string;
 
-  @Prop({ default: '' })
+  @Prop({ type: String, default: '' })
   contactEmail: string;
 
-  @Prop({ default: '' })
+  @Prop({ type: String, default: '' })
   contactPhone: string;
 
-  @Prop({ default: 'Europe/Amsterdam' })
+  @Prop({ type: String, default: 'Europe/Amsterdam' })
   timezone: string;
 
-  @Prop({ default: 'en-NL' })
+  @Prop({ type: String, default: 'en-NL' })
   locale: string;
 
-  @Prop()
+  @Prop({ type: String })
   websiteUrl?: string;
 
   @Prop({ type: Object, default: {} })
   socialLinks?: SocialLinks;
 
-  @Prop()
+  @Prop({ type: String })
   logoUrl?: string;
 
-  @Prop()
+  @Prop({ type: String })
   coverImageUrl?: string;
 
   @Prop({ type: Object, default: {} })
   geo?: GeoLocation;
 
-  @Prop({ default: true })
+  @Prop({ type: Boolean, default: true })
   isPublished: boolean;
 
-  @Prop({ default: '' })
+  @Prop({ type: String, default: '' })
   notes?: string;
 }
 
 export const TenantDetailsSchema = SchemaFactory.createForClass(TenantDetails);
-TenantDetailsSchema.index({ tenantId: 1 }, { unique: true });

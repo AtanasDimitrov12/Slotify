@@ -5,10 +5,10 @@ export type TenantBookingSettingsDocument = HydratedDocument<TenantBookingSettin
 
 @Schema({ _id: false })
 export class BookingBufferConfig {
-  @Prop({ default: false })
+  @Prop({ type: Boolean, default: false })
   enabled!: boolean;
 
-  @Prop({ default: 0, min: 0 })
+  @Prop({ type: Number, default: 0, min: 0 })
   minutes!: number;
 }
 
@@ -37,19 +37,19 @@ export class TenantBookingSettings {
   })
   bufferAfter!: BookingBufferConfig;
 
-  @Prop({ default: 60, min: 0 })
+  @Prop({ type: Number, default: 60, min: 0 })
   minimumNoticeMinutes!: number;
 
-  @Prop({ default: 30, min: 1 })
+  @Prop({ type: Number, default: 30, min: 1 })
   maximumDaysInAdvance!: number;
 
-  @Prop({ default: true })
+  @Prop({ type: Boolean, default: true })
   autoConfirmReservations!: boolean;
 
-  @Prop({ default: false })
+  @Prop({ type: Boolean, default: false })
   allowBookingToEndAfterWorkingHours!: boolean;
 
-  @Prop({ default: true })
+  @Prop({ type: Boolean, default: true })
   allowCustomerChooseSpecificStaff!: boolean;
 }
 

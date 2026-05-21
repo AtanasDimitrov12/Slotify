@@ -10,6 +10,9 @@ export class TestContext {
   public db: Connection;
 
   async setup() {
+    process.env.MONGO_URI = process.env.MONGO_URI_TEST || 'mongodb://localhost:27017/barber_reservation_test';
+    process.env.JWT_SECRET = 'test-secret';
+
     const moduleFixture: TestingModule = await Test.createTestingModule({
       imports: [AppModule],
     })
@@ -24,7 +27,6 @@ export class TestContext {
           if (key === 'JWT_SECRET') {
             return 'test-secret';
           }
-          // fallback to original or other mock values if needed
           return process.env[key];
         },
       })

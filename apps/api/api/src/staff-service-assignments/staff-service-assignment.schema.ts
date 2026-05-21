@@ -22,13 +22,13 @@ export class StaffServiceAssignment {
   })
   serviceId!: Types.ObjectId;
 
-  @Prop({ min: 1 })
+  @Prop({ type: Number, min: 1 })
   customDurationMinutes?: number;
 
-  @Prop({ min: 0 })
+  @Prop({ type: Number, min: 0 })
   customPrice?: number;
 
-  @Prop({ default: true, index: true })
+  @Prop({ type: Boolean, default: true, index: true })
   isOffered!: boolean;
 }
 

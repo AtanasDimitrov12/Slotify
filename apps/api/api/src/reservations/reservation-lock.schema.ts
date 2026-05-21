@@ -31,22 +31,22 @@ export class ReservationLock {
   })
   serviceId!: Types.ObjectId;
 
-  @Prop({ required: true, index: true })
+  @Prop({ type: Date, required: true, index: true })
   startTime!: Date;
 
-  @Prop({ required: true, index: true })
+  @Prop({ type: Date, required: true, index: true })
   endTime!: Date;
 
-  @Prop({ required: true, index: true })
+  @Prop({ type: Date, required: true })
   expiresAt!: Date;
 
-  @Prop({ trim: true, maxlength: 120 })
+  @Prop({ type: String, trim: true, maxlength: 120 })
   customerName?: string;
 
-  @Prop({ trim: true, lowercase: true, maxlength: 200 })
+  @Prop({ type: String, trim: true, lowercase: true, maxlength: 200 })
   customerEmail?: string;
 
-  @Prop({ trim: true, maxlength: 64, default: 'public-booking' })
+  @Prop({ type: String, trim: true, maxlength: 64, default: 'public-booking' })
   source!: string;
 }
 

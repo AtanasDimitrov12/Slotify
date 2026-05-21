@@ -7,16 +7,16 @@ export type StaffAvailabilityDocument = HydratedDocument<StaffAvailability>;
 
 @Schema({ _id: false })
 export class AvailabilitySlot {
-  @Prop({ required: true })
+  @Prop({ type: String, required: true })
   startTime!: string; // HH:mm
 
-  @Prop({ required: true })
+  @Prop({ type: String, required: true })
   endTime!: string; // HH:mm
 
   @Prop({ type: Types.ObjectId, ref: 'Tenant', required: true })
   tenantId!: Types.ObjectId;
 
-  @Prop({ default: true })
+  @Prop({ type: Boolean, default: true })
   isAvailable!: boolean;
 }
 
@@ -24,13 +24,13 @@ export const AvailabilitySlotSchema = SchemaFactory.createForClass(AvailabilityS
 
 @Schema({ _id: false })
 export class DayAvailability {
-  @Prop({ required: true, min: 0, max: 6 })
+  @Prop({ type: Number, required: true, min: 0, max: 6 })
   dayOfWeek!: number;
 
   @Prop({ type: [AvailabilitySlotSchema], default: [] })
   slots!: AvailabilitySlot[];
 
-  @Prop({ default: true })
+  @Prop({ type: Boolean, default: true })
   isAvailable!: boolean;
 }
 

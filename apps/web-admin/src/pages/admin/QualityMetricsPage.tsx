@@ -7,6 +7,10 @@ import InfoRoundedIcon from '@mui/icons-material/InfoRounded';
 import PendingRoundedIcon from '@mui/icons-material/PendingRounded';
 import RocketLaunchRoundedIcon from '@mui/icons-material/RocketLaunchRounded';
 import TimerRoundedIcon from '@mui/icons-material/TimerRounded';
+import SpeedRoundedIcon from '@mui/icons-material/SpeedRounded';
+import MemoryRoundedIcon from '@mui/icons-material/MemoryRounded';
+import NetworkCheckRoundedIcon from '@mui/icons-material/NetworkCheckRounded';
+import DevicesRoundedIcon from '@mui/icons-material/DevicesRounded';
 import {
   Alert,
   alpha,
@@ -181,7 +185,7 @@ export default function QualityMetricsPage() {
       const data = await getQualityMetrics(days);
       setReport(data);
     } catch (err) {
-      setError('Failed to load quality metrics. Please ensure GitHub configuration is correct.');
+      setError('Failed to load quality metrics. Please ensure backend services are running.');
       console.error(err);
     } finally {
       setLoading(false);
@@ -207,7 +211,7 @@ export default function QualityMetricsPage() {
     );
   }
 
-  if (error || (report && !report.isConfigured)) {
+  if (error || (report && !report.isConfigured && !report.systemHealth)) {
     return (
       <Box>
         <Typography sx={{ fontWeight: 800, fontSize: 32, color: COLORS.slate, mb: 3 }}>
@@ -220,7 +224,7 @@ export default function QualityMetricsPage() {
         >
           <Typography sx={{ fontWeight: 700, mb: 0.5 }}>Service Partially Configured</Typography>
           <Typography sx={{ fontWeight: 500, fontSize: 14 }}>
-            {error || 'GitHub API access is not configured. Some CI/CD metrics might be missing.'}
+            {error || 'Some CI/CD metrics might be missing. Ensure GitHub integration is configured.'}
           </Typography>
         </Alert>
       </Box>
@@ -239,7 +243,7 @@ export default function QualityMetricsPage() {
             Quality & Performance
           </Typography>
           <Typography sx={{ color: COLORS.slateSoft, fontWeight: 500, fontSize: 16 }}>
-            Real-time DORA metrics and engineering efficiency.
+            Real-time DORA metrics, system health, and engineering efficiency.
           </Typography>
         </Box>
 
@@ -262,6 +266,103 @@ export default function QualityMetricsPage() {
       </Stack>
 
       <Grid container spacing={4}>
+        {/* System & API Health */}
+        <Grid item xs={12}>
+          <MetricSection
+            title="Live System Performance"
+            subtitle="Real-time infrastructure health and API responsiveness."
+          >
+            <Grid container spacing={2.5}>
+              <Grid item xs={12} sm={6} lg={3}>
+                <StatCard
+                  label="CPU Usage"
+                  value={report.systemHealth ? `${report.systemHealth.cpuUsage.toFixed(1)}%` : '---'}
+                  hint="OS Load Average"
+                  icon={SpeedRoundedIcon}
+                  color={(report.systemHealth?.cpuUsage ?? 0) > 80 ? COLORS.error : COLORS.success}
+                  tooltip="Average CPU load reported by the operating system."
+                />
+              </Grid>
+              <Grid item xs={12} sm={6} lg={3}>
+                <StatCard
+                  label="Memory Usage"
+                  value={report.systemHealth ? `${report.systemHealth.memoryUsage.toFixed(1)}%` : '---'}
+                  hint="Active Memory"
+                  icon={MemoryRoundedIcon}
+                  color={(report.systemHealth?.memoryUsage ?? 0) > 90 ? COLORS.error : COLORS.info}
+                />
+              </Grid>
+              <Grid item xs={12} sm={6} lg={3}>
+                <StatCard
+                  label="API p95 Latency"
+                  value={report.apiPerformance ? `${Math.round(report.apiPerformance.p95ms)}ms` : '---'}
+                  hint="Tail Latency"
+                  icon={NetworkCheckRoundedIcon}
+                  color={(report.apiPerformance?.p95ms ?? 0) > 500 ? COLORS.warning : COLORS.purple}
+                  tooltip="The response time that 95% of API requests are faster than."
+                />
+              </Grid>
+              <Grid item xs={12} sm={6} lg={3}>
+                <StatCard
+                  label="API Error Rate"
+                  value={report.apiPerformance ? `${report.apiPerformance.errorRate.toFixed(2)}%` : '---'}
+                  hint="Failed Requests"
+                  icon={ErrorRoundedIcon}
+                  color={(report.apiPerformance?.errorRate ?? 0) > 1 ? COLORS.error : COLORS.success}
+                />
+              </Grid>
+            </Grid>
+          </MetricSection>
+        </Grid>
+
+        {/* User Experience Metrics (RUM) */}
+        <Grid item xs={12}>
+          <MetricSection
+            title="User Experience (Web Vitals)"
+            subtitle="Real User Monitoring (RUM) metrics from frontend clients."
+          >
+            <Grid container spacing={2.5}>
+              <Grid item xs={12} sm={6} lg={3}>
+                <StatCard
+                  label="LCP (Largest Paint)"
+                  value={report.webVitals ? `${(report.webVitals.lcp / 1000).toFixed(2)}s` : '---'}
+                  hint={(report.webVitals?.lcp ?? 0) < 2500 ? 'Good' : 'Needs Improvement'}
+                  icon={DevicesRoundedIcon}
+                  color={(report.webVitals?.lcp ?? 0) < 2500 ? COLORS.success : COLORS.warning}
+                  tooltip="Largest Contentful Paint measures loading performance."
+                />
+              </Grid>
+              <Grid item xs={12} sm={6} lg={3}>
+                <StatCard
+                  label="FCP (First Paint)"
+                  value={report.webVitals ? `${(report.webVitals.fcp / 1000).toFixed(2)}s` : '---'}
+                  hint="Visual feedback speed"
+                  icon={TimerRoundedIcon}
+                  color={COLORS.info}
+                />
+              </Grid>
+              <Grid item xs={12} sm={6} lg={3}>
+                <StatCard
+                  label="INP (Interaction)"
+                  value={report.webVitals ? `${Math.round(report.webVitals.inp)}ms` : '---'}
+                  hint={(report.webVitals?.inp ?? 0) < 200 ? 'Good' : 'Needs Improvement'}
+                  icon={RocketLaunchRoundedIcon}
+                  color={(report.webVitals?.inp ?? 0) < 200 ? COLORS.success : COLORS.warning}
+                />
+              </Grid>
+              <Grid item xs={12} sm={6} lg={3}>
+                <StatCard
+                  label="CLS (Stability)"
+                  value={report.webVitals ? report.webVitals.cls.toFixed(3) : '---'}
+                  hint="Layout shift score"
+                  icon={BugReportRoundedIcon}
+                  color={(report.webVitals?.cls ?? 0) < 0.1 ? COLORS.success : COLORS.error}
+                />
+              </Grid>
+            </Grid>
+          </MetricSection>
+        </Grid>
+
         {/* Executive DORA Metrics */}
         <Grid item xs={12}>
           <MetricSection
@@ -412,7 +513,7 @@ export default function QualityMetricsPage() {
                           </Stack>
                           <LinearProgress
                             variant="determinate"
-                            value={(count / report.ticketMetrics.totalRequested) * 100}
+                            value={(count / (report.ticketMetrics.totalRequested || 1)) * 100}
                             sx={{
                               height: 6,
                               borderRadius: 3,

@@ -9,19 +9,19 @@ export class Service {
   @Prop({ type: Types.ObjectId, ref: Tenant.name, required: true, index: true })
   tenantId!: Types.ObjectId;
 
-  @Prop({ required: true, trim: true })
+  @Prop({ type: String, required: true, trim: true })
   name!: string;
 
-  @Prop({ required: true, min: 1 })
+  @Prop({ type: Number, required: true, min: 1 })
   durationMin!: number;
 
-  @Prop({ required: true, min: 0 })
+  @Prop({ type: Number, required: true, min: 0 })
   priceEUR!: number;
 
-  @Prop({ trim: true, default: '' })
+  @Prop({ type: String, trim: true, default: '' })
   description?: string;
 
-  @Prop({ default: true, index: true })
+  @Prop({ type: Boolean, default: true, index: true })
   isActive!: boolean;
 }
 

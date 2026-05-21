@@ -10,25 +10,26 @@ export class Ticket {
   @Prop({ type: Types.ObjectId, ref: Tenant.name, required: false, index: true })
   tenantId?: Types.ObjectId;
 
-  @Prop({ required: true, unique: true, index: true, sparse: true })
+  @Prop({ type: String, required: true, unique: true, index: true, sparse: true })
   code!: string;
 
-  @Prop({ required: true, trim: true, maxlength: 200 })
+  @Prop({ type: String, required: true, trim: true, maxlength: 200 })
   title!: string;
 
-  @Prop({ trim: true, maxlength: 2000, default: '' })
+  @Prop({ type: String, trim: true, maxlength: 2000, default: '' })
   userStories?: string;
 
-  @Prop({ trim: true, maxlength: 5000, default: '' })
+  @Prop({ type: String, trim: true, maxlength: 5000, default: '' })
   description?: string;
 
-  @Prop({ trim: true, maxlength: 2000, default: '' })
+  @Prop({ type: String, trim: true, maxlength: 2000, default: '' })
   acceptanceCriteria?: string;
 
-  @Prop({ trim: true, maxlength: 2000, default: '' })
+  @Prop({ type: String, trim: true, maxlength: 2000, default: '' })
   nonTechnicalAcceptanceCriteria?: string;
 
   @Prop({
+    type: String,
     required: true,
     enum: ['low', 'medium', 'high', 'urgent'],
     default: 'medium',
@@ -36,6 +37,7 @@ export class Ticket {
   priority!: string;
 
   @Prop({
+    type: String,
     required: true,
     enum: ['bugfix', 'feature', 'request', 'question'],
     default: 'feature',
@@ -43,6 +45,7 @@ export class Ticket {
   type!: string;
 
   @Prop({
+    type: String,
     required: true,
     default: 'internal',
     index: true,

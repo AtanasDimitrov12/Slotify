@@ -13,19 +13,19 @@ export class StaffBlockedSlot {
   @Prop({ type: Types.ObjectId, ref: User.name, required: true, index: true })
   userId!: Types.ObjectId;
 
-  @Prop({ required: true })
+  @Prop({ type: String, required: true })
   date!: string; // YYYY-MM-DD
 
-  @Prop({ required: true })
+  @Prop({ type: String, required: true })
   startTime!: string; // HH:mm
 
-  @Prop({ required: true })
+  @Prop({ type: String, required: true })
   endTime!: string; // HH:mm
 
-  @Prop({ trim: true, default: '' })
+  @Prop({ type: String, trim: true, default: '' })
   reason?: string;
 
-  @Prop({ default: true, index: true })
+  @Prop({ type: Boolean, default: true, index: true })
   isActive!: boolean;
 }
 

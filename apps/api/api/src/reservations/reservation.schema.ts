@@ -16,10 +16,10 @@ export class Reservation {
   @Prop({ type: Types.ObjectId, ref: User.name, required: true, index: true })
   staffId!: Types.ObjectId;
 
-  @Prop({ trim: true, maxlength: 120 })
+  @Prop({ type: String, trim: true, maxlength: 120 })
   staffName?: string;
 
-  @Prop({ trim: true, default: '' })
+  @Prop({ type: String, trim: true, default: '' })
   staffAvatarUrl?: string;
 
   @Prop({
@@ -38,34 +38,35 @@ export class Reservation {
   })
   serviceId!: Types.ObjectId;
 
-  @Prop({ required: true, trim: true, maxlength: 120 })
+  @Prop({ type: String, required: true, trim: true, maxlength: 120 })
   serviceName!: string;
 
-  @Prop({ required: true, min: 1 })
+  @Prop({ type: Number, required: true, min: 1 })
   durationMin!: number;
 
-  @Prop({ required: true, min: 0 })
+  @Prop({ type: Number, required: true, min: 0 })
   priceEUR!: number;
 
-  @Prop({ required: true, index: true })
+  @Prop({ type: Date, required: true, index: true })
   startTime!: Date;
 
-  @Prop({ required: true, index: true })
+  @Prop({ type: Date, required: true, index: true })
   endTime!: Date;
 
-  @Prop({ required: true, trim: true, maxlength: 120 })
+  @Prop({ type: String, required: true, trim: true, maxlength: 120 })
   customerName!: string;
 
-  @Prop({ required: true, trim: true, maxlength: 40 })
+  @Prop({ type: String, required: true, trim: true, maxlength: 40 })
   customerPhone!: string;
 
-  @Prop({ trim: true, lowercase: true, maxlength: 200 })
+  @Prop({ type: String, trim: true, lowercase: true, maxlength: 200 })
   customerEmail?: string;
 
-  @Prop({ trim: true, maxlength: 1000, default: '' })
+  @Prop({ type: String, trim: true, maxlength: 1000, default: '' })
   notes?: string;
 
   @Prop({
+    type: String,
     required: true,
     enum: ['pending', 'confirmed', 'cancelled', 'completed', 'no-show'],
     default: 'pending',
@@ -73,7 +74,7 @@ export class Reservation {
   })
   status!: ReservationStatus;
 
-  @Prop({ trim: true, maxlength: 64, default: 'public-booking' })
+  @Prop({ type: String, trim: true, maxlength: 64, default: 'public-booking' })
   source!: string;
 
   @Prop({
