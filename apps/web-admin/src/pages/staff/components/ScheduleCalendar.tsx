@@ -13,16 +13,31 @@ import {
 import * as React from 'react';
 import AppointmentStatusChip from './AppointmentStatusChip';
 
-const HOURS = Array.from({ length: 11 }, (_, i) => 8 + i);
-const SLOT_HEIGHT = 80;
-const PIXELS_PER_MINUTE = SLOT_HEIGHT / 60;
-const CALENDAR_START_HOUR = 8;
-const SNAP_MINUTES = 5;
+export const CALENDAR_CONFIG = {
+  START_HOUR: 8,
+  END_HOUR: 19,
+  SLOT_HEIGHT: 80,
+  SNAP_MINUTES: 5,
+  TIME_COLUMN_WIDTH: 100,
+  APPOINTMENT_LEFT: 116,
+  APPOINTMENT_RIGHT_GAP: 24,
+  APPOINTMENT_GAP: 12,
+  MIN_HEIGHT: 42,
+  UPDATE_INTERVAL_MS: 30000,
+  MIN_LANE_WIDTH_FOR_DENSE: 280,
+  MIN_LANE_WIDTH_FOR_VERY_DENSE: 200,
+  MIN_HEIGHT_FOR_DENSE: 64,
+  MIN_HEIGHT_FOR_VERY_DENSE: 50,
+  MIN_HEIGHT_FOR_META: 58,
+  MIN_HEIGHT_FOR_DNA: 48,
+  MIN_LANE_WIDTH: 180,
+} as const;
 
-const TIME_COLUMN_WIDTH = 100;
-const APPOINTMENT_LEFT = 116;
-const APPOINTMENT_RIGHT_GAP = 24;
-const APPOINTMENT_GAP = 12;
+const HOURS = Array.from(
+  { length: CALENDAR_CONFIG.END_HOUR - CALENDAR_CONFIG.START_HOUR },
+  (_, i) => CALENDAR_CONFIG.START_HOUR + i,
+);
+const PIXELS_PER_MINUTE = CALENDAR_CONFIG.SLOT_HEIGHT / 60;
 
 type LayoutItem = {
   id: string;
@@ -46,12 +61,12 @@ function parseHHMMToMinutes(value: string) {
 }
 
 function getTop(minutes: number) {
-  const startOfSchedule = CALENDAR_START_HOUR * 60;
-  return ((minutes - startOfSchedule) / 60) * SLOT_HEIGHT;
+  const startOfSchedule = CALENDAR_CONFIG.START_HOUR * 60;
+  return ((minutes - startOfSchedule) / 60) * CALENDAR_CONFIG.SLOT_HEIGHT;
 }
 
 function getHeight(durationMin: number) {
-  return Math.max((durationMin / 60) * SLOT_HEIGHT, 42);
+  return Math.max((durationMin / 60) * CALENDAR_CONFIG.SLOT_HEIGHT, CALENDAR_CONFIG.MIN_HEIGHT);
 }
 
 function formatTimeOnly(value: string) {
@@ -201,7 +216,7 @@ export default function ScheduleCalendar({
   const [now, setNow] = React.useState(new Date());
 
   React.useEffect(() => {
-    const timer = setInterval(() => setNow(new Date()), 30000);
+    const timer = setInterval(() => setNow(new Date()), CALENDAR_CONFIG.UPDATE_INTERVAL_MS);
     return () => clearInterval(timer);
   }, []);
 
@@ -266,11 +281,11 @@ export default function ScheduleCalendar({
 
       const containerRect = containerRef.current.getBoundingClientRect();
       const rawTop = event.clientY - containerRect.top - meta.offsetY;
-      const maxTop = HOURS.length * SLOT_HEIGHT - getHeight(appointment.durationMin);
+      const maxTop = HOURS.length * CALENDAR_CONFIG.SLOT_HEIGHT - getHeight(appointment.durationMin);
       const clampedTop = clamp(rawTop, 0, maxTop);
 
-      const minutesFromStart = roundToStep(clampedTop / PIXELS_PER_MINUTE, SNAP_MINUTES);
-      const totalMinutes = CALENDAR_START_HOUR * 60 + minutesFromStart;
+      const minutesFromStart = roundToStep(clampedTop / PIXELS_PER_MINUTE, CALENDAR_CONFIG.SNAP_MINUTES);
+      const totalMinutes = CALENDAR_CONFIG.START_HOUR * 60 + minutesFromStart;
       const hours = Math.floor(totalMinutes / 60);
       const minutes = totalMinutes % 60;
 
@@ -295,10 +310,10 @@ export default function ScheduleCalendar({
 
       const containerRect = containerRef.current.getBoundingClientRect();
       const rawTop = event.clientY - containerRect.top - meta.offsetY;
-      const maxTop = HOURS.length * SLOT_HEIGHT - getHeight(appointment.durationMin);
+      const maxTop = HOURS.length * CALENDAR_CONFIG.SLOT_HEIGHT - getHeight(appointment.durationMin);
       const clampedTop = clamp(rawTop, 0, maxTop);
 
-      const minutesFromStart = roundToStep(clampedTop / PIXELS_PER_MINUTE, SNAP_MINUTES);
+      const minutesFromStart = roundToStep(clampedTop / PIXELS_PER_MINUTE, CALENDAR_CONFIG.SNAP_MINUTES);
       const snappedTop = minutesFromStart * PIXELS_PER_MINUTE;
 
       setPreviewTopById((prev) => ({
@@ -321,15 +336,16 @@ export default function ScheduleCalendar({
     [appointments, blockedSlots],
   );
 
-  const totalHorizontalSpace = contentWidth - APPOINTMENT_LEFT - APPOINTMENT_RIGHT_GAP;
+  const totalHorizontalSpace =
+    contentWidth - CALENDAR_CONFIG.APPOINTMENT_LEFT - CALENDAR_CONFIG.APPOINTMENT_RIGHT_GAP;
 
   const isToday = now.toISOString().split('T')[0] === selectedDate;
   const nowMinutes = now.getHours() * 60 + now.getMinutes();
-  const startMinutes = CALENDAR_START_HOUR * 60;
-  const endMinutes = (CALENDAR_START_HOUR + HOURS.length) * 60;
+  const startMinutes = CALENDAR_CONFIG.START_HOUR * 60;
+  const endMinutes = (CALENDAR_CONFIG.START_HOUR + HOURS.length) * 60;
   const nowTop =
     isToday && nowMinutes >= startMinutes && nowMinutes <= endMinutes
-      ? ((nowMinutes - startMinutes) / 60) * SLOT_HEIGHT
+      ? ((nowMinutes - startMinutes) / 60) * CALENDAR_CONFIG.SLOT_HEIGHT
       : null;
 
   return (
@@ -351,7 +367,7 @@ export default function ScheduleCalendar({
           ref={containerRef}
           sx={{
             position: 'relative',
-            height: HOURS.length * SLOT_HEIGHT,
+            height: HOURS.length * CALENDAR_CONFIG.SLOT_HEIGHT,
             overflow: 'auto',
             bgcolor: '#FFFFFF',
             userSelect: 'none',
@@ -364,10 +380,10 @@ export default function ScheduleCalendar({
               key={hour}
               sx={{
                 position: 'absolute',
-                top: index * SLOT_HEIGHT,
+                top: index * CALENDAR_CONFIG.SLOT_HEIGHT,
                 left: 0,
                 right: 0,
-                height: SLOT_HEIGHT,
+                height: CALENDAR_CONFIG.SLOT_HEIGHT,
                 borderTop: '1px solid',
                 borderColor: 'rgba(15,23,42,0.03)',
               }}
@@ -391,7 +407,7 @@ export default function ScheduleCalendar({
                 sx={{
                   position: 'absolute',
                   top: 0,
-                  left: TIME_COLUMN_WIDTH,
+                  left: CALENDAR_CONFIG.TIME_COLUMN_WIDTH,
                   right: 0,
                   bottom: 0,
                   borderLeft: '1px solid',
@@ -406,7 +422,7 @@ export default function ScheduleCalendar({
               sx={{
                 position: 'absolute',
                 top: nowTop,
-                left: TIME_COLUMN_WIDTH - 8,
+                left: CALENDAR_CONFIG.TIME_COLUMN_WIDTH - 8,
                 right: 0,
                 zIndex: 200,
                 pointerEvents: 'none',
@@ -449,16 +465,23 @@ export default function ScheduleCalendar({
 
             const height = getHeight(durationMin);
 
-            const innerGapTotal = Math.max(0, (laneCount - 1) * APPOINTMENT_GAP);
+            const innerGapTotal = Math.max(0, (laneCount - 1) * CALENDAR_CONFIG.APPOINTMENT_GAP);
             const laneWidth = Math.max(
-              180,
+              CALENDAR_CONFIG.MIN_LANE_WIDTH,
               Math.floor((totalHorizontalSpace - innerGapTotal) / laneCount),
             );
 
-            const left = APPOINTMENT_LEFT + laneIndex * (laneWidth + APPOINTMENT_GAP);
+            const left =
+              CALENDAR_CONFIG.APPOINTMENT_LEFT +
+              laneIndex * (laneWidth + CALENDAR_CONFIG.APPOINTMENT_GAP);
 
-            const dense = laneCount > 1 || laneWidth < 280 || height < 64;
-            const veryDense = laneWidth < 200 || height < 50;
+            const dense =
+              laneCount > 1 ||
+              laneWidth < CALENDAR_CONFIG.MIN_LANE_WIDTH_FOR_DENSE ||
+              height < CALENDAR_CONFIG.MIN_HEIGHT_FOR_DENSE;
+            const veryDense =
+              laneWidth < CALENDAR_CONFIG.MIN_LANE_WIDTH_FOR_VERY_DENSE ||
+              height < CALENDAR_CONFIG.MIN_HEIGHT_FOR_VERY_DENSE;
 
             if (!isAppointment) {
               return (
@@ -520,8 +543,8 @@ export default function ScheduleCalendar({
             const startTimeDate = new Date(appointment?.startTime ?? 0);
             const isOverdue = isUpcoming && startTimeDate < now;
 
-            const showMetaLine = !veryDense && height >= 58;
-            const showDnaIcon = !veryDense && height >= 48;
+            const showMetaLine = !veryDense && height >= CALENDAR_CONFIG.MIN_HEIGHT_FOR_META;
+            const showDnaIcon = !veryDense && height >= CALENDAR_CONFIG.MIN_HEIGHT_FOR_DNA;
 
             const getRiskColor = (score?: number) => {
               if (score === undefined) return '#94A3B8';
