@@ -28,8 +28,8 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
         msg = error;
       } else if (error instanceof Error) {
         msg = error.message;
-      } else if (error?.message) {
-        msg = error.message;
+      } else if (error && typeof error === 'object' && 'message' in error) {
+        msg = String((error as { message: unknown }).message);
       }
       showToast(msg, 'error');
     },

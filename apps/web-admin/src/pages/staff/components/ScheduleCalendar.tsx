@@ -435,15 +435,15 @@ export default function ScheduleCalendar({
 
             const selected = isAppt && selectedAppointmentId === id;
             const isDragging = isAppt && draggingId === id;
-            const draggable = isAppt && isDraggableStatus(appointment?.status);
+            const draggable = isAppt && !!appointment && isDraggableStatus(appointment.status);
 
             const top =
               isAppt && previewTopById[id] !== undefined
                 ? previewTopById[id]
                 : getTop(
                     isAppt
-                      ? parseTimeToMinutes(appointment?.startTime)
-                      : parseHHMMToMinutes(blockedSlot?.startTime),
+                      ? parseTimeToMinutes(appointment?.startTime ?? '')
+                      : parseHHMMToMinutes(blockedSlot?.startTime ?? '00:00'),
                   );
 
             const height = getHeight(durationMin);
@@ -516,7 +516,7 @@ export default function ScheduleCalendar({
             const isUpcoming =
               appointment?.status === 'confirmed' || appointment?.status === 'pending';
 
-            const startTimeDate = new Date(appointment?.startTime);
+            const startTimeDate = new Date(appointment?.startTime ?? 0);
             const isOverdue = isUpcoming && startTimeDate < now;
 
             const showMetaLine = !veryDense && height >= 58;
@@ -645,7 +645,9 @@ export default function ScheduleCalendar({
                         </IconButton>
                       </Tooltip>
                     )}
-                    {!veryDense && <AppointmentStatusChip status={appointment?.status} />}
+                    {!veryDense && (
+                      <AppointmentStatusChip status={appointment?.status ?? 'pending'} />
+                    )}
                   </Stack>
                 </Stack>
 
@@ -660,7 +662,7 @@ export default function ScheduleCalendar({
                       whiteSpace: 'nowrap',
                     }}
                   >
-                    {formatTimeOnly(appointment?.startTime)} · {appointment?.serviceName}
+                    {formatTimeOnly(appointment?.startTime ?? '')} · {appointment?.serviceName}
                     {salon && ` · ${salon.name}`}
                     {isOverdue && ' · Running Late'}
                   </Typography>

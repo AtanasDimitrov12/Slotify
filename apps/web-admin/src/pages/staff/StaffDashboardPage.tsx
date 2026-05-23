@@ -47,7 +47,7 @@ export default function StaffDashboardPage() {
   const [loading, setLoading] = React.useState(true);
   const [todayAppointments, setTodayAppointments] = React.useState<StaffAppointment[]>([]);
   const [weekAppointments, setWeekAppointments] = React.useState<StaffAppointment[]>([]);
-  const [salons, setSalons] = React.useState<Tenant[]>([]);
+  const [salons, setSalons] = React.useState<Partial<Tenant>[]>([]);
 
   React.useEffect(() => {
     async function loadData() {
