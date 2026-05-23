@@ -429,19 +429,20 @@ export default function ScheduleCalendar({
 
           {layoutItems.map((item) => {
             const { laneIndex, laneCount, type, id, durationMin } = item;
-            const isAppt = type === 'appt';
-            const appointment = isAppt ? (item.original as StaffAppointment) : null;
-            const blockedSlot = !isAppt ? (item.original as StaffBlockedSlotItem) : null;
+            const isAppointment = type === 'appt';
+            const appointment = isAppointment ? (item.original as StaffAppointment) : null;
+            const blockedSlot = !isAppointment ? (item.original as StaffBlockedSlotItem) : null;
 
-            const selected = isAppt && selectedAppointmentId === id;
-            const isDragging = isAppt && draggingId === id;
-            const draggable = isAppt && !!appointment && isDraggableStatus(appointment.status);
+            const selected = isAppointment && selectedAppointmentId === id;
+            const isDragging = isAppointment && draggingId === id;
+            const draggable =
+              isAppointment && !!appointment && isDraggableStatus(appointment.status);
 
             const top =
-              isAppt && previewTopById[id] !== undefined
+              isAppointment && previewTopById[id] !== undefined
                 ? previewTopById[id]
                 : getTop(
-                    isAppt
+                    isAppointment
                       ? parseTimeToMinutes(appointment?.startTime ?? '')
                       : parseHHMMToMinutes(blockedSlot?.startTime ?? '00:00'),
                   );
@@ -459,7 +460,7 @@ export default function ScheduleCalendar({
             const dense = laneCount > 1 || laneWidth < 280 || height < 64;
             const veryDense = laneWidth < 200 || height < 50;
 
-            if (!isAppt) {
+            if (!isAppointment) {
               return (
                 <Box
                   key={id}
