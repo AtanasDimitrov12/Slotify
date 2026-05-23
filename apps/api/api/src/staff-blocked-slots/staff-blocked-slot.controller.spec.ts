@@ -1,6 +1,8 @@
 import { UnauthorizedException } from '@nestjs/common';
 import { Test, type TestingModule } from '@nestjs/testing';
 import { Types } from 'mongoose';
+import type { JwtPayload } from '../auth/jwt.strategy';
+import type { CreateStaffBlockedSlotDto } from './dto/staff-blocked-slot.dto';
 import { StaffBlockedSlotController } from './staff-blocked-slot.controller';
 import { StaffBlockedSlotService } from './staff-blocked-slot.service';
 
@@ -14,7 +16,10 @@ describe('StaffBlockedSlotController', () => {
     _id: 'u1',
     tenantId: mockTenantId,
     role: 'owner',
-  };
+    name: 'Owner',
+    email: 'owner@test.com',
+    accountType: 'internal',
+  } as JwtPayload;
 
   const mockService = {
     findAllByStaff: jest.fn(),
@@ -39,7 +44,7 @@ describe('StaffBlockedSlotController', () => {
 
   describe('findMySlots', () => {
     it('should call service.findAllByStaff with user id', async () => {
-      await controller.findMySlots(mockUser as any, 'false');
+      await controller.findMySlots(mockUser, 'false');
       expect(service.findAllByStaff).toHaveBeenCalledWith(mockUser.sub, false);
     });
   });
@@ -47,7 +52,7 @@ describe('StaffBlockedSlotController', () => {
   describe('createMySlot', () => {
     it('should call service.create with user id and tenant id', async () => {
       const dto = { date: '2026-01-01', startTime: '10:00', endTime: '11:00' };
-      await controller.createMySlot(mockUser as any, dto as any);
+      await controller.createMySlot(mockUser, dto as CreateStaffBlockedSlotDto);
       expect(service.create).toHaveBeenCalledWith({
         ...dto,
         tenantId: mockTenantId,
@@ -58,21 +63,27 @@ describe('StaffBlockedSlotController', () => {
 
   describe('create', () => {
     it('should allow owner to create for anyone', async () => {
-      const dto = {
+      const dto: CreateStaffBlockedSlotDto = {
         userId: 'u2',
         tenantId: 't1',
         date: '2026-01-01',
         startTime: '10:00',
         endTime: '11:00',
       };
-      await controller.create(mockUser as any, dto as any);
+      await controller.create(mockUser, dto);
       expect(service.create).toHaveBeenCalledWith(dto);
     });
 
     it('should throw UnauthorizedException if staff tries to create for someone else', async () => {
-      const staffUser = { ...mockUser, role: 'staff' };
-      const dto = { userId: 'u2', tenantId: 't1' };
-      expect(() => controller.create(staffUser as any, dto as any)).toThrow(UnauthorizedException);
+      const staffUser = { ...mockUser, role: 'staff' } as JwtPayload;
+      const dto: CreateStaffBlockedSlotDto = {
+        userId: 'u2',
+        tenantId: 't1',
+        date: '2026-01-01',
+        startTime: '10:00',
+        endTime: '11:00',
+      };
+      expect(() => controller.create(staffUser, dto)).toThrow(UnauthorizedException);
     });
   });
 });

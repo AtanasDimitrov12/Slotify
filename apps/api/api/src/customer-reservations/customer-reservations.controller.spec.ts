@@ -1,7 +1,9 @@
 import { Test, type TestingModule } from '@nestjs/testing';
+import type { JwtPayload } from '../auth/jwt.strategy';
 import { CustomerProfilesService } from '../customer-profiles/customer-profiles.service';
 import { CustomerReservationsController } from './customer-reservations.controller';
 import { CustomerReservationsService } from './customer-reservations.service';
+import type { CreateReviewDto } from './dto/create-review.dto';
 
 describe('CustomerReservationsController', () => {
   let controller: CustomerReservationsController;
@@ -37,24 +39,24 @@ describe('CustomerReservationsController', () => {
   });
 
   it('getMyReservations should call service', async () => {
-    const user = { sub: 'u1', email: 'j@j.com' };
+    const user = { sub: 'u1', email: 'j@j.com' } as JwtPayload;
     mockProfilesService.findByUserId.mockResolvedValue({ phone: '123' });
-    await controller.getMyReservations(user as any);
+    await controller.getMyReservations(user);
     expect(service.findAllByContact).toHaveBeenCalledWith('j@j.com', '123');
   });
 
   it('cancelReservation should call service', async () => {
-    const user = { sub: 'u1', email: 'j@j.com' };
+    const user = { sub: 'u1', email: 'j@j.com' } as JwtPayload;
     mockProfilesService.findByUserId.mockResolvedValue({ phone: '123' });
-    await controller.cancelReservation('res1', user as any);
+    await controller.cancelReservation('res1', user);
     expect(service.cancelReservation).toHaveBeenCalledWith('res1', 'j@j.com', '123');
   });
 
   it('addReview should call service', async () => {
-    const user = { sub: 'u1', email: 'j@j.com' };
-    const dto = { rating: 5 };
+    const user = { sub: 'u1', email: 'j@j.com' } as JwtPayload;
+    const dto: CreateReviewDto = { rating: 5 };
     mockProfilesService.findByUserId.mockResolvedValue({ phone: '123' });
-    await controller.addReview('res1', dto as any, user as any);
+    await controller.addReview('res1', dto, user);
     expect(service.addReview).toHaveBeenCalledWith('res1', dto, 'j@j.com', '123');
   });
 });

@@ -10,7 +10,8 @@ export class TestContext {
   public db: Connection;
 
   async setup() {
-    process.env.MONGO_URI = process.env.MONGO_URI_TEST || 'mongodb://localhost:27017/barber_reservation_test';
+    process.env.MONGO_URI =
+      process.env.MONGO_URI_TEST || 'mongodb://localhost:27017/barber_reservation_test';
     process.env.JWT_SECRET = 'test-secret';
 
     const moduleFixture: TestingModule = await Test.createTestingModule({

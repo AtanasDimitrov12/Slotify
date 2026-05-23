@@ -1,16 +1,16 @@
 import { getQualityMetrics, type QualityMetricsReport } from '@barber/shared';
 import BugReportRoundedIcon from '@mui/icons-material/BugReportRounded';
 import CheckCircleRoundedIcon from '@mui/icons-material/CheckCircleRounded';
+import DevicesRoundedIcon from '@mui/icons-material/DevicesRounded';
 import EngineeringRoundedIcon from '@mui/icons-material/EngineeringRounded';
 import ErrorRoundedIcon from '@mui/icons-material/ErrorRounded';
 import InfoRoundedIcon from '@mui/icons-material/InfoRounded';
-import PendingRoundedIcon from '@mui/icons-material/PendingRounded';
-import RocketLaunchRoundedIcon from '@mui/icons-material/RocketLaunchRounded';
-import TimerRoundedIcon from '@mui/icons-material/TimerRounded';
-import SpeedRoundedIcon from '@mui/icons-material/SpeedRounded';
 import MemoryRoundedIcon from '@mui/icons-material/MemoryRounded';
 import NetworkCheckRoundedIcon from '@mui/icons-material/NetworkCheckRounded';
-import DevicesRoundedIcon from '@mui/icons-material/DevicesRounded';
+import PendingRoundedIcon from '@mui/icons-material/PendingRounded';
+import RocketLaunchRoundedIcon from '@mui/icons-material/RocketLaunchRounded';
+import SpeedRoundedIcon from '@mui/icons-material/SpeedRounded';
+import TimerRoundedIcon from '@mui/icons-material/TimerRounded';
 import {
   Alert,
   alpha,
@@ -224,7 +224,8 @@ export default function QualityMetricsPage() {
         >
           <Typography sx={{ fontWeight: 700, mb: 0.5 }}>Service Partially Configured</Typography>
           <Typography sx={{ fontWeight: 500, fontSize: 14 }}>
-            {error || 'Some CI/CD metrics might be missing. Ensure GitHub integration is configured.'}
+            {error ||
+              'Some CI/CD metrics might be missing. Ensure GitHub integration is configured.'}
           </Typography>
         </Alert>
       </Box>
@@ -276,7 +277,9 @@ export default function QualityMetricsPage() {
               <Grid item xs={12} sm={6} lg={3}>
                 <StatCard
                   label="CPU Usage"
-                  value={report.systemHealth ? `${report.systemHealth.cpuUsage.toFixed(1)}%` : '---'}
+                  value={
+                    report.systemHealth ? `${report.systemHealth.cpuUsage.toFixed(1)}%` : '---'
+                  }
                   hint="OS Load Average"
                   icon={SpeedRoundedIcon}
                   color={(report.systemHealth?.cpuUsage ?? 0) > 80 ? COLORS.error : COLORS.success}
@@ -286,7 +289,9 @@ export default function QualityMetricsPage() {
               <Grid item xs={12} sm={6} lg={3}>
                 <StatCard
                   label="Memory Usage"
-                  value={report.systemHealth ? `${report.systemHealth.memoryUsage.toFixed(1)}%` : '---'}
+                  value={
+                    report.systemHealth ? `${report.systemHealth.memoryUsage.toFixed(1)}%` : '---'
+                  }
                   hint="Active Memory"
                   icon={MemoryRoundedIcon}
                   color={(report.systemHealth?.memoryUsage ?? 0) > 90 ? COLORS.error : COLORS.info}
@@ -295,7 +300,9 @@ export default function QualityMetricsPage() {
               <Grid item xs={12} sm={6} lg={3}>
                 <StatCard
                   label="API p95 Latency"
-                  value={report.apiPerformance ? `${Math.round(report.apiPerformance.p95ms)}ms` : '---'}
+                  value={
+                    report.apiPerformance ? `${Math.round(report.apiPerformance.p95ms)}ms` : '---'
+                  }
                   hint="Tail Latency"
                   icon={NetworkCheckRoundedIcon}
                   color={(report.apiPerformance?.p95ms ?? 0) > 500 ? COLORS.warning : COLORS.purple}
@@ -305,10 +312,14 @@ export default function QualityMetricsPage() {
               <Grid item xs={12} sm={6} lg={3}>
                 <StatCard
                   label="API Error Rate"
-                  value={report.apiPerformance ? `${report.apiPerformance.errorRate.toFixed(2)}%` : '---'}
+                  value={
+                    report.apiPerformance ? `${report.apiPerformance.errorRate.toFixed(2)}%` : '---'
+                  }
                   hint="Failed Requests"
                   icon={ErrorRoundedIcon}
-                  color={(report.apiPerformance?.errorRate ?? 0) > 1 ? COLORS.error : COLORS.success}
+                  color={
+                    (report.apiPerformance?.errorRate ?? 0) > 1 ? COLORS.error : COLORS.success
+                  }
                 />
               </Grid>
             </Grid>

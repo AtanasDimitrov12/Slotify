@@ -1,8 +1,8 @@
 import { BadRequestException } from '@nestjs/common';
 import { getModelToken } from '@nestjs/mongoose';
 import { Test, type TestingModule } from '@nestjs/testing';
-import { Types } from 'mongoose';
-import { User } from './user.schema';
+import { type Model, Types } from 'mongoose';
+import { User, type UserDocument } from './user.schema';
 import { UsersService } from './users.service';
 
 describe('UsersService', () => {
@@ -21,8 +21,8 @@ describe('UsersService', () => {
   };
 
   const mockUserModel = jest.fn().mockImplementation(() => mockUser);
-  (mockUserModel as any).findOne = jest.fn();
-  (mockUserModel as any).findById = jest.fn();
+  (mockUserModel as unknown as Model<UserDocument>).findOne = jest.fn();
+  (mockUserModel as unknown as Model<UserDocument>).findById = jest.fn();
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -48,7 +48,7 @@ describe('UsersService', () => {
 
   describe('create', () => {
     it('should create a new user if email is not in use', async () => {
-      (mockUserModel as any).findOne.mockResolvedValue(null);
+      (mockUserModel as unknown as Model<UserDocument>).findOne = jest.fn().mockResolvedValue(null);
 
       const dto = {
         name: 'Test User',
@@ -59,12 +59,16 @@ describe('UsersService', () => {
 
       const result = await service.create(dto);
 
-      expect((mockUserModel as any).findOne).toHaveBeenCalledWith({ email: dto.email });
+      expect((mockUserModel as unknown as Model<UserDocument>).findOne).toHaveBeenCalledWith({
+        email: dto.email,
+      });
       expect(result).toBeDefined();
     });
 
     it('should throw BadRequestException if email is already in use', async () => {
-      (mockUserModel as any).findOne.mockResolvedValue(mockUser);
+      (mockUserModel as unknown as Model<UserDocument>).findOne = jest
+        .fn()
+        .mockResolvedValue(mockUser);
 
       const dto = {
         name: 'Test User',
@@ -79,13 +83,13 @@ describe('UsersService', () => {
 
   describe('findByEmail', () => {
     it('should return a user by email', async () => {
-      (mockUserModel as any).findOne.mockReturnValue({
+      (mockUserModel as unknown as Model<UserDocument>).findOne = jest.fn().mockReturnValue({
         lean: jest.fn().mockResolvedValue(mockUser),
       });
 
       const result = await service.findByEmail('test@example.com');
 
-      expect((mockUserModel as any).findOne).toHaveBeenCalledWith({
+      expect((mockUserModel as unknown as Model<UserDocument>).findOne).toHaveBeenCalledWith({
         email: 'test@example.com',
       });
       expect(result).toEqual(mockUser);
@@ -94,13 +98,15 @@ describe('UsersService', () => {
 
   describe('findById', () => {
     it('should return a user by id', async () => {
-      (mockUserModel as any).findById.mockReturnValue({
+      (mockUserModel as unknown as Model<UserDocument>).findById = jest.fn().mockReturnValue({
         lean: jest.fn().mockResolvedValue(mockUser),
       });
 
       const result = await service.findById(mockUser._id.toString());
 
-      expect((mockUserModel as any).findById).toHaveBeenCalledWith(mockUser._id.toString());
+      expect((mockUserModel as unknown as Model<UserDocument>).findById).toHaveBeenCalledWith(
+        mockUser._id.toString(),
+      );
       expect(result).toEqual(mockUser);
     });
   });

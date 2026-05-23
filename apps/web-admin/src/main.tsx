@@ -1,5 +1,5 @@
 import { AuthProvider, reportWebVitals, ToastProvider } from '@barber/shared';
-import { createTheme, CssBaseline, ThemeProvider } from '@mui/material';
+import { CssBaseline, createTheme, ThemeProvider } from '@mui/material';
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import { BrowserRouter } from 'react-router-dom';
@@ -60,7 +60,7 @@ const theme = createTheme({
   },
 });
 
-const vitals = { fcp: 0, lcp: 0, cls: 0, inp: 0, ttfb: 0 };
+const vitals = { fcp: 0, lcp: 0, cls: 0, fid: 0, inp: 0, ttfb: 0 };
 let reported = false;
 
 const sendVitals = () => {

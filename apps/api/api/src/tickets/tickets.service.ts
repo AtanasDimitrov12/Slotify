@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model, Types } from 'mongoose';
+import { Model, type QueryFilter, Types } from 'mongoose';
 import { Counter, CounterDocument } from './counter.schema';
 import { CreateTicketDto } from './dto/create-ticket.dto';
 import { UpdateTicketDto } from './dto/update-ticket.dto';
@@ -46,7 +46,7 @@ export class TicketsService {
     tenantId?: string,
     filters?: { stage?: string; search?: string; requestedBy?: string },
   ): Promise<TicketDocument[]> {
-    const query: any = {};
+    const query: QueryFilter<TicketDocument> = {};
     if (tenantId) {
       query.tenantId = new Types.ObjectId(tenantId);
     }
@@ -70,7 +70,7 @@ export class TicketsService {
     id: string,
     requestedBy?: string,
   ): Promise<TicketDocument> {
-    const query: any = { _id: new Types.ObjectId(id) };
+    const query: QueryFilter<TicketDocument> = { _id: new Types.ObjectId(id) };
     if (tenantId) {
       query.tenantId = new Types.ObjectId(tenantId);
     }
@@ -136,7 +136,7 @@ export class TicketsService {
   }
 
   async remove(tenantId: string | undefined, id: string, requestedBy?: string): Promise<void> {
-    const query: any = { _id: new Types.ObjectId(id) };
+    const query: QueryFilter<TicketDocument> = { _id: new Types.ObjectId(id) };
     if (tenantId) {
       query.tenantId = new Types.ObjectId(tenantId);
     }

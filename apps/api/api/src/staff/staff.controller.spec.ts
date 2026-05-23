@@ -1,5 +1,7 @@
 import { Test, type TestingModule } from '@nestjs/testing';
 import type { JwtPayload } from '../auth/jwt.strategy';
+import type { UpdateStaffAvailabilityDto } from '../staff-availability/dto/update-staff-availability.dto';
+import type { UpdateStaffProfileDto } from '../staff-profiles/dto/update-staff-profile.dto';
 import { StaffController } from './staff.controller';
 import { StaffService } from './staff.service';
 
@@ -66,8 +68,8 @@ describe('StaffController', () => {
 
   describe('updateMyProfile', () => {
     it('should call staffService.updateMyProfile', async () => {
-      const dto = { displayName: 'New' };
-      await controller.updateMyProfile(mockUser, dto as any);
+      const dto: UpdateStaffProfileDto = { displayName: 'New' };
+      await controller.updateMyProfile(mockUser, dto);
       expect(staffService.updateMyProfile).toHaveBeenCalledWith(mockUser, dto);
     });
   });
@@ -81,8 +83,8 @@ describe('StaffController', () => {
 
   describe('updateMyAvailability', () => {
     it('should call staffService.updateMyAvailability', async () => {
-      const dto = { weeklyAvailability: [] };
-      await controller.updateMyAvailability(mockUser, dto as any);
+      const dto: UpdateStaffAvailabilityDto = { weeklyAvailability: [] };
+      await controller.updateMyAvailability(mockUser, dto);
       expect(staffService.updateMyAvailability).toHaveBeenCalledWith(mockUser, dto);
     });
   });

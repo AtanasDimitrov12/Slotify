@@ -1,11 +1,16 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { type HydratedDocument } from 'mongoose';
+import type { HydratedDocument } from 'mongoose';
 
 export type SystemMetricDocument = HydratedDocument<SystemMetric>;
 
 @Schema({ timestamps: true })
 export class SystemMetric {
-  @Prop({ type: String, required: true, enum: ['api_request', 'system_health', 'web_vital'], index: true })
+  @Prop({
+    type: String,
+    required: true,
+    enum: ['api_request', 'system_health', 'web_vital'],
+    index: true,
+  })
   type!: string;
 
   // For api_request

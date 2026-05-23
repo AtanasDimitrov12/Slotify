@@ -1,4 +1,5 @@
 import { Box, Button, Stack, Typography } from '@mui/material';
+import DOMPurify from 'dompurify';
 import * as React from 'react';
 import ReactQuill from 'react-quill-new';
 import 'react-quill-new/dist/quill.snow.css';
@@ -24,7 +25,7 @@ export default function RichTextSection({
 
   React.useEffect(() => {
     setTempValue(value);
-  }, [value, isEditing]);
+  }, [value]);
 
   const handleSave = () => {
     onChange(tempValue);
@@ -168,8 +169,9 @@ export default function RichTextSection({
                     '& p': { display: 'inline', mb: 0 },
                   },
                 }}
-                dangerouslySetInnerHTML={{ __html: value }}
-              />
+                // biome-ignore lint/security/noDangerouslySetInnerHtml: The content is sanitized using DOMPurify to prevent XSS.
+                dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(value) }}
+              />{' '}
               {value.length > 500 && (
                 <Button
                   size="small"

@@ -1,12 +1,12 @@
 import {
-  CallHandler,
-  ExecutionContext,
+  type CallHandler,
+  type ExecutionContext,
   Injectable,
-  NestInterceptor,
+  type NestInterceptor,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
-import { Observable } from 'rxjs';
+import type { Model } from 'mongoose';
+import type { Observable } from 'rxjs';
 import { tap } from 'rxjs/operators';
 import { SystemMetric } from './system-metric.schema';
 
@@ -17,7 +17,7 @@ export class PerformanceInterceptor implements NestInterceptor {
     private systemMetricModel: Model<SystemMetric>,
   ) {}
 
-  intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
+  intercept(context: ExecutionContext, next: CallHandler): Observable<unknown> {
     const request = context.switchToHttp().getRequest();
     const { method, path } = request;
     const startTime = Date.now();
@@ -41,12 +41,13 @@ export class PerformanceInterceptor implements NestInterceptor {
             durationMs,
             statusCode,
           })
-          .catch((err) => {
+          .catch((err: unknown) => {
+            const error = err as Record<string, string>;
             // Silently fail if DB is closing/closed to not affect logs during shutdown
             if (
-              err.name === 'MongoClientClosedError' ||
-              err.name === 'MongoNotConnectedError' ||
-              err.message?.includes('client was closed')
+              error.name === 'MongoClientClosedError' ||
+              error.name === 'MongoNotConnectedError' ||
+              error.message?.includes('client was closed')
             ) {
               return;
             }

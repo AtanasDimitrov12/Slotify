@@ -14,7 +14,7 @@ import {
   TextField,
   Typography,
 } from '@mui/material';
-import type { DaySchedule } from './types';
+import type { AvailabilitySlot, DaySchedule } from './types';
 
 type Props = {
   value: DaySchedule[];
@@ -49,7 +49,7 @@ export default function WeeklyScheduleEditor({ value, onChange, salons }: Props)
     patch(dayOfWeek, { slots: nextSlots });
   }
 
-  function updateSlot(dayOfWeek: number, slotIndex: number, patchObj: any) {
+  function updateSlot(dayOfWeek: number, slotIndex: number, patchObj: Partial<AvailabilitySlot>) {
     const day = value.find((d) => d.dayOfWeek === dayOfWeek);
     if (!day) return;
 

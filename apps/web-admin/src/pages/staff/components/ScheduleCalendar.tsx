@@ -30,7 +30,7 @@ type LayoutItem = {
   startTime: string;
   endTime?: string; // for blocks we calculate end from startTime/endTime strings
   durationMin: number;
-  original: any;
+  original: unknown;
   laneIndex: number;
   laneCount: number;
 };
@@ -435,15 +435,15 @@ export default function ScheduleCalendar({
 
             const selected = isAppt && selectedAppointmentId === id;
             const isDragging = isAppt && draggingId === id;
-            const draggable = isAppt && isDraggableStatus(appointment!.status);
+            const draggable = isAppt && isDraggableStatus(appointment?.status);
 
             const top =
               isAppt && previewTopById[id] !== undefined
                 ? previewTopById[id]
                 : getTop(
                     isAppt
-                      ? parseTimeToMinutes(appointment!.startTime)
-                      : parseHHMMToMinutes(blockedSlot!.startTime),
+                      ? parseTimeToMinutes(appointment?.startTime)
+                      : parseHHMMToMinutes(blockedSlot?.startTime),
                   );
 
             const height = getHeight(durationMin);
@@ -503,20 +503,20 @@ export default function ScheduleCalendar({
                         whiteSpace: 'nowrap',
                       }}
                     >
-                      {blockedSlot!.reason || 'No reason'}
+                      {blockedSlot?.reason || 'No reason'}
                     </Typography>
                   )}
                 </Box>
               );
             }
 
-            const isCancelled = appointment!.status === 'cancelled';
-            const isCompleted = appointment!.status === 'completed';
-            const isNoShow = appointment!.status === 'no-show';
+            const isCancelled = appointment?.status === 'cancelled';
+            const isCompleted = appointment?.status === 'completed';
+            const isNoShow = appointment?.status === 'no-show';
             const isUpcoming =
-              appointment!.status === 'confirmed' || appointment!.status === 'pending';
+              appointment?.status === 'confirmed' || appointment?.status === 'pending';
 
-            const startTimeDate = new Date(appointment!.startTime);
+            const startTimeDate = new Date(appointment?.startTime);
             const isOverdue = isUpcoming && startTimeDate < now;
 
             const showMetaLine = !veryDense && height >= 58;
@@ -529,8 +529,8 @@ export default function ScheduleCalendar({
               return '#EF4444';
             };
 
-            const riskColor = getRiskColor(appointment!.riskScore);
-            const salon = salons.find((s) => s._id === appointment!.tenantId);
+            const riskColor = getRiskColor(appointment?.riskScore);
+            const salon = salons.find((s) => s._id === appointment?.tenantId);
 
             return (
               <Box
@@ -617,7 +617,7 @@ export default function ScheduleCalendar({
                       flex: 1,
                     }}
                   >
-                    {appointment!.customerName}
+                    {appointment?.customerName}
                   </Typography>
 
                   <Stack
@@ -627,7 +627,7 @@ export default function ScheduleCalendar({
                     onMouseDown={(e) => e.stopPropagation()}
                   >
                     {showDnaIcon && (
-                      <Tooltip title={`Risk: ${appointment!.riskScore ?? 'N/A'}%`} arrow>
+                      <Tooltip title={`Risk: ${appointment?.riskScore ?? 'N/A'}%`} arrow>
                         <IconButton
                           size="small"
                           onClick={(e) => {
@@ -645,7 +645,7 @@ export default function ScheduleCalendar({
                         </IconButton>
                       </Tooltip>
                     )}
-                    {!veryDense && <AppointmentStatusChip status={appointment!.status} />}
+                    {!veryDense && <AppointmentStatusChip status={appointment?.status} />}
                   </Stack>
                 </Stack>
 
@@ -660,7 +660,7 @@ export default function ScheduleCalendar({
                       whiteSpace: 'nowrap',
                     }}
                   >
-                    {formatTimeOnly(appointment!.startTime)} · {appointment!.serviceName}
+                    {formatTimeOnly(appointment?.startTime)} · {appointment?.serviceName}
                     {salon && ` · ${salon.name}`}
                     {isOverdue && ' · Running Late'}
                   </Typography>

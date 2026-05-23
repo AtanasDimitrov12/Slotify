@@ -67,7 +67,7 @@ export default function OwnerLayout() {
       await switchTenant(tenantId);
       showSuccess('Switched salon successfully');
       window.location.reload();
-    } catch (err) {
+    } catch (_err) {
       showError('Failed to switch salon');
     }
   };

@@ -149,7 +149,10 @@ export default function TicketRequestDialog({
           {/* Sidebar Column */}
           <Grid item xs={12} md={4}>
             <Stack spacing={2.5} sx={{ mt: 1 }}>
-              <Stack spacing={2.5} sx={{ bgcolor: '#FFFFFF', p: 2.5, borderRadius: 2, border: '1px solid #E2E8F0' }}>
+              <Stack
+                spacing={2.5}
+                sx={{ bgcolor: '#FFFFFF', p: 2.5, borderRadius: 2, border: '1px solid #E2E8F0' }}
+              >
                 <Typography sx={{ fontWeight: 700, fontSize: 13, color: '#64748B', mb: 1 }}>
                   DETAILS
                 </Typography>

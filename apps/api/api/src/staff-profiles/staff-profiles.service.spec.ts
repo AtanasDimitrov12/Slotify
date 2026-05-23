@@ -2,6 +2,7 @@ import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { getModelToken } from '@nestjs/mongoose';
 import { Test, type TestingModule } from '@nestjs/testing';
 import { Types } from 'mongoose';
+import type { CreateStaffProfileDto } from './dto/create-staff-profile.dto';
 import { StaffProfile } from './staff-profile.schema';
 import { StaffProfilesService } from './staff-profiles.service';
 
@@ -53,24 +54,24 @@ describe('StaffProfilesService', () => {
     it('should create a new staff profile', async () => {
       mockStaffProfileModel.create.mockResolvedValue(mockStaffProfile);
 
-      const dto = {
+      const dto: CreateStaffProfileDto = {
         userId: mockStaffProfile.userId.toString(),
         displayName: 'Barber John',
       };
 
-      const result = await service.create(dto as any);
+      const result = await service.create(dto);
 
       expect(mockStaffProfileModel.create).toHaveBeenCalled();
       expect(result).toBeDefined();
     });
 
     it('should throw BadRequestException for invalid userId', () => {
-      const dto = {
+      const dto: CreateStaffProfileDto = {
         userId: 'invalid',
         displayName: 'John',
       };
 
-      expect(() => service.create(dto as any)).toThrow(BadRequestException);
+      expect(() => service.create(dto)).toThrow(BadRequestException);
     });
   });
 

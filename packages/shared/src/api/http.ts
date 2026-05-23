@@ -18,7 +18,7 @@ function buildUrl(path: string) {
 
   // Ensure cleanPath starts with a slash for consistent joining
   if (!cleanPath.startsWith('/')) {
-    cleanPath = '/' + cleanPath;
+    cleanPath = `/${cleanPath}`;
   }
 
   // If API_BASE has a trailing slash, remove it to avoid doubles

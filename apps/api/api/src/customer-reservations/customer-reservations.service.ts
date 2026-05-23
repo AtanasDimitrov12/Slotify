@@ -1,8 +1,19 @@
 import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model, Types } from 'mongoose';
+import { Model, type QueryFilter, Types } from 'mongoose';
 import { Reservation, ReservationDocument } from '../reservations/reservation.schema';
 import { CreateReviewDto } from './dto/create-review.dto';
+
+export interface AggregatedReservation extends Omit<Reservation, 'tenantId'> {
+  _id: Types.ObjectId;
+  tenantId: {
+    _id: Types.ObjectId;
+    name: string;
+    slug: string;
+  };
+  staffName: string;
+  staffAvatarUrl: string;
+}
 
 @Injectable()
 export class CustomerReservationsService {
@@ -11,16 +22,16 @@ export class CustomerReservationsService {
     private readonly reservationModel: Model<ReservationDocument>,
   ) {}
 
-  async findAllByContact(email?: string, phone?: string): Promise<any[]> {
+  async findAllByContact(email?: string, phone?: string): Promise<AggregatedReservation[]> {
     if (!email && !phone) {
       return [];
     }
 
-    const query: any = { $or: [] };
-    if (email) query.$or.push({ customerEmail: email.toLowerCase() });
-    if (phone) query.$or.push({ customerPhone: phone });
+    const query: QueryFilter<ReservationDocument> = { $or: [] };
+    if (email && query.$or) query.$or.push({ customerEmail: email.toLowerCase() });
+    if (phone && query.$or) query.$or.push({ customerPhone: phone });
 
-    return this.reservationModel.aggregate([
+    return this.reservationModel.aggregate<AggregatedReservation>([
       { $match: query },
       { $sort: { startTime: -1 } },
       {

@@ -2,10 +2,12 @@ import { ConflictException, NotFoundException } from '@nestjs/common';
 import { getModelToken } from '@nestjs/mongoose';
 import { Test } from '@nestjs/testing';
 import type { Model } from 'mongoose';
-import { TenantDetails } from './tenant-details.schema';
+import type { CreateTenantDetailsDto } from './dto/create-tenant-details.dto';
+import type { UpdateTenantDetailsDto } from './dto/update-tenant-details.dto';
+import { TenantDetails, type TenantDetailsDocument } from './tenant-details.schema';
 import { TenantDetailsService } from './tenant-details.service';
 
-type MockModel<T = any> = Partial<Record<keyof Model<T>, jest.Mock>> & {
+type MockModel<T> = Partial<Record<keyof Model<T>, jest.Mock>> & {
   findOne: jest.Mock;
   create: jest.Mock;
   findOneAndUpdate: jest.Mock;
@@ -13,7 +15,7 @@ type MockModel<T = any> = Partial<Record<keyof Model<T>, jest.Mock>> & {
 
 describe('TenantDetailsService', () => {
   let service: TenantDetailsService;
-  let model: MockModel;
+  let model: MockModel<TenantDetailsDocument>;
 
   const tenantId = 'tenant_123';
 
@@ -49,7 +51,7 @@ describe('TenantDetailsService', () => {
       model.findOne.mockReturnValue({ lean: () => null });
       model.create.mockResolvedValue(existingDoc);
 
-      const dto: any = { tenantId, contactEmail: 'test@slotify.com' };
+      const dto: CreateTenantDetailsDto = { tenantId, contactEmail: 'test@slotify.com' };
       const res = await service.create(dto);
 
       expect(model.findOne).toHaveBeenCalledWith({ tenantId });
@@ -60,7 +62,7 @@ describe('TenantDetailsService', () => {
     it('throws ConflictException if details already exist', async () => {
       model.findOne.mockReturnValue({ lean: () => ({ tenantId }) });
 
-      const dto: any = { tenantId, contactEmail: 'x@x.com' };
+      const dto: CreateTenantDetailsDto = { tenantId, contactEmail: 'x@x.com' };
       await expect(service.create(dto)).rejects.toBeInstanceOf(ConflictException);
       expect(model.create).not.toHaveBeenCalled();
     });
@@ -93,7 +95,7 @@ describe('TenantDetailsService', () => {
 
       const res = await service.updateByTenantId(tenantId, {
         contactPhone: '123',
-      } as any);
+      } as UpdateTenantDetailsDto);
 
       expect(model.findOneAndUpdate).toHaveBeenCalledWith(
         { tenantId },
@@ -107,7 +109,7 @@ describe('TenantDetailsService', () => {
       model.findOneAndUpdate.mockReturnValue({ lean: () => null });
 
       await expect(
-        service.updateByTenantId(tenantId, { contactPhone: '123' } as any),
+        service.updateByTenantId(tenantId, { contactPhone: '123' } as UpdateTenantDetailsDto),
       ).rejects.toBeInstanceOf(NotFoundException);
     });
   });
@@ -120,7 +122,7 @@ describe('TenantDetailsService', () => {
 
       const res = await service.upsertByTenantId(tenantId, {
         contactEmail: 'upsert@x.com',
-      } as any);
+      } as UpdateTenantDetailsDto);
 
       expect(model.findOneAndUpdate).toHaveBeenCalledWith(
         { tenantId },

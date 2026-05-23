@@ -6,6 +6,7 @@ import {
   premium,
   saveGeneralSettings,
   saveOpeningHours,
+  type Tenant,
   useAuth,
   useToast,
 } from '@barber/shared';
@@ -112,7 +113,7 @@ export default function OwnerSettingsPage() {
   const [openingHours, setOpeningHours] = React.useState<OpeningDay[]>(defaultOpeningHours);
 
   // My Salons state
-  const [mySalons, setMySalons] = React.useState<any[]>([]);
+  const [mySalons, setMySalons] = React.useState<Tenant[]>([]);
   const [createDialogOpen, setCreateDialogOpen] = React.useState(false);
   const [newSalonName, setNewSalonName] = React.useState('');
 

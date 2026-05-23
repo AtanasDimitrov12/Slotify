@@ -1,7 +1,7 @@
+import * as os from 'node:os';
 import { Injectable, OnModuleDestroy, OnModuleInit } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import * as os from 'os';
 import { SystemMetric } from './system-metric.schema';
 
 @Injectable()
@@ -44,9 +44,6 @@ export class SystemHealthService implements OnModuleInit, OnModuleDestroy {
   }
 
   async getLatestHealth() {
-    return this.systemMetricModel
-      .findOne({ type: 'system_health' })
-      .sort({ createdAt: -1 })
-      .exec();
+    return this.systemMetricModel.findOne({ type: 'system_health' }).sort({ createdAt: -1 }).exec();
   }
 }

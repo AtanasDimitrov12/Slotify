@@ -1,6 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model, Types } from 'mongoose';
+import { Model, type QueryFilter, Types } from 'mongoose';
 import { Ticket, TicketDocument } from '../tickets/ticket.schema';
 import {
   ApiPerformance,
@@ -8,7 +8,6 @@ import {
   CiStepStatus,
   DoraMetrics,
   QualityMetricsReport,
-  SystemHealth,
   TicketMetricSummary,
   WebVitals,
 } from './dto/quality-metrics-report.dto';
@@ -118,7 +117,8 @@ export class QualityMetricsService {
       })
       .exec();
 
-    const avg = (arr: number[]) => (arr.length > 0 ? arr.reduce((a, b) => a + b, 0) / arr.length : 0);
+    const avg = (arr: number[]) =>
+      arr.length > 0 ? arr.reduce((a, b) => a + b, 0) / arr.length : 0;
 
     return {
       fcp: avg(vitals.map((v) => v.fcp || 0)),
@@ -134,7 +134,7 @@ export class QualityMetricsService {
     const startDate = new Date();
     startDate.setDate(startDate.getDate() - days);
 
-    const query: any = {
+    const query: QueryFilter<TicketDocument> = {
       $or: [{ createdAt: { $gte: startDate } }, { updatedAt: { $gte: startDate } }],
     };
 
@@ -200,10 +200,10 @@ export class QualityMetricsService {
 
     const leadTimes = completed
       .filter((t) => t.startedAt)
-      .map((t) => (t.completedAt!.getTime() - t.startedAt!.getTime()) / 1000 / 60);
+      .map((t) => ((t.completedAt?.getTime() ?? 0) - (t.startedAt?.getTime() ?? 0)) / 1000 / 60);
 
     const cycleTimes = completed.map(
-      (t) => (t.completedAt!.getTime() - t.createdAt.getTime()) / 1000 / 60,
+      (t) => ((t.completedAt?.getTime() ?? 0) - t.createdAt.getTime()) / 1000 / 60,
     );
 
     const byType: Record<string, number> = {};
@@ -276,10 +276,10 @@ export class QualityMetricsService {
     const completedTickets = tickets.filter((t) => t.stage === 'done' && t.completedAt);
     const ticketLeadTimes = completedTickets
       .filter((t) => t.startedAt)
-      .map((t) => (t.completedAt!.getTime() - t.startedAt!.getTime()) / 1000 / 60);
+      .map((t) => ((t.completedAt?.getTime() ?? 0) - (t.startedAt?.getTime() ?? 0)) / 1000 / 60);
 
     const cycleTimes = completedTickets.map(
-      (t) => (t.completedAt!.getTime() - t.createdAt.getTime()) / 1000 / 60,
+      (t) => ((t.completedAt?.getTime() ?? 0) - t.createdAt.getTime()) / 1000 / 60,
     );
 
     return {
@@ -335,8 +335,9 @@ export class QualityMetricsService {
         name: s.name,
         status: this.mapGithubConclusion(s.conclusion, s.status),
       }));
-    } catch (e) {
-      this.logger.error(`Failed to get step status for run ${runId}: ${e.message}`);
+    } catch (e: unknown) {
+      const message = e instanceof Error ? e.message : String(e);
+      this.logger.error(`Failed to get step status for run ${runId}: ${message}`);
       return [];
     }
   }

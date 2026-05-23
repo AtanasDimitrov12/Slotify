@@ -24,7 +24,7 @@ export async function expectOk(response: Awaited<ReturnType<APIRequestContext['g
   if (data && typeof data === 'object') {
     if (Array.isArray(data)) {
       for (const item of data) {
-        if (item && item._id && !item.id) {
+        if (item?._id && !item.id) {
           item.id = item._id;
         }
       }

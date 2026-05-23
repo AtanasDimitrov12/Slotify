@@ -3,6 +3,7 @@ import {
   landingColors,
   listStaffAppointments,
   type StaffAppointment,
+  type Tenant,
 } from '@barber/shared';
 import AccessTimeRoundedIcon from '@mui/icons-material/AccessTimeRounded';
 import CalendarMonthRoundedIcon from '@mui/icons-material/CalendarMonthRounded';
@@ -46,7 +47,7 @@ export default function StaffDashboardPage() {
   const [loading, setLoading] = React.useState(true);
   const [todayAppointments, setTodayAppointments] = React.useState<StaffAppointment[]>([]);
   const [weekAppointments, setWeekAppointments] = React.useState<StaffAppointment[]>([]);
-  const [salons, setSalons] = React.useState<any[]>([]);
+  const [salons, setSalons] = React.useState<Tenant[]>([]);
 
   React.useEffect(() => {
     async function loadData() {

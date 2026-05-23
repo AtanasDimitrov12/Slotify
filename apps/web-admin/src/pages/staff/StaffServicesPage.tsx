@@ -55,8 +55,8 @@ export default function StaffServicesPage() {
       ]);
 
       const mappedTenants: AvailableTenant[] = myTenants
-        .filter((t: any) => t._id && t.name)
-        .map((t: any) => ({ _id: t._id, name: t.name }));
+        .filter((t) => t._id && t.name)
+        .map((t) => ({ _id: t._id as string, name: t.name as string }));
 
       setSalons(mappedTenants);
       setItems(assignedServices ?? []);

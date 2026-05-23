@@ -7,7 +7,7 @@ import { CustomerProfilesService } from '../customer-profiles/customer-profiles.
 import { MembershipsService } from '../memberships/memberships.service';
 import { TenantsService } from '../tenants/tenants.service';
 import { UsersService } from '../users/users.service';
-import { AuthService } from './auth.service';
+import { AuthService, type LoginResponse, type MultiTenantLoginResponse } from './auth.service';
 
 jest.mock('bcryptjs');
 
@@ -97,7 +97,7 @@ describe('AuthService (Security & Multi-tenancy)', () => {
         { tenantId: { _id: 't2', name: 'Tenant 2' }, role: 'staff' },
       ]);
 
-      const result = (await service.login(loginDto)) as any;
+      const result = (await service.login(loginDto)) as MultiTenantLoginResponse;
 
       expect(result).toHaveProperty('tenants');
       expect(result.tenants).toHaveLength(2);
@@ -111,7 +111,7 @@ describe('AuthService (Security & Multi-tenancy)', () => {
         role: 'owner',
       });
 
-      const result = (await service.login({ ...loginDto, tenantId: 't1' })) as any;
+      const result = (await service.login({ ...loginDto, tenantId: 't1' })) as LoginResponse;
 
       expect(result).toHaveProperty('accessToken');
       expect(result.account.tenantId).toBe('t1');
@@ -126,7 +126,7 @@ describe('AuthService (Security & Multi-tenancy)', () => {
       (usersService.findByEmail as jest.Mock).mockResolvedValue(customerUser);
       (bcrypt.compare as jest.Mock).mockResolvedValue(true);
 
-      const result = (await service.login(loginDto)) as any;
+      const result = (await service.login(loginDto)) as MultiTenantLoginResponse;
 
       expect(result).toHaveProperty('accessToken');
       expect(result.account.accountType).toBe('customer');
@@ -197,15 +197,26 @@ describe('AuthService (Security & Multi-tenancy)', () => {
 
   describe('getId (Private/Internal Utility)', () => {
     it('should handle various ID formats correctly', () => {
-      const serviceAny = service as any;
+      const serviceAsPrivate = service as unknown as {
+        getId: (
+          value:
+            | string
+            | number
+            | Types.ObjectId
+            | { _id: Types.ObjectId }
+            | { id: string }
+            | null
+            | undefined,
+        ) => string;
+      };
       const objectId = new Types.ObjectId();
 
-      expect(serviceAny.getId(null)).toBe('');
-      expect(serviceAny.getId('string-id')).toBe('string-id');
-      expect(serviceAny.getId(objectId)).toBe(objectId.toString());
-      expect(serviceAny.getId({ _id: objectId })).toBe(objectId.toString());
-      expect(serviceAny.getId({ id: 'prop-id' })).toBe('prop-id');
-      expect(serviceAny.getId(123)).toBe('123');
+      expect(serviceAsPrivate.getId(null)).toBe('');
+      expect(serviceAsPrivate.getId('string-id')).toBe('string-id');
+      expect(serviceAsPrivate.getId(objectId)).toBe(objectId.toString());
+      expect(serviceAsPrivate.getId({ _id: objectId })).toBe(objectId.toString());
+      expect(serviceAsPrivate.getId({ id: 'prop-id' })).toBe('prop-id');
+      expect(serviceAsPrivate.getId(123)).toBe('123');
     });
   });
 

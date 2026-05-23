@@ -6,6 +6,7 @@ import {
   finishTicket,
   getStages,
   getTickets,
+  RichTextSection,
   type Stage,
   startTicket,
   type Ticket,
@@ -15,7 +16,6 @@ import {
   type TicketType,
   updateStage,
   updateTicket,
-  RichTextSection,
 } from '@barber/shared';
 import {
   closestCorners,
@@ -33,7 +33,6 @@ import { SortableContext, useSortable, verticalListSortingStrategy } from '@dnd-
 import { CSS } from '@dnd-kit/utilities';
 import AddRoundedIcon from '@mui/icons-material/AddRounded';
 import BugReportRoundedIcon from '@mui/icons-material/BugReportRounded';
-import CheckCircleOutlineRoundedIcon from '@mui/icons-material/CheckCircleOutlineRounded';
 import ExpandLessRoundedIcon from '@mui/icons-material/ExpandLessRounded';
 import ExpandMoreRoundedIcon from '@mui/icons-material/ExpandMoreRounded';
 import FeaturePlayListRoundedIcon from '@mui/icons-material/FeaturedPlayListRounded';
@@ -41,7 +40,6 @@ import HelpRoundedIcon from '@mui/icons-material/HelpRounded';
 import MoreVertRoundedIcon from '@mui/icons-material/MoreVertRounded';
 import NotesRoundedIcon from '@mui/icons-material/NotesRounded';
 import PaletteRoundedIcon from '@mui/icons-material/PaletteRounded';
-import PlayArrowRoundedIcon from '@mui/icons-material/PlayArrowRounded';
 import RequestQuoteRoundedIcon from '@mui/icons-material/RequestQuoteRounded';
 import SearchRoundedIcon from '@mui/icons-material/SearchRounded';
 import {
@@ -106,7 +104,7 @@ interface TicketCardProps {
 const TicketCard = React.forwardRef<
   HTMLDivElement,
   TicketCardProps & {
-    dragHandleProps?: any;
+    dragHandleProps?: Record<string, unknown>;
   }
 >(({ ticket, onStart, onFinish, onEdit, onDelete, isDragging, dragHandleProps }, ref) => {
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);

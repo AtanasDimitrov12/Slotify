@@ -13,12 +13,7 @@ import {
   ValidateNested,
 } from 'class-validator';
 
-export class DayAvailabilityDto {
-  @IsInt()
-  @Min(0)
-  @Max(6)
-  dayOfWeek!: number;
-
+export class AvailabilitySlotDto {
   @IsString()
   @Matches(/^([01]\d|2[0-3]):([0-5]\d)$/)
   startTime!: string;
@@ -27,15 +22,24 @@ export class DayAvailabilityDto {
   @Matches(/^([01]\d|2[0-3]):([0-5]\d)$/)
   endTime!: string;
 
-  @IsOptional()
-  @IsString()
-  @Matches(/^([01]\d|2[0-3]):([0-5]\d)$/)
-  breakStartTime?: string;
+  @IsMongoId()
+  tenantId!: string;
 
   @IsOptional()
-  @IsString()
-  @Matches(/^([01]\d|2[0-3]):([0-5]\d)$/)
-  breakEndTime?: string;
+  @IsBoolean()
+  isAvailable?: boolean;
+}
+
+export class DayAvailabilityDto {
+  @IsInt()
+  @Min(0)
+  @Max(6)
+  dayOfWeek!: number;
+
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => AvailabilitySlotDto)
+  slots!: AvailabilitySlotDto[];
 
   @IsOptional()
   @IsBoolean()

@@ -1,5 +1,8 @@
 import { Test } from '@nestjs/testing';
+import type { CreateTenantDetailsDto } from './dto/create-tenant-details.dto';
+import type { UpdateTenantDetailsDto } from './dto/update-tenant-details.dto';
 import { TenantDetailsController } from './tenant-details.controller';
+import type { TenantDetailsDocument } from './tenant-details.schema';
 import { TenantDetailsService } from './tenant-details.service';
 
 describe('TenantDetailsController', () => {
@@ -31,9 +34,9 @@ describe('TenantDetailsController', () => {
   });
 
   it('create calls service.create', async () => {
-    service.create.mockResolvedValue({ tenantId: 't1' } as any);
+    service.create.mockResolvedValue({ tenantId: 't1' } as unknown as TenantDetailsDocument);
 
-    const dto: any = { tenantId: 't1' };
+    const dto: CreateTenantDetailsDto = { tenantId: 't1' };
     const res = await controller.create(dto);
 
     expect(service.create).toHaveBeenCalledWith(dto);
@@ -41,7 +44,9 @@ describe('TenantDetailsController', () => {
   });
 
   it('get calls service.findByTenantId', async () => {
-    service.findByTenantId.mockResolvedValue({ tenantId: 't1' } as any);
+    service.findByTenantId.mockResolvedValue({
+      tenantId: 't1',
+    } as unknown as TenantDetailsDocument);
 
     const res = await controller.get('t1');
 
@@ -53,9 +58,9 @@ describe('TenantDetailsController', () => {
     service.updateByTenantId.mockResolvedValue({
       tenantId: 't1',
       contactPhone: '123',
-    } as any);
+    } as unknown as TenantDetailsDocument);
 
-    const dto: any = { contactPhone: '123' };
+    const dto: UpdateTenantDetailsDto = { contactPhone: '123' };
     const res = await controller.patch('t1', dto);
 
     expect(service.updateByTenantId).toHaveBeenCalledWith('t1', dto);
@@ -66,9 +71,9 @@ describe('TenantDetailsController', () => {
     service.upsertByTenantId.mockResolvedValue({
       tenantId: 't1',
       contactEmail: 'a@b.com',
-    } as any);
+    } as unknown as TenantDetailsDocument);
 
-    const dto: any = { contactEmail: 'a@b.com' };
+    const dto: UpdateTenantDetailsDto = { contactEmail: 'a@b.com' };
     const res = await controller.upsert('t1', dto);
 
     expect(service.upsertByTenantId).toHaveBeenCalledWith('t1', dto);

@@ -1,6 +1,6 @@
-import { TestContext } from './integration-utils';
 import request from 'supertest';
 import { SystemHealthService } from '../src/quality-metrics/system-health.service';
+import { TestContext } from './integration-utils';
 
 describe('Load Test', () => {
   const ctx = new TestContext();
@@ -16,8 +16,10 @@ describe('Load Test', () => {
   it('should handle heavy load', async () => {
     const CONCURRENCY = 3;
     const TOTAL_REQUESTS = 150;
-    
-    console.log(`Starting load test with ${TOTAL_REQUESTS} requests (${CONCURRENCY} concurrent)...`);
+
+    console.log(
+      `Starting load test with ${TOTAL_REQUESTS} requests (${CONCURRENCY} concurrent)...`,
+    );
 
     // Setup initial data
     const ownerRegisterDto = {
@@ -30,7 +32,7 @@ describe('Load Test', () => {
     const registerResponse = await request(ctx.app.getHttpServer())
       .post('/auth/register')
       .send(ownerRegisterDto);
-    
+
     const ownerToken = registerResponse.body.accessToken;
     const slug = 'elite-load-salon';
 
@@ -43,7 +45,7 @@ describe('Load Test', () => {
         durationMin: 30,
         priceEUR: 20,
       });
-    
+
     const serviceId = serviceResponse.body._id;
 
     // 1. Warm up health collection
@@ -65,7 +67,7 @@ describe('Load Test', () => {
     let completed = 0;
     let failed = 0;
     let requested = 0;
-    let lastError: any = null;
+    let lastError: unknown = null;
 
     async function worker() {
       while (true) {
@@ -73,10 +75,13 @@ describe('Load Test', () => {
         if (i >= TOTAL_REQUESTS) break;
 
         try {
-          const res = i % 2 === 0 
-            ? await request(ctx.app.getHttpServer()).get(`/public/tenants/${slug}`)
-            : await request(ctx.app.getHttpServer()).get(`/public/tenants/${slug}/availability`).query({ serviceId, date: '2026-06-01' });
-          
+          const res =
+            i % 2 === 0
+              ? await request(ctx.app.getHttpServer()).get(`/public/tenants/${slug}`)
+              : await request(ctx.app.getHttpServer())
+                  .get(`/public/tenants/${slug}/availability`)
+                  .query({ serviceId, date: '2026-06-01' });
+
           if (res.status === 200) {
             completed++;
           } else {
@@ -93,15 +98,17 @@ describe('Load Test', () => {
         }
 
         // Small pause to be kind to the socket pool
-        await new Promise(r => setTimeout(r, 1));
+        await new Promise((r) => setTimeout(r, 1));
       }
     }
 
-    const workers = Array(CONCURRENCY).fill(0).map(() => worker());
+    const workers = Array(CONCURRENCY)
+      .fill(0)
+      .map(() => worker());
     await Promise.all(workers);
 
     // Give some time for fire-and-forget interceptors to save metrics
-    await new Promise(resolve => setTimeout(resolve, 500));
+    await new Promise((resolve) => setTimeout(resolve, 500));
 
     const durationSec = (Date.now() - startTime) / 1000;
     const rps = TOTAL_REQUESTS / durationSec;

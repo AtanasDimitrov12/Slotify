@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model, Types } from 'mongoose';
+import { Model, Types, type UpdateQuery } from 'mongoose';
 import { BookingSettingsService } from '../booking-settings/booking-settings.service';
 import { TenantBookingSettings } from '../booking-settings/tenant-booking-settings.schema';
 import { UpdateStaffBookingSettingsDto } from './dto/update-staff-booking-settings.dto';
@@ -43,7 +43,7 @@ export class StaffBookingSettingsService {
   }
 
   async updateByStaff(tenantId: string, userId: string, dto: UpdateStaffBookingSettingsDto) {
-    const setPayload: Record<string, unknown> = {};
+    const setPayload: UpdateQuery<StaffBookingSettingsDocument> = {};
 
     if (dto.useGlobalSettings !== undefined) {
       setPayload.useGlobalSettings = dto.useGlobalSettings;

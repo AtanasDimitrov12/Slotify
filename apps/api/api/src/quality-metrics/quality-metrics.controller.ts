@@ -1,12 +1,4 @@
-import {
-  Body,
-  Controller,
-  ForbiddenException,
-  Get,
-  Post,
-  Query,
-  UseGuards,
-} from '@nestjs/common';
+import { Body, Controller, ForbiddenException, Get, Post, Query, UseGuards } from '@nestjs/common';
 import { CurrentUser } from '../auth/current-user.decorator';
 import type { JwtPayload } from '../auth/jwt.strategy';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
@@ -19,15 +11,10 @@ export class QualityMetricsController {
 
   @Get()
   @UseGuards(JwtAuthGuard)
-  async getReport(
-    @CurrentUser() user: JwtPayload,
-    @Query('days') days?: string,
-  ) {
+  async getReport(@CurrentUser() user: JwtPayload, @Query('days') days?: string) {
     // Only allow admin and owner roles
     if (user.role !== 'admin' && user.role !== 'owner') {
-      throw new ForbiddenException(
-        'Only admins and owners can access quality metrics',
-      );
+      throw new ForbiddenException('Only admins and owners can access quality metrics');
     }
 
     const periodDays = days ? parseInt(days, 10) : 30;

@@ -1,6 +1,6 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { type Model, Types } from 'mongoose';
+import { Model, type QueryFilter, Types } from 'mongoose';
 import { CreateStaffBlockedSlotDto, UpdateStaffBlockedSlotDto } from './dto/staff-blocked-slot.dto';
 import { StaffBlockedSlot, type StaffBlockedSlotDocument } from './staff-blocked-slot.schema';
 
@@ -11,7 +11,7 @@ export class StaffBlockedSlotService {
     private readonly blockedSlotModel: Model<StaffBlockedSlotDocument>,
   ) {}
 
-  private mapSlot(doc: any) {
+  private mapSlot(doc: (StaffBlockedSlot & { _id: Types.ObjectId }) | null) {
     if (!doc) return null;
     const { _id, ...rest } = doc;
     return {
@@ -42,7 +42,7 @@ export class StaffBlockedSlotService {
   }
 
   async findAllByStaff(userId: string, includeInactive = false) {
-    const query: any = {
+    const query: QueryFilter<StaffBlockedSlotDocument> = {
       userId: new Types.ObjectId(userId),
     };
 

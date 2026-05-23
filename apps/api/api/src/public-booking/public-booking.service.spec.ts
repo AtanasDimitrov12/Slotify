@@ -44,11 +44,11 @@ describe('PublicBookingService', () => {
     },
   };
 
-  const createMockQuery = (data: any) => ({
+  const createMockQuery = <T>(data: T) => ({
     lean: jest.fn().mockReturnThis(),
     sort: jest.fn().mockReturnThis(),
     exec: jest.fn().mockResolvedValue(data),
-    then: jest.fn().mockImplementation((callback) => Promise.resolve(callback(data))),
+    then: (callback: (arg0: T) => any) => Promise.resolve(callback(data)),
   });
 
   beforeEach(async () => {

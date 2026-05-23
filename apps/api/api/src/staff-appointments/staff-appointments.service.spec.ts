@@ -1,4 +1,4 @@
-import { BadRequestException, NotFoundException } from '@nestjs/common';
+import { BadRequestException } from '@nestjs/common';
 import { getModelToken } from '@nestjs/mongoose';
 import { Test, type TestingModule } from '@nestjs/testing';
 import { Types } from 'mongoose';
@@ -19,11 +19,11 @@ import { StaffAppointmentsService } from './staff-appointments.service';
 describe('StaffAppointmentsService (Production Life Cycle)', () => {
   let service: StaffAppointmentsService;
 
-  const mockQuery = (data: any) => ({
+  const mockQuery = <T>(data: T) => ({
     lean: jest.fn().mockReturnThis(),
     sort: jest.fn().mockReturnThis(),
     exec: jest.fn().mockResolvedValue(data),
-    then: (resolve: any) => resolve(data),
+    then: (resolve: (arg0: T) => void | PromiseLike<void>) => resolve(data),
     findById: jest.fn().mockReturnThis(),
     findOne: jest.fn().mockReturnThis(),
     find: jest.fn().mockReturnThis(),

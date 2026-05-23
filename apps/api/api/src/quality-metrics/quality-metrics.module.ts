@@ -14,9 +14,7 @@ import { SystemMetric, SystemMetricSchema } from './system-metric.schema';
   imports: [
     ConfigModule,
     TicketsModule,
-    MongooseModule.forFeature([
-      { name: SystemMetric.name, schema: SystemMetricSchema },
-    ]),
+    MongooseModule.forFeature([{ name: SystemMetric.name, schema: SystemMetricSchema }]),
   ],
   controllers: [QualityMetricsController],
   providers: [

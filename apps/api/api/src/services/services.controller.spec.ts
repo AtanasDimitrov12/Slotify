@@ -70,20 +70,20 @@ describe('ServicesController', () => {
 
   describe('create', () => {
     it('should call servicesService.createForTenant for owner', async () => {
-      const dto = { name: 'S1', durationMin: 30, priceEUR: 20 };
+      const dto: CreateServiceDto = { name: 'S1', durationMin: 30, priceEUR: 20 };
       await controller.create(mockOwnerUser, dto);
       expect(servicesService.createForTenant).toHaveBeenCalledWith(mockTenantId, dto);
     });
 
     it('should throw UnauthorizedException for staff', async () => {
-      const dto = { name: 'S1', durationMin: 30, priceEUR: 20 };
+      const dto: CreateServiceDto = { name: 'S1', durationMin: 30, priceEUR: 20 };
       expect(() => controller.create(mockStaffUser, dto)).toThrow(UnauthorizedException);
     });
   });
 
   describe('createBulk', () => {
     it('should call servicesService.createManyForTenant', async () => {
-      const dtos = [{ name: 'S1', durationMin: 30, priceEUR: 20 }];
+      const dtos: CreateServiceDto[] = [{ name: 'S1', durationMin: 30, priceEUR: 20 }];
       await controller.createBulk(mockOwnerUser, dtos);
       expect(servicesService.createManyForTenant).toHaveBeenCalledWith(mockTenantId, dtos);
     });
@@ -98,7 +98,10 @@ describe('ServicesController', () => {
 
   describe('extractAI', () => {
     it('should call aiService.extractServices', async () => {
-      const mockFile = { buffer: Buffer.from('test'), mimetype: 'image/jpeg' } as any;
+      const mockFile = {
+        buffer: Buffer.from('test'),
+        mimetype: 'image/jpeg',
+      } as Express.Multer.File;
       mockAIService.extractServices.mockResolvedValue([]);
       await controller.extractAI(mockOwnerUser, mockFile);
       expect(aiService.extractServices).toHaveBeenCalledWith(mockFile.buffer, mockFile.mimetype);
@@ -108,7 +111,7 @@ describe('ServicesController', () => {
   describe('update', () => {
     it('should call servicesService.updateForTenant', async () => {
       const id = new Types.ObjectId().toString();
-      const dto = { name: 'U1' };
+      const dto: UpdateServiceDto = { name: 'U1' };
       await controller.update(mockOwnerUser, id, dto);
       expect(servicesService.updateForTenant).toHaveBeenCalledWith(mockTenantId, id, dto);
     });
