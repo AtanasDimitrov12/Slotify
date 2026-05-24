@@ -9,7 +9,6 @@ import ContentCutRoundedIcon from '@mui/icons-material/ContentCutRounded';
 import DashboardRoundedIcon from '@mui/icons-material/DashboardRounded';
 import EventAvailableRoundedIcon from '@mui/icons-material/EventAvailableRounded';
 import GroupsRoundedIcon from '@mui/icons-material/GroupsRounded';
-import InsightsRoundedIcon from '@mui/icons-material/InsightsRounded';
 import MenuRoundedIcon from '@mui/icons-material/MenuRounded';
 import SettingsRoundedIcon from '@mui/icons-material/SettingsRounded';
 import { Box, Drawer, IconButton, useMediaQuery, useTheme } from '@mui/material';
