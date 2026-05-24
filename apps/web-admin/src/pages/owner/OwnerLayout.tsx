@@ -86,7 +86,6 @@ export default function OwnerLayout() {
     { label: 'Services', to: '/owner/services', icon: ContentCutRoundedIcon },
     { label: 'Booking rules', to: '/owner/booking-rules', icon: EventAvailableRoundedIcon },
     { label: 'Business settings', to: '/owner/settings', icon: SettingsRoundedIcon },
-    { label: 'System Quality', to: '/owner/quality', icon: InsightsRoundedIcon },
   ];
 
   const isActive = (to: string) =>
