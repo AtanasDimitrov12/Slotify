@@ -157,13 +157,15 @@ export default function BookingHistory({ reservations, onReviewAdded }: Props) {
           <CardContent sx={{ p: 0 }}>
             <Box
               sx={{
-                px: 3,
+                px: { xs: 2, sm: 3 },
                 py: 1.5,
                 bgcolor: alpha('#64748B', 0.03),
                 borderBottom: '1px solid rgba(15,23,42,0.04)',
                 display: 'flex',
                 justifyContent: 'space-between',
                 alignItems: 'center',
+                flexWrap: 'wrap',
+                gap: 1,
               }}
             >
               <Stack direction="row" spacing={1} alignItems="center">
@@ -171,7 +173,7 @@ export default function BookingHistory({ reservations, onReviewAdded }: Props) {
                   label={res.status.toUpperCase()}
                   size="small"
                   variant="outlined"
-                  sx={{ fontWeight: 800, fontSize: 10, borderRadius: 1 }}
+                  sx={{ fontWeight: 800, fontSize: 9, borderRadius: 1 }}
                 />
                 <Typography variant="caption" sx={{ fontWeight: 700, color: 'text.secondary' }}>
                   REF: {res._id.slice(-6).toUpperCase()}
@@ -187,6 +189,7 @@ export default function BookingHistory({ reservations, onReviewAdded }: Props) {
                     textTransform: 'none',
                     fontWeight: 800,
                     color: '#7C6CFF',
+                    fontSize: { xs: 12, sm: 13 },
                     '&:hover': { bgcolor: alpha('#7C6CFF', 0.05) },
                   }}
                 >
@@ -195,26 +198,29 @@ export default function BookingHistory({ reservations, onReviewAdded }: Props) {
               )}
             </Box>
 
-            <Box sx={{ p: 3 }}>
+            <Box sx={{ p: { xs: 2, sm: 3 } }}>
               <Grid container spacing={3}>
                 <Grid item xs={12} md={8}>
                   <Stack spacing={2.5}>
                     <Stack direction="row" spacing={2} alignItems="center">
                       <Box
                         sx={{
-                          width: 48,
-                          height: 48,
+                          width: { xs: 40, sm: 48 },
+                          height: { xs: 40, sm: 48 },
                           borderRadius: 2.5,
                           display: 'grid',
                           placeItems: 'center',
                           bgcolor: alpha('#7C6CFF', 0.1),
                           color: '#7C6CFF',
+                          flexShrink: 0,
                         }}
                       >
-                        <HistoryRounded />
+                        <HistoryRounded sx={{ fontSize: { xs: 20, sm: 24 } }} />
                       </Box>
                       <Box>
-                        <Typography sx={{ fontWeight: 900, fontSize: 17, color: '#0F172A' }}>
+                        <Typography
+                          sx={{ fontWeight: 900, fontSize: { xs: 15, sm: 17 }, color: '#0F172A' }}
+                        >
                           {new Date(res.startTime).toLocaleDateString([], {
                             day: 'numeric',
                             month: 'long',
@@ -223,14 +229,14 @@ export default function BookingHistory({ reservations, onReviewAdded }: Props) {
                         </Typography>
                         <Typography
                           variant="body2"
-                          sx={{ color: 'text.secondary', fontWeight: 600 }}
+                          sx={{ color: 'text.secondary', fontWeight: 600, fontSize: 13 }}
                         >
                           {res.serviceName} • {res.durationMin} min • €{res.priceEUR}
                         </Typography>
                       </Box>
                     </Stack>
 
-                    <Grid container spacing={3}>
+                    <Grid container spacing={{ xs: 2, sm: 3 }}>
                       <Grid item xs={6}>
                         <Typography
                           variant="caption"
@@ -241,13 +247,22 @@ export default function BookingHistory({ reservations, onReviewAdded }: Props) {
                             letterSpacing: 0.5,
                             display: 'block',
                             mb: 0.5,
+                            fontSize: 10,
                           }}
                         >
                           Salon
                         </Typography>
                         <Stack direction="row" spacing={1} alignItems="center">
                           <LocationOnRounded sx={{ fontSize: 16, color: '#64748B' }} />
-                          <Typography sx={{ fontWeight: 700, fontSize: 14 }}>
+                          <Typography
+                            sx={{
+                              fontWeight: 700,
+                              fontSize: { xs: 13, sm: 14 },
+                              overflow: 'hidden',
+                              textOverflow: 'ellipsis',
+                              whiteSpace: 'nowrap',
+                            }}
+                          >
                             {res.tenantId.name}
                           </Typography>
                         </Stack>
@@ -262,13 +277,22 @@ export default function BookingHistory({ reservations, onReviewAdded }: Props) {
                             letterSpacing: 0.5,
                             display: 'block',
                             mb: 0.5,
+                            fontSize: 10,
                           }}
                         >
                           Staff
                         </Typography>
                         <Stack direction="row" spacing={1} alignItems="center">
                           <PersonRounded sx={{ fontSize: 16, color: '#64748B' }} />
-                          <Typography sx={{ fontWeight: 700, fontSize: 14 }}>
+                          <Typography
+                            sx={{
+                              fontWeight: 700,
+                              fontSize: { xs: 13, sm: 14 },
+                              overflow: 'hidden',
+                              textOverflow: 'ellipsis',
+                              whiteSpace: 'nowrap',
+                            }}
+                          >
                             {res.staffName}
                           </Typography>
                         </Stack>
@@ -278,7 +302,7 @@ export default function BookingHistory({ reservations, onReviewAdded }: Props) {
                     {res.review && (
                       <Box
                         sx={{
-                          p: 2.5,
+                          p: { xs: 2, sm: 2.5 },
                           borderRadius: 4,
                           bgcolor: alpha('#F59E0B', 0.04),
                           border: '1px solid rgba(245,158,11,0.1)',
@@ -296,7 +320,13 @@ export default function BookingHistory({ reservations, onReviewAdded }: Props) {
                         {res.review.comment && (
                           <Typography
                             variant="body2"
-                            sx={{ fontStyle: 'italic', color: '#475569', lineHeight: 1.6, mb: 1.5 }}
+                            sx={{
+                              fontStyle: 'italic',
+                              color: '#475569',
+                              lineHeight: 1.6,
+                              mb: 1.5,
+                              fontSize: 13,
+                            }}
                           >
                             "{res.review.comment}"
                           </Typography>
@@ -309,11 +339,12 @@ export default function BookingHistory({ reservations, onReviewAdded }: Props) {
                                 component="img"
                                 src={pic}
                                 sx={{
-                                  width: 70,
-                                  height: 70,
+                                  width: 60,
+                                  height: 60,
                                   borderRadius: 2,
                                   objectFit: 'cover',
                                   border: '1px solid rgba(0,0,0,0.05)',
+                                  flexShrink: 0,
                                 }}
                               />
                             ))}

@@ -456,7 +456,8 @@ export default function ScheduleAgenda({
         borderRadius: 4,
         border: '1px solid rgba(15,23,42,0.06)',
         boxShadow: '0 8px 32px rgba(15,23,42,0.02)',
-        p: { xs: 2, md: 3 },
+        p: { xs: 1.5, md: 3 },
+        overflowX: 'hidden', // Contain any potential overflow
       }}
     >
       <Stack spacing={1.5}>
@@ -514,13 +515,13 @@ export default function ScheduleAgenda({
                     <Stack
                       direction={{
                         xs: 'column',
-                        sm:
+                        md:
                           cluster.appointments.length + cluster.blockedSlots.length > 1
                             ? 'row'
                             : 'column',
                       }}
                       spacing={1.5}
-                      sx={{ flex: 1 }}
+                      sx={{ flex: 1, minWidth: 0 }}
                     >
                       {cluster.blockedSlots.map((slot) => (
                         <BlockedSlotItem key={slot.id} slot={slot} />

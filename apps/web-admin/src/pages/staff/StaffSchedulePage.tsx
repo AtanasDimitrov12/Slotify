@@ -21,7 +21,20 @@ import ChevronLeftRoundedIcon from '@mui/icons-material/ChevronLeftRounded';
 import ChevronRightRoundedIcon from '@mui/icons-material/ChevronRightRounded';
 import ViewAgendaRoundedIcon from '@mui/icons-material/ViewAgendaRounded';
 import ViewStreamRoundedIcon from '@mui/icons-material/ViewStreamRounded';
-import { Alert, alpha, Box, Button, Grid, IconButton, Stack, Typography } from '@mui/material';
+import {
+  Alert,
+  alpha,
+  Box,
+  Button,
+  Drawer,
+  Fab,
+  Grid,
+  IconButton,
+  Stack,
+  Typography,
+  useMediaQuery,
+  useTheme,
+} from '@mui/material';
 import ToggleButton from '@mui/material/ToggleButton';
 import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
 import * as React from 'react';
@@ -50,6 +63,9 @@ function formatHumanDate(dateString: string) {
 
 export default function StaffSchedulePage() {
   const { user, switchTenant } = useAuth();
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('lg'));
+
   const [selectedDate, setSelectedDate] = React.useState<string>(formatDateInput(new Date()));
   const [appointments, setAppointments] = React.useState<StaffAppointment[]>([]);
   const [blockedSlots, setBlockedSlots] = React.useState<StaffBlockedSlotItem[]>([]);
@@ -257,7 +273,7 @@ export default function StaffSchedulePage() {
 
   return (
     <>
-      <Stack spacing={4}>
+      <Stack spacing={4} sx={{ pb: { xs: 12, lg: 0 } }}>
         <Stack
           direction={{ xs: 'column', lg: 'row' }}
           justifyContent="space-between"
@@ -277,7 +293,14 @@ export default function StaffSchedulePage() {
               Your Schedule
             </Typography>
 
-            <Typography sx={{ color: '#64748B', fontWeight: 500, fontSize: { xs: 15, md: 16 } }}>
+            <Typography
+              sx={{
+                color: '#64748B',
+                fontWeight: 500,
+                fontSize: { xs: 15, md: 16 },
+                display: { xs: 'none', sm: 'block' },
+              }}
+            >
               Manage appointments across all your salons and optimize your day.
             </Typography>
           </Box>
@@ -287,6 +310,13 @@ export default function StaffSchedulePage() {
             sx={{
               width: { xs: '100%', lg: 'auto' },
               alignItems: { xs: 'stretch', lg: 'flex-end' },
+              position: { xs: 'sticky', lg: 'static' },
+              top: { xs: 0, lg: 'auto' }, // Sticking to top, AppShell has sticky header too
+              zIndex: 10,
+              bgcolor: { xs: '#F7F8FC', lg: 'transparent' },
+              pt: { xs: 1, lg: 0 },
+              pb: { xs: 1, lg: 0 },
+              mt: { xs: -1, lg: 0 },
             }}
           >
             {/* Date Navigation */}
@@ -457,6 +487,7 @@ export default function StaffSchedulePage() {
                   textTransform: 'none',
                   whiteSpace: 'nowrap',
                   minWidth: { xs: '100%', sm: 210 },
+                  display: { xs: 'none', sm: 'inline-flex' },
                   '&:hover': {
                     bgcolor: landingColors.purple,
                     filter: 'brightness(1.05)',
@@ -482,6 +513,12 @@ export default function StaffSchedulePage() {
         ) : null}
 
         <Grid container spacing={3}>
+          {isMobile && (
+            <Grid item xs={12}>
+              <DayOverviewCard appointments={appointments} />
+            </Grid>
+          )}
+
           <Grid item xs={12} lg={8.5}>
             {viewMode === 'smart' ? (
               <ScheduleAgenda
@@ -509,21 +546,23 @@ export default function StaffSchedulePage() {
             )}
           </Grid>
 
-          <Grid item xs={12} lg={3.5}>
-            <Stack spacing={3}>
-              <DayOverviewCard appointments={appointments} />
+          {!isMobile && (
+            <Grid item xs={12} lg={3.5}>
+              <Stack spacing={3}>
+                <DayOverviewCard appointments={appointments} />
 
-              <SelectedAppointmentCard
-                selectedAppointment={selectedAppointment}
-                onEdit={() => setEditOpen(true)}
-                onCancel={handleCancel}
-                onMarkDone={handleMarkDone}
-                onMarkNoShow={handleMarkNoShow}
-                onViewInsights={() => setInsightsOpen(true)}
-                salons={salons}
-              />
-            </Stack>
-          </Grid>
+                <SelectedAppointmentCard
+                  selectedAppointment={selectedAppointment}
+                  onEdit={() => setEditOpen(true)}
+                  onCancel={handleCancel}
+                  onMarkDone={handleMarkDone}
+                  onMarkNoShow={handleMarkNoShow}
+                  onViewInsights={() => setInsightsOpen(true)}
+                  salons={salons}
+                />
+              </Stack>
+            </Grid>
+          )}
         </Grid>
       </Stack>
 
@@ -586,6 +625,73 @@ export default function StaffSchedulePage() {
         onSubmit={handleEditAppointment}
         saving={actionLoading}
       />
+
+      {isMobile && (
+        <>
+          <Fab
+            aria-label="add"
+            onClick={() => setAddOpen(true)}
+            sx={{
+              position: 'fixed',
+              bottom: 24,
+              right: 24,
+              bgcolor: landingColors.purple,
+              color: 'white',
+              boxShadow: `0 12px 28px ${alpha(landingColors.purple, 0.4)}`,
+              '&:hover': {
+                bgcolor: landingColors.purple,
+                filter: 'brightness(1.1)',
+              },
+            }}
+          >
+            <AddRoundedIcon />
+          </Fab>
+
+          <Drawer
+            anchor="bottom"
+            open={isMobile && !!selectedAppointment}
+            onClose={() => setSelectedAppointmentId(null)}
+            PaperProps={{
+              sx: {
+                borderTopLeftRadius: 24,
+                borderTopRightRadius: 24,
+                maxHeight: '90vh',
+                bgcolor: '#F8FAFC',
+              },
+            }}
+          >
+            <Box sx={{ p: 2, pb: 4 }}>
+              <Box
+                sx={{
+                  width: 40,
+                  height: 4,
+                  bgcolor: 'rgba(15,23,42,0.1)',
+                  borderRadius: 2,
+                  mx: 'auto',
+                  mb: 3,
+                }}
+              />
+              <SelectedAppointmentCard
+                selectedAppointment={selectedAppointment}
+                onEdit={() => setEditOpen(true)}
+                onCancel={handleCancel}
+                onMarkDone={handleMarkDone}
+                onMarkNoShow={handleMarkNoShow}
+                onViewInsights={() => setInsightsOpen(true)}
+                salons={salons}
+              />
+              <Button
+                fullWidth
+                variant="text"
+                onClick={() => setSelectedAppointmentId(null)}
+                sx={{ mt: 2, fontWeight: 700, color: '#64748B', textTransform: 'none' }}
+              >
+                Close Details
+              </Button>
+            </Box>
+          </Drawer>
+        </>
+      )}
     </>
   );
 }

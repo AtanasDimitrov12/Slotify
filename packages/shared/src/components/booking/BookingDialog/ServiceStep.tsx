@@ -197,22 +197,26 @@ export const ServiceStep: React.FC<ServiceStepProps> = ({
                       }}
                     >
                       <CardActionArea onClick={() => onSelect(member._id, service._id)}>
-                        <CardContent sx={{ p: 2, pr: 2.5 }}>
+                        <CardContent sx={{ p: { xs: 1.5, sm: 2 }, pr: { xs: 1.5, sm: 2.5 } }}>
                           <Stack
                             direction="row"
                             justifyContent="space-between"
-                            alignItems="center"
-                            spacing={2}
+                            alignItems="flex-start"
+                            spacing={1.5}
                           >
-                            <Box sx={{ flexGrow: 1 }}>
+                            <Box sx={{ flexGrow: 1, minWidth: 0 }}>
                               <Stack
                                 direction="row"
                                 spacing={1}
                                 alignItems="center"
-                                sx={{ mb: 0.25 }}
+                                sx={{ mb: 0.25, flexWrap: 'wrap', gap: 0.5 }}
                               >
                                 <Typography
-                                  sx={{ fontWeight: 800, fontSize: 15, color: '#0F172A' }}
+                                  sx={{
+                                    fontWeight: 800,
+                                    fontSize: { xs: 14, sm: 15 },
+                                    color: '#0F172A',
+                                  }}
                                 >
                                   {service.name}
                                 </Typography>
@@ -236,23 +240,27 @@ export const ServiceStep: React.FC<ServiceStepProps> = ({
                                   sx={{
                                     color: '#64748B',
                                     fontWeight: 500,
-                                    fontSize: 12.5,
+                                    fontSize: 12,
                                     lineHeight: 1.4,
-                                    maxWidth: '90%',
+                                    maxWidth: '100%',
                                   }}
                                 >
                                   {service.description}
                                 </Typography>
                               )}
                             </Box>
-                            <Stack alignItems="flex-end" sx={{ minWidth: 70 }}>
+                            <Stack alignItems="flex-end" sx={{ minWidth: 65, flexShrink: 0 }}>
                               <Typography
-                                sx={{ fontWeight: 1000, fontSize: 17, color: landingColors.purple }}
+                                sx={{
+                                  fontWeight: 1000,
+                                  fontSize: { xs: 16, sm: 17 },
+                                  color: landingColors.purple,
+                                }}
                               >
                                 €{service.priceEUR}
                               </Typography>
                               <Typography
-                                sx={{ color: '#94A3B8', fontWeight: 700, fontSize: 11, mt: -0.25 }}
+                                sx={{ color: '#94A3B8', fontWeight: 700, fontSize: 10, mt: -0.25 }}
                               >
                                 {service.durationMin} MIN
                               </Typography>

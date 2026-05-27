@@ -158,18 +158,18 @@ export default function ProfilePage() {
           <CardContent sx={{ p: { xs: 3, md: 5 }, position: 'relative', zIndex: 1 }}>
             <Stack
               direction={{ xs: 'column', md: 'row' }}
-              spacing={4}
-              alignItems={{ xs: 'center', md: 'center' }}
+              spacing={{ xs: 3, md: 4 }}
+              alignItems="center"
               textAlign={{ xs: 'center', md: 'left' }}
             >
               <Avatar
                 src={profile.avatarUrl}
                 sx={{
-                  width: 120,
-                  height: 120,
+                  width: { xs: 100, md: 120 },
+                  height: { xs: 100, md: 120 },
                   bgcolor: alpha(profileColors.purple, 0.2),
                   color: profileColors.purple,
-                  fontSize: 48,
+                  fontSize: { xs: 40, md: 48 },
                   fontWeight: 900,
                   border: `4px solid rgba(255,255,255,0.1)`,
                   boxShadow: '0 12px 32px rgba(0,0,0,0.24)',
@@ -178,16 +178,32 @@ export default function ProfilePage() {
                 {user?.name?.[0]}
               </Avatar>
 
-              <Box sx={{ flexGrow: 1 }}>
-                <Stack direction="row" justifyContent="space-between" alignItems="flex-start">
+              <Box sx={{ flexGrow: 1, width: '100%' }}>
+                <Stack
+                  direction={{ xs: 'column', sm: 'row' }}
+                  justifyContent="space-between"
+                  alignItems={{ xs: 'center', sm: 'flex-start' }}
+                  spacing={2}
+                >
                   <Box>
                     <Typography
                       variant="h4"
-                      sx={{ fontWeight: 1000, letterSpacing: -1.5, mb: 0.5 }}
+                      sx={{
+                        fontWeight: 1000,
+                        letterSpacing: -1.5,
+                        mb: 0.5,
+                        fontSize: { xs: 28, md: 34 },
+                      }}
                     >
                       {user?.name}
                     </Typography>
-                    <Typography sx={{ color: 'rgba(255,255,255,0.6)', fontWeight: 600, mb: 3 }}>
+                    <Typography
+                      sx={{
+                        color: 'rgba(255,255,255,0.6)',
+                        fontWeight: 600,
+                        mb: { xs: 2, md: 3 },
+                      }}
+                    >
                       {user?.email}
                     </Typography>
                   </Box>
@@ -203,6 +219,7 @@ export default function ProfilePage() {
                       textTransform: 'none',
                       fontSize: 14,
                       px: 2,
+                      width: { xs: '100%', sm: 'auto' },
                       '&:hover': {
                         borderColor: 'white',
                         bgcolor: 'rgba(255,255,255,0.05)',
@@ -215,8 +232,8 @@ export default function ProfilePage() {
 
                 <Stack
                   direction="row"
-                  spacing={3}
-                  justifyContent={{ xs: 'center', md: 'flex-start' }}
+                  spacing={{ xs: 2, sm: 3 }}
+                  justifyContent={{ xs: 'space-around', md: 'flex-start' }}
                 >
                   <Stat label="Bookings" value={reservations.length} />
                   <Stat label="Upcoming" value={upcoming.length} />
@@ -232,12 +249,15 @@ export default function ProfilePage() {
           <Tabs
             value={activeTab}
             onChange={(_, newValue) => setActiveTab(newValue)}
+            variant="scrollable"
+            scrollButtons="auto"
+            allowScrollButtonsMobile
             sx={{
               '& .MuiTab-root': {
                 textTransform: 'none',
                 fontWeight: 850,
                 fontSize: 16,
-                minWidth: 140,
+                minWidth: { xs: 'auto', sm: 140 },
                 color: profileColors.textSoft,
                 pb: 2,
                 '&.Mui-selected': {

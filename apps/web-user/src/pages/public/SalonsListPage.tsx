@@ -26,6 +26,8 @@ import {
   Stack,
   TextField,
   Typography,
+  useMediaQuery,
+  useTheme,
 } from '@mui/material';
 import * as React from 'react';
 import { Link as RouterLink } from 'react-router-dom';
@@ -52,6 +54,9 @@ const colors = {
 
 export default function SalonsListPage() {
   const { user } = useAuth();
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+
   const [items, setItems] = React.useState<PublicTenantListItem[]>([]);
   const [loading, setLoading] = React.useState(true);
   const [error, setError] = React.useState('');
@@ -99,93 +104,94 @@ export default function SalonsListPage() {
 
   return (
     <Page showFooter>
-      {/* HERO / HEADER SECTION */}
+      {/* PROFESSIONAL HERO SECTION */}
       <Box
         sx={{
-          bgcolor: colors.darker,
+          bgcolor: '#0F172A',
           color: 'white',
           position: 'relative',
           overflow: 'hidden',
-          pt: { xs: 8, md: 10 },
-          pb: { xs: 12, md: 14 },
+          pt: { xs: 6, md: 10 },
+          pb: { xs: 10, md: 14 },
         }}
       >
         <Box
           sx={{
             position: 'absolute',
             inset: 0,
-            background: `radial-gradient(circle at 20% 20%, rgba(124,108,255,0.15), transparent 40%),
-                         radial-gradient(circle at 80% 80%, rgba(125,211,252,0.1), transparent 40%)`,
+            background: `radial-gradient(circle at 10% 10%, ${alpha(colors.purple, 0.15)}, transparent 40%),
+                         radial-gradient(circle at 90% 90%, ${alpha('#0EA5E9', 0.12)}, transparent 40%)`,
             pointerEvents: 'none',
           }}
         />
         <Container maxWidth="lg" sx={{ position: 'relative', zIndex: 1 }}>
-          <Box textAlign="center">
+          <Box textAlign={{ xs: 'center', md: 'left' }}>
             <Typography
               variant="h1"
               sx={{
                 fontWeight: 1000,
-                fontSize: { xs: 40, md: 56 },
-                letterSpacing: -2,
+                fontSize: { xs: 36, sm: 48, md: 72 },
+                letterSpacing: { xs: -1, md: -3 },
                 mb: 1,
-                background: `linear-gradient(to bottom, #FFFFFF, ${alpha('#FFFFFF', 0.7)})`,
-                WebkitBackgroundClip: 'text',
-                WebkitTextFillColor: 'transparent',
+                lineHeight: 1,
+                textShadow: '0 4px 20px rgba(0,0,0,0.4)',
               }}
             >
               Find Your Salon
             </Typography>
-            <Box
+            <Typography
               sx={{
-                width: 60,
-                height: 4,
-                bgcolor: colors.purple,
-                borderRadius: 2,
-                mx: 'auto',
-                boxShadow: `0 0 20px ${alpha(colors.purple, 0.6)}`,
+                color: alpha('#FFF', 0.6),
+                fontSize: { xs: 15, md: 19 },
+                fontWeight: 600,
+                maxWidth: 600,
+                mb: 0,
+                lineHeight: 1.4,
               }}
-            />
+            >
+              Discover grooming experts and book instantly.
+            </Typography>
           </Box>
         </Container>
       </Box>
 
-      {/* FILTER BAR SECTION */}
-      <Container maxWidth="lg" sx={{ mt: -6, position: 'relative', zIndex: 10 }}>
+      {/* REFINED FILTER BAR */}
+      <Container maxWidth="lg" sx={{ mt: { xs: -4, md: -5 }, position: 'relative', zIndex: 10 }}>
         <Card
           elevation={0}
           sx={{
-            p: { xs: 2, md: 3 },
-            borderRadius: 6,
+            p: 1.5,
+            borderRadius: { xs: 3.5, md: 5 },
             bgcolor: '#FFFFFF',
-            boxShadow: '0 25px 60px rgba(10,15,30,0.12)',
-            border: `1px solid ${colors.border}`,
+            boxShadow: '0 25px 60px rgba(15,23,42,0.12)',
+            border: `1px solid rgba(15,23,42,0.06)`,
           }}
         >
-          <Grid container spacing={2} alignItems="center">
+          <Grid container spacing={1}>
             <Grid item xs={12} md={5}>
               <TextField
                 fullWidth
-                placeholder="Search by salon name..."
+                placeholder="Search salons..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 InputProps={{
                   startAdornment: (
                     <InputAdornment position="start">
-                      <SearchRoundedIcon sx={{ color: colors.textSoft }} />
+                      <SearchRoundedIcon sx={{ color: colors.textSoft, fontSize: 20 }} />
                     </InputAdornment>
                   ),
                   sx: {
-                    height: 56,
-                    borderRadius: 4,
-                    bgcolor: colors.bgSoft,
-                    border: 'none',
+                    height: { xs: 48, md: 54 },
+                    borderRadius: 2.5,
+                    bgcolor: '#F8FAFC',
                     '& fieldset': { border: 'none' },
                     fontWeight: 600,
+                    fontSize: 14.5,
                   },
                 }}
               />
             </Grid>
-            <Grid item xs={12} sm={6} md={3.5}>
+            <Grid item xs={6} md={3.5}>
               <TextField
                 select
                 fullWidth
@@ -197,23 +203,26 @@ export default function SalonsListPage() {
                 }}
                 InputProps={{
                   sx: {
-                    height: 56,
-                    borderRadius: 4,
-                    bgcolor: colors.bgSoft,
+                    height: { xs: 48, md: 54 },
+                    borderRadius: 2.5,
+                    bgcolor: '#F8FAFC',
                     '& fieldset': { border: 'none' },
                     fontWeight: 600,
+                    fontSize: 13.5,
                   },
                 }}
               >
-                <MenuItem value="">All Countries</MenuItem>
+                <MenuItem value="" sx={{ fontWeight: 600 }}>
+                  All Countries
+                </MenuItem>
                 {countryOptions.map((c) => (
-                  <MenuItem key={c.code} value={c.name}>
+                  <MenuItem key={c.code} value={c.name} sx={{ fontWeight: 600 }}>
                     {c.name}
                   </MenuItem>
                 ))}
               </TextField>
             </Grid>
-            <Grid item xs={12} sm={6} md={3.5}>
+            <Grid item xs={6} md={3.5}>
               <TextField
                 select
                 fullWidth
@@ -223,17 +232,20 @@ export default function SalonsListPage() {
                 disabled={!selectedCountry}
                 InputProps={{
                   sx: {
-                    height: 56,
-                    borderRadius: 4,
-                    bgcolor: colors.bgSoft,
+                    height: { xs: 48, md: 54 },
+                    borderRadius: 2.5,
+                    bgcolor: '#F8FAFC',
                     '& fieldset': { border: 'none' },
                     fontWeight: 600,
+                    fontSize: 13.5,
                   },
                 }}
               >
-                <MenuItem value="">All Cities</MenuItem>
+                <MenuItem value="" sx={{ fontWeight: 600 }}>
+                  All Cities
+                </MenuItem>
                 {cityOptions.map((c) => (
-                  <MenuItem key={c.code} value={c.name}>
+                  <MenuItem key={c.code} value={c.name} sx={{ fontWeight: 600 }}>
                     {c.name}
                   </MenuItem>
                 ))}
@@ -244,45 +256,49 @@ export default function SalonsListPage() {
       </Container>
 
       {/* RESULTS SECTION */}
-      <Box sx={{ py: 10, bgcolor: colors.bgSoft, minHeight: '50vh' }}>
+      <Box sx={{ py: { xs: 4, md: 8 }, bgcolor: '#F8FAFC', minHeight: '50vh' }}>
         <Container maxWidth="lg">
           {error ? (
-            <Alert severity="error" sx={{ borderRadius: 4, mb: 4 }}>
+            <Alert severity="error" sx={{ borderRadius: 3, mb: 4, fontWeight: 700 }}>
               {error}
             </Alert>
           ) : null}
 
           {loading ? (
             <Box sx={{ display: 'grid', placeItems: 'center', py: 12 }}>
-              <CircularProgress sx={{ color: colors.purple }} />
+              <CircularProgress size={32} sx={{ color: colors.purple }} />
             </Box>
           ) : filteredItems.length === 0 ? (
-            <Box sx={{ textAlign: 'center', py: 12 }}>
-              <Typography variant="h5" sx={{ fontWeight: 1000, color: colors.dark, mb: 1 }}>
-                No matching salons found
+            <Box sx={{ textAlign: 'center', py: 10 }}>
+              <Typography variant="h6" sx={{ fontWeight: 1000, color: colors.dark, mb: 0.5 }}>
+                No salons found
               </Typography>
-              <Typography sx={{ color: colors.textSoft, fontWeight: 600 }}>
-                Try adjusting your filters or search terms.
+              <Typography sx={{ color: colors.textSoft, fontWeight: 600, fontSize: 14 }}>
+                Try adjusting your search or filters.
               </Typography>
             </Box>
           ) : (
-            <Grid container spacing={4}>
+            <Grid container spacing={{ xs: 2, md: 4 }}>
               {filteredItems.map((item) => (
                 <Grid item xs={12} sm={6} lg={4} key={item._id}>
                   <Card
                     sx={{
                       height: '100%',
-                      borderRadius: 7,
+                      borderRadius: 4,
                       border: '1px solid',
-                      borderColor: 'rgba(15,23,42,0.04)',
+                      borderColor: 'rgba(15,23,42,0.06)',
                       bgcolor: '#FFFFFF',
-                      boxShadow: '0 15px 35px rgba(15,23,42,0.04)',
-                      transition: 'all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1)',
+                      boxShadow: '0 8px 30px rgba(15,23,42,0.03)',
+                      transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
                       overflow: 'hidden',
                       '&:hover': {
-                        transform: 'translateY(-12px)',
-                        boxShadow: `0 35px 70px ${alpha(colors.dark, 0.08)}`,
+                        transform: isMobile ? 'none' : 'translateY(-8px)',
+                        boxShadow: `0 24px 50px ${alpha(colors.dark, 0.06)}`,
                         borderColor: alpha(colors.purple, 0.2),
+                      },
+                      '&:active': {
+                        bgcolor: '#F9FAFB',
+                        transform: 'scale(0.99)',
                       },
                     }}
                   >
@@ -298,7 +314,7 @@ export default function SalonsListPage() {
                     >
                       <Box
                         sx={{
-                          height: 200,
+                          height: { xs: 130, md: 180 },
                           bgcolor: colors.dark,
                           position: 'relative',
                           display: 'grid',
@@ -310,16 +326,16 @@ export default function SalonsListPage() {
                           sx={{
                             position: 'absolute',
                             inset: 0,
-                            background: `linear-gradient(45deg, ${alpha(colors.purple, 0.2)}, transparent)`,
+                            background: `linear-gradient(135deg, ${alpha(colors.purple, 0.25)}, transparent)`,
                             zIndex: 1,
                           }}
                         />
                         <Typography
                           sx={{
-                            fontSize: 84,
+                            fontSize: { xs: 60, md: 80 },
                             fontWeight: 1000,
-                            color: 'rgba(255,255,255,0.05)',
-                            letterSpacing: -6,
+                            color: 'rgba(255,255,255,0.06)',
+                            letterSpacing: -4,
                             zIndex: 0,
                           }}
                         >
@@ -328,8 +344,8 @@ export default function SalonsListPage() {
                         <Box
                           sx={{
                             position: 'absolute',
-                            bottom: 20,
-                            left: 20,
+                            bottom: 12,
+                            left: 12,
                             zIndex: 2,
                           }}
                         >
@@ -338,23 +354,24 @@ export default function SalonsListPage() {
                             label={item.details?.timezone || item.timezone}
                             sx={{
                               fontWeight: 900,
-                              fontSize: 10,
-                              bgcolor: 'rgba(255,255,255,0.1)',
+                              fontSize: 9,
+                              bgcolor: 'rgba(15,23,42,0.6)',
                               color: 'white',
                               backdropFilter: 'blur(8px)',
                               border: '1px solid rgba(255,255,255,0.1)',
+                              height: 18,
                             }}
                           />
                         </Box>
                       </Box>
 
-                      <CardContent sx={{ p: 4, flexGrow: 1 }}>
-                        <Stack spacing={2.5}>
+                      <CardContent sx={{ p: { xs: 2.2, md: 3.5 }, flexGrow: 1 }}>
+                        <Stack spacing={1.5}>
                           <Box>
                             <Typography
                               sx={{
                                 fontWeight: 1000,
-                                fontSize: 24,
+                                fontSize: { xs: 19, md: 22 },
                                 color: colors.dark,
                                 lineHeight: 1.2,
                                 letterSpacing: -0.5,
@@ -366,10 +383,20 @@ export default function SalonsListPage() {
                               direction="row"
                               spacing={0.5}
                               alignItems="center"
-                              sx={{ mt: 1, color: colors.textSoft }}
+                              sx={{ mt: 0.75, color: colors.textSoft }}
                             >
-                              <LocationOnRoundedIcon sx={{ fontSize: 18, color: colors.purple }} />
-                              <Typography sx={{ fontWeight: 700, fontSize: 14 }}>
+                              <LocationOnRoundedIcon
+                                sx={{ fontSize: { xs: 15, md: 17 }, color: colors.purple }}
+                              />
+                              <Typography
+                                sx={{
+                                  fontWeight: 700,
+                                  fontSize: { xs: 12.5, md: 13.5 },
+                                  overflow: 'hidden',
+                                  textOverflow: 'ellipsis',
+                                  whiteSpace: 'nowrap',
+                                }}
+                              >
                                 {formatAddress(item.details?.address)}
                               </Typography>
                             </Stack>
@@ -378,33 +405,35 @@ export default function SalonsListPage() {
                           <Typography
                             sx={{
                               color: colors.textSoft,
-                              fontSize: 15,
+                              fontSize: { xs: 13, md: 14.5 },
                               lineHeight: 1.6,
                               fontWeight: 500,
                               display: '-webkit-box',
                               WebkitLineClamp: 2,
                               WebkitBoxOrient: 'vertical',
                               overflow: 'hidden',
-                              minHeight: 48,
+                              minHeight: { xs: 40, md: 46 },
                             }}
                           >
-                            {item.details?.notes || 'No description available for this salon.'}
+                            {item.details?.notes || 'Experience premium grooming services.'}
                           </Typography>
 
-                          <Divider sx={{ opacity: 0.1 }} />
+                          <Divider sx={{ opacity: 0.06 }} />
 
                           <Stack direction="row" justifyContent="space-between" alignItems="center">
                             <Typography
                               sx={{
-                                fontWeight: 1000,
-                                fontSize: 14,
+                                fontWeight: 900,
+                                fontSize: 12.5,
                                 color: colors.purple,
                                 display: 'flex',
                                 alignItems: 'center',
                                 gap: 0.5,
+                                textTransform: 'uppercase',
+                                letterSpacing: 0.8,
                               }}
                             >
-                              Book Appointment <ArrowForwardRoundedIcon sx={{ fontSize: 18 }} />
+                              Book Now <ArrowForwardRoundedIcon sx={{ fontSize: 15 }} />
                             </Typography>
                           </Stack>
                         </Stack>
