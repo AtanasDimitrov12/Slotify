@@ -115,8 +115,12 @@ function buildClusters(
       id: `${start.toISOString()}-${end.toISOString()}`,
       start,
       end,
-      appointments: group.filter((i) => i.type === 'appt').map((i) => i.original),
-      blockedSlots: group.filter((i) => i.type === 'block').map((i) => i.original),
+      appointments: group
+        .filter((i) => i.type === "appt")
+        .map((i) => i.original as StaffAppointment),
+      blockedSlots: group
+        .filter((i) => i.type === "block")
+        .map((i) => i.original as StaffBlockedSlotItem),
     };
   }
 
