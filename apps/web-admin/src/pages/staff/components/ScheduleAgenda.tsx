@@ -73,7 +73,12 @@ function buildClusters(
   const dayEnd = new Date(`${selectedDate}T00:00:00`);
   dayEnd.setHours(DAY_END_HOUR, 0, 0, 0);
 
-  const allItems: { type: 'appt' | 'block'; start: number; end: number; original: any }[] = [
+  const allItems: {
+    type: 'appt' | 'block';
+    start: number;
+    end: number;
+    original: StaffAppointment | StaffBlockedSlotItem;
+  }[] = [
     ...appointments.map((a) => ({
       type: 'appt' as const,
       start: new Date(a.startTime).getTime(),

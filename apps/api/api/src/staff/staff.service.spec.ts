@@ -160,7 +160,7 @@ describe('StaffService', () => {
       usersService.findByEmail.mockResolvedValue({ _id: 'exists' } as unknown as UserDocument);
       membershipsService.findActiveByUserIdAndTenantId.mockResolvedValue({
         _id: 'm1',
-      } as unknown as MembershipDocument);
+      } as any);
       await expect(service.onboard(mockOwnerUser, onboardDto)).rejects.toThrow(BadRequestException);
     });
   });

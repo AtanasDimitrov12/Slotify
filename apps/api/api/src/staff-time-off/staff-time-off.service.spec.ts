@@ -128,9 +128,9 @@ describe('StaffTimeOffService', () => {
     });
 
     it('should throw BadRequestException for invalid status transitions', async () => {
-      await expect(
-        service.reviewRequest(tenantId, requestId, 'requested' as unknown as StaffTimeOffStatus),
-      ).rejects.toThrow(BadRequestException);
+      await expect(service.reviewRequest(tenantId, requestId, 'requested' as any)).rejects.toThrow(
+        BadRequestException,
+      );
     });
 
     it('should throw NotFoundException if request does not exist in tenant context', async () => {

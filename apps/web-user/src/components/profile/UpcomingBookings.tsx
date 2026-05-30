@@ -133,7 +133,6 @@ export default function UpcomingBookings({ reservations, onCancelled }: Props) {
                 }}
               />
             </Box>
-
             <Box sx={{ p: { xs: 2, sm: 3 } }}>
               <Grid container spacing={{ xs: 2, sm: 3 }}>
                 <Grid item xs={12} sm={6}>
@@ -232,7 +231,6 @@ export default function UpcomingBookings({ reservations, onCancelled }: Props) {
                 </Grid>
               </Grid>
             </Box>
-
             <Divider sx={{ opacity: 0.5 }} />
             <Box
               sx={{
@@ -258,7 +256,8 @@ export default function UpcomingBookings({ reservations, onCancelled }: Props) {
               >
                 {cancellingId === res._id ? 'Cancelling...' : 'Cancel Appointment'}
               </Button>
-            </Box>          </CardContent>
+            </Box>{' '}
+          </CardContent>
         </Card>
       ))}
     </Stack>

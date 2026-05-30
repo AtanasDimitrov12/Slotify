@@ -3,6 +3,8 @@ import { Test, type TestingModule } from '@nestjs/testing';
 import { Types } from 'mongoose';
 import { AIService } from '../ai/ai.service';
 import type { JwtPayload } from '../auth/jwt.strategy';
+import type { CreateServiceDto } from './dto/create-service.dto';
+import type { UpdateServiceDto } from './dto/update-service.dto';
 import { ServicesController } from './services.controller';
 import { ServicesService } from './services.service';
 

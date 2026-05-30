@@ -88,7 +88,7 @@ describe('StaffBlockedSlotService', () => {
       });
 
       const result = await service.update(mockSlot._id.toString(), { reason: 'New' });
-      expect(result.reason).toBe('New');
+      expect(result?.reason).toBe('New');
     });
 
     it('should throw NotFoundException if slot missing', async () => {
@@ -105,7 +105,7 @@ describe('StaffBlockedSlotService', () => {
       });
 
       const result = await service.remove(mockSlot._id.toString());
-      expect(result.isActive).toBe(false);
+      expect(result?.isActive).toBe(false);
     });
   });
 });

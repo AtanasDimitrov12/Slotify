@@ -126,7 +126,7 @@ describe('AuthService (Security & Multi-tenancy)', () => {
       (usersService.findByEmail as jest.Mock).mockResolvedValue(customerUser);
       (bcrypt.compare as jest.Mock).mockResolvedValue(true);
 
-      const result = (await service.login(loginDto)) as MultiTenantLoginResponse;
+      const result = (await service.login(loginDto)) as LoginResponse;
 
       expect(result).toHaveProperty('accessToken');
       expect(result.account.accountType).toBe('customer');

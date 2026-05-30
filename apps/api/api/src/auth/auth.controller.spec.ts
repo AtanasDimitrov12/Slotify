@@ -47,7 +47,14 @@ describe('AuthController', () => {
 
   describe('me', () => {
     it('should return the current user', () => {
-      const user: JwtPayload = { sub: 'u1', email: 'j@j.com', accountType: 'owner' };
+      const user: JwtPayload = {
+        sub: 'u1',
+        _id: 'u1',
+        name: 'John',
+        email: 'j@j.com',
+        accountType: 'internal',
+        role: 'owner',
+      };
       expect(controller.me(user)).toEqual(user);
     });
   });
