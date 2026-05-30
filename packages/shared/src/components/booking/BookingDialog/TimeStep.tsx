@@ -4,17 +4,17 @@ import { alpha, Box, Button, CircularProgress, Stack, Tooltip, Typography } from
 import type * as React from 'react';
 import type { AvailabilitySlot } from '../../../api/publicTenants';
 import { landingColors } from '../../landing/constants';
-import { formatDayChip, formatSlotTime } from './utils';
+import { formatDayChip, formatSlotTime, type ProcessedSlot } from './utils';
 
 interface TimeStepProps {
   nextDays: Date[];
   selectedDate: string;
   onDateChange: (date: string) => void;
-  slots: any[];
+  slots: ProcessedSlot[];
   slotsLoading: boolean;
   selectedSlot: AvailabilitySlot | null;
   onSlotSelect: (slot: AvailabilitySlot) => void;
-  groupedSlots: Record<string, any[]>;
+  groupedSlots: Record<string, ProcessedSlot[]>;
   profilePreferredDays?: number[];
 }
 

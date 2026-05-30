@@ -148,6 +148,13 @@ export function analyzeSlot(
   };
 }
 
+export type ProcessedSlot = AvailabilitySlot & {
+  combinedScore: number;
+  isCustomerPreferred: boolean;
+  isStaffOptimized: boolean;
+  reasons: string[];
+};
+
 /**
  * Groups and sorts slots based on the Recommendation Engine's scores.
  */
@@ -156,7 +163,7 @@ export function groupSlots(
   profile: CustomerProfile | null,
   history: CustomerReservation[],
 ) {
-  const processedSlots = allSlots.map((s) => {
+  const processedSlots: ProcessedSlot[] = allSlots.map((s) => {
     const analysis = analyzeSlot(s, profile, history);
     return {
       ...s,
@@ -170,9 +177,9 @@ export function groupSlots(
   const sorted = [...processedSlots].sort((a, b) => b.combinedScore - a.combinedScore);
 
   const recommendedSet = new Set<string>();
-  const recommended: any[] = [];
+  const recommended: ProcessedSlot[] = [];
 
-  const addRec = (s: any) => {
+  const addRec = (s: ProcessedSlot) => {
     const key = `${s.staffId}-${s.startTime}`;
     if (!recommendedSet.has(key) && recommended.length < 6) {
       recommendedSet.add(key);
@@ -193,7 +200,7 @@ export function groupSlots(
     .forEach(addRec);
   sorted.slice(0, 4).forEach(addRec);
 
-  const groups: Record<string, any[]> = {
+  const groups: Record<string, ProcessedSlot[]> = {
     Recommended: recommended.sort(
       (a, b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime(),
     ),

@@ -3,6 +3,7 @@ import {
   type CustomerProfile,
   type PreferredBookingSlot,
   type PublicTenantListItem,
+  type UpdateCustomerProfilePayload,
   updateMyCustomerProfile,
   useToast,
 } from '@barber/shared';
@@ -94,7 +95,7 @@ export default function ProfileSettings({
     return /^[+]*[(]{0,1}[0-9]{1,4}[)]{0,1}[-\s./0-9]*$/.test(phone);
   };
 
-  const handleSaveSection = async (sectionId: string, payload: any) => {
+  const handleSaveSection = async (sectionId: string, payload: UpdateCustomerProfilePayload) => {
     // Specific Validations
     if (sectionId === 'personal') {
       if (payload.phone && !validatePhone(payload.phone)) {
@@ -142,11 +143,11 @@ export default function ProfileSettings({
     }
   };
 
-  const updateNested = (section: keyof CustomerProfile, field: string, value: any) => {
+  const updateNested = (section: keyof CustomerProfile, field: string, value: unknown) => {
     setProfile((prev) => ({
       ...prev,
       [section]: {
-        ...(prev[section] as any),
+        ...(prev[section] as Record<string, unknown>),
         [field]: value,
       },
     }));

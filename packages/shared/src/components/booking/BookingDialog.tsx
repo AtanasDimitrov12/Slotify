@@ -87,6 +87,10 @@ export default function BookingDialog({ open, slug, salonName, onClose }: Bookin
     [slots, profile, history],
   );
 
+  const processedSlots = React.useMemo(() => {
+    return Object.values(groupedSlots).flat();
+  }, [groupedSlots]);
+
   const selectedStaffMember = staff.find((s) => s._id === selectedStaffId);
   const selectedService = selectedStaffMember?.services.find((s) => s._id === selectedServiceId);
 
@@ -284,7 +288,7 @@ export default function BookingDialog({ open, slug, salonName, onClose }: Bookin
                 nextDays={nextDays}
                 selectedDate={selectedDate}
                 onDateChange={setSelectedDate}
-                slots={slots}
+                slots={processedSlots}
                 slotsLoading={slotsLoading}
                 selectedSlot={selectedSlot}
                 onSlotSelect={setSelectedSlot}

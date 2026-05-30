@@ -27,7 +27,7 @@ function buildUrl(path: string) {
   return `${base}${cleanPath}`;
 }
 
-export async function apiFetch<T = any>(path: string, init: RequestInit = {}): Promise<T> {
+export async function apiFetch<T = unknown>(path: string, init: RequestInit = {}): Promise<T> {
   const token = getToken();
 
   const isFormData = init.body instanceof FormData;
