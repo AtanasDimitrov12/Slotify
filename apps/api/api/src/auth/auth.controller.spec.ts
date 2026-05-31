@@ -1,6 +1,10 @@
 import { Test, type TestingModule } from '@nestjs/testing';
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
+import type { LoginDto } from './dto/login.dto';
+import type { RegisterDto } from './dto/register.dto';
+import type { RegisterCustomerDto } from './dto/register-customer.dto';
+import type { JwtPayload } from './jwt.strategy';
 
 describe('AuthController', () => {
   let controller: AuthController;
@@ -35,47 +39,64 @@ describe('AuthController', () => {
 
   describe('login', () => {
     it('should call authService.login', async () => {
-      const dto = { email: 'test@test.com', password: 'password' };
-      await controller.login(dto as any);
+      const dto: LoginDto = { email: 'test@test.com', password: 'password' };
+      await controller.login(dto);
       expect(authService.login).toHaveBeenCalledWith(dto);
     });
   });
 
   describe('me', () => {
     it('should return the current user', () => {
-      const user = { sub: 'u1', email: 'j@j.com' };
-      expect(controller.me(user as any)).toEqual(user);
+      const user: JwtPayload = {
+        sub: 'u1',
+        _id: 'u1',
+        name: 'John',
+        email: 'j@j.com',
+        accountType: 'internal',
+        role: 'owner',
+      };
+      expect(controller.me(user)).toEqual(user);
     });
   });
 
   describe('getMyTenants', () => {
     it('should call authService.getMyTenants', async () => {
-      const user = { sub: 'u1' };
-      await controller.getMyTenants(user as any);
+      const user = { sub: 'u1' } as JwtPayload;
+      await controller.getMyTenants(user);
       expect(authService.getMyTenants).toHaveBeenCalledWith('u1');
     });
   });
 
   describe('switchTenant', () => {
     it('should call authService.switchTenant', async () => {
-      const user = { sub: 'u1' };
-      await controller.switchTenant(user as any, 't2');
+      const user = { sub: 'u1' } as JwtPayload;
+      await controller.switchTenant(user, 't2');
       expect(authService.switchTenant).toHaveBeenCalledWith('u1', 't2');
     });
   });
 
   describe('register', () => {
     it('should call authService.register', async () => {
-      const dto = { name: 'Jane', email: 'j@j.com', password: '123', tenantName: 'T1' };
-      await controller.register(dto as any);
+      const dto: RegisterDto = {
+        name: 'Jane',
+        email: 'j@j.com',
+        password: '123',
+        tenantName: 'T1',
+      };
+      await controller.register(dto);
       expect(authService.register).toHaveBeenCalledWith(dto);
     });
   });
 
   describe('registerCustomer', () => {
     it('should call authService.registerCustomer', async () => {
-      const dto = { name: 'Joe', email: 'j@j.com', password: '123', phone: '123' };
-      await controller.registerCustomer(dto as any);
+      const dto: RegisterCustomerDto = {
+        name: 'Joe',
+        email: 'j@j.com',
+        password: '123',
+        phone: '123',
+      };
+      await controller.registerCustomer(dto);
       expect(authService.registerCustomer).toHaveBeenCalledWith(dto);
     });
   });

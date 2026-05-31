@@ -101,14 +101,14 @@ describe('Staff Time-Off (Integration)', () => {
       .expect(200);
 
     // Slot starting at 09:00Z should be blocked
-    const blockedSlot = afterTimeOffAvail.body.slots.find(
-      (s: any) => s.startTime === '2026-06-01T09:00:00.000Z',
+    const blockedSlot = (afterTimeOffAvail.body.slots as { startTime: string }[]).find(
+      (s) => s.startTime === '2026-06-01T09:00:00.000Z',
     );
     expect(blockedSlot).toBeUndefined();
 
     // Afternoon slots (e.g., 13:00Z) should still be there
-    const afternoonSlot = afterTimeOffAvail.body.slots.find(
-      (s: any) => new Date(s.startTime).getUTCHours() >= 13,
+    const afternoonSlot = (afterTimeOffAvail.body.slots as { startTime: string }[]).find(
+      (s) => new Date(s.startTime).getUTCHours() >= 13,
     );
     expect(afternoonSlot).toBeDefined();
   });

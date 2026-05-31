@@ -1,8 +1,9 @@
-import { AuthProvider, ToastProvider } from '@barber/shared';
+import { AuthProvider, reportWebVitals, ToastProvider } from '@barber/shared';
 import { CssBaseline, createTheme, ThemeProvider } from '@mui/material';
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import { BrowserRouter } from 'react-router-dom';
+import { onCLS, onFCP, onINP, onLCP, onTTFB } from 'web-vitals';
 import App from './App';
 
 const theme = createTheme({
@@ -57,6 +58,40 @@ const theme = createTheme({
       },
     },
   },
+});
+
+const vitals = { fcp: 0, lcp: 0, cls: 0, fid: 0, inp: 0, ttfb: 0 };
+let reported = false;
+
+const sendVitals = () => {
+  if (reported) return;
+  if (vitals.fcp || vitals.lcp || vitals.ttfb) {
+    reportWebVitals(vitals).catch(() => {});
+    reported = true;
+  }
+};
+
+onFCP((m) => {
+  vitals.fcp = m.value;
+});
+onLCP((m) => {
+  vitals.lcp = m.value;
+});
+onCLS((m) => {
+  vitals.cls = m.value;
+});
+onINP((m) => {
+  vitals.inp = m.value;
+});
+onTTFB((m) => {
+  vitals.ttfb = m.value;
+  setTimeout(sendVitals, 5000);
+});
+
+window.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'hidden') {
+    sendVitals();
+  }
 });
 
 const rootElement = document.getElementById('root');

@@ -5,10 +5,10 @@ export type CustomerProfileDocument = HydratedDocument<CustomerProfile>;
 
 @Schema({ _id: false })
 export class CustomerLocation {
-  @Prop({ trim: true })
+  @Prop({ type: String, trim: true })
   country?: string;
 
-  @Prop({ trim: true })
+  @Prop({ type: String, trim: true })
   city?: string;
 }
 
@@ -16,13 +16,13 @@ const CustomerLocationSchema = SchemaFactory.createForClass(CustomerLocation);
 
 @Schema({ _id: false })
 export class NotificationPreferences {
-  @Prop({ default: true })
+  @Prop({ type: Boolean, default: true })
   remindersEnabled!: boolean;
 
-  @Prop({ default: false })
+  @Prop({ type: Boolean, default: false })
   promotionsEnabled!: boolean;
 
-  @Prop({ default: false })
+  @Prop({ type: Boolean, default: false })
   lastMinuteDealsEnabled!: boolean;
 }
 
@@ -44,10 +44,10 @@ export class CustomerProfile {
   @Prop({ type: Types.ObjectId, ref: 'User', required: true, unique: true, index: true })
   userId!: Types.ObjectId;
 
-  @Prop({ required: true, trim: true })
+  @Prop({ type: String, required: true, trim: true })
   phone!: string;
 
-  @Prop({ trim: true })
+  @Prop({ type: String, trim: true })
   avatarUrl?: string;
 
   @Prop({ type: CustomerLocationSchema, default: () => ({}) })

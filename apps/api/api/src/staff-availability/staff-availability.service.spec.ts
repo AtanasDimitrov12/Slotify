@@ -2,6 +2,7 @@ import { NotFoundException } from '@nestjs/common';
 import { getModelToken } from '@nestjs/mongoose';
 import { Test, type TestingModule } from '@nestjs/testing';
 import { Types } from 'mongoose';
+import type { DayAvailabilityDto } from './dto/create-staff-availability.dto';
 import { StaffAvailability } from './staff-availability.schema';
 import { StaffAvailabilityService } from './staff-availability.service';
 
@@ -15,9 +16,15 @@ describe('StaffAvailabilityService', () => {
     weeklyAvailability: [
       {
         dayOfWeek: 1,
-        startTime: '09:00',
-        endTime: '17:00',
         isAvailable: true,
+        slots: [
+          {
+            startTime: '09:00',
+            endTime: '17:00',
+            tenantId: new Types.ObjectId(),
+            isAvailable: true,
+          },
+        ],
       },
     ],
   };
@@ -57,9 +64,15 @@ describe('StaffAvailabilityService', () => {
       mockAvailabilityModel.create.mockResolvedValue(mockAvailability);
 
       const dto = {
-        tenantId: mockAvailability.tenantId.toString(),
+        tenantId: new Types.ObjectId().toString(),
         userId: mockAvailability.userId.toString(),
-        weeklyAvailability: mockAvailability.weeklyAvailability,
+        weeklyAvailability: mockAvailability.weeklyAvailability.map((wa) => ({
+          ...wa,
+          slots: wa.slots.map((s) => ({
+            ...s,
+            tenantId: s.tenantId.toString(),
+          })),
+        })) as DayAvailabilityDto[],
       };
 
       const result = await service.create(dto);

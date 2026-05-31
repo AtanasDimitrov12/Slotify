@@ -20,6 +20,7 @@
     "typecheck": "pnpm -C apps/api/api typecheck && pnpm -C apps/web-admin typecheck && pnpm -C apps/web-user typecheck && pnpm -C packages/shared typecheck",
     "test": "pnpm -C apps/api/api test",
     "test:api:integration": "pnpm --filter api test:e2e",
+    "test:load": "pnpm --filter api exec cross-env NODE_ENV=test jest --config ./test/jest-e2e.json test/load-test.e2e-spec.ts --runInBand",
     "test:web:e2e": "pnpm --filter slotify test:e2e",
     "ci:build": "pnpm run build",
     "ci:test": "pnpm run test"

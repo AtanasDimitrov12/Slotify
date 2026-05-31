@@ -3,13 +3,17 @@ import { Test, type TestingModule } from '@nestjs/testing';
 import * as bcrypt from 'bcryptjs';
 import { Types } from 'mongoose';
 import type { JwtPayload } from '../auth/jwt.strategy';
+import type { MembershipDocument } from '../memberships/membership.schema';
 import { MembershipsService } from '../memberships/memberships.service';
 import { ServicesService } from '../services/services.service';
+import type { UpdateStaffAvailabilityDto } from '../staff-availability/dto/update-staff-availability.dto';
 import { StaffAvailabilityService } from '../staff-availability/staff-availability.service';
 import { StaffBookingSettingsService } from '../staff-booking-settings/staff-booking-settings.service';
+import type { StaffProfileDocument } from '../staff-profiles/staff-profile.schema';
 import { StaffProfilesService } from '../staff-profiles/staff-profiles.service';
 import { StaffServiceAssignmentsService } from '../staff-service-assignments/staff-service-assignments.service';
 import { StaffTimeOffService } from '../staff-time-off/staff-time-off.service';
+import type { UserDocument } from '../users/user.schema';
 import { UsersService } from '../users/users.service';
 import { StaffService } from './staff.service';
 
@@ -117,13 +121,15 @@ describe('StaffService', () => {
         _id: new Types.ObjectId(),
         name: 'New Barber',
         email: 'barber@slotify.com',
-      };
-      usersService.create.mockResolvedValue(mockUser as any);
+      } as UserDocument;
+      usersService.create.mockResolvedValue(mockUser);
       membershipsService.create.mockResolvedValue({
         _id: 'm1',
         role: 'staff',
-      } as any);
-      staffProfilesService.upsert.mockResolvedValue({ _id: 'p1' } as any);
+      } as unknown as MembershipDocument);
+      staffProfilesService.upsert.mockResolvedValue({
+        _id: 'p1',
+      } as unknown as StaffProfileDocument);
 
       // Act
       const result = await service.onboard(mockOwnerUser, onboardDto);
@@ -151,8 +157,10 @@ describe('StaffService', () => {
     });
 
     it('should throw BadRequestException if user is already a member of this tenant', async () => {
-      usersService.findByEmail.mockResolvedValue({ _id: 'exists' } as any);
-      membershipsService.findActiveByUserIdAndTenantId.mockResolvedValue({ _id: 'm1' } as any);
+      usersService.findByEmail.mockResolvedValue({ _id: 'exists' } as unknown as UserDocument);
+      membershipsService.findActiveByUserIdAndTenantId.mockResolvedValue({
+        _id: 'm1',
+      } as any);
       await expect(service.onboard(mockOwnerUser, onboardDto)).rejects.toThrow(BadRequestException);
     });
   });
@@ -173,14 +181,14 @@ describe('StaffService', () => {
       usersService.findById.mockResolvedValue({
         name: 'John',
         email: 'john@doe.com',
-      } as any);
+      } as UserDocument);
       staffProfilesService.findByUserId.mockResolvedValue({
         _id: new Types.ObjectId(),
         userId: new Types.ObjectId(userId),
         displayName: 'John the Barber',
         isActive: true,
         isBookable: true,
-      } as any);
+      } as StaffProfileDocument);
 
       const result = await service.getMyProfile(userContext);
 
@@ -198,13 +206,13 @@ describe('StaffService', () => {
     it('should only return staff members for the owner tenant (Isolation)', async () => {
       membershipsService.findByTenantAndRole.mockResolvedValue([
         { userId: new Types.ObjectId(), role: 'staff' },
-      ] as any);
+      ] as unknown as MembershipDocument[]);
 
       // Mock subsequent calls for the one staff found
-      usersService.findById.mockResolvedValue({ name: 'Staff 1' } as any);
+      usersService.findById.mockResolvedValue({ name: 'Staff 1' } as UserDocument);
       staffProfilesService.findByUserId.mockResolvedValue({
         displayName: 'Profile 1',
-      } as any);
+      } as StaffProfileDocument);
 
       const result = await service.listStaff(mockOwnerUser);
 
@@ -217,7 +225,7 @@ describe('StaffService', () => {
     it('should throw BadRequestException if slots overlap', async () => {
       const userId = new Types.ObjectId().toString();
       const userContext = { ...mockOwnerUser, sub: userId, role: 'staff' } as JwtPayload;
-      const dto = {
+      const dto: UpdateStaffAvailabilityDto = {
         weeklyAvailability: [
           {
             dayOfWeek: 1,
@@ -230,7 +238,7 @@ describe('StaffService', () => {
         ],
       };
 
-      await expect(service.updateMyAvailability(userContext, dto as any)).rejects.toThrow(
+      await expect(service.updateMyAvailability(userContext, dto)).rejects.toThrow(
         BadRequestException,
       );
     });
@@ -238,7 +246,7 @@ describe('StaffService', () => {
     it('should successfully update availability if no overlaps', async () => {
       const userId = new Types.ObjectId().toString();
       const userContext = { ...mockOwnerUser, sub: userId, role: 'staff' } as JwtPayload;
-      const dto = {
+      const dto: UpdateStaffAvailabilityDto = {
         weeklyAvailability: [
           {
             dayOfWeek: 1,
@@ -248,13 +256,15 @@ describe('StaffService', () => {
         ],
       };
 
-      (service as any).staffAvailabilityService.upsertByUser.mockResolvedValue({
-        _id: 'a1',
+      (
+        service as unknown as { staffAvailabilityService: jest.Mocked<StaffAvailabilityService> }
+      ).staffAvailabilityService.upsertByUser.mockResolvedValue({
+        _id: new Types.ObjectId(),
         userId: new Types.ObjectId(userId),
         weeklyAvailability: dto.weeklyAvailability,
-      });
+      } as any);
 
-      const result = await service.updateMyAvailability(userContext, dto as any);
+      const result = await service.updateMyAvailability(userContext, dto);
       expect(result.weeklyAvailability).toHaveLength(1);
     });
   });
@@ -264,12 +274,14 @@ describe('StaffService', () => {
       membershipsService.findAllByUserId.mockResolvedValue([
         { tenantId: { _id: new Types.ObjectId() }, role: 'owner' },
         { tenantId: { _id: new Types.ObjectId() }, role: 'owner' },
-      ] as any);
+      ] as unknown as MembershipDocument[]);
       membershipsService.findByTenantAndRole.mockResolvedValue([
-        { userId: 'u2', tenantId: new Types.ObjectId().toString(), role: 'staff' },
-      ] as any);
-      usersService.findById.mockResolvedValue({ name: 'Other' } as any);
-      staffProfilesService.findAnyByUserId.mockResolvedValue({ avatarUrl: '' } as any);
+        { userId: new Types.ObjectId(), tenantId: new Types.ObjectId().toString(), role: 'staff' },
+      ] as unknown as MembershipDocument[]);
+      usersService.findById.mockResolvedValue({ name: 'Other' } as UserDocument);
+      staffProfilesService.findAnyByUserId.mockResolvedValue({
+        avatarUrl: '',
+      } as StaffProfileDocument);
 
       const result = await service.listAvailableStaffForOwner(mockOwnerUser);
       expect(result).toHaveLength(1);
@@ -323,9 +335,11 @@ describe('StaffService', () => {
   describe('Staff Services', () => {
     it('should get my services', async () => {
       const mockAssign = { _id: new Types.ObjectId(), serviceId: new Types.ObjectId() };
-      (service as any).staffServiceAssignmentsService.findAllByStaff.mockResolvedValue([
-        mockAssign,
-      ]);
+      (
+        service as unknown as {
+          staffServiceAssignmentsService: jest.Mocked<StaffServiceAssignmentsService>;
+        }
+      ).staffServiceAssignmentsService.findAllByStaff.mockResolvedValue([mockAssign] as any);
 
       const result = await service.getMyServices(mockOwnerUser);
       expect(result).toHaveLength(1);
@@ -333,10 +347,20 @@ describe('StaffService', () => {
 
     it('should create my service', async () => {
       const sId = new Types.ObjectId().toString();
-      const mockAssign = { _id: new Types.ObjectId(), serviceId: sId };
-      (service as any).servicesService.findOneForTenant.mockResolvedValue({});
-      (service as any).staffServiceAssignmentsService.create.mockResolvedValue(mockAssign);
-      (service as any).staffServiceAssignmentsService.update.mockResolvedValue(mockAssign);
+      const mockAssign = { _id: new Types.ObjectId(), serviceId: new Types.ObjectId(sId) };
+      (
+        service as unknown as { servicesService: jest.Mocked<ServicesService> }
+      ).servicesService.findOneForTenant.mockResolvedValue({} as any);
+      (
+        service as unknown as {
+          staffServiceAssignmentsService: jest.Mocked<StaffServiceAssignmentsService>;
+        }
+      ).staffServiceAssignmentsService.create.mockResolvedValue(mockAssign as any);
+      (
+        service as unknown as {
+          staffServiceAssignmentsService: jest.Mocked<StaffServiceAssignmentsService>;
+        }
+      ).staffServiceAssignmentsService.update.mockResolvedValue(mockAssign as any);
 
       const result = await service.createMyService(mockOwnerUser, { serviceId: sId });
       expect(result).toBeDefined();

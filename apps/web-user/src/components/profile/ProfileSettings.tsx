@@ -3,6 +3,7 @@ import {
   type CustomerProfile,
   type PreferredBookingSlot,
   type PublicTenantListItem,
+  type UpdateCustomerProfilePayload,
   updateMyCustomerProfile,
   useToast,
 } from '@barber/shared';
@@ -94,7 +95,7 @@ export default function ProfileSettings({
     return /^[+]*[(]{0,1}[0-9]{1,4}[)]{0,1}[-\s./0-9]*$/.test(phone);
   };
 
-  const handleSaveSection = async (sectionId: string, payload: any) => {
+  const handleSaveSection = async (sectionId: string, payload: UpdateCustomerProfilePayload) => {
     // Specific Validations
     if (sectionId === 'personal') {
       if (payload.phone && !validatePhone(payload.phone)) {
@@ -142,11 +143,11 @@ export default function ProfileSettings({
     }
   };
 
-  const updateNested = (section: keyof CustomerProfile, field: string, value: any) => {
+  const updateNested = (section: keyof CustomerProfile, field: string, value: unknown) => {
     setProfile((prev) => ({
       ...prev,
       [section]: {
-        ...(prev[section] as any),
+        ...(prev[section] as Record<string, unknown>),
         [field]: value,
       },
     }));
@@ -721,17 +722,20 @@ function Section({
       elevation={0}
       sx={{ borderRadius: 4, border: `1px solid ${profileColors.border}`, bgcolor: '#FFF' }}
     >
-      <CardContent sx={{ p: { xs: 2.5, md: 4 } }}>
+      <CardContent sx={{ p: { xs: 2, md: 4 } }}>
         <Stack
-          direction="row"
-          spacing={1.5}
-          alignItems="center"
+          direction={{ xs: 'column', sm: 'row' }}
+          spacing={2}
+          alignItems={{ xs: 'flex-start', sm: 'center' }}
           justifyContent="space-between"
           sx={{ mb: 3 }}
         >
           <Stack direction="row" spacing={1.5} alignItems="center">
             <Box sx={{ color: profileColors.purple, display: 'flex' }}>{icon}</Box>
-            <Typography variant="h6" sx={{ fontWeight: 800, color: profileColors.text }}>
+            <Typography
+              variant="h6"
+              sx={{ fontWeight: 800, color: profileColors.text, fontSize: { xs: 18, md: 20 } }}
+            >
               {title}
             </Typography>
           </Stack>
@@ -741,6 +745,7 @@ function Section({
               size="small"
               onClick={onSave}
               disabled={isSaving}
+              fullWidth={false}
               startIcon={
                 isSaving ? <CircularProgress size={16} color="inherit" /> : <SaveRounded />
               }
@@ -749,6 +754,7 @@ function Section({
                 bgcolor: profileColors.purple,
                 fontWeight: 700,
                 textTransform: 'none',
+                width: { xs: '100%', sm: 'auto' },
                 boxShadow: `0 4px 12px ${alpha(profileColors.purple, 0.2)}`,
                 '&:hover': { bgcolor: '#6B5CFA' },
               }}
@@ -783,7 +789,16 @@ function NotificationToggle({
   onChange: (v: boolean) => void;
 }) {
   return (
-    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', py: 1 }}>
+    <Box
+      sx={{
+        display: 'flex',
+        flexDirection: { xs: 'column', sm: 'row' },
+        justifyContent: 'space-between',
+        alignItems: { xs: 'flex-start', sm: 'center' },
+        py: 1.5,
+        gap: 1,
+      }}
+    >
       <Box>
         <Typography sx={{ fontWeight: 700, color: profileColors.text }}>{label}</Typography>
         <Typography sx={{ color: profileColors.textSoft, fontSize: 13 }}>{description}</Typography>
@@ -792,6 +807,7 @@ function NotificationToggle({
         checked={!!checked}
         onChange={(e) => onChange(e.target.checked)}
         sx={{
+          ml: { xs: -1.5, sm: 0 },
           '& .MuiSwitch-switchBase.Mui-checked': { color: profileColors.purple },
           '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': {
             bgcolor: profileColors.purple,

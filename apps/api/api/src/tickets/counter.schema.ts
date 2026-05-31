@@ -1,14 +1,14 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { type HydratedDocument, Types } from 'mongoose';
+import type { HydratedDocument } from 'mongoose';
 
 export type CounterDocument = HydratedDocument<Counter>;
 
 @Schema()
 export class Counter {
-  @Prop({ required: true, unique: true })
+  @Prop({ type: String, required: true, unique: true })
   name!: string;
 
-  @Prop({ required: true, default: 0 })
+  @Prop({ type: Number, required: true, default: 0 })
   count!: number;
 }
 

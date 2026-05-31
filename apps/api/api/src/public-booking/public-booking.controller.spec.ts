@@ -1,4 +1,7 @@
 import { Test, type TestingModule } from '@nestjs/testing';
+import type { CreatePublicReservationDto } from '../reservations/dto/create-public-reservation.dto';
+import type { CreateReservationLockDto } from './dto/create-reservation-lock.dto';
+import type { GetAvailabilityDto } from './dto/get-availability.dto';
 import { PublicBookingController } from './public-booking.controller';
 import { PublicBookingService } from './public-booking.service';
 
@@ -29,26 +32,26 @@ describe('PublicBookingController', () => {
   });
 
   it('getAvailability should call service', async () => {
-    const query = { serviceId: 's1', date: '2026-01-01' };
-    await controller.getAvailability('slug1', query as any);
+    const query: GetAvailabilityDto = { serviceId: 's1', date: '2026-01-01' };
+    await controller.getAvailability('slug1', query);
     expect(service.getAvailabilityBySlug).toHaveBeenCalledWith('slug1', query);
   });
 
   it('createLock should call service', async () => {
-    const dto = { serviceId: 's1', staffId: 'u1', startTime: '...' };
-    await controller.createLock('slug1', dto as any);
+    const dto: CreateReservationLockDto = { serviceId: 's1', staffId: 'u1', startTime: '...' };
+    await controller.createLock('slug1', dto);
     expect(service.createReservationLockBySlug).toHaveBeenCalledWith('slug1', dto);
   });
 
   it('createReservation should call service', async () => {
-    const dto = {
+    const dto: CreatePublicReservationDto = {
       serviceId: 's1',
       staffId: 'u1',
       startTime: '...',
       customerName: 'X',
       customerPhone: '1',
     };
-    await controller.createReservation('slug1', dto as any);
+    await controller.createReservation('slug1', dto);
     expect(service.createReservationBySlug).toHaveBeenCalledWith('slug1', dto);
   });
 });

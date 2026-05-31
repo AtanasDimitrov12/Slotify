@@ -44,9 +44,9 @@ export function SectionTitle({ eyebrow, title, desc, align = 'left', light = fal
       <Typography
         sx={{
           maxWidth: centered ? 980 : 780,
-          fontSize: { xs: 34, md: 62 },
+          fontSize: { xs: 30, md: 62 },
           lineHeight: { xs: 0.98, md: 0.94 },
-          letterSpacing: { xs: -1.6, md: -2.6 },
+          letterSpacing: { xs: -1.2, md: -2.6 },
           fontWeight: 1000,
           color: light ? landingColors.text : 'text.primary',
         }}

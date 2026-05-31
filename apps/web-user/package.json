@@ -11,15 +11,17 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@barber/shared": "workspace:*",
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.1",
     "@mui/icons-material": "^5.18.0",
     "@mui/material": "^5.18.0",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
+    "react-quill-new": "^3.8.3",
     "react-router-dom": "^7.13.0",
     "recharts": "^3.7.0",
-    "@barber/shared": "workspace:*"
+    "web-vitals": "^5.2.0"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.4",

@@ -1,15 +1,20 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model, Types } from 'mongoose';
+import { Model, type QueryFilter, Types } from 'mongoose';
 import { Ticket, TicketDocument } from '../tickets/ticket.schema';
 import {
+  ApiPerformance,
   CiRunSummary,
   CiStepStatus,
   DoraMetrics,
   QualityMetricsReport,
   TicketMetricSummary,
+  WebVitals,
 } from './dto/quality-metrics-report.dto';
+import { WebVitalsDto } from './dto/web-vitals.dto';
 import { GithubMetricsService, GithubWorkflowRun } from './github-metrics.service';
+import { SystemHealthService } from './system-health.service';
+import { SystemMetric, SystemMetricDocument } from './system-metric.schema';
 
 @Injectable()
 export class QualityMetricsService {
@@ -19,7 +24,9 @@ export class QualityMetricsService {
 
   constructor(
     private githubService: GithubMetricsService,
+    private systemHealthService: SystemHealthService,
     @InjectModel(Ticket.name) private ticketModel: Model<TicketDocument>,
+    @InjectModel(SystemMetric.name) private systemMetricModel: Model<SystemMetricDocument>,
   ) {}
 
   async getReport(days = 30, tenantId?: string): Promise<QualityMetricsReport> {
@@ -39,15 +46,95 @@ export class QualityMetricsService {
     const tickets = await this.getTicketsForPeriod(days, tenantId);
     const report = await this.buildReport(runs, tickets, days, isGithubConfigured);
 
+    // Fetch live system health
+    const health = await this.systemHealthService.getLatestHealth();
+    if (health) {
+      report.systemHealth = {
+        cpuUsage: health.cpuUsage || 0,
+        memoryUsage: health.memoryUsage || 0,
+        uptimeSeconds: health.uptimeSeconds || 0,
+        timestamp: health.createdAt.toISOString(),
+      };
+    }
+
+    // Fetch API Performance and Web Vitals
+    report.apiPerformance = await this.getApiPerformance(days);
+    report.webVitals = await this.getWebVitals(days);
+
     this.cache.set(cacheKey, { data: report, timestamp: Date.now() });
     return report;
+  }
+
+  async saveWebVitals(dto: WebVitalsDto) {
+    await this.systemMetricModel.create({
+      type: 'web_vital',
+      ...dto,
+    });
+  }
+
+  private async getApiPerformance(days: number): Promise<ApiPerformance> {
+    const startDate = new Date();
+    startDate.setDate(startDate.getDate() - days);
+
+    const metrics = await this.systemMetricModel
+      .find({
+        type: 'api_request',
+        createdAt: { $gte: startDate },
+      })
+      .exec();
+
+    if (metrics.length === 0) {
+      return { p50ms: 0, p95ms: 0, p99ms: 0, errorRate: 0, requestsPerSecond: 0 };
+    }
+
+    const durations = metrics.map((m) => m.durationMs || 0).sort((a, b) => a - b);
+    const errors = metrics.filter((m) => (m.statusCode || 200) >= 400).length;
+
+    const getPercentile = (p: number) => {
+      const idx = Math.floor((p / 100) * durations.length);
+      return durations[idx] || 0;
+    };
+
+    const totalSeconds = days * 24 * 60 * 60;
+
+    return {
+      p50ms: getPercentile(50),
+      p95ms: getPercentile(95),
+      p99ms: getPercentile(99),
+      errorRate: (errors / metrics.length) * 100,
+      requestsPerSecond: metrics.length / totalSeconds,
+    };
+  }
+
+  private async getWebVitals(days: number): Promise<WebVitals> {
+    const startDate = new Date();
+    startDate.setDate(startDate.getDate() - days);
+
+    const vitals = await this.systemMetricModel
+      .find({
+        type: 'web_vital',
+        createdAt: { $gte: startDate },
+      })
+      .exec();
+
+    const avg = (arr: number[]) =>
+      arr.length > 0 ? arr.reduce((a, b) => a + b, 0) / arr.length : 0;
+
+    return {
+      fcp: avg(vitals.map((v) => v.fcp || 0)),
+      lcp: avg(vitals.map((v) => v.lcp || 0)),
+      cls: avg(vitals.map((v) => v.cls || 0)),
+      fid: avg(vitals.map((v) => v.fid || 0)),
+      inp: avg(vitals.map((v) => v.inp || 0)),
+      ttfb: avg(vitals.map((v) => v.ttfb || 0)),
+    };
   }
 
   private async getTicketsForPeriod(days: number, tenantId?: string): Promise<TicketDocument[]> {
     const startDate = new Date();
     startDate.setDate(startDate.getDate() - days);
 
-    const query: any = {
+    const query: QueryFilter<TicketDocument> = {
       $or: [{ createdAt: { $gte: startDate } }, { updatedAt: { $gte: startDate } }],
     };
 
@@ -113,10 +200,10 @@ export class QualityMetricsService {
 
     const leadTimes = completed
       .filter((t) => t.startedAt)
-      .map((t) => (t.completedAt!.getTime() - t.startedAt!.getTime()) / 1000 / 60);
+      .map((t) => ((t.completedAt?.getTime() ?? 0) - (t.startedAt?.getTime() ?? 0)) / 1000 / 60);
 
     const cycleTimes = completed.map(
-      (t) => (t.completedAt!.getTime() - t.createdAt.getTime()) / 1000 / 60,
+      (t) => ((t.completedAt?.getTime() ?? 0) - t.createdAt.getTime()) / 1000 / 60,
     );
 
     const byType: Record<string, number> = {};
@@ -189,10 +276,10 @@ export class QualityMetricsService {
     const completedTickets = tickets.filter((t) => t.stage === 'done' && t.completedAt);
     const ticketLeadTimes = completedTickets
       .filter((t) => t.startedAt)
-      .map((t) => (t.completedAt!.getTime() - t.startedAt!.getTime()) / 1000 / 60);
+      .map((t) => ((t.completedAt?.getTime() ?? 0) - (t.startedAt?.getTime() ?? 0)) / 1000 / 60);
 
     const cycleTimes = completedTickets.map(
-      (t) => (t.completedAt!.getTime() - t.createdAt.getTime()) / 1000 / 60,
+      (t) => ((t.completedAt?.getTime() ?? 0) - t.createdAt.getTime()) / 1000 / 60,
     );
 
     return {
@@ -248,8 +335,9 @@ export class QualityMetricsService {
         name: s.name,
         status: this.mapGithubConclusion(s.conclusion, s.status),
       }));
-    } catch (e) {
-      this.logger.error(`Failed to get step status for run ${runId}: ${e.message}`);
+    } catch (e: unknown) {
+      const message = e instanceof Error ? e.message : String(e);
+      this.logger.error(`Failed to get step status for run ${runId}: ${message}`);
       return [];
     }
   }

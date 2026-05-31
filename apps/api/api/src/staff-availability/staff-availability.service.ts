@@ -3,7 +3,11 @@ import { InjectModel } from '@nestjs/mongoose';
 import { type Model, Types } from 'mongoose';
 import { CreateStaffAvailabilityDto } from './dto/create-staff-availability.dto';
 import { UpdateStaffAvailabilityDto } from './dto/update-staff-availability.dto';
-import { StaffAvailability, type StaffAvailabilityDocument } from './staff-availability.schema';
+import {
+  DayAvailability,
+  StaffAvailability,
+  type StaffAvailabilityDocument,
+} from './staff-availability.schema';
 
 @Injectable()
 export class StaffAvailabilityService {
@@ -12,10 +16,18 @@ export class StaffAvailabilityService {
     private readonly availabilityModel: Model<StaffAvailabilityDocument>,
   ) {}
 
-  create(dto: { userId: string; weeklyAvailability: any[] }) {
+  create(dto: CreateStaffAvailabilityDto) {
     return this.availabilityModel.create({
       userId: new Types.ObjectId(dto.userId),
-      weeklyAvailability: dto.weeklyAvailability,
+      weeklyAvailability: dto.weeklyAvailability.map((day) => ({
+        ...day,
+        slots: day.slots.map((slot) => ({
+          ...slot,
+          tenantId: new Types.ObjectId(slot.tenantId),
+          isAvailable: slot.isAvailable ?? true,
+        })),
+        isAvailable: day.isAvailable ?? true,
+      })),
     });
   }
 
@@ -31,13 +43,13 @@ export class StaffAvailabilityService {
       .lean();
   }
 
-  findByStaff(tenantId: string, userId: string) {
+  findByStaff(_tenantId: string, userId: string) {
     // Current implementation ignores tenantId because availability is stored per-user
     // but the slots inside contain tenantId. This method is used by tests and some services.
     return this.findByUser(userId);
   }
 
-  async upsertByUser(userId: string, weeklyAvailability: any[]) {
+  async upsertByUser(userId: string, weeklyAvailability: DayAvailability[]) {
     return this.availabilityModel
       .findOneAndUpdate(
         {

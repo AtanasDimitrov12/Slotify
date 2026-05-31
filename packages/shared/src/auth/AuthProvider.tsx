@@ -63,9 +63,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         if (res?.tenants?.length) {
           return {
             kind: 'pickTenant',
-            tenants: res.tenants.map((t: any) => ({
+            tenants: res.tenants.map((t: Partial<Tenant>) => ({
               _id: String(t._id),
-              name: t.name,
+              name: t.name as string,
             })),
           };
         }

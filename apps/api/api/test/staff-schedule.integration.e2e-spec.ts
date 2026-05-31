@@ -94,7 +94,10 @@ describe('Staff Schedule & Blocked Slots (Integration)', () => {
       .set('Authorization', `Bearer ${ownerToken}`)
       .expect(200);
 
-    const tenant = tenantResponse.body.find((t: any) => t.name === `Salon ${id}`);
+    const tenant = (tenantResponse.body as { name: string; slug: string }[]).find(
+      (t) => t.name === `Salon ${id}`,
+    );
+    if (!tenant) throw new Error('Tenant not found');
     const actualSlug = tenant.slug;
 
     return { ownerToken, staffToken, tenantId, staffUserId, serviceId, slug: actualSlug };
@@ -111,7 +114,9 @@ describe('Staff Schedule & Blocked Slots (Integration)', () => {
       .expect(200);
 
     expect(initialAvail.body.slots.length).toBeGreaterThan(0);
-    const nineAmSlot = initialAvail.body.slots.find((s: any) => s.startTime.includes('09:00:00'));
+    const nineAmSlot = (initialAvail.body.slots as { startTime: string }[]).find((s) =>
+      s.startTime.includes('09:00:00'),
+    );
     expect(nineAmSlot).toBeDefined();
 
     // 2. Staff blocks 09:00 - 11:00
@@ -132,11 +137,13 @@ describe('Staff Schedule & Blocked Slots (Integration)', () => {
       .query({ serviceId, date: testDate })
       .expect(200);
 
-    const nineAmBlocked = blockedAvail.body.slots.find((s: any) =>
+    const nineAmBlocked = (blockedAvail.body.slots as { startTime: string }[]).find((s) =>
       s.startTime.includes('09:00:00'),
     );
-    const tenAmBlocked = blockedAvail.body.slots.find((s: any) => s.startTime.includes('10:00:00'));
-    const elevenAmAvailable = blockedAvail.body.slots.find((s: any) =>
+    const tenAmBlocked = (blockedAvail.body.slots as { startTime: string }[]).find((s) =>
+      s.startTime.includes('10:00:00'),
+    );
+    const elevenAmAvailable = (blockedAvail.body.slots as { startTime: string }[]).find((s) =>
       s.startTime.includes('11:00:00'),
     );
 
@@ -169,10 +176,10 @@ describe('Staff Schedule & Blocked Slots (Integration)', () => {
       .query({ serviceId, date: testDate })
       .expect(200);
 
-    const fourteenBlocked = finalAvail.body.slots.find((s: any) =>
+    const fourteenBlocked = (finalAvail.body.slots as { startTime: string }[]).find((s) =>
       s.startTime.includes('14:00:00'),
     );
-    const fifteenAvailable = finalAvail.body.slots.find((s: any) =>
+    const fifteenAvailable = (finalAvail.body.slots as { startTime: string }[]).find((s) =>
       s.startTime.includes('15:00:00'),
     );
 
@@ -223,7 +230,10 @@ describe('Staff Schedule & Blocked Slots (Integration)', () => {
       .query({ date: testDate })
       .expect(200);
 
-    const cancelledAppt = apptsResponse.body.find((a: any) => a.id === appointmentId);
+    const cancelledAppt = (apptsResponse.body as { id: string; status: string }[]).find(
+      (a) => a.id === appointmentId,
+    );
+    if (!cancelledAppt) throw new Error('Appointment not found');
     expect(cancelledAppt.status).toBe('cancelled');
   });
 });

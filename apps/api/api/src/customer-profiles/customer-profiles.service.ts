@@ -32,19 +32,35 @@ export class CustomerProfilesService {
     userId: string,
     dto: UpdateCustomerProfileDto,
   ): Promise<CustomerProfileDocument> {
-    const updateData: any = { ...dto };
+    const {
+      preferredServiceIds,
+      favoriteSalonIds,
+      preferredStaffIds,
+      birthday,
+      notificationPreferences,
+      ...rest
+    } = dto;
 
-    if (dto.preferredServiceIds) {
-      updateData.preferredServiceIds = dto.preferredServiceIds.map((id) => new Types.ObjectId(id));
+    const updateData: Partial<CustomerProfile & { birthday: Date | null }> = { ...rest };
+
+    if (preferredServiceIds) {
+      updateData.preferredServiceIds = preferredServiceIds.map((id) => new Types.ObjectId(id));
     }
-    if (dto.favoriteSalonIds) {
-      updateData.favoriteSalonIds = dto.favoriteSalonIds.map((id) => new Types.ObjectId(id));
+    if (favoriteSalonIds) {
+      updateData.favoriteSalonIds = favoriteSalonIds.map((id) => new Types.ObjectId(id));
     }
-    if (dto.preferredStaffIds) {
-      updateData.preferredStaffIds = dto.preferredStaffIds.map((id) => new Types.ObjectId(id));
+    if (preferredStaffIds) {
+      updateData.preferredStaffIds = preferredStaffIds.map((id) => new Types.ObjectId(id));
     }
-    if (dto.birthday) {
-      updateData.birthday = new Date(dto.birthday);
+    if (birthday) {
+      updateData.birthday = new Date(birthday);
+    }
+    if (notificationPreferences) {
+      updateData.notificationPreferences = {
+        remindersEnabled: notificationPreferences.remindersEnabled ?? true,
+        promotionsEnabled: notificationPreferences.promotionsEnabled ?? false,
+        lastMinuteDealsEnabled: notificationPreferences.lastMinuteDealsEnabled ?? false,
+      };
     }
 
     const updated = await this.customerProfileModel

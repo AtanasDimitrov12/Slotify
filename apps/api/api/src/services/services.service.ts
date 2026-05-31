@@ -74,7 +74,7 @@ export class ServicesService {
   }
 
   async updateForTenant(tenantId: string, id: string, dto: UpdateServiceDto) {
-    const payload: Record<string, unknown> = {};
+    const payload: Partial<Service> = {};
 
     if (typeof dto.name === 'string') {
       payload.name = dto.name.trim();

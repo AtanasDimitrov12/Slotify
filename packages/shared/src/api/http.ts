@@ -18,7 +18,7 @@ function buildUrl(path: string) {
 
   // Ensure cleanPath starts with a slash for consistent joining
   if (!cleanPath.startsWith('/')) {
-    cleanPath = '/' + cleanPath;
+    cleanPath = `/${cleanPath}`;
   }
 
   // If API_BASE has a trailing slash, remove it to avoid doubles
@@ -27,7 +27,7 @@ function buildUrl(path: string) {
   return `${base}${cleanPath}`;
 }
 
-export async function apiFetch<T = any>(path: string, init: RequestInit = {}): Promise<T> {
+export async function apiFetch<T = unknown>(path: string, init: RequestInit = {}): Promise<T> {
   const token = getToken();
 
   const isFormData = init.body instanceof FormData;

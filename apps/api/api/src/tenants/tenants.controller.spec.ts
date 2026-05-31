@@ -1,5 +1,8 @@
 import { ForbiddenException } from '@nestjs/common';
 import { Test, type TestingModule } from '@nestjs/testing';
+import type { JwtPayload } from '../auth/jwt.strategy';
+import type { CreateTenantDto } from './dto/create-tenant.dto';
+import type { UpdateTenantDto } from './dto/update-tenant.dto';
 import { TenantsController } from './tenants.controller';
 import { TenantsService } from './tenants.service';
 
@@ -12,7 +15,10 @@ describe('TenantsController', () => {
     tenantId: 't1',
     role: 'owner',
     accountType: 'internal',
-  };
+    name: 'Owner',
+    email: 'owner@test.com',
+    _id: 'u1',
+  } as JwtPayload;
 
   const mockTenantsService = {
     create: jest.fn(),
@@ -44,54 +50,52 @@ describe('TenantsController', () => {
 
   describe('createMySalon', () => {
     it('should call tenantsService.createForOwner for owners', async () => {
-      const dto = { name: 'New Salon' };
-      await controller.createMySalon(mockUser as any, dto as any);
+      const dto: CreateTenantDto = { name: 'New Salon' };
+      await controller.createMySalon(mockUser, dto);
       expect(tenantsService.createForOwner).toHaveBeenCalledWith(mockUser.sub, dto);
     });
 
     it('should throw ForbiddenException for non-owners', () => {
-      const staffUser = { ...mockUser, role: 'staff' };
-      const dto = { name: 'New Salon' };
-      expect(() => controller.createMySalon(staffUser as any, dto as any)).toThrow(
-        ForbiddenException,
-      );
+      const staffUser = { ...mockUser, role: 'staff' } as JwtPayload;
+      const dto: CreateTenantDto = { name: 'New Salon' };
+      expect(() => controller.createMySalon(staffUser, dto)).toThrow(ForbiddenException);
     });
   });
 
   describe('getMyTenant', () => {
     it('should call tenantsService.findOne with user tenantId', async () => {
-      await controller.getMyTenant(mockUser as any);
+      await controller.getMyTenant(mockUser);
       expect(tenantsService.findOne).toHaveBeenCalledWith(mockUser.tenantId);
     });
 
     it('should throw error if tenantId is missing', () => {
-      const badUser = { sub: 'u1' };
-      expect(() => controller.getMyTenant(badUser as any)).toThrow('Tenant ID is required');
+      const badUser = { sub: 'u1' } as JwtPayload;
+      expect(() => controller.getMyTenant(badUser)).toThrow('Tenant ID is required');
     });
   });
 
   describe('getTenant', () => {
     it('should call tenantsService.findOne if id matches user tenantId', async () => {
-      await controller.getTenant('t1', mockUser as any);
+      await controller.getTenant('t1', mockUser);
       expect(tenantsService.findOne).toHaveBeenCalledWith('t1');
     });
 
     it('should throw ForbiddenException if id does not match user tenantId', () => {
-      expect(() => controller.getTenant('other', mockUser as any)).toThrow(ForbiddenException);
+      expect(() => controller.getTenant('other', mockUser)).toThrow(ForbiddenException);
     });
   });
 
   describe('update', () => {
     it('should call tenantsService.update if id matches user tenantId', async () => {
-      const dto = { name: 'Updated' };
-      await controller.update('t1', dto as any, mockUser as any);
+      const dto: UpdateTenantDto = { name: 'Updated' };
+      await controller.update('t1', dto, mockUser);
       expect(tenantsService.update).toHaveBeenCalledWith('t1', dto);
     });
   });
 
   describe('remove', () => {
     it('should call tenantsService.remove if id matches user tenantId', async () => {
-      await controller.remove('t1', mockUser as any);
+      await controller.remove('t1', mockUser);
       expect(tenantsService.remove).toHaveBeenCalledWith('t1');
     });
   });

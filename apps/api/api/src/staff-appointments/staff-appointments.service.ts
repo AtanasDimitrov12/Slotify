@@ -81,7 +81,7 @@ export class StaffAppointmentsService {
 
     const localReservations = allReservations.filter((r) => String(r.tenantId) === tenantId);
 
-    const calculateStats = (resList: any[]) => {
+    const calculateStats = (resList: ReservationDocument[]) => {
       const completed = resList.filter((r) => r.status === 'completed').length;
       const cancelled = resList.filter((r) => r.status === 'cancelled').length;
       const noShow = resList.filter((r) => r.status === 'no-show').length;
@@ -237,7 +237,7 @@ export class StaffAppointmentsService {
     const tenantDetails = await this.tenantDetailsModel
       .find({ tenantId: { $in: params.tenantIds } })
       .lean();
-    const tenantDetailsMap = new Map(tenantDetails.map((d) => [d.tenantId, d]));
+    const _tenantDetailsMap = new Map(tenantDetails.map((d) => [d.tenantId, d]));
 
     const result = await Promise.all(
       reservations.map(async (reservation) => {

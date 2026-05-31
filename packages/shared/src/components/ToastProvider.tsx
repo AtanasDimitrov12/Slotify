@@ -4,7 +4,7 @@ import { createContext, useCallback, useContext, useState } from 'react';
 
 type ToastContextType = {
   showToast: (message: string, severity?: AlertColor) => void;
-  showError: (error: any) => void;
+  showError: (error: unknown) => void;
   showSuccess: (message: string) => void;
 };
 
@@ -22,14 +22,14 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const showError = useCallback(
-    (error: any) => {
+    (error: unknown) => {
       let msg = 'An unexpected error occurred';
       if (typeof error === 'string') {
         msg = error;
       } else if (error instanceof Error) {
         msg = error.message;
-      } else if (error?.message) {
-        msg = error.message;
+      } else if (error && typeof error === 'object' && 'message' in error) {
+        msg = String((error as { message: unknown }).message);
       }
       showToast(msg, 'error');
     },

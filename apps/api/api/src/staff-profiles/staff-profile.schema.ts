@@ -15,25 +15,25 @@ export class StaffProfile {
   })
   userId!: Types.ObjectId;
 
-  @Prop({ trim: true, default: '' })
+  @Prop({ type: String, trim: true, default: '' })
   displayName!: string;
 
-  @Prop({ trim: true, default: '' })
+  @Prop({ type: String, trim: true, default: '' })
   bio!: string;
 
-  @Prop({ min: 0, default: 0 })
+  @Prop({ type: Number, min: 0, default: 0 })
   experienceYears!: number;
 
   @Prop({ type: [String], default: [] })
   expertise!: string[];
 
-  @Prop({ trim: true, default: '' })
+  @Prop({ type: String, trim: true, default: '' })
   avatarUrl?: string;
 
-  @Prop({ default: true, index: true })
+  @Prop({ type: Boolean, default: true, index: true })
   isBookable!: boolean;
 
-  @Prop({ default: true, index: true })
+  @Prop({ type: Boolean, default: true, index: true })
   isActive!: boolean;
 }
 

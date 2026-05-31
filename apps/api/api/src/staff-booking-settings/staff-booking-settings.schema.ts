@@ -5,10 +5,10 @@ export type StaffBookingSettingsDocument = HydratedDocument<StaffBookingSettings
 
 @Schema({ _id: false })
 export class BookingBufferOverride {
-  @Prop()
+  @Prop({ type: Boolean })
   enabled?: boolean;
 
-  @Prop({ min: 0 })
+  @Prop({ type: Number, min: 0 })
   minutes?: number;
 }
 
@@ -22,19 +22,19 @@ export class StaffBookingSettingsOverrides {
   @Prop({ type: BookingBufferOverrideSchema })
   bufferAfter?: BookingBufferOverride;
 
-  @Prop({ min: 0 })
+  @Prop({ type: Number, min: 0 })
   minimumNoticeMinutes?: number;
 
-  @Prop({ min: 1 })
+  @Prop({ type: Number, min: 1 })
   maximumDaysInAdvance?: number;
 
-  @Prop()
+  @Prop({ type: Boolean })
   autoConfirmReservations?: boolean;
 
-  @Prop()
+  @Prop({ type: Boolean })
   allowBookingToEndAfterWorkingHours?: boolean;
 
-  @Prop()
+  @Prop({ type: Boolean })
   allowCustomerChooseSpecificStaff?: boolean;
 }
 
@@ -50,7 +50,7 @@ export class StaffBookingSettings {
   @Prop({ type: Types.ObjectId, ref: 'User', required: true, index: true })
   userId!: Types.ObjectId;
 
-  @Prop({ default: true })
+  @Prop({ type: Boolean, default: true })
   useGlobalSettings!: boolean;
 
   @Prop({ type: StaffBookingSettingsOverridesSchema, default: () => ({}) })

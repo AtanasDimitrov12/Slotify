@@ -95,9 +95,9 @@ export function Hero({
           <Typography
             sx={{
               fontWeight: 1000,
-              letterSpacing: { xs: -2.2, md: -4.2 },
+              letterSpacing: { xs: -1.8, md: -4.2 },
               lineHeight: 0.92,
-              fontSize: { xs: 58, sm: 82, md: 152 },
+              fontSize: { xs: 52, sm: 82, md: 152 },
               color: '#07112B',
             }}
           >
@@ -108,9 +108,9 @@ export function Hero({
             <Typography
               sx={{
                 fontWeight: 1000,
-                letterSpacing: { xs: -1.4, md: -2.4 },
+                letterSpacing: { xs: -1, md: -2.4 },
                 lineHeight: 0.98,
-                fontSize: { xs: 28, sm: 40, md: 68 },
+                fontSize: { xs: 24, sm: 40, md: 68 },
                 color: '#0F172A',
                 maxWidth: 1200,
               }}
@@ -121,9 +121,9 @@ export function Hero({
             <Typography
               sx={{
                 fontWeight: 1000,
-                letterSpacing: { xs: -0.6, md: -1.4 },
+                letterSpacing: { xs: -0.4, md: -1.4 },
                 lineHeight: 1.02,
-                fontSize: { xs: 24, sm: 34, md: 56 },
+                fontSize: { xs: 20, sm: 34, md: 56 },
                 color: '#94A3B8',
                 maxWidth: 1200,
               }}

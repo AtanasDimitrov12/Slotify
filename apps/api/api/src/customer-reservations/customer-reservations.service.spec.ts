@@ -2,7 +2,7 @@ import { ForbiddenException, NotFoundException } from '@nestjs/common';
 import { getModelToken } from '@nestjs/mongoose';
 import { Test, type TestingModule } from '@nestjs/testing';
 import { Types } from 'mongoose';
-import { Reservation } from '../reservations/reservation.schema';
+import { Reservation, type ReservationDocument } from '../reservations/reservation.schema';
 import { CustomerReservationsService } from './customer-reservations.service';
 
 describe('CustomerReservationsService', () => {
@@ -109,15 +109,14 @@ describe('CustomerReservationsService', () => {
         ...mockReservation,
         status: 'completed',
         save: jest.fn().mockResolvedValue({ review: {} }),
-      };
+      } as unknown as ReservationDocument;
       mockReservationModel.findById.mockResolvedValue(res);
 
       const dto = { rating: 5, comment: 'Great!' };
       await service.addReview(res._id.toString(), dto, 'j@j.com');
 
-      const updatedRes = res as any;
-      expect(updatedRes.review).toBeDefined();
-      expect(updatedRes.review.rating).toBe(5);
+      expect(res.review).toBeDefined();
+      expect(res.review?.rating).toBe(5);
       expect(res.save).toHaveBeenCalled();
     });
 

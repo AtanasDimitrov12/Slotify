@@ -4,7 +4,7 @@ import * as bcrypt from 'bcryptjs';
 import { Types } from 'mongoose';
 
 import { CustomerProfilesService } from '../customer-profiles/customer-profiles.service';
-import { MembershipDocument } from '../memberships/membership.schema';
+import { MembershipDocument, MembershipRole } from '../memberships/membership.schema';
 import { MembershipsService } from '../memberships/memberships.service';
 import { TenantsService } from '../tenants/tenants.service';
 import { UserDocument } from '../users/user.schema';
@@ -23,6 +23,25 @@ type JwtPayload = {
   email: string;
   accountType: 'internal' | 'customer';
 };
+
+export interface LoginResponse {
+  accessToken: string;
+  account: {
+    _id: string;
+    name: string;
+    email: string;
+    role: string;
+    tenantId?: string;
+    accountType: 'internal' | 'customer';
+  };
+}
+
+export interface MultiTenantLoginResponse {
+  tenants: {
+    _id: string;
+    name?: string;
+  }[];
+}
 
 @Injectable()
 export class AuthService {
@@ -96,10 +115,13 @@ export class AuthService {
     }
 
     return {
-      tenants: memberships.map((m: MembershipDocument & { tenantId: { name?: string } }) => ({
-        _id: this.getId(m.tenantId),
-        name: m.tenantId?.name ?? undefined,
-      })),
+      tenants: memberships.map((m) => {
+        const tenant = m.tenantId as unknown as { _id: Types.ObjectId; name?: string };
+        return {
+          _id: this.getId(tenant),
+          name: tenant?.name ?? undefined,
+        };
+      }),
     };
   }
 
@@ -122,12 +144,15 @@ export class AuthService {
 
   async getMyTenants(userId: string) {
     const memberships = await this.membershipsService.findAllByUserId(userId);
-    return memberships.map((m: any) => ({
-      _id: this.getId(m.tenantId),
-      name: m.tenantId?.name ?? undefined,
-      slug: m.tenantId?.slug ?? undefined,
-      role: m.role,
-    }));
+    return memberships.map((m) => {
+      const tenant = m.tenantId as unknown as { _id: Types.ObjectId; name?: string; slug?: string };
+      return {
+        _id: this.getId(tenant),
+        name: tenant?.name ?? undefined,
+        slug: tenant?.slug ?? undefined,
+        role: m.role as MembershipRole,
+      };
+    });
   }
 
   private async finalizeLogin(user: UserDocument, membership: MembershipDocument) {

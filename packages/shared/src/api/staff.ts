@@ -34,21 +34,49 @@ export type AvailableStaffListItem = {
   photoUrl?: string;
 };
 
-export async function createStaff(payload: CreateStaffPayload) {
-  return apiFetch('/staff/onboard', {
+export type OnboardStaffResponse = {
+  message: string;
+  account: {
+    userId: string;
+    membershipId: string;
+    staffProfileId: string;
+    tenantId: string;
+    role: string;
+    name: string;
+    email: string;
+  };
+};
+
+export async function createStaff(payload: CreateStaffPayload): Promise<OnboardStaffResponse> {
+  return apiFetch<OnboardStaffResponse>('/staff/onboard', {
     method: 'POST',
     body: JSON.stringify(payload),
   });
 }
 
 export async function listAvailableStaffForOwner(): Promise<AvailableStaffListItem[]> {
-  return apiFetch('/staff/available', {
+  return apiFetch<AvailableStaffListItem[]>('/staff/available', {
     method: 'GET',
   });
 }
 
-export async function listStaff() {
-  return apiFetch('/staff', {
+export type StaffListItem = {
+  id: string;
+  tenantId: string;
+  userId: string;
+  name: string;
+  email: string;
+  role?: string;
+  photoUrl?: string;
+  bio?: string;
+  experienceYears?: number;
+  expertiseTags: string[];
+  isBookable: boolean;
+  isActive: boolean;
+};
+
+export async function listStaff(): Promise<StaffListItem[]> {
+  return apiFetch<StaffListItem[]>('/staff', {
     method: 'GET',
   });
 }

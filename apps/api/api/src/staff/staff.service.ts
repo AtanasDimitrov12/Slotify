@@ -215,32 +215,33 @@ export class StaffService {
       const defaultAvailability = [
         {
           dayOfWeek: 1,
-          slots: [{ startTime: '09:00', endTime: '17:00', tenantId }],
+          slots: [{ startTime: '09:00', endTime: '17:00', tenantId, isAvailable: true }],
           isAvailable: true,
         },
         {
           dayOfWeek: 2,
-          slots: [{ startTime: '09:00', endTime: '17:00', tenantId }],
+          slots: [{ startTime: '09:00', endTime: '17:00', tenantId, isAvailable: true }],
           isAvailable: true,
         },
         {
           dayOfWeek: 3,
-          slots: [{ startTime: '09:00', endTime: '17:00', tenantId }],
+          slots: [{ startTime: '09:00', endTime: '17:00', tenantId, isAvailable: true }],
           isAvailable: true,
         },
         {
           dayOfWeek: 4,
-          slots: [{ startTime: '09:00', endTime: '17:00', tenantId }],
+          slots: [{ startTime: '09:00', endTime: '17:00', tenantId, isAvailable: true }],
           isAvailable: true,
         },
         {
           dayOfWeek: 5,
-          slots: [{ startTime: '09:00', endTime: '17:00', tenantId }],
+          slots: [{ startTime: '09:00', endTime: '17:00', tenantId, isAvailable: true }],
           isAvailable: true,
         },
       ];
 
       await this.staffAvailabilityService.create({
+        tenantId,
         userId,
         weeklyAvailability: defaultAvailability,
       });
@@ -320,10 +321,8 @@ export class StaffService {
 
     const memberships = await this.membershipsService.findByTenantAndRole(tenantId, 'staff');
 
-    const staffMemberships = memberships.filter((m) => m.role === 'staff');
-
     const result = await Promise.all(
-      staffMemberships.map(async (membership) => {
+      memberships.map(async (membership) => {
         const userId = membership.userId.toString();
 
         const user = await this.usersService.findById(userId);
@@ -392,11 +391,12 @@ export class StaffService {
       userId,
       dto.weeklyAvailability.map((day) => ({
         dayOfWeek: day.dayOfWeek,
-        isAvailable: day.isAvailable,
+        isAvailable: day.isAvailable ?? true,
         slots: (day.slots ?? []).map((s) => ({
           startTime: s.startTime,
           endTime: s.endTime,
           tenantId: new Types.ObjectId(s.tenantId),
+          isAvailable: s.isAvailable ?? true,
         })),
       })),
     );
@@ -492,7 +492,9 @@ export class StaffService {
 
     const items = await this.staffServiceAssignmentsService.findAllByStaff(tenantId, userId);
 
-    return items.map((item) => this.mapStaffServiceAssignment(item as StaffServiceAssignmentView));
+    return items.map((item) =>
+      this.mapStaffServiceAssignment(item as unknown as StaffServiceAssignmentView),
+    );
   }
 
   async createMyService(

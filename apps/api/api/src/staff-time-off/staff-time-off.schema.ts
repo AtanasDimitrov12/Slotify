@@ -14,16 +14,17 @@ export class StaffTimeOff {
   @Prop({ type: Types.ObjectId, ref: User.name, required: true, index: true })
   userId!: Types.ObjectId;
 
-  @Prop({ required: true })
+  @Prop({ type: Date, required: true })
   startDate!: Date;
 
-  @Prop({ required: true })
+  @Prop({ type: Date, required: true })
   endDate!: Date;
 
-  @Prop({ trim: true, default: '' })
+  @Prop({ type: String, trim: true, default: '' })
   reason?: string;
 
   @Prop({
+    type: String,
     required: true,
     enum: ['requested', 'approved', 'denied'],
     default: 'requested',

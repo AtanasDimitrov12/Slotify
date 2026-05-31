@@ -35,6 +35,7 @@ export * from './components/landing/Showcase';
 export * from './components/landing/SmartSpotlight';
 export * from './components/landing/TrustStrip';
 export { default as RequireRole } from './components/RequireRole';
+export { default as RichTextSection } from './components/RichTextSection';
 export { default as TicketRequestDialog } from './components/TicketRequestDialog';
 export { ToastProvider, useToast } from './components/ToastProvider';
 export * from './constants/locations';

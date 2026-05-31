@@ -48,7 +48,13 @@
       }
     },
     {
-      "includes": ["**/*.spec.ts", "**/*.test.ts", "**/*.e2e-spec.ts"],
+      "includes": [
+        "**/*.spec.ts",
+        "**/*.spec.tsx",
+        "**/*.test.ts",
+        "**/*.test.tsx",
+        "**/*.e2e-spec.ts"
+      ],
       "linter": {
         "rules": {
           "suspicious": {

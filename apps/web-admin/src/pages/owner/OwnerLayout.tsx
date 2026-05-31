@@ -9,7 +9,6 @@ import ContentCutRoundedIcon from '@mui/icons-material/ContentCutRounded';
 import DashboardRoundedIcon from '@mui/icons-material/DashboardRounded';
 import EventAvailableRoundedIcon from '@mui/icons-material/EventAvailableRounded';
 import GroupsRoundedIcon from '@mui/icons-material/GroupsRounded';
-import InsightsRoundedIcon from '@mui/icons-material/InsightsRounded';
 import MenuRoundedIcon from '@mui/icons-material/MenuRounded';
 import SettingsRoundedIcon from '@mui/icons-material/SettingsRounded';
 import { Box, Drawer, IconButton, useMediaQuery, useTheme } from '@mui/material';
@@ -67,7 +66,7 @@ export default function OwnerLayout() {
       await switchTenant(tenantId);
       showSuccess('Switched salon successfully');
       window.location.reload();
-    } catch (err) {
+    } catch (_err) {
       showError('Failed to switch salon');
     }
   };
@@ -86,7 +85,6 @@ export default function OwnerLayout() {
     { label: 'Services', to: '/owner/services', icon: ContentCutRoundedIcon },
     { label: 'Booking rules', to: '/owner/booking-rules', icon: EventAvailableRoundedIcon },
     { label: 'Business settings', to: '/owner/settings', icon: SettingsRoundedIcon },
-    { label: 'System Quality', to: '/owner/quality', icon: InsightsRoundedIcon },
   ];
 
   const isActive = (to: string) =>

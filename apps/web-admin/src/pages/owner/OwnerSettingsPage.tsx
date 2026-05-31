@@ -6,6 +6,7 @@ import {
   premium,
   saveGeneralSettings,
   saveOpeningHours,
+  type Tenant,
   useAuth,
   useToast,
 } from '@barber/shared';
@@ -112,7 +113,7 @@ export default function OwnerSettingsPage() {
   const [openingHours, setOpeningHours] = React.useState<OpeningDay[]>(defaultOpeningHours);
 
   // My Salons state
-  const [mySalons, setMySalons] = React.useState<any[]>([]);
+  const [mySalons, setMySalons] = React.useState<Partial<Tenant>[]>([]);
   const [createDialogOpen, setCreateDialogOpen] = React.useState(false);
   const [newSalonName, setNewSalonName] = React.useState('');
 
@@ -349,8 +350,8 @@ export default function OwnerSettingsPage() {
                         <Button
                           variant="outlined"
                           size="small"
-                          onClick={() => handleSwitch(salon._id)}
-                          disabled={salon._id === user?.tenantId}
+                          onClick={() => salon._id && handleSwitch(salon._id)}
+                          disabled={!salon._id || salon._id === user?.tenantId}
                           sx={{ borderRadius: 999, fontWeight: 800 }}
                         >
                           Switch to this

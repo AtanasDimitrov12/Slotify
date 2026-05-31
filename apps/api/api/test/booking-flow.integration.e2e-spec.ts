@@ -138,8 +138,8 @@ describe('Booking Flow (Integration)', () => {
       })
       .expect(200);
 
-    const slotStillThere = availabilityAfterResponse.body.slots.find(
-      (s: any) => s.startTime === firstSlot.startTime,
+    const slotStillThere = (availabilityAfterResponse.body.slots as { startTime: string }[]).find(
+      (s) => s.startTime === firstSlot.startTime,
     );
     expect(slotStillThere).toBeUndefined();
   });

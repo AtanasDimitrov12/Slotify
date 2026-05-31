@@ -9,19 +9,19 @@ export class Stage {
   @Prop({ type: Types.ObjectId, ref: Tenant.name, required: true, index: true })
   tenantId!: Types.ObjectId;
 
-  @Prop({ required: true, trim: true })
+  @Prop({ type: String, required: true, trim: true })
   name!: string; // internal id, e.g. "user_requested"
 
-  @Prop({ required: true, trim: true })
+  @Prop({ type: String, required: true, trim: true })
   label!: string; // display name, e.g. "User Requested"
 
-  @Prop({ required: true, default: '#F8FAFC' })
+  @Prop({ type: String, required: true, default: '#F8FAFC' })
   color!: string;
 
-  @Prop({ required: true, default: false })
+  @Prop({ type: Boolean, required: true, default: false })
   isCollapsed!: boolean;
 
-  @Prop({ required: true, default: 0 })
+  @Prop({ type: Number, required: true, default: 0 })
   order!: number;
 }
 

@@ -9,7 +9,7 @@ describe('StaffBookingSettingsService (Hierarchy Logic)', () => {
   let service: StaffBookingSettingsService;
   let bookingSettingsService: BookingSettingsService;
 
-  const mockQuery = (data: any) => ({
+  const mockQuery = <T>(data: T) => ({
     lean: jest.fn().mockResolvedValue(data),
   });
 

@@ -72,7 +72,7 @@ export class StaffBlockedSlotController {
 
   @Patch(':id')
   update(
-    @CurrentUser() user: JwtPayload,
+    @CurrentUser() _user: JwtPayload,
     @Param('id') id: string,
     @Body() dto: UpdateStaffBlockedSlotDto,
   ) {
@@ -81,7 +81,7 @@ export class StaffBlockedSlotController {
   }
 
   @Delete(':id')
-  remove(@CurrentUser() user: JwtPayload, @Param('id') id: string) {
+  remove(@CurrentUser() _user: JwtPayload, @Param('id') id: string) {
     // In a real app we'd verify ownership of the record
     return this.blockedSlotService.remove(id);
   }

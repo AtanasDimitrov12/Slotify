@@ -145,7 +145,12 @@ export default function LoginPage() {
           <Stack spacing={4}>
             <Stack spacing={1}>
               <Typography
-                sx={{ fontWeight: 1000, fontSize: 40, letterSpacing: -1.5, lineHeight: 1 }}
+                sx={{
+                  fontWeight: 1000,
+                  fontSize: { xs: 32, md: 40 },
+                  letterSpacing: -1.5,
+                  lineHeight: 1,
+                }}
               >
                 Welcome back
               </Typography>

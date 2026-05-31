@@ -8,9 +8,18 @@ export type CatalogServiceItem = {
   description?: string;
 };
 
-function mapService(raw: any): CatalogServiceItem {
+type RawService = {
+  _id?: string;
+  id?: string;
+  name: string;
+  durationMin: number;
+  priceEUR: number;
+  description?: string;
+};
+
+function mapService(raw: RawService): CatalogServiceItem {
   return {
-    id: raw._id ?? raw.id,
+    id: raw._id ?? raw.id ?? '',
     name: raw.name,
     durationMin: raw.durationMin,
     priceEUR: raw.priceEUR,
@@ -48,7 +57,7 @@ export async function extractServicesFromAI(file: File): Promise<CatalogServiceP
 export async function createBulkCatalogServices(
   payloads: CatalogServicePayload[],
 ): Promise<CatalogServiceItem[]> {
-  const data = await apiFetch<any[]>('/services/bulk', {
+  const data = await apiFetch<RawService[]>('/services/bulk', {
     method: 'POST',
     body: JSON.stringify(payloads),
   });
@@ -57,7 +66,7 @@ export async function createBulkCatalogServices(
 }
 
 export async function getCatalogServices(): Promise<CatalogServiceItem[]> {
-  const data = await apiFetch<any[]>('/services/catalog', {
+  const data = await apiFetch<RawService[]>('/services/catalog', {
     method: 'GET',
   });
 
@@ -70,7 +79,7 @@ export async function createCatalogService(payload: {
   priceEUR: number;
   description?: string;
 }): Promise<CatalogServiceItem> {
-  const data = await apiFetch<any>('/services', {
+  const data = await apiFetch<RawService>('/services', {
     method: 'POST',
     body: JSON.stringify(payload),
   });
@@ -87,7 +96,7 @@ export async function updateCatalogService(
     description?: string;
   },
 ): Promise<CatalogServiceItem> {
-  const data = await apiFetch<any>(`/services/${id}`, {
+  const data = await apiFetch<RawService>(`/services/${id}`, {
     method: 'PATCH',
     body: JSON.stringify(payload),
   });

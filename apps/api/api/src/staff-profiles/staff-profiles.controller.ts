@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post, Query } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Patch, Post } from '@nestjs/common';
 import { CreateStaffProfileDto } from './dto/create-staff-profile.dto';
 import { UpdateStaffProfileDto } from './dto/update-staff-profile.dto';
 import { StaffProfilesService } from './staff-profiles.service';

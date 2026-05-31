@@ -1,4 +1,6 @@
 import { Test, type TestingModule } from '@nestjs/testing';
+import type { CreateStaffServiceAssignmentDto } from './dto/create-staff-service-assignment.dto';
+import type { UpdateStaffServiceAssignmentDto } from './dto/update-staff-service-assignment.dto';
 import { StaffServiceAssignmentsController } from './staff-service-assignments.controller';
 import { StaffServiceAssignmentsService } from './staff-service-assignments.service';
 
@@ -24,8 +26,8 @@ describe('StaffServiceAssignmentsController', () => {
   });
 
   it('create should call service.create', async () => {
-    const dto = { userId: 'u1', serviceId: 's1', tenantId: 't1' };
-    await controller.create(dto as any);
+    const dto: CreateStaffServiceAssignmentDto = { userId: 'u1', serviceId: 's1', tenantId: 't1' };
+    await controller.create(dto);
     expect(service.create).toHaveBeenCalledWith(dto);
   });
 
@@ -35,8 +37,8 @@ describe('StaffServiceAssignmentsController', () => {
   });
 
   it('update should call service.update', async () => {
-    const dto = { customPrice: 50 };
-    await controller.update('id1', dto as any);
+    const dto: UpdateStaffServiceAssignmentDto = { customPrice: 50 };
+    await controller.update('id1', dto);
     expect(service.update).toHaveBeenCalledWith('id1', dto);
   });
 

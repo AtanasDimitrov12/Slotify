@@ -38,7 +38,7 @@ type StaffListItem = {
   userId: string;
   name: string;
   email: string;
-  role: string;
+  role?: string;
 };
 
 type PendingTimeOffCount = {

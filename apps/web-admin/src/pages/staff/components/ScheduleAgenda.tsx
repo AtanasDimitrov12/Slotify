@@ -73,7 +73,12 @@ function buildClusters(
   const dayEnd = new Date(`${selectedDate}T00:00:00`);
   dayEnd.setHours(DAY_END_HOUR, 0, 0, 0);
 
-  const allItems: { type: 'appt' | 'block'; start: number; end: number; original: any }[] = [
+  const allItems: {
+    type: 'appt' | 'block';
+    start: number;
+    end: number;
+    original: StaffAppointment | StaffBlockedSlotItem;
+  }[] = [
     ...appointments.map((a) => ({
       type: 'appt' as const,
       start: new Date(a.startTime).getTime(),
@@ -110,8 +115,12 @@ function buildClusters(
       id: `${start.toISOString()}-${end.toISOString()}`,
       start,
       end,
-      appointments: group.filter((i) => i.type === 'appt').map((i) => i.original),
-      blockedSlots: group.filter((i) => i.type === 'block').map((i) => i.original),
+      appointments: group
+        .filter((i) => i.type === 'appt')
+        .map((i) => i.original as StaffAppointment),
+      blockedSlots: group
+        .filter((i) => i.type === 'block')
+        .map((i) => i.original as StaffBlockedSlotItem),
     };
   }
 
@@ -456,7 +465,8 @@ export default function ScheduleAgenda({
         borderRadius: 4,
         border: '1px solid rgba(15,23,42,0.06)',
         boxShadow: '0 8px 32px rgba(15,23,42,0.02)',
-        p: { xs: 2, md: 3 },
+        p: { xs: 1.5, md: 3 },
+        overflowX: 'hidden', // Contain any potential overflow
       }}
     >
       <Stack spacing={1.5}>
@@ -514,13 +524,13 @@ export default function ScheduleAgenda({
                     <Stack
                       direction={{
                         xs: 'column',
-                        sm:
+                        md:
                           cluster.appointments.length + cluster.blockedSlots.length > 1
                             ? 'row'
                             : 'column',
                       }}
                       spacing={1.5}
-                      sx={{ flex: 1 }}
+                      sx={{ flex: 1, minWidth: 0 }}
                     >
                       {cluster.blockedSlots.map((slot) => (
                         <BlockedSlotItem key={slot.id} slot={slot} />

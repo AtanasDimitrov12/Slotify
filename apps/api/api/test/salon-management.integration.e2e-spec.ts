@@ -57,7 +57,7 @@ describe('Salon Management (Integration)', () => {
       .set('Authorization', `Bearer ${token}`)
       .expect(200);
 
-    expect(listResponse.body.some((s: any) => s._id === serviceId)).toBe(true);
+    expect(listResponse.body.some((s: { _id: string }) => s._id === serviceId)).toBe(true);
 
     // 3. Update Service
     await request(ctx.app.getHttpServer())
@@ -84,7 +84,7 @@ describe('Salon Management (Integration)', () => {
       .set('Authorization', `Bearer ${token}`)
       .expect(200);
 
-    expect(listAfterDelete.body.some((s: any) => s._id === serviceId)).toBe(false);
+    expect(listAfterDelete.body.some((s: { _id: string }) => s._id === serviceId)).toBe(false);
   });
 
   it('should manage tenant settings and multiple salons', async () => {
@@ -116,7 +116,9 @@ describe('Salon Management (Integration)', () => {
       .expect(200);
 
     expect(tenantsResponse.body.length).toBe(2);
-    expect(tenantsResponse.body.some((t: any) => t.name === 'Second Salon')).toBe(true);
+    expect(tenantsResponse.body.some((t: { name: string }) => t.name === 'Second Salon')).toBe(
+      true,
+    );
 
     // 4. Switch to second salon
     const switchResponse = await request(ctx.app.getHttpServer())

@@ -46,7 +46,7 @@ test.describe('Public Booking Journey', () => {
     await page.goto(`${USER_URL}/salons/${owner.salonSlug}`);
     await expect(page.getByText(owner.salonName)).toBeVisible();
 
-    await page.getByRole('button', { name: /Book Appointment Now/i }).click();
+    await page.getByRole('button', { name: /Book Your Appointment/i }).click();
 
     const bookingDialog = page.getByRole('dialog');
     await expect(bookingDialog.getByText(/E2E Haircut/i)).toBeVisible({ timeout: 15000 });

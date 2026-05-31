@@ -57,7 +57,7 @@ test.describe('Customer Journey', () => {
     await expect(page.getByText(salonName)).toBeVisible({ timeout: 15000 });
     await page.getByText(salonName).first().click();
 
-    await page.getByRole('button', { name: /Book Appointment Now/i }).click();
+    await page.getByRole('button', { name: /Book Your Appointment/i }).click();
 
     const bookingDialog = page.getByRole('dialog');
     await expect(bookingDialog.getByText(serviceName)).toBeVisible({ timeout: 15000 });

@@ -16,12 +16,13 @@ export class Membership {
   userId!: Types.ObjectId;
 
   @Prop({
+    type: String,
     default: 'staff',
     enum: ['owner', 'staff'],
   })
   role!: MembershipRole;
 
-  @Prop({ default: true, index: true })
+  @Prop({ type: Boolean, default: true, index: true })
   isActive!: boolean;
 }
 

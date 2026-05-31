@@ -8,7 +8,7 @@ import { StaffTimeOffService } from './staff-time-off.service';
 describe('StaffTimeOffService', () => {
   let service: StaffTimeOffService;
 
-  const mockQuery = (data: any) => ({
+  const mockQuery = <T>(data: T) => ({
     lean: jest.fn().mockResolvedValue(data),
     sort: jest.fn().mockReturnThis(),
   });

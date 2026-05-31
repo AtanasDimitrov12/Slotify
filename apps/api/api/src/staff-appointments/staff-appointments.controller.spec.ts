@@ -1,6 +1,7 @@
 import { Test, type TestingModule } from '@nestjs/testing';
 import type { JwtPayload } from '../auth/jwt.strategy';
 import { MembershipsService } from '../memberships/memberships.service';
+import type { CreateStaffAppointmentDto } from './dto/create-staff-appointment.dto';
 import { StaffAppointmentsController } from './staff-appointments.controller';
 import { StaffAppointmentsService } from './staff-appointments.service';
 
@@ -80,13 +81,13 @@ describe('StaffAppointmentsController', () => {
 
   describe('create', () => {
     it('should call service.createForStaff', async () => {
-      const dto = {
+      const dto: CreateStaffAppointmentDto = {
         staffServiceAssignmentId: 'a1',
         startTime: '...',
         customerName: 'C',
         customerPhone: '1',
       };
-      await controller.create(mockUser, dto as any);
+      await controller.create(mockUser, dto);
       expect(service.createForStaff).toHaveBeenCalledWith({
         tenantId: 't1',
         userId: 'u1',

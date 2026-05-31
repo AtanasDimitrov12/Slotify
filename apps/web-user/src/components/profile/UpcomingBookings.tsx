@@ -86,24 +86,33 @@ export default function UpcomingBookings({ reservations, onCancelled }: Props) {
           <CardContent sx={{ p: 0 }}>
             <Box
               sx={{
-                p: 2,
+                p: { xs: 1.5, sm: 2 },
                 display: 'flex',
+                flexDirection: { xs: 'column', sm: 'row' },
                 justifyContent: 'space-between',
-                alignItems: 'center',
+                alignItems: { xs: 'flex-start', sm: 'center' },
+                gap: 1.5,
                 bgcolor: alpha('#7C6CFF', 0.04),
                 borderBottom: '1px solid rgba(15,23,42,0.04)',
               }}
             >
-              <Stack direction="row" spacing={1} alignItems="center">
+              <Stack
+                direction="row"
+                spacing={1}
+                alignItems="center"
+                sx={{ flexWrap: 'wrap', gap: 0.5 }}
+              >
                 <CalendarMonthRounded sx={{ color: '#7C6CFF', fontSize: 20 }} />
-                <Typography sx={{ fontWeight: 800, fontSize: 15 }}>
+                <Typography sx={{ fontWeight: 800, fontSize: { xs: 14, sm: 15 } }}>
                   {new Date(res.startTime).toLocaleDateString([], {
                     weekday: 'long',
                     day: 'numeric',
                     month: 'long',
                   })}
                 </Typography>
-                <Typography sx={{ fontWeight: 600, fontSize: 15, color: 'text.secondary' }}>
+                <Typography
+                  sx={{ fontWeight: 600, fontSize: { xs: 14, sm: 15 }, color: 'text.secondary' }}
+                >
                   at{' '}
                   {new Date(res.startTime).toLocaleTimeString([], {
                     hour: '2-digit',
@@ -116,16 +125,16 @@ export default function UpcomingBookings({ reservations, onCancelled }: Props) {
                 size="small"
                 sx={{
                   fontWeight: 800,
-                  fontSize: 11,
+                  fontSize: 10,
                   bgcolor: alpha(statusColors[res.status] || '#6B7280', 0.1),
                   color: statusColors[res.status] || '#6B7280',
                   borderRadius: 1.5,
+                  alignSelf: { xs: 'flex-end', sm: 'center' },
                 }}
               />
             </Box>
-
-            <Box sx={{ p: 3 }}>
-              <Grid container spacing={3}>
+            <Box sx={{ p: { xs: 2, sm: 3 } }}>
+              <Grid container spacing={{ xs: 2, sm: 3 }}>
                 <Grid item xs={12} sm={6}>
                   <Stack spacing={2}>
                     <Box>
@@ -143,7 +152,9 @@ export default function UpcomingBookings({ reservations, onCancelled }: Props) {
                       </Typography>
                       <Stack direction="row" spacing={1} alignItems="center">
                         <LocationOnRounded sx={{ fontSize: 18, color: '#64748B' }} />
-                        <Typography sx={{ fontWeight: 700 }}>{res.tenantId.name}</Typography>
+                        <Typography sx={{ fontWeight: 700, fontSize: { xs: 15, sm: 16 } }}>
+                          {res.tenantId.name}
+                        </Typography>
                       </Stack>
                     </Box>
                     <Box>
@@ -159,12 +170,16 @@ export default function UpcomingBookings({ reservations, onCancelled }: Props) {
                       >
                         Service
                       </Typography>
-                      <Stack direction="row" spacing={1} alignItems="center">
-                        <ContentCutRounded sx={{ fontSize: 18, color: '#64748B' }} />
-                        <Typography sx={{ fontWeight: 700 }}>{res.serviceName}</Typography>
-                        <Typography sx={{ color: 'text.secondary', fontSize: 14 }}>
-                          ({res.durationMin} min • €{res.priceEUR})
-                        </Typography>
+                      <Stack direction="row" spacing={1} alignItems="flex-start">
+                        <ContentCutRounded sx={{ fontSize: 18, color: '#64748B', mt: 0.3 }} />
+                        <Box>
+                          <Typography sx={{ fontWeight: 700, fontSize: { xs: 15, sm: 16 } }}>
+                            {res.serviceName}
+                          </Typography>
+                          <Typography sx={{ color: 'text.secondary', fontSize: 13 }}>
+                            {res.durationMin} min • €{res.priceEUR}
+                          </Typography>
+                        </Box>
                       </Stack>
                     </Box>
                   </Stack>
@@ -186,7 +201,9 @@ export default function UpcomingBookings({ reservations, onCancelled }: Props) {
                       </Typography>
                       <Stack direction="row" spacing={1} alignItems="center">
                         <PersonRounded sx={{ fontSize: 18, color: '#64748B' }} />
-                        <Typography sx={{ fontWeight: 700 }}>{getStaffName(res)}</Typography>
+                        <Typography sx={{ fontWeight: 700, fontSize: { xs: 15, sm: 16 } }}>
+                          {getStaffName(res)}
+                        </Typography>
                       </Stack>
                     </Box>
                     {res.notes && (
@@ -204,7 +221,7 @@ export default function UpcomingBookings({ reservations, onCancelled }: Props) {
                           Notes
                         </Typography>
                         <Typography
-                          sx={{ fontSize: 14, fontStyle: 'italic', color: 'text.secondary' }}
+                          sx={{ fontSize: 13, fontStyle: 'italic', color: 'text.secondary' }}
                         >
                           "{res.notes}"
                         </Typography>
@@ -214,11 +231,10 @@ export default function UpcomingBookings({ reservations, onCancelled }: Props) {
                 </Grid>
               </Grid>
             </Box>
-
             <Divider sx={{ opacity: 0.5 }} />
             <Box
               sx={{
-                px: 3,
+                px: { xs: 2, sm: 3 },
                 py: 1.5,
                 display: 'flex',
                 justifyContent: 'flex-end',
@@ -228,14 +244,19 @@ export default function UpcomingBookings({ reservations, onCancelled }: Props) {
               <Button
                 size="small"
                 color="error"
+                fullWidth={false}
                 startIcon={<CancelRounded />}
                 disabled={cancellingId === res._id}
                 onClick={() => handleCancel(res._id)}
-                sx={{ textTransform: 'none', fontWeight: 700 }}
+                sx={{
+                  textTransform: 'none',
+                  fontWeight: 700,
+                  width: { xs: '100%', sm: 'auto' },
+                }}
               >
                 {cancellingId === res._id ? 'Cancelling...' : 'Cancel Appointment'}
               </Button>
-            </Box>
+            </Box>{' '}
           </CardContent>
         </Card>
       ))}
