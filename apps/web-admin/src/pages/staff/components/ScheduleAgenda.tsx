@@ -465,7 +465,7 @@ export default function ScheduleAgenda({
         borderRadius: 4,
         border: '1px solid rgba(15,23,42,0.06)',
         boxShadow: '0 8px 32px rgba(15,23,42,0.02)',
-        p: { xs: 1.5, md: 3 },
+        p: { xs: 1, sm: 2, md: 3 },
         overflowX: 'hidden', // Contain any potential overflow
       }}
     >

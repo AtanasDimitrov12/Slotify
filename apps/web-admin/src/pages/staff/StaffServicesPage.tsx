@@ -164,19 +164,34 @@ export default function StaffServicesPage() {
 
   return (
     <Stack spacing={4}>
-      <Stack direction="row" justifyContent="space-between" alignItems="flex-start" spacing={2}>
+      <Stack
+        direction={{ xs: 'column', lg: 'row' }}
+        justifyContent="space-between"
+        alignItems={{ xs: 'center', lg: 'flex-start' }}
+        spacing={3}
+        sx={{ textAlign: { xs: 'center', lg: 'left' } }}
+      >
         <Box>
           <Typography
-            sx={{ fontWeight: 1000, fontSize: 36, letterSpacing: -1.5, color: '#0F172A' }}
+            sx={{
+              fontWeight: 1000,
+              fontSize: { xs: 32, lg: 36 },
+              letterSpacing: -1.5,
+              color: '#0F172A',
+            }}
           >
             Services & Prices
           </Typography>
-          <Typography sx={{ color: '#64748B', fontWeight: 600, fontSize: 18 }}>
+          <Typography sx={{ color: '#64748B', fontWeight: 600, fontSize: { xs: 16, lg: 18 } }}>
             Configure the services you offer and set your personal overrides.
           </Typography>
         </Box>
 
-        <Stack direction="row" spacing={2}>
+        <Stack
+          direction={{ xs: 'column', sm: 'row' }}
+          spacing={2}
+          sx={{ width: { xs: '100%', lg: 'auto' } }}
+        >
           {salons.length > 1 && (
             <TextField
               select
@@ -184,7 +199,7 @@ export default function StaffServicesPage() {
               label="Active Salon"
               value={user?.tenantId || ''}
               onChange={(e) => handleSalonChange(e.target.value)}
-              sx={{ minWidth: 200 }}
+              sx={{ minWidth: { xs: '100%', sm: 200 } }}
               disabled={loading}
             >
               {salons.map((s) => (
@@ -203,6 +218,7 @@ export default function StaffServicesPage() {
             sx={{
               minHeight: 44,
               px: 3,
+              width: { xs: '100%', sm: 'auto' },
               borderRadius: 999,
               fontWeight: 900,
               bgcolor: landingColors.purple,
@@ -234,6 +250,8 @@ export default function StaffServicesPage() {
                 borderColor: '#CBD5E1',
                 bgcolor: 'transparent',
                 py: 8,
+                maxWidth: { xs: 500, lg: 'none' },
+                mx: 'auto',
               }}
             >
               <CardContent>
@@ -273,6 +291,8 @@ export default function StaffServicesPage() {
                 borderColor: '#CBD5E1',
                 bgcolor: 'transparent',
                 py: 8,
+                maxWidth: { xs: 500, lg: 'none' },
+                mx: 'auto',
               }}
             >
               <CardContent>
@@ -286,7 +306,7 @@ export default function StaffServicesPage() {
                   <Button
                     variant="outlined"
                     onClick={handleAddClick}
-                    sx={{ mt: 2, borderRadius: 999, fontWeight: 900 }}
+                    sx={{ mt: 2, borderRadius: 999, fontWeight: 900, px: 4 }}
                   >
                     Assign your first service
                   </Button>
@@ -296,17 +316,19 @@ export default function StaffServicesPage() {
           ) : null}
 
           {items.length > 0 ? (
-            <Grid container spacing={3}>
+            <Grid container spacing={{ xs: 2, sm: 3 }} sx={{ overflowX: 'hidden' }}>
               {items.map((s) => (
                 <Grid item xs={12} md={6} key={s.id}>
                   <Card
                     sx={{
-                      borderRadius: `${premium.rLg * 4}px`,
+                      borderRadius: `${premium.rLg * 3}px`,
                       border: '1px solid',
                       borderColor: 'rgba(15,23,42,0.06)',
                       bgcolor: '#FFFFFF',
-                      boxShadow: '0 10px 40px rgba(15,23,42,0.04)',
+                      boxShadow: '0 8px 30px rgba(15,23,42,0.03)',
                       transition: 'all 0.2s ease',
+                      maxWidth: { xs: 400, md: 'none' },
+                      mx: 'auto',
                       '&:hover': {
                         transform: 'translateY(-2px)',
                         boxShadow: '0 16px 48px rgba(15,23,42,0.08)',
@@ -314,13 +336,14 @@ export default function StaffServicesPage() {
                       },
                     }}
                   >
-                    <CardContent sx={{ p: 3.5 }}>
+                    <CardContent sx={{ p: { xs: 2.5, sm: 3.5 } }}>
                       <Stack spacing={2.5}>
-                        <Box>
+                        <Box sx={{ textAlign: { xs: 'center', sm: 'left' } }}>
                           <Stack
-                            direction="row"
+                            direction={{ xs: 'column', sm: 'row' }}
                             justifyContent="space-between"
-                            alignItems="flex-start"
+                            alignItems={{ xs: 'center', sm: 'flex-start' }}
+                            spacing={1}
                           >
                             <Typography sx={{ fontWeight: 1000, fontSize: 20, color: '#0F172A' }}>
                               {s.name}
@@ -353,7 +376,7 @@ export default function StaffServicesPage() {
                           ) : null}
                         </Box>
 
-                        <Stack direction="row" spacing={1.5}>
+                        <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1.5}>
                           <Button
                             variant="outlined"
                             fullWidth

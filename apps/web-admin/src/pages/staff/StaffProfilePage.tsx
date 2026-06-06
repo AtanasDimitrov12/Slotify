@@ -87,18 +87,19 @@ export default function StaffProfilePage() {
   }
 
   return (
-    <Stack spacing={{ xs: 3, md: 5 }}>
+    <Stack spacing={{ xs: 4, md: 5 }}>
       <Stack
         direction={{ xs: 'column', sm: 'row' }}
         justifyContent="space-between"
-        alignItems={{ xs: 'flex-start', sm: 'flex-end' }}
-        spacing={2}
+        alignItems={{ xs: 'center', sm: 'flex-end' }}
+        spacing={3}
+        sx={{ textAlign: { xs: 'center', sm: 'left' } }}
       >
         <Box>
           <Typography
             sx={{
               fontWeight: 1000,
-              fontSize: { xs: 28, md: 36 },
+              fontSize: { xs: 32, md: 36 },
               letterSpacing: -1.5,
               color: '#0F172A',
               lineHeight: 1.1,
@@ -107,13 +108,13 @@ export default function StaffProfilePage() {
             Public Profile
           </Typography>
           <Typography
-            sx={{ color: '#64748B', fontWeight: 600, fontSize: { xs: 14, md: 18 }, mt: 1 }}
+            sx={{ color: '#64748B', fontWeight: 600, fontSize: { xs: 15, md: 18 }, mt: 1 }}
           >
             This information is shared across all salons you work in and visible to customers.
           </Typography>
         </Box>
 
-        <Stack direction="row" spacing={2}>
+        <Stack direction="row" spacing={2} sx={{ width: { xs: '100%', sm: 'auto' } }}>
           <Button
             variant="contained"
             size="large"
@@ -123,6 +124,7 @@ export default function StaffProfilePage() {
               display: { xs: 'none', md: 'inline-flex' },
               minHeight: 48,
               px: 4,
+              width: '100%',
               borderRadius: 2,
               fontWeight: 900,
               bgcolor: landingColors.purple,
@@ -141,17 +143,19 @@ export default function StaffProfilePage() {
         </Alert>
       ) : null}
 
-      <Grid container spacing={{ xs: 3, md: 4 }}>
+      <Grid container spacing={{ xs: 2, sm: 4 }} sx={{ overflowX: 'hidden' }}>
         {/* Left Column: Photo */}
         <Grid item xs={12} lg={4}>
-          <ProfilePhotoCard
-            name={profile.name}
-            photoUrl={profile.photoUrl}
-            onChangePhoto={(file) => {
-              const url = URL.createObjectURL(file);
-              setProfile((p) => ({ ...p, photoUrl: url }));
-            }}
-          />
+          <Box sx={{ maxWidth: { xs: 400, lg: 'none' }, mx: 'auto' }}>
+            <ProfilePhotoCard
+              name={profile.name}
+              photoUrl={profile.photoUrl}
+              onChangePhoto={(file) => {
+                const url = URL.createObjectURL(file);
+                setProfile((p) => ({ ...p, photoUrl: url }));
+              }}
+            />
+          </Box>
         </Grid>
 
         {/* Right Column: Details */}
@@ -163,10 +167,21 @@ export default function StaffProfilePage() {
                 borderRadius: 3,
                 border: '1px solid rgba(15,23,42,0.06)',
                 boxShadow: '0 4px 20px rgba(0,0,0,0.02)',
+                maxWidth: { xs: 400, lg: 'none' },
+                mx: 'auto',
+                width: '100%',
               }}
             >
               <CardContent sx={{ p: { xs: 2.5, md: 4 } }}>
-                <Typography sx={{ fontWeight: 900, fontSize: 18, color: '#0F172A', mb: 3 }}>
+                <Typography
+                  sx={{
+                    fontWeight: 900,
+                    fontSize: 18,
+                    color: '#0F172A',
+                    mb: 3,
+                    textAlign: { xs: 'center', sm: 'left' },
+                  }}
+                >
                   Account Identity
                 </Typography>
                 <Grid container spacing={2.5}>
@@ -199,10 +214,21 @@ export default function StaffProfilePage() {
                 borderRadius: 3,
                 border: '1px solid rgba(15,23,42,0.06)',
                 boxShadow: '0 4px 20px rgba(0,0,0,0.02)',
+                maxWidth: { xs: 400, lg: 'none' },
+                mx: 'auto',
+                width: '100%',
               }}
             >
               <CardContent sx={{ p: { xs: 2.5, md: 4 } }}>
-                <Typography sx={{ fontWeight: 900, fontSize: 18, color: '#0F172A', mb: 3 }}>
+                <Typography
+                  sx={{
+                    fontWeight: 900,
+                    fontSize: 18,
+                    color: '#0F172A',
+                    mb: 3,
+                    textAlign: { xs: 'center', sm: 'left' },
+                  }}
+                >
                   Skills & Experience
                 </Typography>
                 <Grid container spacing={2.5}>
@@ -218,6 +244,7 @@ export default function StaffProfilePage() {
                           experienceYears: Number(e.target.value),
                         }))
                       }
+                      sx={{ maxWidth: { xs: 200, sm: 'none' }, mx: { xs: 'auto', sm: 0 }, display: 'flex' }}
                     />
                   </Grid>
                   <Grid item xs={12} sm={8}>
@@ -236,13 +263,32 @@ export default function StaffProfilePage() {
                 borderRadius: 3,
                 border: '1px solid rgba(15,23,42,0.06)',
                 boxShadow: '0 4px 20px rgba(0,0,0,0.02)',
+                maxWidth: { xs: 400, lg: 'none' },
+                mx: 'auto',
+                width: '100%',
               }}
             >
               <CardContent sx={{ p: { xs: 2.5, md: 4 } }}>
-                <Typography sx={{ fontWeight: 900, fontSize: 18, color: '#0F172A', mb: 1 }}>
+                <Typography
+                  sx={{
+                    fontWeight: 900,
+                    fontSize: 18,
+                    color: '#0F172A',
+                    mb: 1,
+                    textAlign: { xs: 'center', sm: 'left' },
+                  }}
+                >
                   Biography
                 </Typography>
-                <Typography sx={{ color: '#64748B', fontSize: 14, mb: 3, fontWeight: 500 }}>
+                <Typography
+                  sx={{
+                    color: '#64748B',
+                    fontSize: 14,
+                    mb: 3,
+                    fontWeight: 500,
+                    textAlign: { xs: 'center', sm: 'left' },
+                  }}
+                >
                   Write a brief introduction that will help customers get to know you.
                 </Typography>
                 <TextField
@@ -262,7 +308,7 @@ export default function StaffProfilePage() {
             </Card>
 
             {/* Mobile Save Button */}
-            <Box sx={{ display: { xs: 'block', md: 'none' }, pt: 1, pb: 4 }}>
+            <Box sx={{ display: { xs: 'block', md: 'none' }, pt: 1, pb: 4, px: { xs: 2, sm: 0 } }}>
               <Button
                 variant="contained"
                 fullWidth
@@ -271,6 +317,9 @@ export default function StaffProfilePage() {
                 disabled={saving}
                 sx={{
                   height: 56,
+                  maxWidth: 400,
+                  mx: 'auto',
+                  display: 'flex',
                   borderRadius: 2,
                   fontWeight: 900,
                   bgcolor: landingColors.purple,

@@ -311,7 +311,7 @@ export default function StaffSchedulePage() {
               width: { xs: '100%', lg: 'auto' },
               alignItems: { xs: 'stretch', lg: 'flex-end' },
               position: { xs: 'sticky', lg: 'static' },
-              top: { xs: 0, lg: 'auto' }, // Sticking to top, AppShell has sticky header too
+              top: { xs: 74, lg: 'auto' }, // Align with AppShell header
               zIndex: 10,
               bgcolor: { xs: '#F7F8FC', lg: 'transparent' },
               pt: { xs: 1, lg: 0 },
@@ -332,7 +332,7 @@ export default function StaffSchedulePage() {
                 alignItems: 'center',
                 height: 48,
                 width: { xs: '100%', sm: 'fit-content' },
-                alignSelf: { xs: 'stretch', sm: 'flex-start', lg: 'flex-end' },
+                alignSelf: { xs: 'stretch', sm: 'center', lg: 'flex-end' },
               }}
             >
               <IconButton
@@ -512,7 +512,7 @@ export default function StaffSchedulePage() {
           </Alert>
         ) : null}
 
-        <Grid container spacing={3}>
+        <Grid container spacing={{ xs: 2, sm: 3 }} sx={{ overflowX: 'hidden' }}>
           {isMobile && (
             <Grid item xs={12}>
               <DayOverviewCard appointments={appointments} />
