@@ -169,19 +169,30 @@ export default function OwnerServicesPage() {
   return (
     <>
       <Stack spacing={4}>
-        <Stack direction="row" justifyContent="space-between" alignItems="flex-start" spacing={2}>
+        <Stack
+          direction={{ xs: 'column', sm: 'row' }}
+          justifyContent="space-between"
+          alignItems={{ xs: 'center', sm: 'flex-start' }}
+          spacing={3}
+          sx={{ textAlign: { xs: 'center', sm: 'left' } }}
+        >
           <Box>
             <Typography
-              sx={{ fontWeight: 1000, fontSize: 36, letterSpacing: -1.5, color: '#0F172A' }}
+              sx={{
+                fontWeight: 1000,
+                fontSize: { xs: 32, sm: 36 },
+                letterSpacing: -1.5,
+                color: '#0F172A',
+              }}
             >
               Services Catalog
             </Typography>
-            <Typography sx={{ color: '#64748B', fontWeight: 600, fontSize: 18 }}>
+            <Typography sx={{ color: '#64748B', fontWeight: 600, fontSize: { xs: 16, sm: 18 } }}>
               Define the master list of services your salon offers.
             </Typography>
           </Box>
 
-          <Stack direction="row" spacing={2}>
+          <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} sx={{ width: { xs: '100%', sm: 'auto' } }}>
             <input
               type="file"
               ref={fileInputRef}
@@ -205,6 +216,7 @@ export default function OwnerServicesPage() {
                 sx={{
                   minHeight: 52,
                   px: 3,
+                  width: '100%',
                   borderRadius: 999,
                   fontWeight: 900,
                   borderColor: alpha(landingColors.purple, 0.3),
@@ -228,6 +240,7 @@ export default function OwnerServicesPage() {
               sx={{
                 minHeight: 52,
                 px: 3,
+                width: '100%',
                 borderRadius: 999,
                 fontWeight: 900,
                 bgcolor: landingColors.purple,

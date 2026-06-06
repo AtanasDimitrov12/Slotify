@@ -226,11 +226,18 @@ export default function OwnerSettingsPage() {
 
   return (
     <Stack spacing={4}>
-      <Box>
-        <Typography sx={{ fontWeight: 1000, fontSize: 36, letterSpacing: -1.5, color: '#0F172A' }}>
+      <Box sx={{ textAlign: { xs: 'center', sm: 'left' } }}>
+        <Typography
+          sx={{
+            fontWeight: 1000,
+            fontSize: { xs: 32, sm: 36 },
+            letterSpacing: -1.5,
+            color: '#0F172A',
+          }}
+        >
           Business Settings
         </Typography>
-        <Typography sx={{ color: '#64748B', fontWeight: 600, fontSize: 18 }}>
+        <Typography sx={{ color: '#64748B', fontWeight: 600, fontSize: { xs: 16, sm: 18 } }}>
           Update your salon profile and operational hours.
         </Typography>
       </Box>
@@ -248,23 +255,26 @@ export default function OwnerSettingsPage() {
           borderColor: 'rgba(15,23,42,0.06)',
           bgcolor: '#FFFFFF',
           boxShadow: '0 10px 40px rgba(15,23,42,0.04)',
+          overflow: 'hidden',
         }}
       >
-        <CardContent sx={{ p: 4 }}>
+        <CardContent sx={{ p: { xs: 1.5, sm: 4 } }}>
           <Box
             sx={{
               display: 'flex',
-              alignItems: { xs: 'stretch', md: 'center' },
+              alignItems: { xs: 'stretch', sm: 'center' },
               justifyContent: 'space-between',
-              gap: 2,
-              flexDirection: { xs: 'column', md: 'row' },
+              gap: { xs: 2, sm: 3 },
+              flexDirection: { xs: 'column', sm: 'row' },
               borderBottom: '1px solid rgba(15,23,42,0.06)',
-              pb: 2,
+              pb: { xs: 2, sm: 3 },
             }}
           >
             <Tabs
               value={tab}
               onChange={(_, v) => setTab(v)}
+              variant="scrollable"
+              scrollButtons="auto"
               sx={{
                 minHeight: 48,
                 '& .MuiTab-root': {
@@ -296,10 +306,10 @@ export default function OwnerSettingsPage() {
                 sx={{
                   minHeight: 52,
                   px: 4,
+                  width: { xs: '100%', sm: 'auto' },
                   borderRadius: 999,
                   fontWeight: 900,
                   whiteSpace: 'nowrap',
-                  alignSelf: { xs: 'flex-start', md: 'center' },
                   bgcolor: landingColors.purple,
                   boxShadow: `0 12px 30px ${alpha(landingColors.purple, 0.24)}`,
                 }}
@@ -315,6 +325,7 @@ export default function OwnerSettingsPage() {
                 sx={{
                   minHeight: 52,
                   px: 4,
+                  width: { xs: '100%', sm: 'auto' },
                   borderRadius: 999,
                   fontWeight: 900,
                   bgcolor: landingColors.purple,
@@ -336,7 +347,13 @@ export default function OwnerSettingsPage() {
 
           <TabPanel value={tab} index={2}>
             <Stack spacing={3}>
-              <Typography sx={{ fontWeight: 800, color: '#475569' }}>
+              <Typography
+                sx={{
+                  fontWeight: 800,
+                  color: '#475569',
+                  textAlign: { xs: 'center', sm: 'left' },
+                }}
+              >
                 You can manage multiple salon locations from a single account.
               </Typography>
 
@@ -345,35 +362,48 @@ export default function OwnerSettingsPage() {
                   <React.Fragment key={salon._id}>
                     <ListItem
                       alignItems="flex-start"
-                      sx={{ py: 2 }}
-                      secondaryAction={
+                      sx={{
+                        py: { xs: 2.5, sm: 2 },
+                        flexDirection: { xs: 'column', sm: 'row' },
+                        gap: { xs: 2, sm: 0 },
+                      }}
+                    >
+                      <Box sx={{ display: 'flex', width: '100%', alignItems: 'center' }}>
+                        <ListItemAvatar>
+                          <Avatar
+                            sx={{
+                              bgcolor: alpha(landingColors.purple, 0.1),
+                              color: landingColors.purple,
+                            }}
+                          >
+                            <BusinessRoundedIcon />
+                          </Avatar>
+                        </ListItemAvatar>
+                        <ListItemText
+                          primary={salon.name}
+                          primaryTypographyProps={{ fontWeight: 900, fontSize: 16 }}
+                          secondary={salon.slug ? `slug: ${salon.slug}` : 'New Salon'}
+                          secondaryTypographyProps={{ fontWeight: 600 }}
+                        />
+                      </Box>
+                      <Box
+                        sx={{
+                          width: { xs: '100%', sm: 'auto' },
+                          display: 'flex',
+                          justifyContent: { xs: 'center', sm: 'flex-end' },
+                          mt: { xs: 1, sm: 0 },
+                        }}
+                      >
                         <Button
                           variant="outlined"
                           size="small"
                           onClick={() => salon._id && handleSwitch(salon._id)}
                           disabled={!salon._id || salon._id === user?.tenantId}
-                          sx={{ borderRadius: 999, fontWeight: 800 }}
+                          sx={{ borderRadius: 999, fontWeight: 800, px: 3 }}
                         >
-                          Switch to this
+                          {salon._id === user?.tenantId ? 'Current' : 'Switch to this'}
                         </Button>
-                      }
-                    >
-                      <ListItemAvatar>
-                        <Avatar
-                          sx={{
-                            bgcolor: alpha(landingColors.purple, 0.1),
-                            color: landingColors.purple,
-                          }}
-                        >
-                          <BusinessRoundedIcon />
-                        </Avatar>
-                      </ListItemAvatar>
-                      <ListItemText
-                        primary={salon.name}
-                        primaryTypographyProps={{ fontWeight: 900, fontSize: 16 }}
-                        secondary={salon.slug ? `slug: ${salon.slug}` : 'New Salon'}
-                        secondaryTypographyProps={{ fontWeight: 600 }}
-                      />
+                      </Box>
                     </ListItem>
                     {idx < mySalons.length - 1 && <Divider variant="inset" component="li" />}
                   </React.Fragment>

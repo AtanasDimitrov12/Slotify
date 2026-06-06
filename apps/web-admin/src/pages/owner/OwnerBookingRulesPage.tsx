@@ -90,29 +90,35 @@ export default function OwnerBookingRulesPage() {
         <Box
           sx={{
             display: 'flex',
-            flexDirection: { xs: 'column', md: 'row' },
-            alignItems: { xs: 'flex-start', md: 'center' },
+            flexDirection: { xs: 'column', sm: 'row' },
+            alignItems: { xs: 'center', sm: 'center' },
             justifyContent: 'space-between',
-            gap: 2,
+            gap: 3,
+            textAlign: { xs: 'center', sm: 'left' },
           }}
         >
           <Box>
             <Typography
-              sx={{ fontWeight: 1000, fontSize: 36, letterSpacing: -1.5, color: '#0F172A' }}
+              sx={{
+                fontWeight: 1000,
+                fontSize: { xs: 32, sm: 36 },
+                letterSpacing: -1.5,
+                color: '#0F172A',
+              }}
             >
               Booking Rules
             </Typography>
 
-            <Typography sx={{ mt: 1, color: '#64748B', fontWeight: 600, fontSize: 18 }}>
+            <Typography sx={{ mt: 1, color: '#64748B', fontWeight: 600, fontSize: { xs: 16, sm: 18 } }}>
               Configure how customers interact with your calendar.
             </Typography>
           </Box>
 
           <Box
             sx={{
-              width: { xs: '100%', md: 'auto' },
+              width: { xs: '100%', sm: 'auto' },
               display: 'flex',
-              justifyContent: { xs: 'flex-start', md: 'flex-end' },
+              justifyContent: { xs: 'center', sm: 'flex-end' },
             }}
           >
             <Button
@@ -123,6 +129,7 @@ export default function OwnerBookingRulesPage() {
               sx={{
                 minHeight: 52,
                 px: 4,
+                width: { xs: '100%', sm: 'auto' },
                 borderRadius: 999,
                 fontWeight: 900,
                 bgcolor: landingColors.purple,
@@ -150,7 +157,7 @@ export default function OwnerBookingRulesPage() {
           boxShadow: '0 10px 40px rgba(15,23,42,0.04)',
         }}
       >
-        <CardContent sx={{ p: 4 }}>
+        <CardContent sx={{ p: { xs: 2.5, sm: 4 } }}>
           <BookingRulesForm value={rules} onChange={setRules} />
         </CardContent>
       </Card>

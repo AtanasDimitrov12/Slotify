@@ -116,14 +116,25 @@ export default function StaffDashboardPage() {
 
   return (
     <Stack spacing={4}>
-      <Stack direction="row" justifyContent="space-between" alignItems="center">
+      <Stack
+        direction={{ xs: 'column', sm: 'row' }}
+        justifyContent="space-between"
+        alignItems={{ xs: 'center', sm: 'center' }}
+        spacing={3}
+        sx={{ textAlign: { xs: 'center', sm: 'left' } }}
+      >
         <Box>
           <Typography
-            sx={{ fontWeight: 1000, fontSize: 36, letterSpacing: -1.5, color: '#0F172A' }}
+            sx={{
+              fontWeight: 1000,
+              fontSize: { xs: 32, sm: 36 },
+              letterSpacing: -1.5,
+              color: '#0F172A',
+            }}
           >
             Welcome back!
           </Typography>
-          <Typography sx={{ color: '#64748B', fontWeight: 600, fontSize: 18 }}>
+          <Typography sx={{ color: '#64748B', fontWeight: 600, fontSize: { xs: 16, sm: 18 } }}>
             Here is what is happening across all your salons today.
           </Typography>
         </Box>
@@ -135,6 +146,7 @@ export default function StaffDashboardPage() {
             fontWeight: 900,
             px: 3,
             py: 1.5,
+            width: { xs: '100%', sm: 'auto' },
             bgcolor: landingColors.purple,
             '&:hover': { bgcolor: landingColors.purple, filter: 'brightness(1.1)' },
           }}

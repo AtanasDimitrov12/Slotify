@@ -63,28 +63,46 @@ export default function BookingRulesForm({ value, onChange }: Props) {
       <Grid container spacing={4}>
         {/* BUFFER BEFORE */}
         <Grid item xs={12} md={6}>
-          <Typography sx={{ fontWeight: 1000, fontSize: 16, color: '#0F172A', mb: 1 }}>
+          <Typography
+            sx={{
+              fontWeight: 1000,
+              fontSize: 16,
+              color: '#0F172A',
+              mb: 1,
+              textAlign: { xs: 'center', sm: 'left' },
+            }}
+          >
             Buffer Before Appointment
           </Typography>
-          <Typography sx={{ color: '#64748B', fontSize: 14, mb: 2, fontWeight: 600 }}>
+          <Typography
+            sx={{
+              color: '#64748B',
+              fontSize: 14,
+              mb: 2,
+              fontWeight: 600,
+              textAlign: { xs: 'center', sm: 'left' },
+            }}
+          >
             Gap required before a client arrives.
           </Typography>
 
-          <FormControlLabel
-            control={
-              <Switch
-                checked={value.bufferBefore.enabled}
-                onChange={(e) => updateBuffer('bufferBefore', { enabled: e.target.checked })}
-                sx={{
-                  '& .MuiSwitch-switchBase.Mui-checked': { color: landingColors.purple },
-                  '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': {
-                    bgcolor: landingColors.purple,
-                  },
-                }}
-              />
-            }
-            label={<Typography sx={{ fontWeight: 800, fontSize: 14 }}>Enable Buffer</Typography>}
-          />
+          <Box sx={{ display: 'flex', justifyContent: { xs: 'center', sm: 'flex-start' } }}>
+            <FormControlLabel
+              control={
+                <Switch
+                  checked={value.bufferBefore.enabled}
+                  onChange={(e) => updateBuffer('bufferBefore', { enabled: e.target.checked })}
+                  sx={{
+                    '& .MuiSwitch-switchBase.Mui-checked': { color: landingColors.purple },
+                    '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': {
+                      bgcolor: landingColors.purple,
+                    },
+                  }}
+                />
+              }
+              label={<Typography sx={{ fontWeight: 800, fontSize: 14 }}>Enable Buffer</Typography>}
+            />
+          </Box>
 
           <TextField
             fullWidth
@@ -97,34 +115,57 @@ export default function BookingRulesForm({ value, onChange }: Props) {
                 minutes: Number(e.target.value),
               })
             }
-            sx={{ mt: 2 }}
+            sx={{
+              mt: 2,
+              maxWidth: 200,
+              mx: { xs: 'auto', sm: 0 },
+              display: 'flex',
+            }}
           />
         </Grid>
 
         {/* BUFFER AFTER */}
         <Grid item xs={12} md={6}>
-          <Typography sx={{ fontWeight: 1000, fontSize: 16, color: '#0F172A', mb: 1 }}>
+          <Typography
+            sx={{
+              fontWeight: 1000,
+              fontSize: 16,
+              color: '#0F172A',
+              mb: 1,
+              textAlign: { xs: 'center', sm: 'left' },
+            }}
+          >
             Buffer After Appointment
           </Typography>
-          <Typography sx={{ color: '#64748B', fontSize: 14, mb: 2, fontWeight: 600 }}>
+          <Typography
+            sx={{
+              color: '#64748B',
+              fontSize: 14,
+              mb: 2,
+              fontWeight: 600,
+              textAlign: { xs: 'center', sm: 'left' },
+            }}
+          >
             Time for cleanup or break after service.
           </Typography>
 
-          <FormControlLabel
-            control={
-              <Switch
-                checked={value.bufferAfter.enabled}
-                onChange={(e) => updateBuffer('bufferAfter', { enabled: e.target.checked })}
-                sx={{
-                  '& .MuiSwitch-switchBase.Mui-checked': { color: landingColors.purple },
-                  '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': {
-                    bgcolor: landingColors.purple,
-                  },
-                }}
-              />
-            }
-            label={<Typography sx={{ fontWeight: 800, fontSize: 14 }}>Enable Buffer</Typography>}
-          />
+          <Box sx={{ display: 'flex', justifyContent: { xs: 'center', sm: 'flex-start' } }}>
+            <FormControlLabel
+              control={
+                <Switch
+                  checked={value.bufferAfter.enabled}
+                  onChange={(e) => updateBuffer('bufferAfter', { enabled: e.target.checked })}
+                  sx={{
+                    '& .MuiSwitch-switchBase.Mui-checked': { color: landingColors.purple },
+                    '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': {
+                      bgcolor: landingColors.purple,
+                    },
+                  }}
+                />
+              }
+              label={<Typography sx={{ fontWeight: 800, fontSize: 14 }}>Enable Buffer</Typography>}
+            />
+          </Box>
 
           <TextField
             fullWidth
@@ -137,7 +178,12 @@ export default function BookingRulesForm({ value, onChange }: Props) {
                 minutes: Number(e.target.value),
               })
             }
-            sx={{ mt: 2 }}
+            sx={{
+              mt: 2,
+              maxWidth: 200,
+              mx: { xs: 'auto', sm: 0 },
+              display: 'flex',
+            }}
           />
         </Grid>
 
@@ -147,7 +193,15 @@ export default function BookingRulesForm({ value, onChange }: Props) {
 
         {/* MIN NOTICE */}
         <Grid item xs={12} md={6}>
-          <Typography sx={{ fontWeight: 1000, fontSize: 16, color: '#0F172A', mb: 1 }}>
+          <Typography
+            sx={{
+              fontWeight: 1000,
+              fontSize: 16,
+              color: '#0F172A',
+              mb: 1,
+              textAlign: { xs: 'center', sm: 'left' },
+            }}
+          >
             Minimum Booking Notice
           </Typography>
           <TextField
@@ -157,12 +211,26 @@ export default function BookingRulesForm({ value, onChange }: Props) {
             value={value.minimumNoticeMinutes}
             onChange={(e) => update('minimumNoticeMinutes', Number(e.target.value))}
             helperText="Prevents last-minute surprise bookings."
+            sx={{
+              maxWidth: 240,
+              mx: { xs: 'auto', sm: 0 },
+              display: 'flex',
+              '& .MuiFormHelperText-root': { textAlign: { xs: 'center', sm: 'left' } },
+            }}
           />
         </Grid>
 
         {/* MAX DAYS */}
         <Grid item xs={12} md={6}>
-          <Typography sx={{ fontWeight: 1000, fontSize: 16, color: '#0F172A', mb: 1 }}>
+          <Typography
+            sx={{
+              fontWeight: 1000,
+              fontSize: 16,
+              color: '#0F172A',
+              mb: 1,
+              textAlign: { xs: 'center', sm: 'left' },
+            }}
+          >
             Maximum Booking Horizon
           </Typography>
           <TextField
@@ -172,6 +240,12 @@ export default function BookingRulesForm({ value, onChange }: Props) {
             value={value.maximumDaysInAdvance}
             onChange={(e) => update('maximumDaysInAdvance', Number(e.target.value))}
             helperText="How far into the future can clients book."
+            sx={{
+              maxWidth: 240,
+              mx: { xs: 'auto', sm: 0 },
+              display: 'flex',
+              '& .MuiFormHelperText-root': { textAlign: { xs: 'center', sm: 'left' } },
+            }}
           />
         </Grid>
 
@@ -181,71 +255,77 @@ export default function BookingRulesForm({ value, onChange }: Props) {
 
         {/* AUTO CONFIRM */}
         <Grid item xs={12}>
-          <FormControlLabel
-            control={
-              <Switch
-                checked={value.autoConfirmReservations}
-                onChange={(e) => update('autoConfirmReservations', e.target.checked)}
-                sx={{
-                  '& .MuiSwitch-switchBase.Mui-checked': { color: landingColors.purple },
-                  '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': {
-                    bgcolor: landingColors.purple,
-                  },
-                }}
-              />
-            }
-            label={
-              <Typography sx={{ fontWeight: 800 }}>
-                Automatically confirm all new reservations
-              </Typography>
-            }
-          />
+          <Box sx={{ display: 'flex', justifyContent: { xs: 'center', sm: 'flex-start' } }}>
+            <FormControlLabel
+              control={
+                <Switch
+                  checked={value.autoConfirmReservations}
+                  onChange={(e) => update('autoConfirmReservations', e.target.checked)}
+                  sx={{
+                    '& .MuiSwitch-switchBase.Mui-checked': { color: landingColors.purple },
+                    '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': {
+                      bgcolor: landingColors.purple,
+                    },
+                  }}
+                />
+              }
+              label={
+                <Typography sx={{ fontWeight: 800, textAlign: { xs: 'center', sm: 'left' } }}>
+                  Automatically confirm all new reservations
+                </Typography>
+              }
+            />
+          </Box>
         </Grid>
 
         {/* END AFTER HOURS */}
         <Grid item xs={12}>
-          <FormControlLabel
-            control={
-              <Switch
-                checked={value.allowBookingToEndAfterWorkingHours}
-                onChange={(e) => update('allowBookingToEndAfterWorkingHours', e.target.checked)}
-                sx={{
-                  '& .MuiSwitch-switchBase.Mui-checked': { color: landingColors.purple },
-                  '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': {
-                    bgcolor: landingColors.purple,
-                  },
-                }}
-              />
-            }
-            label={
-              <Typography sx={{ fontWeight: 800 }}>
-                Allow appointments to finish after closing time
-              </Typography>
-            }
-          />
+          <Box sx={{ display: 'flex', justifyContent: { xs: 'center', sm: 'flex-start' } }}>
+            <FormControlLabel
+              control={
+                <Switch
+                  checked={value.allowBookingToEndAfterWorkingHours}
+                  onChange={(e) => update('allowBookingToEndAfterWorkingHours', e.target.checked)}
+                  sx={{
+                    '& .MuiSwitch-switchBase.Mui-checked': { color: landingColors.purple },
+                    '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': {
+                      bgcolor: landingColors.purple,
+                    },
+                  }}
+                />
+              }
+              label={
+                <Typography sx={{ fontWeight: 800, textAlign: { xs: 'center', sm: 'left' } }}>
+                  Allow appointments to finish after closing time
+                </Typography>
+              }
+            />
+          </Box>
         </Grid>
 
         {/* CHOOSE STAFF */}
         <Grid item xs={12}>
-          <FormControlLabel
-            control={
-              <Switch
-                checked={value.allowCustomerChooseSpecificStaff}
-                onChange={(e) => update('allowCustomerChooseSpecificStaff', e.target.checked)}
-                sx={{
-                  '& .MuiSwitch-switchBase.Mui-checked': { color: landingColors.purple },
-                  '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': {
-                    bgcolor: landingColors.purple,
-                  },
-                }}
-              />
-            }
-            label={
-              <Typography sx={{ fontWeight: 800 }}>
-                Enable clients to request specific staff members
-              </Typography>
-            }
-          />
+          <Box sx={{ display: 'flex', justifyContent: { xs: 'center', sm: 'flex-start' } }}>
+            <FormControlLabel
+              control={
+                <Switch
+                  checked={value.allowCustomerChooseSpecificStaff}
+                  onChange={(e) => update('allowCustomerChooseSpecificStaff', e.target.checked)}
+                  sx={{
+                    '& .MuiSwitch-switchBase.Mui-checked': { color: landingColors.purple },
+                    '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': {
+                      bgcolor: landingColors.purple,
+                    },
+                  }}
+                />
+              }
+              label={
+                <Typography sx={{ fontWeight: 800, textAlign: { xs: 'center', sm: 'left' } }}>
+                  Enable clients to request specific staff members
+                </Typography>
+              }
+            />
+          </Box>
         </Grid>
       </Grid>
     </Stack>

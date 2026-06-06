@@ -12,7 +12,7 @@ interface RichTextSectionProps {
   minHeight?: number;
 }
 
-export default function RichTextSection({
+export function RichTextSection({
   label,
   value,
   onChange,

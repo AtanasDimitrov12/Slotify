@@ -138,14 +138,25 @@ export default function OwnerTeamPage() {
   return (
     <>
       <Stack spacing={4}>
-        <Stack direction="row" justifyContent="space-between" alignItems="flex-start" spacing={2}>
+        <Stack
+          direction={{ xs: 'column', sm: 'row' }}
+          justifyContent="space-between"
+          alignItems={{ xs: 'center', sm: 'flex-start' }}
+          spacing={3}
+          sx={{ textAlign: { xs: 'center', sm: 'left' } }}
+        >
           <Box>
             <Typography
-              sx={{ fontWeight: 1000, fontSize: 36, letterSpacing: -1.5, color: '#0F172A' }}
+              sx={{
+                fontWeight: 1000,
+                fontSize: { xs: 32, sm: 36 },
+                letterSpacing: -1.5,
+                color: '#0F172A',
+              }}
             >
               Team
             </Typography>
-            <Typography sx={{ color: '#64748B', fontWeight: 600, fontSize: 18 }}>
+            <Typography sx={{ color: '#64748B', fontWeight: 600, fontSize: { xs: 16, sm: 18 } }}>
               Manage your barbers and roles.
             </Typography>
           </Box>
@@ -157,6 +168,7 @@ export default function OwnerTeamPage() {
             sx={{
               minHeight: 52,
               px: 3,
+              width: { xs: '100%', sm: 'auto' },
               borderRadius: 999,
               fontWeight: 900,
               bgcolor: landingColors.purple,
@@ -173,7 +185,7 @@ export default function OwnerTeamPage() {
           </Alert>
         ) : null}
 
-        <Grid container spacing={3}>
+        <Grid container spacing={{ xs: 1.5, sm: 3 }}>
           {items.length === 0 ? (
             <Grid item xs={12}>
               <Card
@@ -199,12 +211,14 @@ export default function OwnerTeamPage() {
               <Grid item xs={12} lg={6} key={member.id}>
                 <Card
                   sx={{
-                    borderRadius: `${premium.rLg * 4}px`,
+                    borderRadius: `${premium.rLg * 3}px`,
                     border: '1px solid',
                     borderColor: 'rgba(15,23,42,0.06)',
                     bgcolor: '#FFFFFF',
-                    boxShadow: '0 10px 40px rgba(15,23,42,0.04)',
+                    boxShadow: '0 8px 30px rgba(15,23,42,0.03)',
                     transition: 'all 0.2s ease',
+                    maxWidth: { xs: 340, sm: 'none' },
+                    mx: 'auto',
                     '&:hover': {
                       transform: 'translateY(-2px)',
                       boxShadow: '0 16px 48px rgba(15,23,42,0.08)',
@@ -214,13 +228,23 @@ export default function OwnerTeamPage() {
                 >
                   <CardContent sx={{ p: 0 }}>
                     <Box sx={{ display: 'flex', flexDirection: { xs: 'column', sm: 'row' } }}>
-                      <Box sx={{ p: 3, flex: 1, display: 'flex', alignItems: 'center', gap: 2.5 }}>
+                      <Box
+                        sx={{
+                          p: { xs: 2, sm: 3 },
+                          flex: 1,
+                          display: 'flex',
+                          flexDirection: { xs: 'column', sm: 'row' },
+                          alignItems: 'center',
+                          textAlign: { xs: 'center', sm: 'left' },
+                          gap: { xs: 1.5, sm: 2.5 },
+                        }}
+                      >
                         <Avatar
                           sx={{
-                            width: 64,
-                            height: 64,
+                            width: { xs: 48, sm: 64 },
+                            height: { xs: 48, sm: 64 },
                             fontWeight: 1000,
-                            fontSize: 24,
+                            fontSize: { xs: 18, sm: 24 },
                             bgcolor: alpha(landingColors.purple, 0.08),
                             color: landingColors.purple,
                             border: `1px solid ${alpha(landingColors.purple, 0.15)}`,
@@ -233,7 +257,7 @@ export default function OwnerTeamPage() {
                           <Typography
                             sx={{
                               fontWeight: 1000,
-                              fontSize: 18,
+                              fontSize: { xs: 16, sm: 18 },
                               color: '#0F172A',
                               lineHeight: 1.2,
                             }}
@@ -241,7 +265,13 @@ export default function OwnerTeamPage() {
                             {member.name}
                           </Typography>
                           <Typography
-                            sx={{ color: '#64748B', fontWeight: 600, fontSize: 14, mt: 0.5 }}
+                            sx={{
+                              color: '#64748B',
+                              fontWeight: 600,
+                              fontSize: { xs: 12, sm: 14 },
+                              mt: 0.25,
+                              wordBreak: 'break-word',
+                            }}
                           >
                             {member.email}
                           </Typography>
@@ -249,9 +279,9 @@ export default function OwnerTeamPage() {
                             label={member.role.toUpperCase()}
                             size="small"
                             sx={{
-                              mt: 1.5,
-                              height: 22,
-                              fontSize: 10,
+                              mt: 1,
+                              height: 20,
+                              fontSize: 9,
                               fontWeight: 1000,
                               letterSpacing: 0.8,
                               bgcolor: alpha(landingColors.blue, 0.1),
@@ -264,27 +294,30 @@ export default function OwnerTeamPage() {
 
                       <Box
                         sx={{
-                          p: 3,
-                          bgcolor: alpha(landingColors.purple, 0.02),
+                          p: { xs: 2, sm: 3 },
+                          bgcolor: alpha(landingColors.purple, 0.01),
                           borderLeft: { sm: '1px solid rgba(15,23,42,0.04)' },
                           borderTop: { xs: '1px solid rgba(15,23,42,0.04)', sm: 'none' },
                           display: 'flex',
-                          flexDirection: 'column',
+                          flexDirection: { xs: 'row', sm: 'column' },
                           justifyContent: 'center',
                           alignItems: 'center',
-                          minWidth: 200,
+                          gap: { xs: 2, sm: 0 },
+                          minWidth: { sm: 180 },
                         }}
                       >
                         <Button
                           variant="outlined"
-                          endIcon={<EastRoundedIcon />}
+                          size="small"
+                          endIcon={<EastRoundedIcon sx={{ fontSize: 16 }} />}
                           onClick={() => handleOpenTimeOffDialog(member)}
                           sx={{
                             borderRadius: 999,
                             fontWeight: 900,
+                            fontSize: { xs: 12, sm: 14 },
                             borderColor: 'rgba(15,23,42,0.12)',
                             color: '#475569',
-                            px: 3,
+                            px: { xs: 2, sm: 3 },
                             '&:hover': {
                               bgcolor: '#FFF',
                               borderColor: landingColors.purple,
@@ -296,9 +329,9 @@ export default function OwnerTeamPage() {
 
                         <Typography
                           sx={{
-                            mt: 1.5,
+                            mt: { xs: 0, sm: 1.5 },
                             fontWeight: 800,
-                            fontSize: 12,
+                            fontSize: { xs: 10, sm: 12 },
                             color:
                               member.pendingTimeOffCount > 0 ? landingColors.warning : '#94A3B8',
                             textTransform: 'uppercase',
@@ -307,7 +340,7 @@ export default function OwnerTeamPage() {
                         >
                           {member.pendingTimeOffCount > 0
                             ? `${member.pendingTimeOffCount} pending`
-                            : 'No pending'}
+                            : 'None'}
                         </Typography>
                       </Box>
                     </Box>

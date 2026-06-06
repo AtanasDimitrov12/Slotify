@@ -103,6 +103,7 @@ export default function AppShell() {
       sx={{
         minHeight: '100vh',
         bgcolor: shellColors.pageBg,
+        overflowX: 'hidden',
         backgroundImage: `
           radial-gradient(circle at 10% 0%, rgba(124,108,255,0.08), transparent 22%),
           radial-gradient(circle at 100% 0%, rgba(125,211,252,0.08), transparent 18%),
@@ -362,6 +363,7 @@ export default function AppShell() {
         anchor="right"
         open={mobileOpen}
         onClose={() => setMobileOpen(false)}
+        sx={{ zIndex: (theme) => theme.zIndex.appBar + 100 }}
         PaperProps={{
           sx: {
             width: 340,
