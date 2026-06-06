@@ -184,6 +184,7 @@ export default function ProfilePage() {
                   justifyContent="space-between"
                   alignItems={{ xs: 'center', sm: 'flex-start' }}
                   spacing={2}
+                  sx={{ textAlign: { xs: 'center', sm: 'left' } }}
                 >
                   <Box>
                     <Typography
@@ -192,7 +193,7 @@ export default function ProfilePage() {
                         fontWeight: 1000,
                         letterSpacing: -1.5,
                         mb: 0.5,
-                        fontSize: { xs: 28, md: 34 },
+                        fontSize: { xs: 24, md: 34 },
                       }}
                     >
                       {user?.name}
@@ -201,6 +202,7 @@ export default function ProfilePage() {
                       sx={{
                         color: 'rgba(255,255,255,0.6)',
                         fontWeight: 600,
+                        fontSize: { xs: 14, md: 16 },
                         mb: { xs: 2, md: 3 },
                       }}
                     >
@@ -220,6 +222,8 @@ export default function ProfilePage() {
                       fontSize: 14,
                       px: 2,
                       width: { xs: '100%', sm: 'auto' },
+                      maxWidth: { xs: 240, sm: 'none' },
+                      mx: { xs: 'auto', sm: 0 },
                       '&:hover': {
                         borderColor: 'white',
                         bgcolor: 'rgba(255,255,255,0.05)',

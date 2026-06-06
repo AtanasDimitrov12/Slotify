@@ -97,7 +97,7 @@ export function Hero({
               fontWeight: 1000,
               letterSpacing: { xs: -1.8, md: -4.2 },
               lineHeight: 0.92,
-              fontSize: { xs: 52, sm: 82, md: 152 },
+              fontSize: { xs: 44, sm: 82, md: 152 },
               color: '#07112B',
             }}
           >

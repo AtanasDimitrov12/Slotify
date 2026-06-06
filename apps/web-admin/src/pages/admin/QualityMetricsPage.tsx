@@ -95,10 +95,10 @@ function StatCard({
         '&:hover': { transform: 'translateY(-2px)', boxShadow: '0 8px 24px rgba(15,23,42,0.04)' },
       }}
     >
-      <CardContent sx={{ p: 3 }}>
+      <CardContent sx={{ p: { xs: 2.5, sm: 3 }, textAlign: { xs: 'center', sm: 'left' } }}>
         <Stack
           direction="row"
-          justifyContent="space-between"
+          justifyContent={{ xs: 'center', sm: 'space-between' }}
           alignItems="flex-start"
           sx={{ mb: 2 }}
         >
@@ -122,12 +122,27 @@ function StatCard({
             )}
           </Typography>
           {Icon && (
-            <Box sx={{ p: 1, borderRadius: 1.5, bgcolor: alpha(color, 0.08), color: color }}>
+            <Box
+              sx={{
+                p: 1,
+                borderRadius: 1.5,
+                bgcolor: alpha(color, 0.08),
+                color: color,
+                display: { xs: 'none', sm: 'block' },
+              }}
+            >
               <Icon sx={{ fontSize: 20 }} />
             </Box>
           )}
         </Stack>
-        <Typography sx={{ fontWeight: 800, fontSize: 32, color: COLORS.slate, mb: 0.5 }}>
+        <Typography
+          sx={{
+            fontWeight: 800,
+            fontSize: { xs: 28, sm: 32 },
+            color: COLORS.slate,
+            mb: 0.5,
+          }}
+        >
           {value}
         </Typography>
         {hint && (
@@ -236,14 +251,27 @@ export default function QualityMetricsPage() {
 
   return (
     <Box>
-      <Stack direction="row" justifyContent="space-between" alignItems="flex-end" sx={{ mb: 6 }}>
+      <Stack
+        direction={{ xs: 'column', sm: 'row' }}
+        justifyContent="space-between"
+        alignItems={{ xs: 'center', sm: 'flex-end' }}
+        spacing={3}
+        sx={{ mb: 6, textAlign: { xs: 'center', sm: 'left' } }}
+      >
         <Box>
           <Typography
-            sx={{ fontWeight: 800, fontSize: 32, letterSpacing: -0.5, color: COLORS.slate }}
+            sx={{
+              fontWeight: 800,
+              fontSize: { xs: 28, sm: 32 },
+              letterSpacing: -0.5,
+              color: COLORS.slate,
+            }}
           >
             Quality & Performance
           </Typography>
-          <Typography sx={{ color: COLORS.slateSoft, fontWeight: 500, fontSize: 16 }}>
+          <Typography
+            sx={{ color: COLORS.slateSoft, fontWeight: 500, fontSize: { xs: 15, sm: 16 } }}
+          >
             Real-time DORA metrics, system health, and engineering efficiency.
           </Typography>
         </Box>
@@ -253,7 +281,7 @@ export default function QualityMetricsPage() {
           onChange={(e) => setPeriod(Number(e.target.value))}
           size="small"
           sx={{
-            minWidth: 160,
+            minWidth: { xs: '100%', sm: 160 },
             borderRadius: 1.5,
             fontWeight: 600,
             bgcolor: '#FFFFFF',
@@ -266,7 +294,7 @@ export default function QualityMetricsPage() {
         </Select>
       </Stack>
 
-      <Grid container spacing={4}>
+      <Grid container spacing={{ xs: 2.5, sm: 4 }}>
         {/* System & API Health */}
         <Grid item xs={12}>
           <MetricSection

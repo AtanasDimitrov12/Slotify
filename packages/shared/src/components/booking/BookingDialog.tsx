@@ -327,8 +327,8 @@ export default function BookingDialog({ open, slug, salonName, onClose }: Bookin
       {step !== STEP_SUCCESS && (
         <Box
           sx={{
-            p: 3,
-            px: 4,
+            p: { xs: 2, sm: 3 },
+            px: { xs: 2.5, sm: 4 },
             bgcolor: '#FFF',
             display: 'flex',
             justifyContent: 'space-between',

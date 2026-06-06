@@ -1,40 +1,38 @@
-import { useAuth } from '@barber/shared';
-import {
-  ArrowForwardIosRounded,
-  CloseRounded,
-  HomeRounded,
-  LoginRounded,
-  LogoutRounded,
-  MenuRounded,
-} from '@mui/icons-material';
+import { type AvailableTenant, getMyTenants, useAuth, useToast } from '@barber/shared';
+import { ArrowForwardIosRounded, MenuRounded } from '@mui/icons-material';
+import AssignmentRoundedIcon from '@mui/icons-material/AssignmentRounded';
+import BeachAccessRoundedIcon from '@mui/icons-material/BeachAccessRounded';
+import BlockRoundedIcon from '@mui/icons-material/BlockRounded';
+import ContentCutRoundedIcon from '@mui/icons-material/ContentCutRounded';
+import DashboardRoundedIcon from '@mui/icons-material/DashboardRounded';
+import EventAvailableRoundedIcon from '@mui/icons-material/EventAvailableRounded';
+import GroupsRoundedIcon from '@mui/icons-material/GroupsRounded';
+import InsightsRoundedIcon from '@mui/icons-material/InsightsRounded';
+import LocalOfferRoundedIcon from '@mui/icons-material/LocalOfferRounded';
+import PersonRoundedIcon from '@mui/icons-material/PersonRounded';
+import ScheduleRoundedIcon from '@mui/icons-material/ScheduleRounded';
+import SettingsRoundedIcon from '@mui/icons-material/SettingsRounded';
+import StorefrontRoundedIcon from '@mui/icons-material/StorefrontRounded';
+import TuneRoundedIcon from '@mui/icons-material/TuneRounded';
 import {
   AppBar,
   Box,
   Button,
   ButtonBase,
-  Chip,
   Container,
-  Divider,
   Drawer,
   IconButton,
-  List,
-  ListItemButton,
-  ListItemIcon,
-  ListItemText,
   Stack,
   Toolbar,
   Typography,
+  useMediaQuery,
+  useTheme,
 } from '@mui/material';
 import { alpha } from '@mui/material/styles';
-import type { ReactNode } from 'react';
+import * as React from 'react';
 import { useMemo, useState } from 'react';
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
-
-type NavItem = {
-  label: string;
-  to: string;
-  icon?: ReactNode;
-};
+import UnifiedSidebar, { type NavItem } from './UnifiedSidebar';
 
 const shellColors = {
   pageBg: '#F7F8FC',
@@ -58,18 +56,33 @@ const shellColors = {
 export default function AppShell() {
   const navigate = useNavigate();
   const location = useLocation();
+  const theme = useTheme();
+  const isDesktop = useMediaQuery(theme.breakpoints.up('md'));
   const [mobileOpen, setMobileOpen] = useState(false);
-  const { user, logout } = useAuth();
+  const { user, logout, switchTenant } = useAuth();
+  const { showSuccess, showError } = useToast();
 
-  const navItems: NavItem[] = useMemo(
-    () => [{ label: 'Home', to: '/', icon: <HomeRounded fontSize="small" /> }],
-    [],
-  );
+  const [collapsed, setCollapsed] = React.useState(() => {
+    const saved = localStorage.getItem('sidebar-collapsed');
+    return saved === 'true';
+  });
 
-  const go = (to: string) => {
-    navigate(to);
-    setMobileOpen(false);
-  };
+  const [availableTenants, setAvailableTenants] = React.useState<AvailableTenant[]>([]);
+
+  React.useEffect(() => {
+    if (user && (user.role === 'owner' || user.role === 'staff')) {
+      getMyTenants()
+        .then((tenants) => {
+          const mapped: AvailableTenant[] = tenants
+            .filter((t): t is { _id: string; name: string; slug?: string } => !!t._id && !!t.name)
+            .map((t) => ({ _id: t._id, name: t.name, slug: t.slug }));
+          setAvailableTenants(mapped);
+        })
+        .catch((err) => console.error('Failed to fetch tenants', err));
+    } else {
+      setAvailableTenants([]);
+    }
+  }, [user]);
 
   const handleLogout = () => {
     logout();
@@ -77,33 +90,83 @@ export default function AppShell() {
     navigate('/', { replace: true });
   };
 
+  const handleSwitchTenant = async (tenantId: string) => {
+    try {
+      await switchTenant(tenantId);
+      showSuccess('Switched salon successfully');
+      window.location.reload();
+    } catch (_err) {
+      showError('Failed to switch salon');
+    }
+  };
+
+  const handleToggleCollapse = () => {
+    setCollapsed((prev) => {
+      const next = !prev;
+      localStorage.setItem('sidebar-collapsed', String(next));
+      return next;
+    });
+  };
+
+  const go = (to: string) => {
+    navigate(to);
+    setMobileOpen(false);
+  };
+
   const isActive = (to: string) => {
     if (to === '/') return location.pathname === '/';
     return location.pathname.startsWith(to);
   };
 
-  const getUserHomePath = () => {
-    if (!user) return '/login';
+  const consoleItems = useMemo<NavItem[]>(() => {
+    if (!user) return [];
+    if (user.role === 'admin') {
+      return [
+        { label: 'Dashboard', to: '/admin', icon: DashboardRoundedIcon },
+        { label: 'Tenants', to: '/admin/tenants', icon: StorefrontRoundedIcon },
+        { label: 'Backlog', to: '/admin/tickets', icon: AssignmentRoundedIcon },
+        { label: 'System Quality', to: '/admin/quality', icon: InsightsRoundedIcon },
+      ];
+    }
+    if (user.role === 'owner') {
+      return [
+        { label: 'Overview', to: '/owner/overview', icon: DashboardRoundedIcon },
+        { label: 'Team', to: '/owner/team', icon: GroupsRoundedIcon },
+        { label: 'Services', to: '/owner/services', icon: ContentCutRoundedIcon },
+        { label: 'Booking rules', to: '/owner/booking-rules', icon: EventAvailableRoundedIcon },
+        { label: 'Business settings', to: '/owner/settings', icon: SettingsRoundedIcon },
+      ];
+    }
+    if (user.role === 'staff') {
+      return [
+        { label: 'Dashboard', to: '/staff/dashboard', icon: DashboardRoundedIcon },
+        { label: 'Schedule', to: '/staff/schedule', icon: ScheduleRoundedIcon },
+        { label: 'Profile', to: '/staff/profile', icon: PersonRoundedIcon },
+        { label: 'Availability', to: '/staff/availability', icon: ScheduleRoundedIcon },
+        { label: 'Time off', to: '/staff/time-off', icon: BeachAccessRoundedIcon },
+        { label: 'Blocked slots', to: '/staff/blocked-slots', icon: BlockRoundedIcon },
+        { label: 'Services & prices', to: '/staff/services', icon: LocalOfferRoundedIcon },
+        { label: 'Booking rules', to: '/staff/booking-rules', icon: TuneRoundedIcon },
+      ];
+    }
+    return [];
+  }, [user]);
 
-    const role = user.role;
+  const sidebarTitle =
+    user?.role === 'admin'
+      ? 'Admin Console'
+      : user?.role === 'owner'
+        ? 'Salon Console'
+        : 'Staff Console';
 
-    if (role === 'staff') return '/staff';
-    if (role === 'admin') return '/admin';
-    if (role === 'owner') return '/owner';
-
-    return '/';
-  };
-
-  const handleUserHomeClick = () => {
-    go(getUserHomePath());
-  };
+  const showSidebar = user && consoleItems.length > 0;
+  const currentDrawerWidth = showSidebar && isDesktop ? (collapsed ? 88 : 280) : 0;
 
   return (
     <Box
       sx={{
         minHeight: '100vh',
         bgcolor: shellColors.pageBg,
-        overflowX: 'hidden',
         backgroundImage: `
           radial-gradient(circle at 10% 0%, rgba(124,108,255,0.08), transparent 22%),
           radial-gradient(circle at 100% 0%, rgba(125,211,252,0.08), transparent 18%),
@@ -127,7 +190,7 @@ export default function AppShell() {
           <Container
             maxWidth={false}
             sx={{
-              maxWidth: 1280,
+              maxWidth: 1400,
               display: 'flex',
               alignItems: 'center',
               gap: 2,
@@ -227,91 +290,36 @@ export default function AppShell() {
               </ButtonBase>
             </Stack>
 
-            <Stack
-              direction="row"
-              spacing={0.8}
-              alignItems="center"
-              sx={{ display: { xs: 'none', md: 'flex' } }}
-            >
-              {navItems.map((item) => {
-                const active = isActive(item.to);
-
-                return (
-                  <Button
-                    key={item.to}
-                    onClick={() => go(item.to)}
-                    startIcon={item.icon}
-                    sx={{
-                      minHeight: 42,
-                      px: 1.7,
-                      borderRadius: 999,
-                      textTransform: 'none',
-                      fontWeight: 850,
-                      color: active ? shellColors.text : shellColors.textSoft,
-                      bgcolor: active ? shellColors.navActive : 'transparent',
-                      border: active
-                        ? `1px solid ${alpha(shellColors.purple, 0.18)}`
-                        : '1px solid transparent',
-                      '&:hover': {
-                        bgcolor: shellColors.navHover,
-                        color: shellColors.text,
-                      },
-                    }}
-                  >
-                    {item.label}
-                  </Button>
-                );
-              })}
-            </Stack>
-
             <Stack direction="row" spacing={1} alignItems="center">
               {user ? (
-                <Stack direction="row" spacing={1} alignItems="center">
-                  <Chip
-                    label={user.email}
-                    size="small"
-                    onClick={handleUserHomeClick}
-                    clickable
-                    sx={{
-                      display: { xs: 'none', md: 'inline-flex' },
-                      height: 34,
-                      borderRadius: 999,
-                      color: shellColors.textSoft,
-                      bgcolor: 'rgba(255,255,255,0.70)',
-                      border: `1px solid ${shellColors.navBorder}`,
-                      cursor: 'pointer',
-                      '& .MuiChip-label': {
-                        px: 1.2,
-                        fontWeight: 800,
-                      },
-                      '&:hover': {
-                        bgcolor: 'rgba(255,255,255,0.90)',
-                      },
-                    }}
-                  />
-
-                  <Button
-                    variant="outlined"
-                    onClick={handleLogout}
-                    startIcon={<LogoutRounded />}
-                    sx={{
-                      borderRadius: 999,
-                      height: 42,
-                      px: 2.1,
-                      display: { xs: 'none', md: 'inline-flex' },
-                      textTransform: 'none',
-                      fontWeight: 850,
-                      color: shellColors.text,
-                      borderColor: shellColors.navBorder,
-                      bgcolor: 'rgba(255,255,255,0.64)',
-                      '&:hover': {
-                        borderColor: alpha('#0F172A', 0.16),
-                        bgcolor: 'rgba(255,255,255,0.88)',
-                      },
-                    }}
+                <Stack
+                  direction="row"
+                  spacing={1}
+                  alignItems="center"
+                  sx={{ display: { xs: 'none', md: 'flex' } }}
+                >
+                  <Typography
+                    sx={{ color: shellColors.textSoft, fontWeight: 800, fontSize: 13, mr: 1 }}
                   >
-                    Logout
-                  </Button>
+                    {user.email}
+                  </Typography>
+                  {!showSidebar && (
+                    <Button
+                      variant="outlined"
+                      onClick={handleLogout}
+                      sx={{
+                        borderRadius: 999,
+                        height: 40,
+                        px: 2.5,
+                        textTransform: 'none',
+                        fontWeight: 850,
+                        color: shellColors.text,
+                        borderColor: shellColors.navBorder,
+                      }}
+                    >
+                      Logout
+                    </Button>
+                  )}
                 </Stack>
               ) : (
                 <Button
@@ -327,9 +335,7 @@ export default function AppShell() {
                     bgcolor: shellColors.purple,
                     color: shellColors.white,
                     boxShadow: '0 14px 32px rgba(124,108,255,0.22)',
-                    '&:hover': {
-                      bgcolor: '#6B5CFA',
-                    },
+                    '&:hover': { bgcolor: '#6B5CFA' },
                   }}
                   endIcon={<ArrowForwardIosRounded sx={{ fontSize: 16 }} />}
                 >
@@ -339,15 +345,13 @@ export default function AppShell() {
 
               <IconButton
                 sx={{
-                  display: { xs: 'inline-flex', md: 'none' },
+                  display: { xs: 'inline-flex', md: showSidebar ? 'none' : 'inline-flex' },
                   width: 42,
                   height: 42,
                   color: shellColors.text,
                   border: `1px solid ${shellColors.navBorder}`,
                   bgcolor: 'rgba(255,255,255,0.72)',
-                  '&:hover': {
-                    bgcolor: 'rgba(255,255,255,0.90)',
-                  },
+                  '&:hover': { bgcolor: 'rgba(255,255,255,0.90)' },
                 }}
                 aria-label="open menu"
                 onClick={() => setMobileOpen(true)}
@@ -359,239 +363,88 @@ export default function AppShell() {
         </Toolbar>
       </AppBar>
 
+      <Box
+        sx={{
+          display: 'flex',
+          minHeight: 'calc(100vh - 74px)',
+        }}
+      >
+        {showSidebar && isDesktop && (
+          <Box
+            sx={{
+              width: currentDrawerWidth,
+              flexShrink: 0,
+              position: 'sticky',
+              top: 74,
+              height: 'calc(100vh - 74px)',
+              borderRight: '1px solid',
+              borderColor: 'rgba(15,23,42,0.06)',
+              bgcolor: alpha('#FFFFFF', 0.4),
+              backdropFilter: 'blur(10px)',
+              zIndex: (theme) => theme.zIndex.drawer,
+              transition: 'width 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+              overflow: 'hidden',
+            }}
+          >
+            <UnifiedSidebar
+              items={consoleItems}
+              isActive={isActive}
+              onNavigate={go}
+              collapsed={collapsed}
+              onToggleCollapse={handleToggleCollapse}
+              userRole={user?.role as any}
+              title={sidebarTitle}
+              userName={user?.name}
+              userEmail={user?.email}
+              availableTenants={availableTenants}
+              currentTenantId={user?.tenantId}
+              onSwitchTenant={handleSwitchTenant}
+              onAddTenant={user?.role === 'owner' ? () => go('/owner/settings') : undefined}
+              onLogout={user ? handleLogout : undefined}
+            />
+          </Box>
+        )}
+
+        <Box sx={{ flex: 1, minWidth: 0, overflowX: 'hidden' }}>
+          <Outlet />
+        </Box>
+      </Box>
+
       <Drawer
-        anchor="right"
+        anchor="left"
         open={mobileOpen}
         onClose={() => setMobileOpen(false)}
         sx={{ zIndex: (theme) => theme.zIndex.appBar + 100 }}
         PaperProps={{
           sx: {
-            width: 340,
+            width: 280,
             bgcolor: shellColors.drawerBg,
             color: shellColors.text,
-            borderLeft: `1px solid ${shellColors.drawerBorder}`,
-            borderTopLeftRadius: 24,
-            borderBottomLeftRadius: 24,
-            backgroundImage: `
-              radial-gradient(circle at 20% 10%, rgba(124,108,255,0.07), transparent 24%),
-              radial-gradient(circle at 100% 100%, rgba(125,211,252,0.06), transparent 22%)
-            `,
+            borderTopRightRadius: 32,
+            borderBottomRightRadius: 32,
+            overflow: 'hidden',
           },
         }}
       >
-        <Box
-          sx={{
-            p: 2,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-          }}
-        >
-          <Stack direction="row" spacing={1.2} alignItems="center" sx={{ minWidth: 0 }}>
-            <Box
-              sx={{
-                width: 38,
-                height: 38,
-                borderRadius: 3,
-                display: 'grid',
-                placeItems: 'center',
-                bgcolor: '#10162B',
-                color: shellColors.white,
-                fontWeight: 1000,
-                fontSize: 18,
-                letterSpacing: -1,
-                boxShadow: '0 8px 24px rgba(15,23,42,0.12)',
-              }}
-            >
-              S
-            </Box>
-
-            <Stack spacing={0.1} sx={{ minWidth: 0 }}>
-              <Typography
-                noWrap
-                sx={{
-                  fontWeight: 1000,
-                  letterSpacing: -0.8,
-                  color: shellColors.text,
-                  fontSize: 22,
-                  lineHeight: 1,
-                }}
-              >
-                Slotify
-              </Typography>
-              <Typography
-                noWrap
-                sx={{
-                  color: shellColors.textMuted,
-                  fontSize: 11.5,
-                  fontWeight: 700,
-                  letterSpacing: 0.4,
-                }}
-              >
-                Smart reservations
-              </Typography>
-            </Stack>
-          </Stack>
-
-          <IconButton
-            aria-label="close menu"
-            onClick={() => setMobileOpen(false)}
-            sx={{
-              color: shellColors.text,
-              border: `1px solid ${shellColors.navBorder}`,
-              bgcolor: 'rgba(255,255,255,0.80)',
-              '&:hover': {
-                bgcolor: 'rgba(255,255,255,0.96)',
-              },
-            }}
-          >
-            <CloseRounded />
-          </IconButton>
-        </Box>
-
-        <Divider sx={{ borderColor: shellColors.drawerBorder }} />
-
-        <List sx={{ p: 1.5 }}>
-          {navItems.map((item) => {
-            const active = isActive(item.to);
-
-            return (
-              <ListItemButton
-                key={item.to}
-                selected={active}
-                onClick={() => go(item.to)}
-                sx={{
-                  minHeight: 52,
-                  borderRadius: 4,
-                  mb: 0.8,
-                  color: active ? shellColors.text : shellColors.textSoft,
-                  bgcolor: active ? alpha(shellColors.purple, 0.09) : 'transparent',
-                  border: active
-                    ? `1px solid ${alpha(shellColors.purple, 0.16)}`
-                    : '1px solid transparent',
-                  '&.Mui-selected': {
-                    bgcolor: alpha(shellColors.purple, 0.09),
-                  },
-                  '&.Mui-selected:hover': {
-                    bgcolor: alpha(shellColors.purple, 0.13),
-                  },
-                  '&:hover': {
-                    bgcolor: 'rgba(15,23,42,0.04)',
-                  },
-                }}
-              >
-                <ListItemIcon
-                  sx={{
-                    minWidth: 38,
-                    color: active ? '#5B4DDB' : shellColors.textMuted,
-                  }}
-                >
-                  {item.icon}
-                </ListItemIcon>
-
-                <ListItemText
-                  primary={item.label}
-                  primaryTypographyProps={{
-                    fontWeight: 850,
-                    fontSize: 15,
-                  }}
-                />
-              </ListItemButton>
-            );
-          })}
-        </List>
-
-        <Box sx={{ px: 2, pb: 2, pt: 0.5, mt: 'auto' }}>
-          {user ? (
-            <Stack spacing={1.2}>
-              <Box
-                onClick={handleUserHomeClick}
-                sx={{
-                  px: 1.5,
-                  py: 1.3,
-                  borderRadius: 4,
-                  border: `1px solid ${shellColors.drawerBorder}`,
-                  bgcolor: 'rgba(248,250,252,0.92)',
-                  cursor: 'pointer',
-                  transition: 'background-color 160ms ease, transform 160ms ease',
-                  '&:hover': {
-                    bgcolor: 'rgba(255,255,255,0.98)',
-                    transform: 'translateY(-1px)',
-                  },
-                }}
-              >
-                <Typography
-                  sx={{
-                    color: shellColors.textMuted,
-                    fontSize: 11.5,
-                    fontWeight: 800,
-                    letterSpacing: 0.8,
-                    textTransform: 'uppercase',
-                  }}
-                >
-                  Signed in as
-                </Typography>
-                <Typography
-                  sx={{
-                    mt: 0.4,
-                    color: shellColors.text,
-                    fontWeight: 850,
-                    fontSize: 14.5,
-                    wordBreak: 'break-word',
-                  }}
-                >
-                  {user.email}
-                </Typography>
-              </Box>
-
-              <Button
-                fullWidth
-                variant="outlined"
-                startIcon={<LogoutRounded />}
-                onClick={handleLogout}
-                sx={{
-                  borderRadius: 999,
-                  height: 46,
-                  textTransform: 'none',
-                  fontWeight: 850,
-                  color: shellColors.text,
-                  borderColor: shellColors.navBorder,
-                  bgcolor: 'rgba(255,255,255,0.76)',
-                  '&:hover': {
-                    borderColor: alpha('#0F172A', 0.16),
-                    bgcolor: 'rgba(255,255,255,0.96)',
-                  },
-                }}
-              >
-                Logout
-              </Button>
-            </Stack>
-          ) : (
-            <Button
-              fullWidth
-              variant="contained"
-              startIcon={<LoginRounded />}
-              onClick={() => go('/login')}
-              sx={{
-                borderRadius: 999,
-                height: 46,
-                textTransform: 'none',
-                fontWeight: 900,
-                bgcolor: shellColors.purple,
-                color: shellColors.white,
-                boxShadow: '0 14px 32px rgba(124,108,255,0.22)',
-                '&:hover': {
-                  bgcolor: '#6B5CFA',
-                },
-              }}
-            >
-              Login
-            </Button>
-          )}
+        <Box sx={{ pt: '74px', height: '100%', boxSizing: 'border-box' }}>
+          <UnifiedSidebar
+            items={consoleItems}
+            isActive={isActive}
+            onNavigate={go}
+            collapsed={false}
+            onToggleCollapse={() => {}}
+            userRole={user?.role as any}
+            title={sidebarTitle}
+            userName={user?.name}
+            userEmail={user?.email}
+            availableTenants={availableTenants}
+            currentTenantId={user?.tenantId}
+            onSwitchTenant={handleSwitchTenant}
+            onAddTenant={user?.role === 'owner' ? () => go('/owner/settings') : undefined}
+            onLogout={user ? handleLogout : undefined}
+          />
         </Box>
       </Drawer>
-
-      <Outlet />
     </Box>
   );
 }

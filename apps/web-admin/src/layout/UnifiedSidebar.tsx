@@ -1,12 +1,14 @@
 import { type AvailableTenant, landingColors } from '@barber/shared';
 import type { SvgIconComponent } from '@mui/icons-material';
-import AddRoundedIcon from '@mui/icons-material/AddRounded';
 import ChevronLeftRoundedIcon from '@mui/icons-material/ChevronLeftRounded';
 import ChevronRightRoundedIcon from '@mui/icons-material/ChevronRightRounded';
+import HomeRoundedIcon from '@mui/icons-material/HomeRounded';
+import LogoutRoundedIcon from '@mui/icons-material/LogoutRounded';
 import SwapHorizRoundedIcon from '@mui/icons-material/SwapHorizRounded';
 import {
   Avatar,
   Box,
+  Button,
   Divider,
   IconButton,
   keyframes,
@@ -14,8 +16,6 @@ import {
   ListItemButton,
   ListItemIcon,
   ListItemText,
-  Menu,
-  MenuItem,
   Stack,
   Tooltip,
   Typography,
@@ -54,6 +54,7 @@ interface UnifiedSidebarProps {
   currentTenantId?: string;
   onSwitchTenant?: (tenantId: string) => void;
   onAddTenant?: () => void;
+  onLogout?: () => void;
 }
 
 export default function UnifiedSidebar({
@@ -70,6 +71,7 @@ export default function UnifiedSidebar({
   currentTenantId,
   onSwitchTenant,
   onAddTenant,
+  onLogout,
 }: UnifiedSidebarProps) {
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
   const openSwitcher = Boolean(anchorEl);
@@ -122,175 +124,140 @@ export default function UnifiedSidebar({
       }}
     >
       {/* Header Area */}
-      <Stack
-        direction="row"
-        alignItems="center"
-        spacing={2}
-        sx={{
-          p: collapsed ? 2.5 : 3,
-          minHeight: 100,
-          transition: 'padding 0.3s',
-          overflow: 'hidden',
-          cursor: canSwitchTenants ? 'pointer' : 'default',
-          '&:hover': {
-            bgcolor: canSwitchTenants ? alpha('#FFFFFF', 0.5) : 'transparent',
-          },
-        }}
-        onClick={canSwitchTenants ? handleOpenSwitcher : undefined}
-      >
-        <Box sx={{ position: 'relative' }}>
-          <Avatar
+      {userRole && (
+        <>
+          <Stack
+            direction="row"
+            alignItems="center"
+            spacing={2}
             sx={{
-              width: 44,
-              height: 44,
-              fontSize: 18,
-              fontWeight: 1000,
-              bgcolor: alpha(roleColor, 0.12),
-              color: roleColor,
-              border: `1px solid ${alpha(roleColor, 0.2)}`,
-              boxShadow: `0 8px 24px ${alpha(roleColor, 0.16)}`,
-              flexShrink: 0,
-            }}
-          >
-            {userInitial}
-          </Avatar>
-          {canSwitchTenants && (
-            <Box
-              sx={{
-                position: 'absolute',
-                bottom: -4,
-                right: -4,
-                width: 20,
-                height: 20,
-                borderRadius: '50%',
-                bgcolor: '#FFFFFF',
-                boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
-                display: 'grid',
-                placeItems: 'center',
-                color: '#64748B',
-              }}
-            >
-              <SwapHorizRoundedIcon sx={{ fontSize: 14 }} />
-            </Box>
-          )}
-        </Box>
-
-        {!collapsed && (
-          <Box sx={{ minWidth: 0, flex: 1, animation: `${fadeIn} 0.3s ease-out` }}>
-            <Typography
-              noWrap
-              sx={{
-                fontWeight: 1000,
-                letterSpacing: -0.4,
-                lineHeight: 1.1,
-                fontSize: 18,
-                color: '#0F172A',
-              }}
-            >
-              {currentTenant?.name || title}
-            </Typography>
-            <Typography noWrap variant="body2" sx={{ color: '#64748B', fontWeight: 700, mt: 0.4 }}>
-              {displayName}
-            </Typography>
-          </Box>
-        )}
-      </Stack>
-
-      <Menu
-        anchorEl={anchorEl}
-        open={openSwitcher}
-        onClose={handleCloseSwitcher}
-        onClick={(e) => e.stopPropagation()}
-        PaperProps={{
-          sx: {
-            mt: 1.5,
-            width: 280,
-            borderRadius: 4,
-            boxShadow: '0 20px 40px rgba(15,23,42,0.12)',
-            border: '1px solid rgba(15,23,42,0.08)',
-            p: 1,
-          },
-        }}
-        transformOrigin={{ horizontal: 'left', vertical: 'top' }}
-        anchorOrigin={{ horizontal: 'left', vertical: 'bottom' }}
-      >
-        <Typography sx={{ px: 2, py: 1, color: '#94A3B8', fontSize: 12, fontWeight: 800 }}>
-          MY SALONS
-        </Typography>
-
-        {availableTenants.map((tenant) => (
-          <MenuItem
-            key={tenant._id}
-            selected={tenant._id === currentTenantId}
-            onClick={() => handleSwitch(tenant._id)}
-            sx={{
-              borderRadius: 3,
-              mb: 0.5,
-              py: 1.5,
-              '&.Mui-selected': {
-                bgcolor: alpha(roleColor, 0.08),
-                color: roleColor,
-                fontWeight: 800,
-                '&:hover': { bgcolor: alpha(roleColor, 0.12) },
+              p: collapsed ? 2.5 : 3,
+              minHeight: 100,
+              transition: 'padding 0.3s',
+              overflow: 'hidden',
+              cursor: canSwitchTenants ? 'pointer' : 'default',
+              '&:hover': {
+                bgcolor: canSwitchTenants ? alpha('#FFFFFF', 0.5) : 'transparent',
               },
             }}
+            onClick={canSwitchTenants ? handleOpenSwitcher : undefined}
           >
-            <ListItemIcon sx={{ color: tenant._id === currentTenantId ? roleColor : 'inherit' }}>
+            <Box sx={{ position: 'relative' }}>
               <Avatar
                 sx={{
-                  width: 32,
-                  height: 32,
-                  fontSize: 14,
-                  fontWeight: 800,
-                  bgcolor:
-                    tenant._id === currentTenantId ? alpha(roleColor, 0.1) : alpha('#94A3B8', 0.1),
-                  color: tenant._id === currentTenantId ? roleColor : '#94A3B8',
+                  width: 44,
+                  height: 44,
+                  fontSize: 18,
+                  fontWeight: 1000,
+                  bgcolor: alpha(roleColor, 0.12),
+                  color: roleColor,
+                  border: `1px solid ${alpha(roleColor, 0.2)}`,
+                  boxShadow: `0 8px 24px ${alpha(roleColor, 0.16)}`,
+                  flexShrink: 0,
                 }}
               >
-                {(tenant.name || 'S').charAt(0)}
+                {userInitial}
               </Avatar>
-            </ListItemIcon>
-            <ListItemText
-              primary={tenant.name || 'Unnamed Salon'}
-              primaryTypographyProps={{ fontWeight: 700, fontSize: 14 }}
-              secondary={tenant.role === 'owner' ? 'Owner' : 'Staff'}
-              secondaryTypographyProps={{ fontSize: 11, fontWeight: 600 }}
-            />
-          </MenuItem>
-        ))}
+              {canSwitchTenants && (
+                <Box
+                  sx={{
+                    position: 'absolute',
+                    bottom: -4,
+                    right: -4,
+                    width: 20,
+                    height: 20,
+                    borderRadius: '50%',
+                    bgcolor: '#FFFFFF',
+                    boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+                    display: 'grid',
+                    placeItems: 'center',
+                    color: '#64748B',
+                  }}
+                >
+                  <SwapHorizRoundedIcon sx={{ fontSize: 14 }} />
+                </Box>
+              )}
+            </Box>
 
-        {userRole === 'owner' && onAddTenant && <Divider sx={{ my: 1, opacity: 0.5 }} />}
-        {userRole === 'owner' && onAddTenant && (
-          <MenuItem
-            onClick={handleAdd}
-            sx={{
-              borderRadius: 3,
-              py: 1.5,
-              color: landingColors.purple,
-            }}
-          >
-            <ListItemIcon sx={{ color: landingColors.purple }}>
-              <AddRoundedIcon />
-            </ListItemIcon>
-            <ListItemText
-              primary="Create New Salon"
-              primaryTypographyProps={{ fontWeight: 800, fontSize: 14 }}
-            />
-          </MenuItem>
-        )}
-      </Menu>
-
-      <Divider sx={{ mx: collapsed ? 1.5 : 2, borderColor: 'rgba(15,23,42,0.06)' }} />
+            {!collapsed && (
+              <Box sx={{ minWidth: 0, flex: 1, animation: `${fadeIn} 0.3s ease-out` }}>
+                <Typography
+                  noWrap
+                  sx={{
+                    fontWeight: 1000,
+                    letterSpacing: -0.4,
+                    lineHeight: 1.1,
+                    fontSize: 18,
+                    color: '#0F172A',
+                  }}
+                >
+                  {currentTenant?.name || title}
+                </Typography>
+                <Typography
+                  noWrap
+                  variant="body2"
+                  sx={{ color: '#64748B', fontWeight: 700, mt: 0.4 }}
+                >
+                  {displayName}
+                </Typography>
+              </Box>
+            )}
+          </Stack>
+          <Divider sx={{ mx: collapsed ? 1.5 : 2, borderColor: 'rgba(15,23,42,0.06)' }} />
+        </>
+      )}
 
       {/* Navigation List */}
       <Box sx={{ flex: 1, overflowY: 'auto', overflowX: 'hidden' }}>
-        <List sx={{ p: collapsed ? 1.5 : 2, pt: 3 }}>
+        <List sx={{ p: collapsed ? 1.5 : 2, pt: 2 }}>
+          {/* Global items */}
+          <ListItemButton
+            selected={isActive('/')}
+            onClick={() => onNavigate('/')}
+            sx={{
+              borderRadius: 3,
+              mb: 1,
+              px: collapsed ? 1.5 : 2,
+              py: 1.25,
+              minHeight: 48,
+              justifyContent: collapsed ? 'center' : 'flex-start',
+              transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+              '&:hover': {
+                bgcolor: alpha('#0F172A', 0.04),
+                transform: collapsed ? 'scale(1.05)' : 'translateX(4px)',
+              },
+            }}
+          >
+            <ListItemIcon
+              sx={{
+                minWidth: collapsed ? 0 : 40,
+                color: isActive('/') ? roleColor : '#94A3B8',
+                justifyContent: 'center',
+              }}
+            >
+              <HomeRoundedIcon fontSize="medium" />
+            </ListItemIcon>
+            {!collapsed && (
+              <ListItemText
+                primary="Back to Home"
+                primaryTypographyProps={{
+                  fontWeight: 700,
+                  fontSize: 14,
+                  color: isActive('/') ? roleColor : '#64748B',
+                }}
+              />
+            )}
+          </ListItemButton>
+
+          <Divider sx={{ my: 2, opacity: 0.6 }} />
+
           {items.map((it) => {
             const active = isActive(it.to);
             const Icon = it.icon;
 
             const content = (
               <ListItemButton
+                key={it.to}
                 selected={active}
                 onClick={() => onNavigate(it.to)}
                 sx={{
@@ -353,40 +320,61 @@ export default function UnifiedSidebar({
         </List>
       </Box>
 
-      {/* Collapse Toggle (Desktop only) */}
+      {/* Footer Area */}
       <Box
         sx={{
           p: 2,
           display: 'flex',
-          justifyContent: collapsed ? 'center' : 'flex-end',
+          flexDirection: 'column',
+          gap: 1.5,
           borderTop: '1px solid rgba(15,23,42,0.04)',
           bgcolor: alpha('#FFFFFF', 0.5),
         }}
       >
-        <IconButton
-          onClick={(e) => {
-            e.stopPropagation();
-            onToggleCollapse();
-          }}
-          sx={{
-            width: 40,
-            height: 40,
-            bgcolor: '#FFFFFF',
-            border: '1px solid rgba(15,23,42,0.08)',
-            boxShadow: '0 4px 12px rgba(15,23,42,0.04)',
-            color: '#64748B',
-            zIndex: 10,
-            '&:hover': {
-              bgcolor: alpha(roleColor, 0.04),
-              color: roleColor,
-              borderColor: alpha(roleColor, 0.2),
-              transform: 'scale(1.1)',
-            },
-            transition: 'all 0.2s ease',
-          }}
-        >
-          {collapsed ? <ChevronRightRoundedIcon /> : <ChevronLeftRoundedIcon />}
-        </IconButton>
+        {onLogout && !collapsed && (
+          <Button
+            variant="text"
+            startIcon={<LogoutRoundedIcon />}
+            onClick={onLogout}
+            sx={{
+              justifyContent: 'flex-start',
+              color: '#64748B',
+              fontWeight: 700,
+              textTransform: 'none',
+              px: 2,
+              '&:hover': { bgcolor: alpha('#EF4444', 0.05), color: '#EF4444' },
+            }}
+          >
+            Log out
+          </Button>
+        )}
+
+        <Box sx={{ display: 'flex', justifyContent: collapsed ? 'center' : 'flex-end' }}>
+          <IconButton
+            onClick={(e) => {
+              e.stopPropagation();
+              onToggleCollapse();
+            }}
+            sx={{
+              width: 40,
+              height: 40,
+              bgcolor: '#FFFFFF',
+              border: '1px solid rgba(15,23,42,0.08)',
+              boxShadow: '0 4px 12px rgba(15,23,42,0.04)',
+              color: '#64748B',
+              zIndex: 10,
+              '&:hover': {
+                bgcolor: alpha(roleColor, 0.04),
+                color: roleColor,
+                borderColor: alpha(roleColor, 0.2),
+                transform: 'scale(1.1)',
+              },
+              transition: 'all 0.2s ease',
+            }}
+          >
+            {collapsed ? <ChevronRightRoundedIcon /> : <ChevronLeftRoundedIcon />}
+          </IconButton>
+        </Box>
       </Box>
     </Box>
   );
