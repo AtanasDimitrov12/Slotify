@@ -1,5 +1,7 @@
 import { type AvailableTenant, landingColors } from '@barber/shared';
 import type { SvgIconComponent } from '@mui/icons-material';
+import AddRoundedIcon from '@mui/icons-material/AddRounded';
+import CheckRoundedIcon from '@mui/icons-material/CheckRounded';
 import ChevronLeftRoundedIcon from '@mui/icons-material/ChevronLeftRounded';
 import ChevronRightRoundedIcon from '@mui/icons-material/ChevronRightRounded';
 import HomeRoundedIcon from '@mui/icons-material/HomeRounded';
@@ -16,6 +18,8 @@ import {
   ListItemButton,
   ListItemIcon,
   ListItemText,
+  Menu,
+  MenuItem,
   Stack,
   Tooltip,
   Typography,
@@ -204,6 +208,74 @@ export default function UnifiedSidebar({
             )}
           </Stack>
           <Divider sx={{ mx: collapsed ? 1.5 : 2, borderColor: 'rgba(15,23,42,0.06)' }} />
+
+          <Menu
+            anchorEl={anchorEl}
+            open={openSwitcher}
+            onClose={handleCloseSwitcher}
+            onClick={handleCloseSwitcher}
+            PaperProps={{
+              elevation: 0,
+              sx: {
+                width: 240,
+                mt: 1,
+                borderRadius: 4,
+                border: '1px solid rgba(15,23,42,0.08)',
+                boxShadow: '0 20px 40px rgba(15,23,42,0.12)',
+                p: 1,
+                '& .MuiMenuItem-root': {
+                  borderRadius: 2,
+                  py: 1.5,
+                  px: 2,
+                  mb: 0.5,
+                  '&:last-child': { mb: 0 },
+                },
+              },
+            }}
+            transformOrigin={{ horizontal: 'left', vertical: 'top' }}
+            anchorOrigin={{ horizontal: 'left', vertical: 'bottom' }}
+          >
+            <Typography variant="overline" sx={{ px: 2, py: 1, display: 'block', color: '#94A3B8', fontWeight: 800 }}>
+              Your Salons
+            </Typography>
+            {availableTenants.map((tenant) => (
+              <MenuItem
+                key={tenant._id}
+                onClick={() => handleSwitch(tenant._id)}
+                selected={tenant._id === currentTenantId}
+                sx={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  '&.Mui-selected': {
+                    bgcolor: alpha(roleColor, 0.08),
+                    color: roleColor,
+                    fontWeight: 700,
+                    '&:hover': { bgcolor: alpha(roleColor, 0.12) },
+                  },
+                }}
+              >
+                <Typography variant="body2" sx={{ fontWeight: 'inherit' }}>
+                  {tenant.name}
+                </Typography>
+                {tenant._id === currentTenantId && <CheckRoundedIcon sx={{ fontSize: 18 }} />}
+              </MenuItem>
+            ))}
+
+            {userRole === 'owner' && onAddTenant && (
+              <>
+                <Divider sx={{ my: 1, opacity: 0.6 }} />
+                <MenuItem onClick={handleAdd} sx={{ color: roleColor }}>
+                  <ListItemIcon sx={{ minWidth: 32, color: 'inherit' }}>
+                    <AddRoundedIcon fontSize="small" />
+                  </ListItemIcon>
+                  <ListItemText
+                    primary="Add Salon"
+                    primaryTypographyProps={{ variant: 'body2', fontWeight: 700 }}
+                  />
+                </MenuItem>
+              </>
+            )}
+          </Menu>
         </>
       )}
 
