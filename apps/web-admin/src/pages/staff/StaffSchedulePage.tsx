@@ -277,8 +277,9 @@ export default function StaffSchedulePage() {
         <Stack
           direction={{ xs: 'column', lg: 'row' }}
           justifyContent="space-between"
-          alignItems={{ xs: 'stretch', lg: 'flex-start' }}
+          alignItems={{ xs: 'center', lg: 'flex-start' }}
           spacing={3}
+          sx={{ width: '100%', textAlign: { xs: 'center', lg: 'left' } }}
         >
           <Box>
             <Typography
@@ -309,7 +310,7 @@ export default function StaffSchedulePage() {
             spacing={1.5}
             sx={{
               width: { xs: '100%', lg: 'auto' },
-              alignItems: { xs: 'stretch', lg: 'flex-end' },
+              alignItems: { xs: 'center', lg: 'flex-end' },
               position: { xs: 'sticky', lg: 'static' },
               top: { xs: 74, lg: 'auto' }, // Align with AppShell header
               zIndex: 10,
@@ -387,6 +388,9 @@ export default function StaffSchedulePage() {
               >
                 {formatHumanDate(selectedDate)}
               </Typography>
+
+              {/* Invisible spacer to balance Today button on mobile */}
+              <Box sx={{ width: 74, display: { xs: 'block', sm: 'none' } }} />
 
               <IconButton
                 size="small"

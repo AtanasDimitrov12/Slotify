@@ -164,6 +164,9 @@ export default function StaffDashboardPage() {
               borderRadius: 4,
               border: '1px solid rgba(15,23,42,0.06)',
               boxShadow: '0 4px 20px rgba(15,23,42,0.03)',
+              maxWidth: { xs: 400, md: 'none' },
+              mx: 'auto',
+              width: '100%',
             }}
           >
             <CardContent sx={{ p: 3 }}>
@@ -210,6 +213,9 @@ export default function StaffDashboardPage() {
               borderRadius: 4,
               border: '1px solid rgba(15,23,42,0.06)',
               boxShadow: '0 4px 20px rgba(15,23,42,0.03)',
+              maxWidth: { xs: 400, md: 'none' },
+              mx: 'auto',
+              width: '100%',
             }}
           >
             <CardContent sx={{ p: 3 }}>
@@ -261,6 +267,9 @@ export default function StaffDashboardPage() {
               border: '1px solid rgba(15,23,42,0.06)',
               boxShadow: '0 4px 20px rgba(15,23,42,0.03)',
               bgcolor: nextAppointment ? alpha(landingColors.purple, 0.04) : '#FFF',
+              maxWidth: { xs: 400, md: 'none' },
+              mx: 'auto',
+              width: '100%',
             }}
           >
             <CardContent sx={{ p: 3 }}>
@@ -319,6 +328,9 @@ export default function StaffDashboardPage() {
                 border: '1px dashed rgba(15,23,42,0.12)',
                 bgcolor: 'transparent',
                 boxShadow: 'none',
+                maxWidth: { xs: 400, lg: 'none' },
+                mx: 'auto',
+                width: '100%',
               }}
             >
               <CardContent sx={{ py: 6, textAlign: 'center' }}>
@@ -339,6 +351,9 @@ export default function StaffDashboardPage() {
                     boxShadow: '0 4px 12px rgba(15,23,42,0.02)',
                     transition: 'all 0.2s ease',
                     cursor: 'pointer',
+                    maxWidth: { xs: 400, lg: 'none' },
+                    mx: 'auto',
+                    width: '100%',
                     '&:hover': {
                       borderColor: landingColors.purple,
                       transform: 'translateX(4px)',
@@ -394,6 +409,9 @@ export default function StaffDashboardPage() {
               borderRadius: 4,
               border: '1px solid rgba(15,23,42,0.06)',
               boxShadow: '0 4px 20px rgba(15,23,42,0.03)',
+              maxWidth: { xs: 400, lg: 'none' },
+              mx: 'auto',
+              width: '100%',
             }}
           >
             <CardContent sx={{ p: 3 }}>

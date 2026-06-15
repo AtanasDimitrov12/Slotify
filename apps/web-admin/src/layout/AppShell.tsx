@@ -172,6 +172,7 @@ export default function AppShell() {
           radial-gradient(circle at 100% 0%, rgba(125,211,252,0.08), transparent 18%),
           linear-gradient(180deg, ${shellColors.pageBg2} 0%, ${shellColors.pageBg} 28%, ${shellColors.pageBg} 100%)
         `,
+        overflowX: 'hidden',
       }}
     >
       <AppBar
@@ -367,6 +368,7 @@ export default function AppShell() {
         sx={{
           display: 'flex',
           minHeight: 'calc(100vh - 74px)',
+          width: '100%',
         }}
       >
         {showSidebar && isDesktop && (
@@ -392,7 +394,7 @@ export default function AppShell() {
               onNavigate={go}
               collapsed={collapsed}
               onToggleCollapse={handleToggleCollapse}
-              userRole={user?.role as any}
+              userRole={user?.role as 'admin' | 'owner' | 'staff'}
               title={sidebarTitle}
               userName={user?.name}
               userEmail={user?.email}
@@ -405,7 +407,16 @@ export default function AppShell() {
           </Box>
         )}
 
-        <Box sx={{ flex: 1, minWidth: 0, overflowX: 'hidden' }}>
+        <Box
+          sx={{
+            flex: 1,
+            minWidth: 0,
+            overflowX: 'hidden',
+            display: 'flex',
+            flexDirection: 'column',
+            width: '100%',
+          }}
+        >
           <Outlet />
         </Box>
       </Box>
@@ -433,7 +444,7 @@ export default function AppShell() {
             onNavigate={go}
             collapsed={false}
             onToggleCollapse={() => {}}
-            userRole={user?.role as any}
+            userRole={user?.role as 'admin' | 'owner' | 'staff'}
             title={sidebarTitle}
             userName={user?.name}
             userEmail={user?.email}

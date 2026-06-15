@@ -129,28 +129,38 @@ export default function StaffBookingRulesPage() {
   }
 
   return (
-    <Stack spacing={4}>
+    <Stack spacing={4} sx={{ width: '100%', alignItems: 'center' }}>
       <Box
         sx={{
           display: 'flex',
           flexDirection: { xs: 'column', md: 'row' },
-          alignItems: { xs: 'flex-start', md: 'center' },
+          alignItems: { xs: 'center', md: 'center' },
           justifyContent: 'space-between',
           gap: 2,
+          textAlign: { xs: 'center', md: 'left' },
+          width: '100%',
         }}
       >
-        <Box>
+        <Box sx={{ maxWidth: { xs: 400, md: 'none' }, mx: 'auto', width: '100%' }}>
           <Typography
-            sx={{ fontWeight: 1000, fontSize: 36, letterSpacing: -1.5, color: '#0F172A' }}
+            sx={{ fontWeight: 1000, fontSize: { xs: 32, sm: 36 }, letterSpacing: -1.5, color: '#0F172A' }}
           >
             Booking Rules
           </Typography>
-          <Typography sx={{ color: '#64748B', fontWeight: 600, fontSize: 18 }}>
+          <Typography sx={{ color: '#64748B', fontWeight: 600, fontSize: { xs: 15, md: 18 }, mt: 0.5 }}>
             Use salon-wide rules or define your own personal schedule behavior.
           </Typography>
         </Box>
 
-        <Stack direction="row" spacing={2}>
+        <Stack
+          direction="row"
+          spacing={2}
+          sx={{
+            width: { xs: '100%', md: 'auto' },
+            justifyContent: { xs: 'center', md: 'flex-end' },
+            mt: { xs: 1, md: 0 },
+          }}
+        >
           {salons.length > 1 && (
             <TextField
               select
@@ -180,7 +190,7 @@ export default function StaffBookingRulesPage() {
               borderRadius: 999,
               fontWeight: 900,
               whiteSpace: 'nowrap',
-              alignSelf: { xs: 'flex-start', md: 'center' },
+              alignSelf: 'center',
               bgcolor: landingColors.purple,
               boxShadow: `0 12px 30px ${alpha(landingColors.purple, 0.24)}`,
             }}
@@ -191,13 +201,13 @@ export default function StaffBookingRulesPage() {
       </Box>
 
       {error ? (
-        <Alert severity="error" sx={{ borderRadius: 3 }}>
+        <Alert severity="error" sx={{ borderRadius: 3, width: '100%', maxWidth: { xs: 400, lg: 'none' } }}>
           {error}
         </Alert>
       ) : null}
 
       {loading ? (
-        <Box sx={{ minHeight: 200, display: 'grid', placeItems: 'center' }}>
+        <Box sx={{ minHeight: 200, display: 'grid', placeItems: 'center', width: '100%' }}>
           <CircularProgress sx={{ color: landingColors.purple }} />
         </Box>
       ) : (
@@ -208,9 +218,12 @@ export default function StaffBookingRulesPage() {
             borderColor: 'rgba(15,23,42,0.06)',
             bgcolor: '#FFFFFF',
             boxShadow: '0 10px 40px rgba(15,23,42,0.04)',
+            maxWidth: { xs: 400, lg: 'none' },
+            mx: 'auto',
+            width: '100%',
           }}
         >
-          <CardContent sx={{ p: 4 }}>
+          <CardContent sx={{ p: { xs: 2.5, md: 4 } }}>
             <Stack spacing={4}>
               <Box
                 sx={{

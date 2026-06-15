@@ -1,8 +1,9 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { getMyTenants, useAuth, useToast } from '@barber/shared';
 import { render, screen, waitFor } from '@testing-library/react';
-import { MemoryRouter } from 'react-router-dom';
+import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import StaffLayout from '../StaffLayout';
+import AppShell from '../../../layout/AppShell';
 
 const mockUnifiedSidebar = vi.fn();
 const mockSwitchTenant = vi.fn();
@@ -18,20 +19,20 @@ vi.mock('@barber/shared', async () => {
 });
 
 vi.mock('../../../layout/UnifiedSidebar', () => ({
-  default: (props: unknown) => {
+  default: (props: any) => {
     mockUnifiedSidebar(props);
     return <div data-testid="staff-sidebar" />;
   },
 }));
 
-describe('StaffLayout', () => {
+describe('AppShell with Staff Role', () => {
   beforeEach(() => {
     vi.clearAllMocks();
 
     Object.defineProperty(window, 'matchMedia', {
       writable: true,
       value: vi.fn().mockImplementation((query: string) => ({
-        matches: query.includes('min-width'),
+        matches: true, // Mock desktop so sidebar is rendered
         media: query,
         onchange: null,
         addListener: vi.fn(),
@@ -47,6 +48,7 @@ describe('StaffLayout', () => {
         name: 'Staff User',
         email: 'staff@example.com',
         tenantId: 'tenant-2',
+        role: 'staff',
       },
       switchTenant: mockSwitchTenant,
     } as any);
@@ -65,7 +67,11 @@ describe('StaffLayout', () => {
   it('passes tenant switching props to the shared sidebar', async () => {
     render(
       <MemoryRouter initialEntries={['/staff/services']}>
-        <StaffLayout />
+        <Routes>
+          <Route element={<AppShell />}>
+            <Route path="/staff/services" element={<div />} />
+          </Route>
+        </Routes>
       </MemoryRouter>,
     );
 

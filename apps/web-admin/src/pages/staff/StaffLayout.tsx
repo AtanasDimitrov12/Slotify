@@ -15,10 +15,23 @@ export default function StaffLayout() {
         `,
         display: 'flex',
         flexDirection: 'column',
+        width: '100%',
       }}
     >
-      <Box sx={{ px: { xs: 2, md: 5 }, py: { xs: 3, md: 5 }, minWidth: 0 }}>
-        <Box sx={{ maxWidth: 1400, mx: 'auto' }}>
+      <Box
+        sx={{
+          px: { xs: 2, md: 5 },
+          py: { xs: 3, md: 5 },
+          minWidth: 0,
+          overflowX: 'hidden',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          width: '100%',
+          boxSizing: 'border-box',
+        }}
+      >
+        <Box sx={{ width: '100%', maxWidth: 1400 }}>
           <Outlet />
         </Box>
       </Box>
