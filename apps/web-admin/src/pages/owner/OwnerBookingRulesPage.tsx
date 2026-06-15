@@ -109,7 +109,9 @@ export default function OwnerBookingRulesPage() {
               Booking Rules
             </Typography>
 
-            <Typography sx={{ mt: 1, color: '#64748B', fontWeight: 600, fontSize: { xs: 16, sm: 18 } }}>
+            <Typography
+              sx={{ mt: 1, color: '#64748B', fontWeight: 600, fontSize: { xs: 16, sm: 18 } }}
+            >
               Configure how customers interact with your calendar.
             </Typography>
           </Box>

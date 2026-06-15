@@ -192,7 +192,11 @@ export default function OwnerServicesPage() {
             </Typography>
           </Box>
 
-          <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} sx={{ width: { xs: '100%', sm: 'auto' } }}>
+          <Stack
+            direction={{ xs: 'column', sm: 'row' }}
+            spacing={2}
+            sx={{ width: { xs: '100%', sm: 'auto' } }}
+          >
             <input
               type="file"
               ref={fileInputRef}

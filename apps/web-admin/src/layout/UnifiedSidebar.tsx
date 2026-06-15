@@ -235,7 +235,10 @@ export default function UnifiedSidebar({
             transformOrigin={{ horizontal: 'left', vertical: 'top' }}
             anchorOrigin={{ horizontal: 'left', vertical: 'bottom' }}
           >
-            <Typography variant="overline" sx={{ px: 2, py: 1, display: 'block', color: '#94A3B8', fontWeight: 800 }}>
+            <Typography
+              variant="overline"
+              sx={{ px: 2, py: 1, display: 'block', color: '#94A3B8', fontWeight: 800 }}
+            >
               Your Salons
             </Typography>
             {availableTenants.map((tenant) => (

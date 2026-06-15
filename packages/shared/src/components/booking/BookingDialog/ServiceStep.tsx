@@ -7,6 +7,7 @@ import {
   CardActionArea,
   CardContent,
   Chip,
+  Divider,
   InputAdornment,
   Stack,
   Tab,
@@ -197,11 +198,18 @@ export const ServiceStep: React.FC<ServiceStepProps> = ({
                       }}
                     >
                       <CardActionArea onClick={() => onSelect(member._id, service._id)}>
-                        <CardContent sx={{ p: { xs: 1.5, sm: 2 }, pr: { xs: 1.5, sm: 2.5 } }}>
+                        <CardContent
+                          sx={{
+                            p: { xs: 2.25, sm: 2.5 },
+                            '&:last-child': {
+                              pb: { xs: 2.25, sm: 2.5 },
+                            },
+                          }}
+                        >
                           <Stack
                             direction="row"
                             justifyContent="space-between"
-                            alignItems="flex-start"
+                            alignItems="center"
                             spacing={1.5}
                           >
                             <Box sx={{ flexGrow: 1, minWidth: 0 }}>
@@ -249,7 +257,14 @@ export const ServiceStep: React.FC<ServiceStepProps> = ({
                                 </Typography>
                               )}
                             </Box>
-                            <Stack alignItems="flex-end" sx={{ minWidth: 65, flexShrink: 0 }}>
+                            <Divider
+                              orientation="vertical"
+                              flexItem
+                              sx={{
+                                borderColor: 'rgba(15,23,42,0.18)',
+                              }}
+                            />
+                            <Stack alignItems="center" sx={{ minWidth: 70, flexShrink: 0 }}>
                               <Typography
                                 sx={{
                                   fontWeight: 1000,

@@ -244,7 +244,11 @@ export default function StaffProfilePage() {
                           experienceYears: Number(e.target.value),
                         }))
                       }
-                      sx={{ maxWidth: { xs: 200, sm: 'none' }, mx: { xs: 'auto', sm: 0 }, display: 'flex' }}
+                      sx={{
+                        maxWidth: { xs: 200, sm: 'none' },
+                        mx: { xs: 'auto', sm: 0 },
+                        display: 'flex',
+                      }}
                     />
                   </Grid>
                   <Grid item xs={12} sm={8}>
