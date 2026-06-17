@@ -644,12 +644,27 @@ export default function TicketsPage() {
 
   return (
     <Box sx={{ pb: 6 }}>
-      <Stack direction="row" justifyContent="space-between" alignItems="flex-end" sx={{ mb: 4 }}>
-        <Box sx={{ flex: 1 }}>
-          <Typography sx={{ fontWeight: 800, fontSize: 30, letterSpacing: -0.5, color: '#0F172A' }}>
+      <Stack
+        direction={{ xs: 'column', md: 'row' }}
+        justifyContent="space-between"
+        alignItems={{ xs: 'center', md: 'flex-end' }}
+        spacing={3}
+        sx={{ mb: 4, textAlign: { xs: 'center', md: 'left' } }}
+      >
+        <Box sx={{ flex: 1, width: '100%' }}>
+          <Typography
+            sx={{
+              fontWeight: 800,
+              fontSize: { xs: 28, md: 30 },
+              letterSpacing: -0.5,
+              color: '#0F172A',
+            }}
+          >
             Product Backlog
           </Typography>
-          <Typography sx={{ color: '#64748B', fontWeight: 500, fontSize: 16, mb: 2 }}>
+          <Typography
+            sx={{ color: '#64748B', fontWeight: 500, fontSize: { xs: 15, md: 16 }, mb: 2 }}
+          >
             Orchestrate features, bugfixes and requests.
           </Typography>
           <TextField
@@ -659,7 +674,7 @@ export default function TicketsPage() {
             onChange={(e) => setSearchQuery(e.target.value)}
             sx={{
               width: '100%',
-              maxWidth: 400,
+              maxWidth: { xs: '100%', md: 400 },
               '& .MuiOutlinedInput-root': {
                 borderRadius: 2,
                 bgcolor: '#FFFFFF',
@@ -674,7 +689,11 @@ export default function TicketsPage() {
             }}
           />
         </Box>
-        <Stack direction="row" spacing={2}>
+        <Stack
+          direction={{ xs: 'column', sm: 'row' }}
+          spacing={2}
+          sx={{ width: { xs: '100%', md: 'auto' } }}
+        >
           <Button
             variant="outlined"
             onClick={() => setStageDialogOpen(true)}
@@ -684,6 +703,8 @@ export default function TicketsPage() {
               textTransform: 'none',
               borderColor: '#E2E8F0',
               color: '#64748B',
+              width: { xs: '100%', sm: 'auto' },
+              height: 40,
               '&:hover': { borderColor: '#CBD5E1', bgcolor: '#F8FAFC' },
             }}
           >
@@ -699,8 +720,10 @@ export default function TicketsPage() {
               borderRadius: 1.5,
               px: 2.5,
               py: 1,
+              height: 40,
               fontWeight: 600,
               fontSize: 14,
+              width: { xs: '100%', sm: 'auto' },
               textTransform: 'none',
               '&:hover': { bgcolor: '#1E293B' },
             }}

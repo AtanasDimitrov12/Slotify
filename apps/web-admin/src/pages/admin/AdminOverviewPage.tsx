@@ -40,7 +40,7 @@ function StatCard({
         },
       }}
     >
-      <CardContent sx={{ p: 3.5 }}>
+      <CardContent sx={{ p: { xs: 2.5, sm: 3.5 }, textAlign: { xs: 'center', sm: 'left' } }}>
         <Stack spacing={1.5}>
           <Typography
             sx={{
@@ -56,7 +56,7 @@ function StatCard({
           <Typography
             sx={{
               fontWeight: 1000,
-              fontSize: 44,
+              fontSize: { xs: 36, sm: 44 },
               letterSpacing: -1.5,
               color: '#0F172A',
               lineHeight: 1,
@@ -91,16 +91,30 @@ export default function AdminOverviewPage() {
 
   return (
     <Box>
-      <Stack spacing={1} sx={{ mb: 5 }}>
-        <Typography sx={{ fontWeight: 1000, fontSize: 36, letterSpacing: -1.5, color: '#0F172A' }}>
+      <Stack
+        spacing={1}
+        sx={{
+          mb: 5,
+          textAlign: { xs: 'center', sm: 'left' },
+          alignItems: { xs: 'center', sm: 'flex-start' },
+        }}
+      >
+        <Typography
+          sx={{
+            fontWeight: 1000,
+            fontSize: { xs: 32, sm: 36 },
+            letterSpacing: -1.5,
+            color: '#0F172A',
+          }}
+        >
           System Overview
         </Typography>
-        <Typography sx={{ color: '#64748B', fontWeight: 600, fontSize: 18 }}>
+        <Typography sx={{ color: '#64748B', fontWeight: 600, fontSize: { xs: 16, sm: 18 } }}>
           Platform-level analytics and tenant operations.
         </Typography>
       </Stack>
 
-      <Grid container spacing={3}>
+      <Grid container spacing={{ xs: 2, sm: 3 }} sx={{ overflowX: 'hidden' }}>
         <Grid item xs={12} sm={6} lg={3}>
           <StatCard
             label="Tenants registered"
@@ -151,11 +165,19 @@ export default function AdminOverviewPage() {
               border: '1px solid',
               borderColor: alpha(landingColors.purple, 0.12),
               bgcolor: alpha(landingColors.purple, 0.04),
-              p: 1,
+              p: { xs: 0, sm: 1 },
+              maxWidth: { xs: 450, lg: 'none' },
+              mx: 'auto',
+              width: '100%',
             }}
           >
-            <CardContent sx={{ p: 3 }}>
-              <Stack direction="row" spacing={2} alignItems="center">
+            <CardContent sx={{ p: { xs: 2.5, sm: 3 } }}>
+              <Stack
+                direction={{ xs: 'column', sm: 'row' }}
+                spacing={2}
+                alignItems="center"
+                textAlign={{ xs: 'center', sm: 'left' }}
+              >
                 <Box
                   sx={{
                     width: 48,
@@ -173,7 +195,7 @@ export default function AdminOverviewPage() {
                   <Typography sx={{ fontWeight: 1000, fontSize: 18, color: '#0F172A' }}>
                     What's next?
                   </Typography>
-                  <Typography sx={{ color: '#64748B', fontWeight: 600 }}>
+                  <Typography sx={{ color: '#64748B', fontWeight: 600, fontSize: 14 }}>
                     We'll soon add revenue tracking, busiest salons analysis, and detailed audit
                     logs.
                   </Typography>

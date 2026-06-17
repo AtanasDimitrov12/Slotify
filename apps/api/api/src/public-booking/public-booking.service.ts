@@ -15,7 +15,7 @@ import { StaffBookingSettings } from '../staff-booking-settings/staff-booking-se
 import { StaffProfile } from '../staff-profiles/staff-profile.schema';
 import { StaffServiceAssignment } from '../staff-service-assignments/staff-service-assignment.schema';
 import { StaffTimeOff } from '../staff-time-off/staff-time-off.schema';
-import { TenantDetails, type WeeklyOpeningHours } from '../tenant-details/tenant-details.schema';
+import { TenantDetails } from '../tenant-details/tenant-details.schema';
 import { Tenant } from '../tenants/tenant.schema';
 import { CreateReservationLockDto } from './dto/create-reservation-lock.dto';
 import { GetAvailabilityDto } from './dto/get-availability.dto';
@@ -24,8 +24,8 @@ import {
   buildDateTimeOnDay,
   clampToStep,
   endOfDay,
+  getDayOfWeekInTimezone,
   maxDate,
-  minDate,
   startOfDay,
   subtractRanges,
 } from './public-booking.utils';
@@ -226,15 +226,19 @@ export class PublicBookingService {
     }
 
     let allSlots: AvailabilitySlot[] = [];
+    const timezone = tenant.timezone || 'Europe/Amsterdam';
 
     for (const assignment of assignments) {
       const staffId = String(assignment.userId);
       const settings = await this.getEffectiveSettings(tenantId, staffId);
 
       try {
-        this.validateRequestedDateAgainstBookingRules(requestedDate, settings, {
-          isDay: true,
-        });
+        this.validateRequestedDateAgainstBookingRules(
+          requestedDate,
+          settings,
+          { isDay: true },
+          timezone,
+        );
       } catch {
         continue;
       }
@@ -247,6 +251,7 @@ export class PublicBookingService {
         requestedDate,
         durationMinutes,
         settings,
+        timezone,
       });
 
       allSlots.push(...staffSlots);
@@ -284,6 +289,7 @@ export class PublicBookingService {
               query.staffId,
               targetPrice,
               targetDuration,
+              timezone,
             ),
     };
   }
@@ -344,7 +350,8 @@ export class PublicBookingService {
     }
 
     const settings = await this.getEffectiveSettings(tenantId, String(staffId));
-    this.validateRequestedDateAgainstBookingRules(startTime, settings);
+    const timezone = tenant.timezone || 'Europe/Amsterdam';
+    this.validateRequestedDateAgainstBookingRules(startTime, settings, {}, timezone);
 
     const durationMinutes = assignment.customDurationMinutes ?? service.durationMin;
     const endTime = addMinutes(startTime, durationMinutes);
@@ -356,6 +363,7 @@ export class PublicBookingService {
       endTime,
       durationMinutes,
       settings,
+      timezone,
     });
 
     await this.reservationLockModel.deleteMany({
@@ -442,7 +450,8 @@ export class PublicBookingService {
     }
 
     const settings = await this.getEffectiveSettings(tenantId, String(staffId));
-    this.validateRequestedDateAgainstBookingRules(startTime, settings);
+    const timezone = tenant.timezone || 'Europe/Amsterdam';
+    this.validateRequestedDateAgainstBookingRules(startTime, settings, {}, timezone);
 
     const durationMinutes = assignment.customDurationMinutes ?? service.durationMin;
     const priceEUR = assignment.customPrice ?? service.priceEUR;
@@ -477,6 +486,7 @@ export class PublicBookingService {
       durationMinutes,
       settings,
       ignoreLockId: activeLockId,
+      timezone,
     });
 
     const status = settings.autoConfirmReservations ? 'confirmed' : 'pending';
@@ -660,14 +670,15 @@ export class PublicBookingService {
     date: Date,
     settings: EffectiveBookingSettings,
     options: { isDay?: boolean } = {},
+    timezone = 'Europe/Amsterdam',
   ): void {
     const now = new Date();
     const minimumStart = addMinutes(now, settings.minimumNoticeMinutes);
     const maximumStart = addMinutes(now, settings.maximumDaysInAdvance * 24 * 60);
 
-    const tooSoon = options.isDay ? endOfDay(date) < minimumStart : date < minimumStart;
+    const tooSoon = options.isDay ? endOfDay(date, timezone) < minimumStart : date < minimumStart;
 
-    const tooFar = options.isDay ? startOfDay(date) > maximumStart : date > maximumStart;
+    const tooFar = options.isDay ? startOfDay(date, timezone) > maximumStart : date > maximumStart;
 
     if (tooSoon) {
       throw new BadRequestException('Selected time is too soon');
@@ -684,60 +695,61 @@ export class PublicBookingService {
     requestedDate: Date;
     durationMinutes: number;
     settings: EffectiveBookingSettings;
+    timezone?: string;
   }): Promise<AvailabilitySlot[]> {
     const { tenantId, staffId, requestedDate, durationMinutes, settings } = params;
 
-    const dayStart = startOfDay(requestedDate);
-    const dayEnd = endOfDay(requestedDate);
-    const weekday = requestedDate.getDay();
+    const [tenantDetails, tenant] = await Promise.all([
+      this.tenantDetailsModel.findOne({ tenantId: String(tenantId), isPublished: true }).lean(),
+      params.timezone ? Promise.resolve(null) : this.tenantModel.findById(tenantId).lean(),
+    ]);
+
+    const timezone =
+      params.timezone || tenant?.timezone || tenantDetails?.timezone || 'Europe/Amsterdam';
+
+    const dayStart = startOfDay(requestedDate, timezone);
+    const dayEnd = endOfDay(requestedDate, timezone);
+    const weekday = getDayOfWeekInTimezone(requestedDate, timezone);
     const dateStr = requestedDate.toISOString().split('T')[0];
 
-    const [
-      tenantDetails,
-      availability,
-      timeOffEntries,
-      blockedSlots,
-      reservations,
-      locks,
-      staffProfile,
-    ] = await Promise.all([
-      this.tenantDetailsModel.findOne({ tenantId: String(tenantId), isPublished: true }).lean(),
-      this.staffAvailabilityModel.findOne({ userId: new Types.ObjectId(staffId) }).lean(),
-      this.staffTimeOffModel
-        .find({
-          userId: new Types.ObjectId(staffId),
-          status: 'approved',
-          startDate: { $lt: dayEnd },
-          endDate: { $gt: dayStart },
-        })
-        .lean(),
-      this.staffBlockedSlotModel
-        .find({
-          userId: new Types.ObjectId(staffId),
-          isActive: true,
-          date: dateStr,
-        })
-        .lean(),
-      this.reservationModel
-        .find({
-          staffId: new Types.ObjectId(staffId),
-          status: { $in: ['pending', 'confirmed'] },
-          startTime: { $lt: dayEnd },
-          endTime: { $gt: dayStart },
-        })
-        .sort({ startTime: 1 })
-        .lean(),
-      this.reservationLockModel
-        .find({
-          staffId: new Types.ObjectId(staffId),
-          expiresAt: { $gt: new Date() },
-          startTime: { $lt: dayEnd },
-          endTime: { $gt: dayStart },
-        })
-        .sort({ startTime: 1 })
-        .lean(),
-      this.staffProfileModel.findOne({ userId: new Types.ObjectId(staffId) }).lean(),
-    ]);
+    const [availability, timeOffEntries, blockedSlots, reservations, locks, staffProfile] =
+      await Promise.all([
+        this.staffAvailabilityModel.findOne({ userId: new Types.ObjectId(staffId) }).lean(),
+        this.staffTimeOffModel
+          .find({
+            userId: new Types.ObjectId(staffId),
+            status: 'approved',
+            startDate: { $lt: dayEnd },
+            endDate: { $gt: dayStart },
+          })
+          .lean(),
+        this.staffBlockedSlotModel
+          .find({
+            userId: new Types.ObjectId(staffId),
+            isActive: true,
+            date: dateStr,
+          })
+          .lean(),
+        this.reservationModel
+          .find({
+            staffId: new Types.ObjectId(staffId),
+            status: { $in: ['pending', 'confirmed'] },
+            startTime: { $lt: dayEnd },
+            endTime: { $gt: dayStart },
+          })
+          .sort({ startTime: 1 })
+          .lean(),
+        this.reservationLockModel
+          .find({
+            staffId: new Types.ObjectId(staffId),
+            expiresAt: { $gt: new Date() },
+            startTime: { $lt: dayEnd },
+            endTime: { $gt: dayStart },
+          })
+          .sort({ startTime: 1 })
+          .lean(),
+        this.staffProfileModel.findOne({ userId: new Types.ObjectId(staffId) }).lean(),
+      ]);
 
     const staffDayEntries =
       availability?.weeklyAvailability?.filter(
@@ -755,22 +767,11 @@ export class PublicBookingService {
     const reservationsTodayCount = reservations.length;
     const experienceYears = staffProfile?.experienceYears ?? 0;
 
-    const salonWindows = this.extractTenantOpeningWindowsForDate(
-      requestedDate,
-      tenantDetails?.openingHours,
-    );
-
-    if (salonWindows.length === 0) {
-      return [];
-    }
-
-    const staffWindows = currentTenantSlots.map((slot) => {
-      const start = buildDateTimeOnDay(requestedDate, slot.startTime);
-      const end = buildDateTimeOnDay(requestedDate, slot.endTime);
+    const mergedWorkingWindows = currentTenantSlots.map((slot) => {
+      const start = buildDateTimeOnDay(requestedDate, slot.startTime, timezone);
+      const end = buildDateTimeOnDay(requestedDate, slot.endTime, timezone);
       return { start, end };
     });
-
-    const mergedWorkingWindows = this.intersectMany(staffWindows, salonWindows);
 
     if (mergedWorkingWindows.length === 0) {
       return [];
@@ -782,8 +783,8 @@ export class PublicBookingService {
         end: new Date(entry.endDate),
       })),
       ...blockedSlots.map((slot) => ({
-        start: buildDateTimeOnDay(requestedDate, slot.startTime),
-        end: buildDateTimeOnDay(requestedDate, slot.endTime),
+        start: buildDateTimeOnDay(requestedDate, slot.startTime, timezone),
+        end: buildDateTimeOnDay(requestedDate, slot.endTime, timezone),
       })),
       ...reservations.map((reservation) => ({
         start: addMinutes(new Date(reservation.startTime), -settings.bufferBeforeMinutes),
@@ -864,50 +865,6 @@ export class PublicBookingService {
     return perfectFitBonus - smallGapPenalty - fragmentPenalty;
   }
 
-  private extractTenantOpeningWindowsForDate(
-    date: Date,
-    openingHours?: WeeklyOpeningHours,
-  ): TimeRange[] {
-    if (!openingHours) {
-      return [];
-    }
-
-    const weekdayMap: Array<keyof WeeklyOpeningHours> = [
-      'sun',
-      'mon',
-      'tue',
-      'wed',
-      'thu',
-      'fri',
-      'sat',
-    ];
-
-    const key = weekdayMap[date.getDay()];
-    const entries = openingHours[key] ?? [];
-
-    return entries.map((entry) => ({
-      start: buildDateTimeOnDay(date, entry.start),
-      end: buildDateTimeOnDay(date, entry.end),
-    }));
-  }
-
-  private intersectMany(a: TimeRange[], b: TimeRange[]): TimeRange[] {
-    const results: TimeRange[] = [];
-
-    for (const left of a) {
-      for (const right of b) {
-        const start = maxDate(left.start, right.start);
-        const end = minDate(left.end, right.end);
-
-        if (start < end) {
-          results.push({ start, end });
-        }
-      }
-    }
-
-    return results.sort((x, y) => x.start.getTime() - y.start.getTime());
-  }
-
   private async validateSelectedSlot(params: {
     tenantId: Types.ObjectId;
     staffId: Types.ObjectId;
@@ -916,9 +873,18 @@ export class PublicBookingService {
     durationMinutes: number;
     settings: EffectiveBookingSettings;
     ignoreLockId?: string;
+    timezone?: string;
   }): Promise<void> {
-    const { tenantId, staffId, startTime, endTime, durationMinutes, settings, ignoreLockId } =
-      params;
+    const {
+      tenantId,
+      staffId,
+      startTime,
+      endTime,
+      durationMinutes,
+      settings,
+      ignoreLockId,
+      timezone,
+    } = params;
 
     const slots = await this.generateStaffSlotsForDate({
       tenantId,
@@ -926,6 +892,7 @@ export class PublicBookingService {
       requestedDate: startTime,
       durationMinutes,
       settings,
+      timezone,
     });
 
     const exists = slots.some(
@@ -969,8 +936,9 @@ export class PublicBookingService {
     requestedStaffId?: string,
     price?: number,
     duration?: number,
+    timezone = 'Europe/Amsterdam',
   ): Promise<string | null> {
-    const today = startOfDay(new Date());
+    const today = startOfDay(new Date(), timezone);
 
     for (let offset = 0; offset < 30; offset += 1) {
       const date = addMinutes(today, offset * 24 * 60);
@@ -982,6 +950,7 @@ export class PublicBookingService {
         date,
         price,
         duration,
+        timezone,
       );
 
       if (result.length > 0) {
@@ -999,6 +968,7 @@ export class PublicBookingService {
     requestedDate: Date,
     price?: number,
     duration?: number,
+    timezone?: string,
   ): Promise<AvailabilitySlot[]> {
     const service = await this.serviceModel
       .findOne({ _id: serviceId, tenantId, isActive: true })
@@ -1017,15 +987,17 @@ export class PublicBookingService {
     );
 
     let slots: AvailabilitySlot[] = [];
+    const tz =
+      timezone ||
+      (await this.tenantModel.findById(tenantId).lean())?.timezone ||
+      'Europe/Amsterdam';
 
     for (const assignment of assignments) {
       const staffId = String(assignment.userId);
       const settings = await this.getEffectiveSettings(tenantId, staffId);
 
       try {
-        this.validateRequestedDateAgainstBookingRules(requestedDate, settings, {
-          isDay: true,
-        });
+        this.validateRequestedDateAgainstBookingRules(requestedDate, settings, { isDay: true }, tz);
       } catch {
         continue;
       }
@@ -1038,6 +1010,7 @@ export class PublicBookingService {
         requestedDate,
         durationMinutes,
         settings,
+        timezone: tz,
       });
 
       slots.push(...generated);

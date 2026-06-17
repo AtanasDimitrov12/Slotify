@@ -123,9 +123,9 @@ export default function SalonPublicPage() {
                   <Typography
                     sx={{
                       fontWeight: 1000,
-                      fontSize: { xs: 38, sm: 52, md: 72 },
+                      fontSize: { xs: 32, sm: 52, md: 72 },
                       letterSpacing: { xs: -1.2, md: -3 },
-                      lineHeight: 1,
+                      lineHeight: 1.1,
                       mb: 1.5,
                       textShadow: '0 8px 30px rgba(0,0,0,0.3)',
                     }}
@@ -137,10 +137,10 @@ export default function SalonPublicPage() {
                     spacing={1}
                     alignItems="center"
                     justifyContent={{ xs: 'center', md: 'flex-start' }}
-                    sx={{ color: alpha('#FFF', 0.65) }}
+                    sx={{ color: alpha('#FFF', 0.65), px: { xs: 2, sm: 0 } }}
                   >
-                    <LocationOnRoundedIcon sx={{ fontSize: { xs: 18, md: 22 } }} />
-                    <Typography sx={{ fontSize: { xs: 15, md: 19 }, fontWeight: 600 }}>
+                    <LocationOnRoundedIcon sx={{ fontSize: { xs: 18, md: 22 }, flexShrink: 0 }} />
+                    <Typography sx={{ fontSize: { xs: 14, md: 19 }, fontWeight: 600 }}>
                       {formatAddress(data.details?.address)}
                     </Typography>
                   </Stack>
@@ -186,9 +186,12 @@ export default function SalonPublicPage() {
                       border: '1px solid rgba(15,23,42,0.06)',
                       bgcolor: '#FFFFFF',
                       boxShadow: '0 12px 40px rgba(15,23,42,0.04)',
+                      maxWidth: { xs: 450, md: 'none' },
+                      mx: 'auto',
+                      width: '100%',
                     }}
                   >
-                    <CardContent sx={{ p: { xs: 3, md: 4.5 } }}>
+                    <CardContent sx={{ p: { xs: 2.5, md: 4.5 } }}>
                       <Stack spacing={2.5}>
                         <Typography
                           sx={{
@@ -196,6 +199,7 @@ export default function SalonPublicPage() {
                             fontSize: 22,
                             color: '#0F172A',
                             letterSpacing: -0.5,
+                            textAlign: { xs: 'center', md: 'left' },
                           }}
                         >
                           About the Salon
@@ -227,6 +231,9 @@ export default function SalonPublicPage() {
                       border: '1px solid rgba(15,23,42,0.06)',
                       bgcolor: '#FFFFFF',
                       boxShadow: '0 12px 40px rgba(15,23,42,0.04)',
+                      maxWidth: { xs: 450, md: 'none' },
+                      mx: 'auto',
+                      width: '100%',
                     }}
                   >
                     <CardContent sx={{ p: { xs: 2.5, md: 3.5 } }}>
@@ -237,6 +244,7 @@ export default function SalonPublicPage() {
                             fontSize: 19,
                             color: '#0F172A',
                             letterSpacing: -0.5,
+                            textAlign: { xs: 'center', md: 'left' },
                           }}
                         >
                           Opening Hours
@@ -307,6 +315,9 @@ export default function SalonPublicPage() {
                       border: '1px solid rgba(15,23,42,0.06)',
                       bgcolor: '#FFFFFF',
                       boxShadow: '0 12px 40px rgba(15,23,42,0.04)',
+                      maxWidth: { xs: 450, md: 'none' },
+                      mx: 'auto',
+                      width: '100%',
                     }}
                   >
                     <CardContent sx={{ p: { xs: 2.5, md: 3.5 } }}>
@@ -317,12 +328,13 @@ export default function SalonPublicPage() {
                             fontSize: 19,
                             color: '#0F172A',
                             letterSpacing: -0.5,
+                            textAlign: { xs: 'center', md: 'left' },
                           }}
                         >
                           Contact Details
                         </Typography>
 
-                        <Stack spacing={2.2}>
+                        <Stack spacing={2.2} sx={{ textAlign: { xs: 'center', md: 'left' } }}>
                           <Box>
                             <Typography
                               sx={{

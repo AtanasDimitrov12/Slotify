@@ -113,7 +113,7 @@ function AudienceCard({
             endIcon={<ArrowForwardRoundedIcon />}
             sx={{
               mt: 0.8,
-              alignSelf: 'flex-start',
+              alignSelf: { xs: 'stretch', sm: 'flex-start' },
               minHeight: 48,
               px: 2.2,
               borderRadius: 999,

@@ -10,10 +10,7 @@ import {
   addMinutes,
   buildDateTimeOnDay,
   endOfDay,
-  maxDate,
-  minDate,
   startOfDay,
-  subtractRanges,
 } from '../public-booking/public-booking.utils';
 import { EffectiveBookingSettings, TimeRange } from '../public-booking/types/availability.types';
 import { Reservation, type ReservationDocument } from '../reservations/reservation.schema';
@@ -24,7 +21,7 @@ import { StaffBookingSettings } from '../staff-booking-settings/staff-booking-se
 import { StaffProfile } from '../staff-profiles/staff-profile.schema';
 import { StaffServiceAssignment } from '../staff-service-assignments/staff-service-assignment.schema';
 import { StaffTimeOff } from '../staff-time-off/staff-time-off.schema';
-import { TenantDetails, type WeeklyOpeningHours } from '../tenant-details/tenant-details.schema';
+import { TenantDetails } from '../tenant-details/tenant-details.schema';
 import { User, UserDocument } from '../users/user.schema';
 import { CreateStaffAppointmentDto } from './dto/create-staff-appointment.dto';
 import { UpdateStaffAppointmentDto } from './dto/update-staff-appointment.dto';
@@ -40,8 +37,7 @@ export class StaffAppointmentsService {
     private readonly staffProfileModel: Model<StaffProfile>,
     @InjectModel(StaffServiceAssignment.name)
     private readonly staffServiceAssignmentModel: Model<StaffServiceAssignment>,
-    @InjectModel(StaffAvailability.name)
-    private readonly staffAvailabilityModel: Model<StaffAvailability>,
+    @InjectModel(StaffAvailability.name) readonly _staffAvailabilityModel: Model<StaffAvailability>,
     @InjectModel(StaffTimeOff.name)
     private readonly staffTimeOffModel: Model<StaffTimeOff>,
     @InjectModel(StaffBlockedSlot.name)
@@ -610,47 +606,6 @@ export class StaffAppointmentsService {
     };
   }
 
-  private extractTenantOpeningWindowsForDate(
-    date: Date,
-    openingHours?: WeeklyOpeningHours,
-  ): TimeRange[] {
-    if (!openingHours) return [];
-
-    const weekdayMap: Array<keyof WeeklyOpeningHours> = [
-      'sun',
-      'mon',
-      'tue',
-      'wed',
-      'thu',
-      'fri',
-      'sat',
-    ];
-
-    const key = weekdayMap[date.getDay()];
-    const entries = openingHours[key] ?? [];
-
-    return entries.map((entry) => ({
-      start: buildDateTimeOnDay(date, entry.start),
-      end: buildDateTimeOnDay(date, entry.end),
-    }));
-  }
-
-  private intersectMany(a: TimeRange[], b: TimeRange[]): TimeRange[] {
-    const results: TimeRange[] = [];
-
-    for (const left of a) {
-      for (const right of b) {
-        const start = maxDate(left.start, right.start);
-        const end = minDate(left.end, right.end);
-        if (start < end) {
-          results.push({ start, end });
-        }
-      }
-    }
-
-    return results.sort((x, y) => x.start.getTime() - y.start.getTime());
-  }
-
   private async ensureSlotStillValid(params: {
     tenantId: Types.ObjectId;
     staffId: Types.ObjectId;
@@ -662,73 +617,44 @@ export class StaffAppointmentsService {
   }) {
     const { tenantId, staffId, startTime, endTime, settings, ignoreReservationId } = params;
 
+    const tenantDetails = await this.tenantDetailsModel
+      .findOne({ tenantId: String(tenantId), isPublished: true })
+      .lean();
+    const timezone = tenantDetails?.timezone || 'Europe/Amsterdam';
+
     const requestedDate = new Date(startTime);
-    const dayStart = startOfDay(requestedDate);
-    const dayEnd = endOfDay(requestedDate);
-    const weekday = requestedDate.getDay();
+    const dayStart = startOfDay(requestedDate, timezone);
+    const dayEnd = endOfDay(requestedDate, timezone);
     const dateStr = requestedDate.toISOString().split('T')[0];
 
-    const [tenantDetails, availability, timeOffEntries, blockedSlots, reservations] =
-      await Promise.all([
-        this.tenantDetailsModel.findOne({ tenantId: String(tenantId), isPublished: true }).lean(),
-        this.staffAvailabilityModel.findOne({ userId: staffId }).lean(),
-        this.staffTimeOffModel
-          .find({
-            userId: staffId,
-            status: 'approved',
-            startDate: { $lt: dayEnd },
-            endDate: { $gt: dayStart },
-          })
-          .lean(),
-        this.staffBlockedSlotModel
-          .find({
-            userId: staffId,
-            isActive: true,
-            date: dateStr,
-          })
-          .lean(),
-        this.reservationModel
-          .find({
-            staffId,
-            _id: ignoreReservationId
-              ? { $ne: new Types.ObjectId(ignoreReservationId) }
-              : { $exists: true },
-            status: { $in: ['pending', 'confirmed'] },
-            startTime: { $lt: dayEnd },
-            endTime: { $gt: dayStart },
-          })
-          .lean(),
-      ]);
-
-    const staffDayEntries =
-      availability?.weeklyAvailability?.filter(
-        (entry) => entry.dayOfWeek === weekday && entry.isAvailable,
-      ) ?? [];
-
-    const currentTenantSlots = staffDayEntries.flatMap((entry) =>
-      (entry.slots || []).filter((slot) => String(slot.tenantId) === String(tenantId)),
-    );
-
-    if (!currentTenantSlots.length) {
-      throw new BadRequestException('Staff is not available on this day in this salon');
-    }
-
-    const salonWindows = this.extractTenantOpeningWindowsForDate(
-      requestedDate,
-      tenantDetails?.openingHours,
-    );
-
-    if (!salonWindows.length) {
-      throw new BadRequestException('Salon is closed on this day');
-    }
-
-    const staffWindows = currentTenantSlots.map((slot) => {
-      const start = buildDateTimeOnDay(requestedDate, slot.startTime);
-      const end = buildDateTimeOnDay(requestedDate, slot.endTime);
-      return { start, end };
-    });
-
-    const workingWindows = this.intersectMany(staffWindows, salonWindows);
+    const [timeOffEntries, blockedSlots, reservations] = await Promise.all([
+      this.staffTimeOffModel
+        .find({
+          userId: staffId,
+          status: 'approved',
+          startDate: { $lt: dayEnd },
+          endDate: { $gt: dayStart },
+        })
+        .lean(),
+      this.staffBlockedSlotModel
+        .find({
+          userId: staffId,
+          isActive: true,
+          date: dateStr,
+        })
+        .lean(),
+      this.reservationModel
+        .find({
+          staffId,
+          _id: ignoreReservationId
+            ? { $ne: new Types.ObjectId(ignoreReservationId) }
+            : { $exists: true },
+          status: { $in: ['pending', 'confirmed'] },
+          startTime: { $lt: dayEnd },
+          endTime: { $gt: dayStart },
+        })
+        .lean(),
+    ]);
 
     const blockers: TimeRange[] = [
       ...timeOffEntries.map((entry) => ({
@@ -736,8 +662,8 @@ export class StaffAppointmentsService {
         end: new Date(entry.endDate),
       })),
       ...blockedSlots.map((slot) => ({
-        start: buildDateTimeOnDay(requestedDate, slot.startTime),
-        end: buildDateTimeOnDay(requestedDate, slot.endTime),
+        start: buildDateTimeOnDay(requestedDate, slot.startTime, timezone),
+        end: buildDateTimeOnDay(requestedDate, slot.endTime, timezone),
       })),
       ...reservations.map((reservation) => ({
         start: addMinutes(new Date(reservation.startTime), -settings.bufferBeforeMinutes),
@@ -745,12 +671,12 @@ export class StaffAppointmentsService {
       })),
     ];
 
-    const freeWindows = workingWindows.flatMap((window) => subtractRanges(window, blockers));
+    const overlaps = blockers.some((blocker) => startTime < blocker.end && blocker.start < endTime);
 
-    const valid = freeWindows.some((window) => startTime >= window.start && endTime <= window.end);
-
-    if (!valid) {
-      throw new BadRequestException('Selected time is not available');
+    if (overlaps) {
+      throw new BadRequestException(
+        'Selected time overlaps with an existing booking, blocked slot, or time off',
+      );
     }
   }
 }

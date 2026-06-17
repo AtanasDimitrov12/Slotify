@@ -93,7 +93,7 @@ test.describe('Authentication', () => {
     await expect(page).toHaveURL(/\/owner/);
     await expect(page.getByRole('button', { name: /^Overview$/i })).toBeVisible();
 
-    const logoutButton = page.getByRole('button', { name: /^Logout$/i });
+    const logoutButton = page.getByRole('button', { name: /^Log out$/i });
 
     await expect(logoutButton).toBeVisible();
     await expect(logoutButton).toBeEnabled();

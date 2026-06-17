@@ -55,6 +55,7 @@ export default function GeneralSettingsForm({ value, onChange }: Props) {
           borderRadius: 3,
           bgcolor: alpha(landingColors.purple, 0.04),
           border: `1px solid ${alpha(landingColors.purple, 0.1)}`,
+          textAlign: { xs: 'center', sm: 'left' },
         }}
       >
         <Typography sx={{ color: landingColors.purple, fontWeight: 700, fontSize: 15 }}>
@@ -63,10 +64,17 @@ export default function GeneralSettingsForm({ value, onChange }: Props) {
       </Box>
 
       <Stack spacing={3}>
-        <Typography sx={{ fontWeight: 1000, fontSize: 18, color: '#0F172A' }}>
+        <Typography
+          sx={{
+            fontWeight: 1000,
+            fontSize: 18,
+            color: '#0F172A',
+            textAlign: { xs: 'center', sm: 'left' },
+          }}
+        >
           Business Identity
         </Typography>
-        <Grid container spacing={3}>
+        <Grid container spacing={{ xs: 2, sm: 3 }}>
           <Grid item xs={12} md={6}>
             <TextField
               fullWidth
@@ -150,10 +158,17 @@ export default function GeneralSettingsForm({ value, onChange }: Props) {
       <Divider sx={{ opacity: 0.5 }} />
 
       <Stack spacing={3}>
-        <Typography sx={{ fontWeight: 1000, fontSize: 18, color: '#0F172A' }}>
+        <Typography
+          sx={{
+            fontWeight: 1000,
+            fontSize: 18,
+            color: '#0F172A',
+            textAlign: { xs: 'center', sm: 'left' },
+          }}
+        >
           Location Details
         </Typography>
-        <Grid container spacing={3}>
+        <Grid container spacing={{ xs: 2, sm: 3 }}>
           <Grid item xs={12} md={8}>
             <TextField
               fullWidth
@@ -219,10 +234,17 @@ export default function GeneralSettingsForm({ value, onChange }: Props) {
       <Divider sx={{ opacity: 0.5 }} />
 
       <Stack spacing={3}>
-        <Typography sx={{ fontWeight: 1000, fontSize: 18, color: '#0F172A' }}>
+        <Typography
+          sx={{
+            fontWeight: 1000,
+            fontSize: 18,
+            color: '#0F172A',
+            textAlign: { xs: 'center', sm: 'left' },
+          }}
+        >
           Social Presence
         </Typography>
-        <Grid container spacing={3}>
+        <Grid container spacing={{ xs: 2, sm: 3 }}>
           <Grid item xs={12} md={4}>
             <TextField
               fullWidth

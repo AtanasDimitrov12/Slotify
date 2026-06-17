@@ -44,6 +44,12 @@ describe('Booking Flow (Integration)', () => {
 
     const ownerToken = registerResponse.body.accessToken;
     const tenantId = registerResponse.body.account.tenantId;
+
+    const { ObjectId } = require('mongodb');
+    await ctx.db
+      .collection('tenants')
+      .updateOne({ _id: new ObjectId(tenantId) }, { $set: { timezone: 'UTC' } });
+
     const slug = 'elite-cuts'; // based on slugify('Elite Cuts')
 
     // 1.5 Set Opening Hours for Tenant (required for availability)
@@ -99,14 +105,14 @@ describe('Booking Flow (Integration)', () => {
       .get(`/public/tenants/${slug}/availability`)
       .query({
         serviceId,
-        date: '2026-06-01',
+        date: '2026-07-06',
       })
       .expect(200);
 
     expect(availabilityResponse.body.slots.length).toBeGreaterThan(0);
     const firstSlot = availabilityResponse.body.slots[0];
     // We check that the slot is on the requested day
-    expect(firstSlot.startTime).toContain('2026-06-01');
+    expect(firstSlot.startTime).toContain('2026-07-06');
 
     // 7. Create Public Reservation
     const reservationDto = {
@@ -134,7 +140,7 @@ describe('Booking Flow (Integration)', () => {
       .get(`/public/tenants/${slug}/availability`)
       .query({
         serviceId,
-        date: '2026-06-01',
+        date: '2026-07-06',
       })
       .expect(200);
 

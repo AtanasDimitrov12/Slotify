@@ -102,19 +102,25 @@ export default function AdminTenantsPage() {
     <Box>
       <Stack
         direction={{ xs: 'column', md: 'row' }}
-        alignItems={{ xs: 'stretch', md: 'center' }}
+        alignItems={{ xs: 'center', md: 'center' }}
         justifyContent="space-between"
-        spacing={2}
-        sx={{ mb: 5 }}
+        spacing={3}
+        sx={{ mb: 5, textAlign: { xs: 'center', md: 'left' } }}
       >
         <Box>
           <Typography
             variant="h4"
-            sx={{ fontWeight: 800, letterSpacing: -1, color: '#0F172A', mb: 0.5 }}
+            sx={{
+              fontWeight: 1000,
+              fontSize: { xs: 32, md: 36 },
+              letterSpacing: -1,
+              color: '#0F172A',
+              mb: 0.5,
+            }}
           >
             Tenants
           </Typography>
-          <Typography sx={{ color: '#64748B', fontWeight: 500, fontSize: { xs: 16, md: 18 } }}>
+          <Typography sx={{ color: '#64748B', fontWeight: 500, fontSize: { xs: 15, md: 18 } }}>
             Onboard and manage salon environments.
           </Typography>
         </Box>
@@ -127,6 +133,7 @@ export default function AdminTenantsPage() {
           sx={{
             height: 48,
             px: 3.5,
+            width: { xs: '100%', sm: 'auto' },
             borderRadius: 3,
             fontWeight: 700,
             textTransform: 'none',

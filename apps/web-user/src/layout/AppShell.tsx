@@ -223,7 +223,7 @@ export default function AppShell() {
                   </Menu>
                 </>
               ) : (
-                <>
+                <Box sx={{ display: { xs: 'none', md: 'flex' }, gap: 1.5, alignItems: 'center' }}>
                   <Button
                     onClick={() => go('/login')}
                     sx={{
@@ -250,7 +250,7 @@ export default function AppShell() {
                   >
                     Sign Up
                   </Button>
-                </>
+                </Box>
               )}
 
               <IconButton

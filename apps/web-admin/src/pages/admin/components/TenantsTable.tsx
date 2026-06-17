@@ -6,6 +6,7 @@ import {
   Button,
   Card,
   CardContent,
+  CircularProgress,
   Stack,
   Table,
   TableBody,
@@ -14,6 +15,8 @@ import {
   TableHead,
   TableRow,
   Typography,
+  useMediaQuery,
+  useTheme,
 } from '@mui/material';
 import StatusChip from './StatusChip';
 
@@ -38,6 +41,163 @@ function formatDate(value: string) {
 }
 
 export default function TenantsTable({ rows, loading, onEdit, onToggleStatus }: Props) {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+
+  if (isMobile) {
+    return (
+      <Stack spacing={2.5}>
+        {loading ? (
+          <Box sx={{ p: 8, textAlign: 'center' }}>
+            <CircularProgress size={28} sx={{ color: landingColors.purple }} />
+          </Box>
+        ) : rows.length === 0 ? (
+          <Card
+            sx={{
+              p: 6,
+              textAlign: 'center',
+              borderRadius: 4,
+              border: '1px dashed #CBD5E1',
+              bgcolor: 'transparent',
+            }}
+          >
+            <Typography sx={{ color: '#94A3B8', fontWeight: 700 }}>No salons found</Typography>
+          </Card>
+        ) : (
+          rows.map((row) => (
+            <Card
+              key={row._id}
+              sx={{
+                borderRadius: 4,
+                border: '1px solid rgba(15,23,42,0.06)',
+                boxShadow: '0 4px 20px rgba(0,0,0,0.02)',
+                maxWidth: 450,
+                mx: 'auto',
+                width: '100%',
+              }}
+            >
+              <CardContent sx={{ p: 2.5 }}>
+                <Stack spacing={2}>
+                  <Stack direction="row" justifyContent="space-between" alignItems="flex-start">
+                    <Box>
+                      <Typography sx={{ fontWeight: 1000, fontSize: 17, color: '#0F172A' }}>
+                        {row.name}
+                      </Typography>
+                      <Typography
+                        variant="caption"
+                        sx={{ color: '#94A3B8', fontWeight: 600, fontFamily: 'monospace' }}
+                      >
+                        {row.slug || 'no-slug'}
+                      </Typography>
+                    </Box>
+                    <StatusChip status={row.status} />
+                  </Stack>
+
+                  <Box
+                    sx={{
+                      p: 1.5,
+                      borderRadius: 2,
+                      bgcolor: '#F8FAFC',
+                      display: 'grid',
+                      gridTemplateColumns: '1fr 1fr',
+                      gap: 1.5,
+                    }}
+                  >
+                    <Box>
+                      <Typography
+                        sx={{
+                          fontSize: 10,
+                          fontWeight: 800,
+                          color: '#94A3B8',
+                          textTransform: 'uppercase',
+                        }}
+                      >
+                        Plan
+                      </Typography>
+                      <Typography sx={{ fontSize: 13, fontWeight: 700, color: '#475569' }}>
+                        {row.plan ? row.plan.toUpperCase() : 'BASIC'}
+                      </Typography>
+                    </Box>
+                    <Box>
+                      <Typography
+                        sx={{
+                          fontSize: 10,
+                          fontWeight: 800,
+                          color: '#94A3B8',
+                          textTransform: 'uppercase',
+                        }}
+                      >
+                        Published
+                      </Typography>
+                      <Typography
+                        sx={{
+                          fontSize: 13,
+                          fontWeight: 800,
+                          color: row.isPublished ? landingColors.success : '#94A3B8',
+                        }}
+                      >
+                        {row.isPublished ? 'YES' : 'NO'}
+                      </Typography>
+                    </Box>
+                    <Box>
+                      <Typography
+                        sx={{
+                          fontSize: 10,
+                          fontWeight: 800,
+                          color: '#94A3B8',
+                          textTransform: 'uppercase',
+                        }}
+                      >
+                        Created
+                      </Typography>
+                      <Typography sx={{ fontSize: 13, fontWeight: 600, color: '#64748B' }}>
+                        {formatDate(row.createdAt)}
+                      </Typography>
+                    </Box>
+                  </Box>
+
+                  <Stack direction="row" spacing={1.5}>
+                    <Button
+                      fullWidth
+                      variant="outlined"
+                      onClick={() => onEdit(row)}
+                      sx={{
+                        borderRadius: 2,
+                        fontWeight: 800,
+                        textTransform: 'none',
+                        borderColor: 'rgba(15,23,42,0.1)',
+                        color: '#475569',
+                      }}
+                    >
+                      Edit
+                    </Button>
+                    <Button
+                      fullWidth
+                      variant="outlined"
+                      color={row.status === 'active' ? 'error' : 'success'}
+                      onClick={() => onToggleStatus(row)}
+                      sx={{
+                        borderRadius: 2,
+                        fontWeight: 800,
+                        textTransform: 'none',
+                        borderColor:
+                          row.status === 'active'
+                            ? alpha('#F43F5E', 0.2)
+                            : alpha(landingColors.success, 0.2),
+                      }}
+                    >
+                      {row.status === 'active' ? 'Suspend' : 'Activate'}
+                    </Button>
+                  </Stack>
+                </Stack>
+              </CardContent>
+            </Card>
+          ))
+        )}
+      </Stack>
+    );
+  }
+
   return (
     <Card
       elevation={0}

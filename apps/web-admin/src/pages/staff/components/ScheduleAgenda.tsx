@@ -28,8 +28,6 @@ type AppointmentCluster = {
   gapBefore?: TimeGap;
 };
 
-const DAY_START_HOUR = 8;
-const DAY_END_HOUR = 19;
 const MIN_GAP_TO_SHOW = 10;
 
 function formatTime(date: Date) {
@@ -62,16 +60,18 @@ function buildClusters(
   appointments: StaffAppointment[],
   blockedSlots: StaffBlockedSlotItem[],
   selectedDate: string,
+  startHour: number,
+  endHour: number,
 ): {
   clusters: AppointmentCluster[];
   firstGap?: TimeGap;
   lastGap?: TimeGap;
 } {
   const dayStart = new Date(`${selectedDate}T00:00:00`);
-  dayStart.setHours(DAY_START_HOUR, 0, 0, 0);
+  dayStart.setHours(startHour, 0, 0, 0);
 
   const dayEnd = new Date(`${selectedDate}T00:00:00`);
-  dayEnd.setHours(DAY_END_HOUR, 0, 0, 0);
+  dayEnd.setHours(endHour, 0, 0, 0);
 
   const allItems: {
     type: 'appt' | 'block';
@@ -434,6 +434,8 @@ export default function ScheduleAgenda({
   onAddAppointmentAt,
   onViewInsights,
   salons,
+  startHour = 8,
+  endHour = 19,
 }: {
   selectedDate: string;
   appointments: StaffAppointment[];
@@ -443,6 +445,8 @@ export default function ScheduleAgenda({
   onAddAppointmentAt: (time: string) => void;
   onViewInsights?: (id: string) => void;
   salons: AvailableTenant[];
+  startHour?: number;
+  endHour?: number;
 }) {
   const [now, setNow] = React.useState(new Date());
 
@@ -452,8 +456,8 @@ export default function ScheduleAgenda({
   }, []);
 
   const { clusters, firstGap, lastGap } = React.useMemo(
-    () => buildClusters(appointments, blockedSlots, selectedDate),
-    [appointments, blockedSlots, selectedDate],
+    () => buildClusters(appointments, blockedSlots, selectedDate, startHour, endHour),
+    [appointments, blockedSlots, selectedDate, startHour, endHour],
   );
 
   const isToday = now.toISOString().split('T')[0] === selectedDate;
@@ -465,7 +469,7 @@ export default function ScheduleAgenda({
         borderRadius: 4,
         border: '1px solid rgba(15,23,42,0.06)',
         boxShadow: '0 8px 32px rgba(15,23,42,0.02)',
-        p: { xs: 1.5, md: 3 },
+        p: { xs: 1, sm: 2, md: 3 },
         overflowX: 'hidden', // Contain any potential overflow
       }}
     >

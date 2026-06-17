@@ -5,10 +5,10 @@ export const CALENDAR_CONFIG = {
   END_HOUR: 19,
   SLOT_HEIGHT: 80,
   SNAP_MINUTES: 5,
-  TIME_COLUMN_WIDTH: 100,
-  APPOINTMENT_LEFT: 116,
-  APPOINTMENT_RIGHT_GAP: 24,
-  APPOINTMENT_GAP: 12,
+  TIME_COLUMN_WIDTH: 80,
+  APPOINTMENT_LEFT: 80,
+  APPOINTMENT_RIGHT_GAP: 16,
+  APPOINTMENT_GAP: 8,
   MIN_HEIGHT: 42,
   UPDATE_INTERVAL_MS: 30000,
   MIN_LANE_WIDTH_FOR_DENSE: 280,
@@ -40,8 +40,8 @@ export function parseHHMMToMinutes(value: string) {
   return hh * 60 + mm;
 }
 
-export function getTop(minutes: number) {
-  const startOfSchedule = CALENDAR_CONFIG.START_HOUR * 60;
+export function getTop(minutes: number, startHour: number = CALENDAR_CONFIG.START_HOUR) {
+  const startOfSchedule = startHour * 60;
   return ((minutes - startOfSchedule) / 60) * CALENDAR_CONFIG.SLOT_HEIGHT;
 }
 

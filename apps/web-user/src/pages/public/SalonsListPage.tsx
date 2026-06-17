@@ -125,15 +125,19 @@ export default function SalonsListPage() {
           }}
         />
         <Container maxWidth="lg" sx={{ position: 'relative', zIndex: 1 }}>
-          <Box textAlign={{ xs: 'center', md: 'left' }}>
+          <Stack
+            spacing={1.5}
+            alignItems={{ xs: 'center', md: 'flex-start' }}
+            textAlign={{ xs: 'center', md: 'left' }}
+          >
             <Typography
               variant="h1"
               sx={{
                 fontWeight: 1000,
-                fontSize: { xs: 36, sm: 48, md: 72 },
+                fontSize: { xs: 32, sm: 48, md: 72 },
                 letterSpacing: { xs: -1, md: -3 },
-                mb: 1,
-                lineHeight: 1,
+                mb: 0.5,
+                lineHeight: 1.1,
                 textShadow: '0 4px 20px rgba(0,0,0,0.4)',
               }}
             >
@@ -151,7 +155,7 @@ export default function SalonsListPage() {
             >
               Discover grooming experts and book instantly.
             </Typography>
-          </Box>
+          </Stack>
         </Container>
       </Box>
 
@@ -160,7 +164,7 @@ export default function SalonsListPage() {
         <Card
           elevation={0}
           sx={{
-            p: 1.5,
+            p: { xs: 1, sm: 1.5 },
             borderRadius: { xs: 3.5, md: 5 },
             bgcolor: '#FFFFFF',
             boxShadow: '0 25px 60px rgba(15,23,42,0.12)',
@@ -191,7 +195,7 @@ export default function SalonsListPage() {
                 }}
               />
             </Grid>
-            <Grid item xs={6} md={3.5}>
+            <Grid item xs={12} sm={6} md={3.5}>
               <TextField
                 select
                 fullWidth
@@ -222,7 +226,7 @@ export default function SalonsListPage() {
                 ))}
               </TextField>
             </Grid>
-            <Grid item xs={6} md={3.5}>
+            <Grid item xs={12} sm={6} md={3.5}>
               <TextField
                 select
                 fullWidth

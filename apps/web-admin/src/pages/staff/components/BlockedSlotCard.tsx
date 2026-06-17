@@ -1,5 +1,6 @@
 import type { StaffBlockedSlotItem } from '@barber/shared';
-import { alpha, Box, Typography } from '@mui/material';
+import LockRoundedIcon from '@mui/icons-material/LockRounded';
+import { alpha, Box, Stack, Typography } from '@mui/material';
 import { CALENDAR_CONFIG, getHeight, getTop, parseHHMMToMinutes } from './calendar-utils';
 
 interface BlockedSlotCardProps {
@@ -7,6 +8,7 @@ interface BlockedSlotCardProps {
   laneIndex: number;
   laneCount: number;
   totalHorizontalSpace: number;
+  startHour?: number;
 }
 
 export default function BlockedSlotCard({
@@ -14,6 +16,7 @@ export default function BlockedSlotCard({
   laneIndex,
   laneCount,
   totalHorizontalSpace,
+  startHour = 8,
 }: BlockedSlotCardProps) {
   const { id, startTime, endTime, reason } = slot;
 
@@ -21,7 +24,7 @@ export default function BlockedSlotCard({
   const endMin = parseHHMMToMinutes(endTime);
   const durationMin = endMin - startMin;
 
-  const top = getTop(startMin);
+  const top = getTop(startMin, startHour);
   const height = getHeight(durationMin);
 
   const innerGapTotal = Math.max(0, (laneCount - 1) * CALENDAR_CONFIG.APPOINTMENT_GAP);
@@ -51,29 +54,51 @@ export default function BlockedSlotCard({
         width: laneWidth,
         height: height - 2,
         boxSizing: 'border-box',
-        borderRadius: 2.5,
-        px: dense ? 1.5 : 2,
+        borderRadius: 3,
+        pl: dense ? 2.5 : 3,
+        pr: dense ? 1.5 : 2,
         py: dense ? 1 : 1.5,
-        border: '1px dashed',
-        borderColor: 'rgba(15,23,42,0.15)',
-        bgcolor: alpha('#94A3B8', 0.05),
+        border: '1px solid',
+        borderColor: 'rgba(15,23,42,0.12)',
+        background: `repeating-linear-gradient(45deg, ${alpha('#64748B', 0.02)} 0px, ${alpha('#64748B', 0.02)} 10px, ${alpha('#64748B', 0.06)} 10px, ${alpha('#64748B', 0.06)} 20px)`,
         display: 'flex',
         flexDirection: 'column',
         justifyContent: 'center',
         zIndex: 5,
+        boxShadow: '0 2px 6px rgba(15,23,42,0.01)',
+        '&::before': {
+          content: '""',
+          position: 'absolute',
+          left: 6,
+          top: 6,
+          bottom: 6,
+          width: 4,
+          borderRadius: 99,
+          bgcolor: '#64748B',
+        },
       }}
     >
-      <Typography
-        sx={{
-          fontWeight: 800,
-          fontSize: dense ? 11 : 12,
-          color: '#64748B',
-          textTransform: 'uppercase',
-        }}
+      <Stack
+        direction="row"
+        alignItems="center"
+        spacing={0.75}
+        sx={{ mb: reason && !veryDense ? 0.5 : 0 }}
       >
-        Blocked Slot
-      </Typography>
-      {!veryDense && (
+        <LockRoundedIcon sx={{ fontSize: dense ? 13 : 15, color: '#64748B', opacity: 0.8 }} />
+        <Typography
+          sx={{
+            fontWeight: 800,
+            fontSize: dense ? 11 : 12,
+            color: '#64748B',
+            textTransform: 'uppercase',
+            letterSpacing: 0.5,
+            lineHeight: 1,
+          }}
+        >
+          Blocked Slot
+        </Typography>
+      </Stack>
+      {reason && !veryDense && (
         <Typography
           sx={{
             fontWeight: 600,
@@ -82,9 +107,10 @@ export default function BlockedSlotCard({
             overflow: 'hidden',
             textOverflow: 'ellipsis',
             whiteSpace: 'nowrap',
+            pl: dense ? 0.25 : 0.5,
           }}
         >
-          {reason || 'No reason'}
+          {reason}
         </Typography>
       )}
     </Box>

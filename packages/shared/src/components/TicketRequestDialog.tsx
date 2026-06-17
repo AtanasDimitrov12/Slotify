@@ -20,7 +20,7 @@ import {
   type TicketStage,
   type TicketType,
 } from '../api/tickets';
-import RichTextSection from './RichTextSection';
+import { RichTextSection } from './RichTextSection';
 
 interface TicketRequestDialogProps {
   open: boolean;

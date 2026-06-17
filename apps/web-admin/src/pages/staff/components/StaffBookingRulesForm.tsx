@@ -97,7 +97,7 @@ export default function StaffBookingRulesForm({ value, onChange, disabled = fals
                 minutes: Number(e.target.value),
               })
             }
-            sx={{ mt: 2 }}
+            sx={{ mt: 2, maxWidth: 200 }}
           />
         </Grid>
 
@@ -133,7 +133,7 @@ export default function StaffBookingRulesForm({ value, onChange, disabled = fals
                 minutes: Number(e.target.value),
               })
             }
-            sx={{ mt: 2 }}
+            sx={{ mt: 2, maxWidth: 200 }}
           />
         </Grid>
 
@@ -152,6 +152,7 @@ export default function StaffBookingRulesForm({ value, onChange, disabled = fals
             disabled={disabled}
             value={value.minimumNoticeMinutes}
             onChange={(e) => update('minimumNoticeMinutes', Number(e.target.value))}
+            sx={{ maxWidth: 200 }}
           />
         </Grid>
 
@@ -166,6 +167,7 @@ export default function StaffBookingRulesForm({ value, onChange, disabled = fals
             disabled={disabled}
             value={value.maximumDaysInAdvance}
             onChange={(e) => update('maximumDaysInAdvance', Number(e.target.value))}
+            sx={{ maxWidth: 200 }}
           />
         </Grid>
 

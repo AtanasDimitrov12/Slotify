@@ -16,7 +16,7 @@ describe('Staff Schedule & Blocked Slots (Integration)', () => {
     await ctx.cleanup();
   });
 
-  const testDate = '2026-06-01'; // A Monday
+  const testDate = '2026-07-06'; // A Monday
 
   async function setupStaffEnvironment(id: string) {
     // 1. Register Owner
@@ -30,7 +30,13 @@ describe('Staff Schedule & Blocked Slots (Integration)', () => {
       });
     const ownerToken = ownerResponse.body.accessToken;
     const tenantId = ownerResponse.body.account.tenantId;
-    const slug = ownerResponse.body.account.tenantId; // Actually we should get slug from body but tenantId works if we know how it is generated. Wait, the API returns slug in tenant object usually.
+
+    const { ObjectId } = require('mongodb');
+    await ctx.db
+      .collection('tenants')
+      .updateOne({ _id: new ObjectId(tenantId) }, { $set: { timezone: 'UTC' } });
+
+    const slug = ownerResponse.body.account.tenantId;
 
     // Let's get the real slug from the database or just use what register returns
     const realSlug = ownerResponse.body.account.tenantId; // In our tests tenantId is often used as a fallback if slug is not known, but let's be precise.

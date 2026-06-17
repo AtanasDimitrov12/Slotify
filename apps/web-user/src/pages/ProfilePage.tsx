@@ -156,90 +156,113 @@ export default function ProfilePage() {
             }}
           />
           <CardContent sx={{ p: { xs: 3, md: 5 }, position: 'relative', zIndex: 1 }}>
-            <Stack
-              direction={{ xs: 'column', md: 'row' }}
-              spacing={{ xs: 3, md: 4 }}
-              alignItems="center"
-              textAlign={{ xs: 'center', md: 'left' }}
-            >
-              <Avatar
-                src={profile.avatarUrl}
+            <Stack spacing={2.5}>
+              <Stack
+                direction="row"
+                spacing={{ xs: 2.5, md: 4 }}
+                alignItems="center"
+                textAlign="left"
+              >
+                <Avatar
+                  src={profile.avatarUrl}
+                  sx={{
+                    width: { xs: 80, sm: 100, md: 120 },
+                    height: { xs: 80, sm: 100, md: 120 },
+                    bgcolor: alpha(profileColors.purple, 0.2),
+                    color: profileColors.purple,
+                    fontSize: { xs: 32, sm: 40, md: 48 },
+                    fontWeight: 900,
+                    border: '4px solid rgba(255,255,255,0.1)',
+                    boxShadow: '0 12px 32px rgba(0,0,0,0.24)',
+                  }}
+                >
+                  {user?.name?.[0]}
+                </Avatar>
+
+                <Box sx={{ flexGrow: 1, minWidth: 0 }}>
+                  <Stack
+                    direction={{ xs: 'column', sm: 'row' }}
+                    justifyContent="space-between"
+                    alignItems={{ xs: 'flex-start', sm: 'center' }}
+                    spacing={1.5}
+                  >
+                    <Box>
+                      <Typography
+                        variant="h4"
+                        sx={{
+                          fontWeight: 1000,
+                          letterSpacing: -1,
+                          mb: 0.25,
+                          fontSize: { xs: 20, sm: 28, md: 34 },
+                          color: '#FFF',
+                        }}
+                      >
+                        {user?.name}
+                      </Typography>
+                      <Typography
+                        sx={{
+                          color: 'rgba(255,255,255,0.6)',
+                          fontWeight: 600,
+                          fontSize: { xs: 13, sm: 15, md: 16 },
+                        }}
+                      >
+                        {user?.email}
+                      </Typography>
+                    </Box>
+                    <Button
+                      variant="outlined"
+                      startIcon={<ChatBubbleRounded />}
+                      onClick={() => setRequestDialogOpen(true)}
+                      sx={{
+                        color: 'white',
+                        borderColor: 'rgba(255,255,255,0.2)',
+                        borderRadius: 1.5,
+                        fontWeight: 600,
+                        textTransform: 'none',
+                        fontSize: 13,
+                        px: 2,
+                        py: 0.5,
+                        width: 'auto',
+                        '&:hover': {
+                          borderColor: 'white',
+                          bgcolor: 'rgba(255,255,255,0.05)',
+                        },
+                      }}
+                    >
+                      Feedback
+                    </Button>
+                  </Stack>
+
+                  {/* Desktop Stats */}
+                  <Stack
+                    direction="row"
+                    spacing={4}
+                    justifyContent="flex-start"
+                    sx={{ mt: 2, display: { xs: 'none', sm: 'flex' } }}
+                  >
+                    <Stat label="Bookings" value={reservations.length} />
+                    <Stat label="Upcoming" value={upcoming.length} />
+                    <Stat label="Reviews" value={reservations.filter((r) => r.review).length} />
+                  </Stack>
+                </Box>
+              </Stack>
+
+              {/* Mobile Stats */}
+              <Stack
+                direction="row"
+                spacing={2}
+                justifyContent="space-around"
                 sx={{
-                  width: { xs: 100, md: 120 },
-                  height: { xs: 100, md: 120 },
-                  bgcolor: alpha(profileColors.purple, 0.2),
-                  color: profileColors.purple,
-                  fontSize: { xs: 40, md: 48 },
-                  fontWeight: 900,
-                  border: `4px solid rgba(255,255,255,0.1)`,
-                  boxShadow: '0 12px 32px rgba(0,0,0,0.24)',
+                  display: { xs: 'flex', sm: 'none' },
+                  pt: 2.5,
+                  borderTop: '1px solid rgba(255,255,255,0.08)',
+                  width: '100%',
                 }}
               >
-                {user?.name?.[0]}
-              </Avatar>
-
-              <Box sx={{ flexGrow: 1, width: '100%' }}>
-                <Stack
-                  direction={{ xs: 'column', sm: 'row' }}
-                  justifyContent="space-between"
-                  alignItems={{ xs: 'center', sm: 'flex-start' }}
-                  spacing={2}
-                >
-                  <Box>
-                    <Typography
-                      variant="h4"
-                      sx={{
-                        fontWeight: 1000,
-                        letterSpacing: -1.5,
-                        mb: 0.5,
-                        fontSize: { xs: 28, md: 34 },
-                      }}
-                    >
-                      {user?.name}
-                    </Typography>
-                    <Typography
-                      sx={{
-                        color: 'rgba(255,255,255,0.6)',
-                        fontWeight: 600,
-                        mb: { xs: 2, md: 3 },
-                      }}
-                    >
-                      {user?.email}
-                    </Typography>
-                  </Box>
-                  <Button
-                    variant="outlined"
-                    startIcon={<ChatBubbleRounded />}
-                    onClick={() => setRequestDialogOpen(true)}
-                    sx={{
-                      color: 'white',
-                      borderColor: 'rgba(255,255,255,0.2)',
-                      borderRadius: 1.5,
-                      fontWeight: 600,
-                      textTransform: 'none',
-                      fontSize: 14,
-                      px: 2,
-                      width: { xs: '100%', sm: 'auto' },
-                      '&:hover': {
-                        borderColor: 'white',
-                        bgcolor: 'rgba(255,255,255,0.05)',
-                      },
-                    }}
-                  >
-                    Feedback
-                  </Button>
-                </Stack>
-
-                <Stack
-                  direction="row"
-                  spacing={{ xs: 2, sm: 3 }}
-                  justifyContent={{ xs: 'space-around', md: 'flex-start' }}
-                >
-                  <Stat label="Bookings" value={reservations.length} />
-                  <Stat label="Upcoming" value={upcoming.length} />
-                  <Stat label="Reviews" value={reservations.filter((r) => r.review).length} />
-                </Stack>
-              </Box>
+                <Stat label="Bookings" value={reservations.length} />
+                <Stat label="Upcoming" value={upcoming.length} />
+                <Stat label="Reviews" value={reservations.filter((r) => r.review).length} />
+              </Stack>
             </Stack>
           </CardContent>
         </Card>

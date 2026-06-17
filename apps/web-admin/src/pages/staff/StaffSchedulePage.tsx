@@ -4,12 +4,14 @@ import {
   cancelStaffAppointment,
   createStaffAppointment,
   getCustomerInsights,
+  getMyStaffAvailability,
   getMyStaffBlockedSlots,
   getMyTenants,
   landingColors,
   listStaffAppointments,
   listStaffServices,
   type StaffAppointment,
+  type StaffAvailabilityResponse,
   type StaffBlockedSlotItem,
   type StaffServiceOption,
   updateStaffAppointment,
@@ -76,6 +78,82 @@ export default function StaffSchedulePage() {
   const [error, setError] = React.useState('');
   const [moveError, setMoveError] = React.useState('');
   const [actionLoading, setActionLoading] = React.useState(false);
+  const [availability, setAvailability] = React.useState<StaffAvailabilityResponse | null>(null);
+
+  React.useEffect(() => {
+    async function loadAvailability() {
+      try {
+        const result = await getMyStaffAvailability();
+        setAvailability(result);
+      } catch (err) {
+        console.error('Failed to load availability', err);
+      }
+    }
+    void loadAvailability();
+  }, []);
+
+  const { startHour, endHour } = React.useMemo(() => {
+    let minMinutes = 8 * 60; // default start at 8:00
+    let maxMinutes = 19 * 60; // default end at 19:00
+
+    if (availability) {
+      const date = new Date(`${selectedDate}T12:00:00`);
+      const dayOfWeek = date.getDay();
+      const dayAvail = availability.weeklyAvailability.find((d) => d.dayOfWeek === dayOfWeek);
+
+      if (dayAvail?.isAvailable && dayAvail.slots && dayAvail.slots.length > 0) {
+        const tenantSlots = dayAvail.slots.filter(
+          (slot) => String(slot.tenantId) === String(user?.tenantId),
+        );
+        if (tenantSlots.length > 0) {
+          minMinutes = 24 * 60;
+          maxMinutes = 0;
+          for (const slot of tenantSlots) {
+            const [sh, sm] = slot.startTime.split(':').map(Number);
+            const [eh, em] = slot.endTime.split(':').map(Number);
+            const startMins = sh * 60 + sm;
+            const endMins = eh * 60 + em;
+
+            if (startMins < minMinutes) minMinutes = startMins;
+            if (endMins > maxMinutes) maxMinutes = endMins;
+          }
+        }
+      }
+    }
+
+    // Expand to fit any scheduled appointments
+    for (const appt of appointments) {
+      if (appt.status === 'cancelled') continue;
+      const apptDate = new Date(appt.startTime);
+      const startMins = apptDate.getHours() * 60 + apptDate.getMinutes();
+      const endMins = startMins + appt.durationMin;
+
+      if (startMins < minMinutes) minMinutes = startMins;
+      if (endMins > maxMinutes) maxMinutes = endMins;
+    }
+
+    // Expand to fit any blocked slots
+    for (const slot of blockedSlots) {
+      const [sh, sm] = slot.startTime.split(':').map(Number);
+      const [eh, em] = slot.endTime.split(':').map(Number);
+      const startMins = sh * 60 + sm;
+      const endMins = eh * 60 + em;
+
+      if (startMins < minMinutes) minMinutes = startMins;
+      if (endMins > maxMinutes) maxMinutes = endMins;
+    }
+
+    // Fallback if no availability, appointments or blocked slots
+    if (minMinutes === 24 * 60 || maxMinutes === 0) {
+      minMinutes = 8 * 60;
+      maxMinutes = 19 * 60;
+    }
+
+    const startHour = Math.floor(minMinutes / 60);
+    const endHour = Math.ceil(maxMinutes / 60);
+
+    return { startHour, endHour };
+  }, [selectedDate, availability, appointments, blockedSlots, user?.tenantId]);
 
   const [customerInsights, setCustomerInsights] = React.useState<CustomerInsights | null>(null);
   const [insightsLoading, setInsightsLoading] = React.useState(false);
@@ -277,8 +355,9 @@ export default function StaffSchedulePage() {
         <Stack
           direction={{ xs: 'column', lg: 'row' }}
           justifyContent="space-between"
-          alignItems={{ xs: 'stretch', lg: 'flex-start' }}
+          alignItems={{ xs: 'center', lg: 'flex-start' }}
           spacing={3}
+          sx={{ width: '100%', textAlign: { xs: 'center', lg: 'left' } }}
         >
           <Box>
             <Typography
@@ -309,9 +388,9 @@ export default function StaffSchedulePage() {
             spacing={1.5}
             sx={{
               width: { xs: '100%', lg: 'auto' },
-              alignItems: { xs: 'stretch', lg: 'flex-end' },
+              alignItems: { xs: 'center', lg: 'flex-end' },
               position: { xs: 'sticky', lg: 'static' },
-              top: { xs: 0, lg: 'auto' }, // Sticking to top, AppShell has sticky header too
+              top: { xs: 74, lg: 'auto' }, // Align with AppShell header
               zIndex: 10,
               bgcolor: { xs: '#F7F8FC', lg: 'transparent' },
               pt: { xs: 1, lg: 0 },
@@ -332,7 +411,7 @@ export default function StaffSchedulePage() {
                 alignItems: 'center',
                 height: 48,
                 width: { xs: '100%', sm: 'fit-content' },
-                alignSelf: { xs: 'stretch', sm: 'flex-start', lg: 'flex-end' },
+                alignSelf: { xs: 'stretch', sm: 'center', lg: 'flex-end' },
               }}
             >
               <IconButton
@@ -387,6 +466,9 @@ export default function StaffSchedulePage() {
               >
                 {formatHumanDate(selectedDate)}
               </Typography>
+
+              {/* Invisible spacer to balance Today button on mobile */}
+              <Box sx={{ width: 74, display: { xs: 'block', sm: 'none' } }} />
 
               <IconButton
                 size="small"
@@ -512,7 +594,7 @@ export default function StaffSchedulePage() {
           </Alert>
         ) : null}
 
-        <Grid container spacing={3}>
+        <Grid container spacing={{ xs: 2, sm: 3 }} sx={{ overflowX: 'hidden' }}>
           {isMobile && (
             <Grid item xs={12}>
               <DayOverviewCard appointments={appointments} />
@@ -530,6 +612,8 @@ export default function StaffSchedulePage() {
                 onAddAppointmentAt={handleAddAppointmentAt}
                 onViewInsights={handleViewInsights}
                 salons={salons}
+                startHour={startHour}
+                endHour={endHour}
               />
             ) : (
               <ScheduleCalendar
@@ -542,6 +626,8 @@ export default function StaffSchedulePage() {
                 onMoveAppointment={handleMoveAppointment}
                 onViewInsights={handleViewInsights}
                 salons={salons}
+                startHour={startHour}
+                endHour={endHour}
               />
             )}
           </Grid>
