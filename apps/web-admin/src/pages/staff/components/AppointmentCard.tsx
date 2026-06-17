@@ -95,6 +95,16 @@ export default function AppointmentCard({
   const riskColor = getRiskColor(riskScore);
   const salon = salons.find((s) => s._id === tenantId);
 
+  const accentColor = isCancelled
+    ? '#F43F5E'
+    : isOverdue
+      ? '#EF4444'
+      : isCompleted
+        ? '#10B981'
+        : isNoShow
+          ? '#64748B'
+          : landingColors.purple;
+
   return (
     <Box
       onPointerDown={onMouseDown}
@@ -108,8 +118,8 @@ export default function AppointmentCard({
         width: laneWidth,
         height: height - 2,
         boxSizing: 'border-box',
-        borderRadius: 2.5,
-        px: dense ? 1.5 : 2,
+        pl: dense ? 2.5 : 3,
+        pr: dense ? 1.5 : 2,
         py: dense ? 1 : 1.5,
         cursor: draggable ? (isDragging ? 'grabbing' : 'grab') : 'pointer',
         border: '1px solid',
@@ -119,29 +129,32 @@ export default function AppointmentCard({
           : isOverdue
             ? alpha('#EF4444', 0.4)
             : selected
-              ? alpha(landingColors.purple, 0.4)
-              : 'rgba(15,23,42,0.06)',
-        bgcolor: isCancelled
-          ? alpha('#F43F5E', 0.02)
-          : isOverdue
-            ? alpha('#EF4444', 0.02)
-            : isCompleted
-              ? alpha(landingColors.success, 0.02)
-              : isNoShow
-                ? alpha('#94A3B8', 0.04)
-                : selected
-                  ? alpha(landingColors.purple, 0.03)
-                  : '#FFFFFF',
-        boxShadow:
-          selected && !isDragging ? `0 8px 24px ${alpha(landingColors.purple, 0.1)}` : 'none',
-        opacity: isDragging ? 0.8 : 1,
-        zIndex: isDragging ? 100 : selected ? 50 : 10,
-        transition: isDragging ? 'none' : 'top 0.1s ease, box-shadow 0.2s ease',
+              ? alpha(accentColor, 0.4)
+              : 'rgba(15,23,42,0.08)',
+        background: isDragging
+          ? '#FFFFFF'
+          : `linear-gradient(135deg, ${alpha(accentColor, 0.03)} 0%, #FFFFFF 100%)`,
+        boxShadow: isDragging
+          ? '0 20px 40px rgba(15,23,42,0.12)'
+          : selected
+            ? `0 10px 25px ${alpha(accentColor, 0.12)}`
+            : '0 2px 6px rgba(15,23,42,0.02)',
+        opacity: isDragging ? 0.9 : 1,
+        zIndex: isDragging ? 1000 : selected ? 50 : 10,
+        transform: isDragging ? 'scale(1.03) rotate(0.5deg)' : 'scale(1) rotate(0deg)',
+        touchAction: 'none',
         display: 'flex',
         flexDirection: 'column',
         justifyContent: 'center',
         gap: 0.5,
-        touchAction: 'none',
+        transition: isDragging ? 'none' : 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+        '&:hover': {
+          ...(!isDragging && {
+            transform: 'translateY(-2px)',
+            boxShadow: `0 12px 30px ${alpha(accentColor, 0.08)}`,
+            borderColor: alpha(accentColor, 0.35),
+          }),
+        },
         ...(isOverdue && {
           animation: 'overdue-pulse 2s infinite ease-in-out',
           '@keyframes overdue-pulse': {
@@ -153,21 +166,22 @@ export default function AppointmentCard({
         '&::before': {
           content: '""',
           position: 'absolute',
-          left: 0,
-          top: 8,
-          bottom: 8,
-          width: 3,
-          borderRadius: '0 4px 4px 0',
-          bgcolor: isCancelled ? '#F43F5E' : riskColor,
+          left: 6,
+          top: 6,
+          bottom: 6,
+          width: 4,
+          borderRadius: 99,
+          background: `linear-gradient(to bottom, ${accentColor}, ${alpha(accentColor, 0.6)})`,
         },
       }}
     >
       <Stack direction="row" justifyContent="space-between" alignItems="center" spacing={1}>
         <Typography
           sx={{
-            fontWeight: 700,
-            fontSize: dense ? 13 : 14,
+            fontWeight: 800,
+            fontSize: dense ? 13 : 14.5,
             color: isCancelled ? '#F43F5E' : '#0F172A',
+            letterSpacing: '-0.3px',
             textDecoration: isCancelled ? 'line-through' : 'none',
             overflow: 'hidden',
             textOverflow: 'ellipsis',
@@ -211,16 +225,31 @@ export default function AppointmentCard({
         <Typography
           sx={{
             color: isOverdue ? '#EF4444' : '#64748B',
-            fontWeight: 600,
+            fontWeight: 700,
             fontSize: dense ? 11 : 12,
             overflow: 'hidden',
             textOverflow: 'ellipsis',
             whiteSpace: 'nowrap',
+            display: 'flex',
+            alignItems: 'center',
+            gap: 0.5,
           }}
         >
-          {formatTimeOnly(startTime)} · {serviceName}
-          {salon && ` · ${salon.name}`}
-          {isOverdue && ' · Running Late'}
+          <span>{formatTimeOnly(startTime)}</span>
+          <span style={{ opacity: 0.5 }}>•</span>
+          <span>{serviceName}</span>
+          {salon && (
+            <>
+              <span style={{ opacity: 0.5 }}>•</span>
+              <span style={{ color: landingColors.purple, fontWeight: 800 }}>{salon.name}</span>
+            </>
+          )}
+          {isOverdue && (
+            <>
+              <span style={{ opacity: 0.5 }}>•</span>
+              <span style={{ color: '#EF4444', fontWeight: 800 }}>LATE</span>
+            </>
+          )}
         </Typography>
       )}
     </Box>

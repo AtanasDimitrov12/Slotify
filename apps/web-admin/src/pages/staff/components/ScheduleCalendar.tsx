@@ -179,11 +179,12 @@ export default function ScheduleCalendar({
   return (
     <Box
       sx={{
-        borderRadius: 4,
-        border: '1px solid rgba(15,23,42,0.06)',
+        borderRadius: 5,
+        border: '1px solid rgba(15,23,42,0.08)',
         bgcolor: '#FFFFFF',
-        boxShadow: '0 10px 40px rgba(15,23,42,0.03)',
+        boxShadow: '0 20px 50px rgba(15,23,42,0.04)',
         overflow: 'hidden',
+        position: 'relative',
       }}
     >
       {loading ? (
@@ -196,11 +197,18 @@ export default function ScheduleCalendar({
           sx={{
             position: 'relative',
             height: HOURS.length * CALENDAR_CONFIG.SLOT_HEIGHT,
-            overflow: 'auto',
+            overflowY: 'auto',
+            overflowX: 'hidden',
             bgcolor: '#FFFFFF',
             userSelect: 'none',
             '&::-webkit-scrollbar': { width: 8 },
-            '&::-webkit-scrollbar-thumb': { bgcolor: 'rgba(0,0,0,0.05)', borderRadius: 4 },
+            '&::-webkit-scrollbar-track': { bgcolor: 'transparent' },
+            '&::-webkit-scrollbar-thumb': {
+              bgcolor: 'rgba(15,23,42,0.08)',
+              borderRadius: 99,
+              border: '2px solid #fff',
+              '&:hover': { bgcolor: 'rgba(15,23,42,0.15)' },
+            },
           }}
         >
           {HOURS.map((hour, index) => (
@@ -213,19 +221,34 @@ export default function ScheduleCalendar({
                 right: 0,
                 height: CALENDAR_CONFIG.SLOT_HEIGHT,
                 borderTop: '1px solid',
-                borderColor: 'rgba(15,23,42,0.03)',
+                borderColor: 'rgba(15,23,42,0.04)',
               }}
             >
+              {/* Half-hour separator line */}
+              <Box
+                sx={{
+                  position: 'absolute',
+                  top: CALENDAR_CONFIG.SLOT_HEIGHT / 2,
+                  left: CALENDAR_CONFIG.TIME_COLUMN_WIDTH,
+                  right: 0,
+                  borderTop: '1px dashed',
+                  borderColor: 'rgba(15,23,42,0.03)',
+                }}
+              />
+
               <Typography
                 sx={{
                   position: 'absolute',
-                  top: 12,
-                  left: 20,
-                  width: 60,
-                  color: '#94A3B8',
-                  fontWeight: 600,
-                  fontSize: 12,
-                  fontFamily: 'monospace',
+                  top: 6,
+                  left: 8,
+                  width: 56,
+                  color: '#64748B',
+                  fontWeight: 800,
+                  fontSize: 11,
+                  fontFamily: '"JetBrains Mono", Menlo, Monaco, Consolas, monospace',
+                  textAlign: 'right',
+                  userSelect: 'none',
+                  opacity: 0.8,
                 }}
               >
                 {`${String(hour).padStart(2, '0')}:00`}
@@ -239,7 +262,7 @@ export default function ScheduleCalendar({
                   right: 0,
                   bottom: 0,
                   borderLeft: '1px solid',
-                  borderColor: 'rgba(15,23,42,0.03)',
+                  borderColor: 'rgba(15,23,42,0.04)',
                 }}
               />
             </Box>
@@ -250,7 +273,7 @@ export default function ScheduleCalendar({
               sx={{
                 position: 'absolute',
                 top: nowTop,
-                left: CALENDAR_CONFIG.TIME_COLUMN_WIDTH - 8,
+                left: CALENDAR_CONFIG.TIME_COLUMN_WIDTH - 5,
                 right: 0,
                 zIndex: 200,
                 pointerEvents: 'none',
@@ -260,14 +283,30 @@ export default function ScheduleCalendar({
             >
               <Box
                 sx={{
-                  width: 8,
-                  height: 8,
+                  width: 10,
+                  height: 10,
                   borderRadius: '50%',
                   bgcolor: '#EF4444',
-                  border: '2px solid #FFF',
+                  border: '2.5px solid #FFFFFF',
+                  boxShadow: '0 0 10px rgba(239,68,68,0.5)',
+                  position: 'relative',
+                  animation: 'nowPulse 2s infinite ease-in-out',
+                  '@keyframes nowPulse': {
+                    '0%': { boxShadow: '0 0 0 0 rgba(239, 68, 68, 0.4)' },
+                    '70%': { boxShadow: '0 0 0 6px rgba(239, 68, 68, 0)' },
+                    '100%': { boxShadow: '0 0 0 0 rgba(239, 68, 68, 0)' },
+                  },
                 }}
               />
-              <Box sx={{ height: '2px', flex: 1, bgcolor: '#EF4444', opacity: 0.6 }} />
+              <Box
+                sx={{
+                  height: '2px',
+                  flex: 1,
+                  bgcolor: '#EF4444',
+                  opacity: 0.8,
+                  boxShadow: '0 1px 3px rgba(239,68,68,0.2)',
+                }}
+              />
             </Box>
           )}
 

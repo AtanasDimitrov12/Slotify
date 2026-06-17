@@ -15,7 +15,7 @@ import { StaffBookingSettings } from '../staff-booking-settings/staff-booking-se
 import { StaffProfile } from '../staff-profiles/staff-profile.schema';
 import { StaffServiceAssignment } from '../staff-service-assignments/staff-service-assignment.schema';
 import { StaffTimeOff } from '../staff-time-off/staff-time-off.schema';
-import { TenantDetails, type WeeklyOpeningHours } from '../tenant-details/tenant-details.schema';
+import { TenantDetails } from '../tenant-details/tenant-details.schema';
 import { Tenant } from '../tenants/tenant.schema';
 import { CreateReservationLockDto } from './dto/create-reservation-lock.dto';
 import { GetAvailabilityDto } from './dto/get-availability.dto';
@@ -26,7 +26,6 @@ import {
   endOfDay,
   getDayOfWeekInTimezone,
   maxDate,
-  minDate,
   startOfDay,
   subtractRanges,
 } from './public-booking.utils';
@@ -864,51 +863,6 @@ export class PublicBookingService {
       (gapBefore > 0 && gapBefore < 15 ? 40 : 0) + (gapAfter > 0 && gapAfter < 15 ? 40 : 0);
 
     return perfectFitBonus - smallGapPenalty - fragmentPenalty;
-  }
-
-  private extractTenantOpeningWindowsForDate(
-    date: Date,
-    openingHours?: WeeklyOpeningHours,
-    timezone = 'Europe/Amsterdam',
-  ): TimeRange[] {
-    if (!openingHours) {
-      return [];
-    }
-
-    const weekdayMap: Array<keyof WeeklyOpeningHours> = [
-      'sun',
-      'mon',
-      'tue',
-      'wed',
-      'thu',
-      'fri',
-      'sat',
-    ];
-
-    const key = weekdayMap[getDayOfWeekInTimezone(date, timezone)];
-    const entries = openingHours[key] ?? [];
-
-    return entries.map((entry) => ({
-      start: buildDateTimeOnDay(date, entry.start, timezone),
-      end: buildDateTimeOnDay(date, entry.end, timezone),
-    }));
-  }
-
-  private intersectMany(a: TimeRange[], b: TimeRange[]): TimeRange[] {
-    const results: TimeRange[] = [];
-
-    for (const left of a) {
-      for (const right of b) {
-        const start = maxDate(left.start, right.start);
-        const end = minDate(left.end, right.end);
-
-        if (start < end) {
-          results.push({ start, end });
-        }
-      }
-    }
-
-    return results.sort((x, y) => x.start.getTime() - y.start.getTime());
   }
 
   private async validateSelectedSlot(params: {
