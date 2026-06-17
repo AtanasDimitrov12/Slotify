@@ -13,10 +13,6 @@ import {
   roundToStep,
 } from './calendar-utils';
 
-const HOURS = Array.from(
-  { length: CALENDAR_CONFIG.END_HOUR - CALENDAR_CONFIG.START_HOUR },
-  (_, i) => CALENDAR_CONFIG.START_HOUR + i,
-);
 const PIXELS_PER_MINUTE = CALENDAR_CONFIG.SLOT_HEIGHT / 60;
 
 export default function ScheduleCalendar({
@@ -29,6 +25,8 @@ export default function ScheduleCalendar({
   onMoveAppointment,
   onViewInsights,
   salons,
+  startHour = 8,
+  endHour = 19,
 }: {
   selectedDate: string;
   appointments: StaffAppointment[];
@@ -39,7 +37,10 @@ export default function ScheduleCalendar({
   onMoveAppointment: (appointment: StaffAppointment, nextStartIso: string) => Promise<void>;
   onViewInsights?: (id: string) => void;
   salons: AvailableTenant[];
+  startHour?: number;
+  endHour?: number;
 }) {
+  const HOURS = Array.from({ length: endHour - startHour }, (_, i) => startHour + i);
   const containerRef = React.useRef<HTMLDivElement | null>(null);
   const [draggingId, setDraggingId] = React.useState<string | null>(null);
   const [previewTopById, setPreviewTopById] = React.useState<Record<string, number>>({});
@@ -139,7 +140,7 @@ export default function ScheduleCalendar({
       clampedTop / PIXELS_PER_MINUTE,
       CALENDAR_CONFIG.SNAP_MINUTES,
     );
-    const totalMinutes = CALENDAR_CONFIG.START_HOUR * 60 + minutesFromStart;
+    const totalMinutes = startHour * 60 + minutesFromStart;
     const hours = Math.floor(totalMinutes / 60);
     const minutes = totalMinutes % 60;
 
@@ -168,8 +169,8 @@ export default function ScheduleCalendar({
 
   const isToday = now.toISOString().split('T')[0] === selectedDate;
   const nowMinutes = now.getHours() * 60 + now.getMinutes();
-  const startMinutes = CALENDAR_CONFIG.START_HOUR * 60;
-  const endMinutes = (CALENDAR_CONFIG.START_HOUR + HOURS.length) * 60;
+  const startMinutes = startHour * 60;
+  const endMinutes = endHour * 60;
   const nowTop =
     isToday && nowMinutes >= startMinutes && nowMinutes <= endMinutes
       ? ((nowMinutes - startMinutes) / 60) * CALENDAR_CONFIG.SLOT_HEIGHT
@@ -279,6 +280,7 @@ export default function ScheduleCalendar({
                   laneIndex={item.laneIndex}
                   laneCount={item.laneCount}
                   totalHorizontalSpace={totalHorizontalSpace}
+                  startHour={startHour}
                 />
               );
             }
@@ -301,6 +303,7 @@ export default function ScheduleCalendar({
                 onPointerUp={handlePointerUp}
                 onClick={() => onSelectAppointment(item.id)}
                 onViewInsights={onViewInsights}
+                startHour={startHour}
               />
             );
           })}

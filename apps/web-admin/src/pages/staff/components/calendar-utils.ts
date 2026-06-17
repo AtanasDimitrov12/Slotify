@@ -40,8 +40,8 @@ export function parseHHMMToMinutes(value: string) {
   return hh * 60 + mm;
 }
 
-export function getTop(minutes: number) {
-  const startOfSchedule = CALENDAR_CONFIG.START_HOUR * 60;
+export function getTop(minutes: number, startHour: number = CALENDAR_CONFIG.START_HOUR) {
+  const startOfSchedule = startHour * 60;
   return ((minutes - startOfSchedule) / 60) * CALENDAR_CONFIG.SLOT_HEIGHT;
 }
 

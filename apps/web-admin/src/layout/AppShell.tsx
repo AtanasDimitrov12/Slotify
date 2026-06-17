@@ -1,14 +1,23 @@
-import { type AvailableTenant, getMyTenants, useAuth, useToast } from '@barber/shared';
+import {
+  type AvailableTenant,
+  getMyTenants,
+  listStaffAppointments,
+  type StaffAppointment,
+  useAuth,
+  useToast,
+} from '@barber/shared';
 import { ArrowForwardIosRounded, MenuRounded } from '@mui/icons-material';
 import AssignmentRoundedIcon from '@mui/icons-material/AssignmentRounded';
 import BeachAccessRoundedIcon from '@mui/icons-material/BeachAccessRounded';
 import BlockRoundedIcon from '@mui/icons-material/BlockRounded';
+import CloseRoundedIcon from '@mui/icons-material/CloseRounded';
 import ContentCutRoundedIcon from '@mui/icons-material/ContentCutRounded';
 import DashboardRoundedIcon from '@mui/icons-material/DashboardRounded';
 import EventAvailableRoundedIcon from '@mui/icons-material/EventAvailableRounded';
 import GroupsRoundedIcon from '@mui/icons-material/GroupsRounded';
 import InsightsRoundedIcon from '@mui/icons-material/InsightsRounded';
 import LocalOfferRoundedIcon from '@mui/icons-material/LocalOfferRounded';
+import NotificationsActiveRoundedIcon from '@mui/icons-material/NotificationsActiveRounded';
 import PersonRoundedIcon from '@mui/icons-material/PersonRounded';
 import ScheduleRoundedIcon from '@mui/icons-material/ScheduleRounded';
 import SettingsRoundedIcon from '@mui/icons-material/SettingsRounded';
@@ -16,12 +25,16 @@ import StorefrontRoundedIcon from '@mui/icons-material/StorefrontRounded';
 import TuneRoundedIcon from '@mui/icons-material/TuneRounded';
 import {
   AppBar,
+  Avatar,
   Box,
   Button,
   ButtonBase,
   Container,
   Drawer,
   IconButton,
+  keyframes,
+  Paper,
+  Slide,
   Stack,
   Toolbar,
   Typography,
@@ -53,6 +66,61 @@ const shellColors = {
   cardBg: 'rgba(255,255,255,0.72)',
 };
 
+const pulse = keyframes`
+  0% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 rgba(124, 108, 255, 0.4);
+  }
+  70% {
+    transform: scale(1.08);
+    box-shadow: 0 0 0 10px rgba(124, 108, 255, 0);
+  }
+  100% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 rgba(124, 108, 255, 0);
+  }
+`;
+
+function formatDateInput(date: Date) {
+  const year = date.getFullYear();
+  const month = `${date.getMonth() + 1}`.padStart(2, '0');
+  const day = `${date.getDate()}`.padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
+
+function playNotificationSound() {
+  try {
+    const AudioCtx =
+      window.AudioContext ||
+      (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
+    if (!AudioCtx) return;
+    const ctx = new AudioCtx();
+
+    const playTone = (freq: number, startTime: number, duration: number) => {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(freq, startTime);
+
+      gain.gain.setValueAtTime(0.25, startTime);
+      gain.gain.exponentialRampToValueAtTime(0.0001, startTime + duration);
+
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+
+      osc.start(startTime);
+      osc.stop(startTime + duration);
+    };
+
+    const now = ctx.currentTime;
+    playTone(659.25, now, 0.25); // E5
+    playTone(880.0, now + 0.12, 0.35); // A5
+  } catch (err) {
+    console.error('Failed to play notification sound', err);
+  }
+}
+
 export default function AppShell() {
   const navigate = useNavigate();
   const location = useLocation();
@@ -61,6 +129,63 @@ export default function AppShell() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const { user, logout, switchTenant } = useAuth();
   const { showSuccess, showError } = useToast();
+
+  const knownBookingIdsRef = React.useRef<Set<string>>(new Set());
+  const [newBooking, setNewBooking] = useState<StaffAppointment | null>(null);
+
+  React.useEffect(() => {
+    if (!user || user.role !== 'staff') {
+      return;
+    }
+
+    let isMounted = true;
+    let initialFetched = false;
+
+    const checkNewBookings = async () => {
+      try {
+        const todayStr = formatDateInput(new Date());
+        const appointments = await listStaffAppointments({ date: todayStr });
+
+        if (!isMounted) return;
+
+        const currentIds = appointments.map((a) => a.id);
+
+        if (!initialFetched) {
+          knownBookingIdsRef.current = new Set(currentIds);
+          initialFetched = true;
+          return;
+        }
+
+        const newBookings = appointments.filter((a) => !knownBookingIdsRef.current.has(a.id));
+
+        if (newBookings.length > 0) {
+          const activeNewBookings = newBookings.filter((a) => a.status !== 'cancelled');
+          if (activeNewBookings.length > 0) {
+            const latestNewBooking = activeNewBookings[activeNewBookings.length - 1];
+            setNewBooking(latestNewBooking);
+            playNotificationSound();
+          }
+
+          for (const id of currentIds) {
+            knownBookingIdsRef.current.add(id);
+          }
+        }
+      } catch (err) {
+        if (err instanceof Error && err.message.toLowerCase().includes('unauthorized')) {
+          return;
+        }
+        console.error('Failed to poll bookings', err);
+      }
+    };
+
+    checkNewBookings();
+    const interval = setInterval(checkNewBookings, 15000);
+
+    return () => {
+      isMounted = false;
+      clearInterval(interval);
+    };
+  }, [user]);
 
   const [collapsed, setCollapsed] = React.useState(() => {
     const saved = localStorage.getItem('sidebar-collapsed');
@@ -456,6 +581,124 @@ export default function AppShell() {
           />
         </Box>
       </Drawer>
+
+      {/* Slide-in Booking Notification */}
+      <Slide in={!!newBooking} direction="left" mountOnEnter unmountOnExit>
+        <Paper
+          elevation={6}
+          sx={{
+            position: 'fixed',
+            bottom: 24,
+            right: 24,
+            width: 350,
+            borderRadius: 4,
+            p: 2.5,
+            bgcolor: 'rgba(255, 255, 255, 0.85)',
+            backdropFilter: 'blur(16px)',
+            border: `1px solid ${alpha(shellColors.purple, 0.18)}`,
+            boxShadow: '0 20px 40px rgba(15,23,42,0.12)',
+            zIndex: 2000,
+            transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+          }}
+        >
+          {newBooking && (
+            <Stack spacing={2}>
+              <Stack
+                direction="row"
+                spacing={2}
+                alignItems="flex-start"
+                justifyContent="space-between"
+              >
+                <Stack direction="row" spacing={1.5} alignItems="center">
+                  <Avatar
+                    sx={{
+                      bgcolor: alpha(shellColors.purple, 0.12),
+                      color: shellColors.purple,
+                      animation: `${pulse} 2s infinite ease-in-out`,
+                      width: 44,
+                      height: 44,
+                    }}
+                  >
+                    <NotificationsActiveRoundedIcon />
+                  </Avatar>
+                  <Box>
+                    <Typography sx={{ fontWeight: 900, fontSize: 16, color: shellColors.text }}>
+                      New Booking Today!
+                    </Typography>
+                    <Typography
+                      sx={{ color: shellColors.textMuted, fontSize: 12, fontWeight: 700 }}
+                    >
+                      Just received a new reservation
+                    </Typography>
+                  </Box>
+                </Stack>
+                <IconButton
+                  size="small"
+                  onClick={() => setNewBooking(null)}
+                  sx={{
+                    color: shellColors.textSoft,
+                    bgcolor: alpha(shellColors.textSoft, 0.05),
+                    '&:hover': { bgcolor: alpha(shellColors.textSoft, 0.1) },
+                  }}
+                >
+                  <CloseRoundedIcon sx={{ fontSize: 18 }} />
+                </IconButton>
+              </Stack>
+
+              <Box
+                sx={{
+                  p: 1.5,
+                  borderRadius: 3,
+                  bgcolor: alpha(shellColors.purple, 0.04),
+                  border: `1px solid ${alpha(shellColors.purple, 0.08)}`,
+                }}
+              >
+                <Typography
+                  sx={{ fontWeight: 800, fontSize: 15, color: shellColors.text, mb: 0.5 }}
+                >
+                  {newBooking.customerName}
+                </Typography>
+                <Typography sx={{ color: shellColors.textSoft, fontSize: 13, fontWeight: 650 }}>
+                  {newBooking.serviceName}
+                </Typography>
+                <Typography
+                  sx={{ color: shellColors.purple, fontSize: 14, fontWeight: 900, mt: 0.5 }}
+                >
+                  {new Date(newBooking.startTime).toLocaleTimeString([], {
+                    hour: '2-digit',
+                    minute: '2-digit',
+                  })}
+                </Typography>
+              </Box>
+
+              <Button
+                variant="contained"
+                onClick={() => {
+                  setNewBooking(null);
+                  navigate('/staff/schedule');
+                }}
+                sx={{
+                  bgcolor: shellColors.purple,
+                  color: shellColors.white,
+                  fontWeight: 900,
+                  fontSize: 14,
+                  py: 1.2,
+                  borderRadius: 999,
+                  textTransform: 'none',
+                  boxShadow: `0 8px 20px ${alpha(shellColors.purple, 0.25)}`,
+                  '&:hover': {
+                    bgcolor: shellColors.purple,
+                    filter: 'brightness(1.08)',
+                  },
+                }}
+                fullWidth
+              >
+                View Schedule
+              </Button>
+            </Stack>
+          )}
+        </Paper>
+      </Slide>
     </Box>
   );
 }

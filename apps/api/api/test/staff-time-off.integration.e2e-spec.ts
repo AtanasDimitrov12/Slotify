@@ -35,6 +35,13 @@ describe('Staff Time-Off (Integration)', () => {
       .post('/auth/register')
       .send(ownerRegisterDto);
     const ownerToken = registerResponse.body.accessToken;
+    const tenantId = registerResponse.body.account.tenantId;
+
+    const { ObjectId } = require('mongodb');
+    await ctx.db
+      .collection('tenants')
+      .updateOne({ _id: new ObjectId(tenantId) }, { $set: { timezone: 'UTC' } });
+
     const slug = 'elite-cuts';
 
     await request(ctx.app.getHttpServer())
@@ -70,7 +77,7 @@ describe('Staff Time-Off (Integration)', () => {
     // 4. Verify initial availability (should have slots)
     const initialAvail = await request(ctx.app.getHttpServer())
       .get(`/public/tenants/${slug}/availability`)
-      .query({ serviceId, date: '2026-06-01' })
+      .query({ serviceId, date: '2026-07-06' })
       .expect(200);
     expect(initialAvail.body.slots.length).toBeGreaterThan(0);
 
@@ -79,8 +86,8 @@ describe('Staff Time-Off (Integration)', () => {
       .post('/staff/me/time-off')
       .set('Authorization', `Bearer ${staffToken}`)
       .send({
-        startDate: '2026-06-01T09:00:00Z',
-        endDate: '2026-06-01T12:00:00Z',
+        startDate: '2026-07-06T09:00:00Z',
+        endDate: '2026-07-06T12:00:00Z',
         reason: 'Dentist appointment',
       })
       .expect(201);
@@ -97,12 +104,12 @@ describe('Staff Time-Off (Integration)', () => {
     // 6. Verify availability is blocked for that period
     const afterTimeOffAvail = await request(ctx.app.getHttpServer())
       .get(`/public/tenants/${slug}/availability`)
-      .query({ serviceId, date: '2026-06-01' })
+      .query({ serviceId, date: '2026-07-06' })
       .expect(200);
 
     // Slot starting at 09:00Z should be blocked
     const blockedSlot = (afterTimeOffAvail.body.slots as { startTime: string }[]).find(
-      (s) => s.startTime === '2026-06-01T09:00:00.000Z',
+      (s) => s.startTime === '2026-07-06T09:00:00.000Z',
     );
     expect(blockedSlot).toBeUndefined();
 

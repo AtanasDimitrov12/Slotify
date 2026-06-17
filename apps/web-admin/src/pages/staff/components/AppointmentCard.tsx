@@ -21,6 +21,7 @@ interface AppointmentCardProps {
   onPointerUp?: (event: React.PointerEvent<HTMLDivElement>) => void;
   onClick: () => void;
   onViewInsights?: (id: string) => void;
+  startHour?: number;
 }
 
 export default function AppointmentCard({
@@ -38,6 +39,7 @@ export default function AppointmentCard({
   onPointerUp,
   onClick,
   onViewInsights,
+  startHour = 8,
 }: AppointmentCardProps) {
   const { id, startTime, status, customerName, serviceName, durationMin, riskScore, tenantId } =
     appointment;
@@ -49,7 +51,7 @@ export default function AppointmentCard({
   const top =
     previewTop !== undefined
       ? previewTop
-      : getTop(new Date(startTime).getHours() * 60 + new Date(startTime).getMinutes());
+      : getTop(new Date(startTime).getHours() * 60 + new Date(startTime).getMinutes(), startHour);
   const height = Math.max(
     (durationMin / 60) * CALENDAR_CONFIG.SLOT_HEIGHT,
     CALENDAR_CONFIG.MIN_HEIGHT,

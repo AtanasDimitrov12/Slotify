@@ -7,6 +7,7 @@ interface BlockedSlotCardProps {
   laneIndex: number;
   laneCount: number;
   totalHorizontalSpace: number;
+  startHour?: number;
 }
 
 export default function BlockedSlotCard({
@@ -14,6 +15,7 @@ export default function BlockedSlotCard({
   laneIndex,
   laneCount,
   totalHorizontalSpace,
+  startHour = 8,
 }: BlockedSlotCardProps) {
   const { id, startTime, endTime, reason } = slot;
 
@@ -21,7 +23,7 @@ export default function BlockedSlotCard({
   const endMin = parseHHMMToMinutes(endTime);
   const durationMin = endMin - startMin;
 
-  const top = getTop(startMin);
+  const top = getTop(startMin, startHour);
   const height = getHeight(durationMin);
 
   const innerGapTotal = Math.max(0, (laneCount - 1) * CALENDAR_CONFIG.APPOINTMENT_GAP);

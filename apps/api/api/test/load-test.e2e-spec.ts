@@ -34,6 +34,13 @@ describe('Load Test', () => {
       .send(ownerRegisterDto);
 
     const ownerToken = registerResponse.body.accessToken;
+    const tenantId = registerResponse.body.account.tenantId;
+
+    const { ObjectId } = require('mongodb');
+    await ctx.db
+      .collection('tenants')
+      .updateOne({ _id: new ObjectId(tenantId) }, { $set: { timezone: 'UTC' } });
+
     const slug = 'elite-load-salon';
 
     // Create a service to use in availability checks
@@ -80,7 +87,7 @@ describe('Load Test', () => {
               ? await request(ctx.app.getHttpServer()).get(`/public/tenants/${slug}`)
               : await request(ctx.app.getHttpServer())
                   .get(`/public/tenants/${slug}/availability`)
-                  .query({ serviceId, date: '2026-06-01' });
+                  .query({ serviceId, date: '2026-07-06' });
 
           if (res.status === 200) {
             completed++;
