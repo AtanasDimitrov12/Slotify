@@ -143,11 +143,18 @@ export default function StaffBookingRulesPage() {
       >
         <Box sx={{ maxWidth: { xs: 400, md: 'none' }, mx: 'auto', width: '100%' }}>
           <Typography
-            sx={{ fontWeight: 1000, fontSize: { xs: 32, sm: 36 }, letterSpacing: -1.5, color: '#0F172A' }}
+            sx={{
+              fontWeight: 1000,
+              fontSize: { xs: 32, sm: 36 },
+              letterSpacing: -1.5,
+              color: '#0F172A',
+            }}
           >
             Booking Rules
           </Typography>
-          <Typography sx={{ color: '#64748B', fontWeight: 600, fontSize: { xs: 15, md: 18 }, mt: 0.5 }}>
+          <Typography
+            sx={{ color: '#64748B', fontWeight: 600, fontSize: { xs: 15, md: 18 }, mt: 0.5 }}
+          >
             Use salon-wide rules or define your own personal schedule behavior.
           </Typography>
         </Box>
@@ -201,7 +208,10 @@ export default function StaffBookingRulesPage() {
       </Box>
 
       {error ? (
-        <Alert severity="error" sx={{ borderRadius: 3, width: '100%', maxWidth: { xs: 400, lg: 'none' } }}>
+        <Alert
+          severity="error"
+          sx={{ borderRadius: 3, width: '100%', maxWidth: { xs: 400, lg: 'none' } }}
+        >
           {error}
         </Alert>
       ) : null}

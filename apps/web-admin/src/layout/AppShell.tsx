@@ -172,7 +172,7 @@ export default function AppShell() {
           radial-gradient(circle at 100% 0%, rgba(125,211,252,0.08), transparent 18%),
           linear-gradient(180deg, ${shellColors.pageBg2} 0%, ${shellColors.pageBg} 28%, ${shellColors.pageBg} 100%)
         `,
-        overflowX: 'hidden',
+        overflowX: 'clip',
       }}
     >
       <AppBar
